@@ -1,0 +1,8 @@
+schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
+00003,1,1900,jahr,Bredeneyer Straße,richtig
+00003,2,1933-07-13,tag,Hermann-Göring-Straße,falsch
+00003,3,1945-06-01,tag,Bredeneyer Straße,falsch
+00010,1,1900,jahr,Gusestraße,richtig
+00010,2,1938-10-21,tag,Goosestraße,falsch
+00001,1,1880,jahr,Carlstraße,richtig
+00001,2,1910-01-01,tag,Karlstraße,falsch

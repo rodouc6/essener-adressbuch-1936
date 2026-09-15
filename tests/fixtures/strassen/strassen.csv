@@ -1,0 +1,11 @@
+schl_nr,lemma,stadtteile,strassenklasse,namensgruppe,verweis_auf,buchseite,status
+00001,Karlstraße,Altenessen-Nord; Altenessen-Süd,Gemeindestraße,,,10,automatisch
+00002,Hauptstraße,Kettwig,Gemeindestraße,,,11,automatisch
+00003,Bredeneyer Straße,Bredeney; Werden,Gemeindestraße,,,12,automatisch
+00004,Achternbergstraße,Kray,Gemeindestraße,,,13,automatisch
+00005,Am Bilstein,Kettwig,Gemeindestraße,,,14,automatisch
+00006,Am Richtenberg,Frohnhausen,Gemeindestraße,,,15,automatisch
+00007,Bochumer Straße,Steele,Gemeindestraße,,,16,automatisch
+00008,Schulstraße,Steele,Gemeindestraße,,,17,automatisch
+00009,Schulstraße,Kray,Gemeindestraße,,,18,automatisch
+00010,Goosestraße,Borbeck-Mitte,Gemeindestraße,,,19,automatisch
