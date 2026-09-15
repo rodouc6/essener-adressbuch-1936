@@ -1,5 +1,5 @@
 [project]
-name = "adressbuch-essen-1936"
+name = "essener-adressbuch-1936"
 version = "0.1.0"
 description = "Datenpipeline zum Essener Adreßbuch 1936: Bereinigung, Adress-Parsing, Straßenauflösung, Geokodierung"
 requires-python = ">=3.12"
