@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Kontrollkarte Geokodierung</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>html,body,#karte{height:100%;margin:0}.legende{background:#fff;padding:6px;font:12px sans-serif}</style></head>
+<body><div id="karte"></div>
+<script>
+const karte = L.map('karte').setView([51.455, 7.012], 12);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'}).addTo(karte);
+// Stadtplan 1935 (Stadt Essen, Rechte offen – nur zur Prüfung): dynamischer Export je Ausschnitt
+// Nutzungsrechte offen, nur zur internen Prüfung
+const plan = L.imageOverlay('', [[0,0],[0,0]], {opacity: 0.7});
+function ladePlan() {
+  const b = karte.getBounds(), s = karte.getSize();
+  const url = `https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export?bbox=${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}&bboxSR=4326&imageSR=4326&size=${s.x},${s.y}&format=png&transparent=true&f=image`;
+  plan.setUrl(url); plan.setBounds(b);
+}
+karte.on('moveend', () => { if (karte.hasLayer(plan)) ladePlan(); });
+const farben = {haus: '#1a7f37', strasse: '#c77d00', landmarke: '#6f42c1'};
+fetch('../build/kontrollpunkte.geojson').then(r => r.json()).then(g => {
+  L.geoJSON(g, {pointToLayer: (f, ll) => L.circleMarker(ll, {radius: 5, color: farben[f.properties.stufe] || '#999', fillOpacity: .7}),
+    onEachFeature: (f, l) => l.bindPopup(Object.entries(f.properties).map(([k, v]) => `<b>${k}</b>: ${v}`).join('<br>'))}).addTo(karte);
+});
+L.control.layers(null, {'Stadtplan 1935': plan}).addTo(karte);
+karte.on('overlayadd', ladePlan);
+const leg = L.control({position: 'bottomleft'}); leg.onAdd = () => { const d = L.DomUtil.create('div', 'legende'); d.innerHTML = 'grün = haus, orange = strasse, lila = landmarke'; return d; }; leg.addTo(karte);
+</script></body></html>
