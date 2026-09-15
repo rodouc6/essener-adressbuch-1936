@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 from pipeline.lib import einlesen
 
@@ -33,3 +34,14 @@ def test_zeile_mit_falscher_feldzahl_ohne_korrektur_wird_ausgeschlossen(tmp_path
     leer.write_text("id,aktion,feld,neu,beleg\n", encoding="utf-8")
     _, _, ausgeschlossen = einlesen.verarbeite(q, leer)
     assert {"id": "17259959", "grund": "feldzahl_18"} in ausgeschlossen
+
+
+def test_mehrere_leerfeld_entfernen_je_id_sind_verboten(tmp_path):
+    """Zwei leerfeld_entfernen für dieselbe id würden die Feldindizes verschieben."""
+    korr = tmp_path / "korr.csv"
+    korr.write_text("id,aktion,feld,alt,neu,beleg\n"
+                    "17259959,leerfeld_entfernen,3,,,x\n"
+                    "17259959,leerfeld_entfernen,5,,,x\n", encoding="utf-8")
+    quelle = FIX / "mini_quelle.tsv"
+    with pytest.raises(AssertionError, match="leerfeld_entfernen"):
+        einlesen.verarbeite(quelle, korr)

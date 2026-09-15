@@ -21,6 +21,12 @@ def test_norm_strasse(roh, erwartet):
     assert norm_strasse(roh) == erwartet
 
 
+def test_norm_strasse_nbsp():
+    # geschütztes Leerzeichen (U+00A0) wird zum normalen Leerzeichen
+    assert norm_strasse("Bochumer\u00a0Str.") == "bochumer straße"
+    assert norm_stadtteil("Altenessen\u00a0Nord") == "Altenessen Nord"
+
+
 def test_norm_strasse_nfc():
     # "ä" als Kombinationszeichen (a + U+0308) muss zu NFC "ä" werden
     assert norm_strasse("Bäumchenweg") == "bäumchenweg"

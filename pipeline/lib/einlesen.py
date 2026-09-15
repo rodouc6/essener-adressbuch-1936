@@ -45,11 +45,14 @@ def verarbeite(quelle: Path, korrekturen: Path) -> tuple[list[dict], list[dict],
     gesehen: dict[tuple, str] = {}
     for roh in _rohzeilen(quelle):
         zid = roh[-1].strip() if roh else ""
-        for k in korr.get(zid, []):
-            if k["aktion"] == "leerfeld_entfernen":
-                idx = int(k["feld"])
-                if len(roh) > len(QUELLFELDER) and roh[idx].strip() == "":
-                    del roh[idx]
+        entfernen = [k for k in korr.get(zid, []) if k["aktion"] == "leerfeld_entfernen"]
+        # Mehrere leerfeld_entfernen je id würden die Feldindizes der folgenden
+        # Korrekturen verschieben; die Kuratierungstabelle darf das nicht enthalten.
+        assert len(entfernen) <= 1, f"mehr als ein leerfeld_entfernen für id {zid}"
+        for k in entfernen:
+            idx = int(k["feld"])
+            if len(roh) > len(QUELLFELDER) and roh[idx].strip() == "":
+                del roh[idx]
         if len(roh) != len(QUELLFELDER):
             ausgeschlossen.append({"id": zid, "grund": f"feldzahl_{len(roh)}"})
             continue

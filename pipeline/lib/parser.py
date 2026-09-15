@@ -11,6 +11,17 @@ _LAGE_WORT = re.compile(r"^(erdg|untg|erdgesch|erdgeschoss|untergeschoss|hochpt|
 # Ordinal- bzw. römisches Präfix ("1. Weberstr.", "II. Schichtstr."), das Teil
 # des Straßennamens bleibt statt als Hausnummer-vor-Straße zu gelten.
 _PRAEFIX = r"(?:I{1,3}|IV|\d+)\.\s"
+_PRAEFIX_RE = re.compile(rf"^{_PRAEFIX}")
+
+# Ordinalzahl innerhalb des Straßennamens ("Platz des 21. März 5"): eine Zahl mit
+# Punkt und folgendem Leerzeichen gehört zum Namen, nicht zur Hausnummer. Der
+# Quantor ist possessiv (`*+`), damit die Gruppe nicht zurückgenommen wird und
+# "Platz des 21. März" ohne Nummer nicht doch als Hausnummer 21 gelesen wird.
+_ORDINAL_IM_NAMEN = r"(?:[^\d]*?\d+\.\s)*+"
+
+# Buchstabenzusatz mit Leerzeichen ("Weg 3 B"). Nur A-H, damit die römischen
+# Lage-Ziffern I, II, III, IV, V unberührt bleiben.
+_ZUSATZ_MIT_LEERZEICHEN = re.compile(r"^(?P<zus>[A-Ha-h])(?![a-zäöüß])(?P<rest>.*)$")
 
 
 @dataclass(frozen=True)
@@ -42,7 +53,7 @@ def parse_adresse(text: str) -> Adresse:
     # Führt ein Ordnungswort ("II. Schichtstr.", "1. Weberstr.") die Straße
     # an, zählt die führende Ziffer nicht als Hausnummer-vor-Straße. Eine
     # führende Zahl ist nur dann unklar, wenn ihr kein ". " folgt.
-    fuehrt_praefix = re.match(r"^(?:I{1,3}|IV|\d+)\.\s", t) is not None
+    fuehrt_praefix = _PRAEFIX_RE.match(t) is not None
     if re.match(r"^\d", t) and not fuehrt_praefix:
         return _leer("unklar", t)
 
@@ -56,7 +67,7 @@ def parse_adresse(text: str) -> Adresse:
     # ("1. Postneubau a. Hbf." darf nicht zu Hausnr. "1" werden).
     praefix = _PRAEFIX if fuehrt_praefix else ""
     m = re.match(
-        rf"^(?P<strasse>{praefix}[^\d]*?\.?)(?:,\s*|\s*\.?\s*)(?:Nr\.\s*)?(?P<rest>\d.*)$",
+        rf"^(?P<strasse>{praefix}{_ORDINAL_IM_NAMEN}[^\d]*?\.?)(?:,\s*|\s*\.?\s*)(?:Nr\.\s*)?(?P<rest>\d.*)$",
         t,
     )
     if not m:
@@ -73,6 +84,13 @@ def parse_adresse(text: str) -> Adresse:
     hausnr = hm.group("nr")
     zusatz = (hm.group("zus") or "").lower()
     rest = hm.group("rest").strip()
+
+    # Buchstabenzusatz, der durch ein Leerzeichen abgetrennt steht ("Weg 3 B").
+    if not zusatz:
+        zm = _ZUSATZ_MIT_LEERZEICHEN.match(rest)
+        if zm:
+            zusatz = zm.group("zus").lower()
+            rest = zm.group("rest").strip()
 
     hausnr_bis = ""
     zusatz_frei_teile: list[str] = []

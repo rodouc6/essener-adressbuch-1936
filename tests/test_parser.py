@@ -42,6 +42,15 @@ def a(**kw):
     ("Hstr..9", a(strasse_roh="Hstr.", hausnr="9")),
     ("1. Weberstr. 22/24", a(strasse_roh="1. Weberstr.", hausnr="22", zusatz_frei="/24")),
     ("1. Postneubau a. Hbf.", a(strasse_roh="1. Postneubau a. Hbf.", status="ohne_nummer")),
+    # Buchstabenzusatz mit Leerzeichen (A-H, damit Lage-Ziffern I/V unberührt bleiben)
+    ("Hohenburgweg 3 B", a(strasse_roh="Hohenburgweg", hausnr="3", hausnr_zusatz="b")),
+    ("Kahrstr. 39 D", a(strasse_roh="Kahrstr.", hausnr="39", hausnr_zusatz="d")),
+    ("Arndtstr. 14 I", a(strasse_roh="Arndtstr.", hausnr="14", lage="I")),
+    ("Arndtstr. 14 V", a(strasse_roh="Arndtstr.", hausnr="14", lage="V")),
+    ("Steeler Str. 12 Erdg.", a(strasse_roh="Steeler Str.", hausnr="12", lage="Erdg.")),
+    # Ordinal im Straßennamen
+    ("Platz des 21. März 5", a(strasse_roh="Platz des 21. März", hausnr="5")),
+    ("Platz des 21. März", a(strasse_roh="Platz des 21. März", status="ohne_nummer")),
 ])
 def test_parse_adresse(text, erwartet):
     assert parse_adresse(text) == erwartet

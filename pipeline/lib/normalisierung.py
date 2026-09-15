@@ -11,7 +11,10 @@ VORORTE: tuple[str, ...] = (
 _VORORT_ALIAS = {v.lower(): v for v in VORORTE}
 _VORORT_ALIAS.update({"überruhr": "Ueberruhr", "ueberruhr": "Ueberruhr"})
 
-_TYPO = str.maketrans({"´": "'", "’": "'", "`": "'", " ": " ", "–": "-", "—": "-"})
+# Geschützte Leerzeichen (NBSP, schmales NBSP, Ziffern-Leerzeichen) auf das normale
+# Leerzeichen, typografische Apostrophe und Gedankenstriche auf ASCII.
+_TYPO = str.maketrans({"´": "'", "’": "'", "`": "'", "\u00a0": " ", "\u202f": " ",
+                       "\u2007": " ", "–": "-", "—": "-"})
 
 _ERSETZUNGEN = [
     (re.compile(r"\bstr\.(?=\s|$)"), "straße"),          # "Bochumer str." → "bochumer straße"
