@@ -1,0 +1,8 @@
+build/
+data/*.csv
+data/*.html
+data/*_files/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.code-workspace
