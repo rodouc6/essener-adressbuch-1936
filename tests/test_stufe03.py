@@ -41,9 +41,9 @@ def test_loese_strassen_leerer_strasse_norm():
 
 
 def test_paare_trennen_nach_teil():
-    """Derselbe Name in Teil I (Kernstadt) und Teil II ist ein anderes Paar und kann
-    anders ausgehen: Hermannstraße ohne Vorort ist in Teil I wie in Teil II mehrdeutig,
-    aber mit unterschiedlichen Kandidatenmengen."""
+    """Derselbe Name in Teil I (Kernstadt) und Teil II ist ein anderes Paar und geht
+    anders aus: die Hermannstraße ohne Vorort wird in Teil I eindeutig (Kernstadt,
+    Eltingstraße), in Teil II bleibt sie mehrdeutig (Katernberg kommt hinzu)."""
     idx = Strassenindex(FIX / "strassen", FIX / "strassen_zuordnung.csv")
     zeilen = [
         {"id": "1", "strasse_norm": "hermannstraße", "Vorort": "", "teil": "I", "Adresse": "Hermannstr. 1"},
@@ -51,5 +51,5 @@ def test_paare_trennen_nach_teil():
     ]
     out, paare, _ = loese_strassen(zeilen, idx)
     assert len(paare) == 2
-    assert out[0]["mehrdeutig"] == "ja" and out[1]["mehrdeutig"] == "ja"
-    assert "01282" not in out[0]["kandidaten"] and "01282" in out[1]["kandidaten"]
+    assert (out[0]["mehrdeutig"], out[0]["strasse_heute"]) == ("nein", "Eltingstraße")
+    assert out[1]["mehrdeutig"] == "ja" and "01282" in out[1]["kandidaten"]

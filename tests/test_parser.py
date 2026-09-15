@@ -51,6 +51,16 @@ def a(**kw):
     # Ordinal im Straßennamen
     ("Platz des 21. März 5", a(strasse_roh="Platz des 21. März", hausnr="5")),
     ("Platz des 21. März", a(strasse_roh="Platz des 21. März", status="ohne_nummer")),
+    # Das Ordinal im Namen greift nur vor einem Wort, nie vor einer weiteren Zahl:
+    # "Hubertstr. 234. 234A" ist eine Hausnummernliste, kein Ordinal im Straßennamen.
+    ("Hubertstr. 234.  234A", a(strasse_roh="Hubertstr.", hausnr="234", zusatz_frei=". 234A")),
+    ("Wackenberg 17. 19.", a(strasse_roh="Wackenberg", hausnr="17", zusatz_frei=". 19.")),
+    ("Thomaestr. 230. 230A", a(strasse_roh="Thomaestr.", hausnr="230", zusatz_frei=". 230A")),
+    ("Bochumer Str. 37. 37a", a(strasse_roh="Bochumer Str.", hausnr="37", zusatz_frei=". 37a")),
+    # Ein Punkt hinter dem Buchstaben schließt den Hausnummernzusatz aus.
+    ("Vereinstraße 38 a. d. Hindenburgstraße",
+     a(strasse_roh="Vereinstraße", hausnr="38", zusatz_frei="a. d. Hindenburgstraße")),
+    ("Klemensborn 53 H. ", a(strasse_roh="Klemensborn", hausnr="53", zusatz_frei="H.")),
 ])
 def test_parse_adresse(text, erwartet):
     assert parse_adresse(text) == erwartet

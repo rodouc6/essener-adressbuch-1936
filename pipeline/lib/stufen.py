@@ -32,7 +32,8 @@ def parse_zeilen(zeilen: list[dict]) -> list[dict]:
     return out
 
 
-AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend", "mehrdeutig", "kandidaten", "grund_mehrdeutig"]
+AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend",
+                     "mehrdeutig", "kandidaten", "grund_mehrdeutig", "teilstrecke_abgetrennt"]
 PAARFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
 VORSCHLAGSFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + [
     f"{k}_{i}" for i in (1, 2, 3) for k in ("kandidat", "lemma", "aehnlichkeit")]
@@ -58,7 +59,8 @@ def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], 
                 # Leerer strasse_norm: idx.aufloesen wird nicht aufgerufen, Paar bleibt offen
                 # mit den Enum-Neutralwerten "nein" statt leerem String.
                 auf = {f: "" for f in AUFLOESUNGSFELDER}
-                auf.update(herkunft="offen", mehrdeutig="nein", zeitlich_abweichend="nein")
+                auf.update(herkunft="offen", mehrdeutig="nein", zeitlich_abweichend="nein",
+                           teilstrecke_abgetrennt="nein")
             paare[k] = {"strasse_norm": k[0], "vorort": k[1], "teil": k[2], "zeilen": 0,
                         "beispiel": z["Adresse"], **auf}
         paare[k]["zeilen"] += 1
@@ -89,7 +91,8 @@ VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "displ
 # 04_geokodiert.csv je Adresse eindeutig ist und Stufe 05 die Herkunft nicht von Hand
 # nachjoinen muss (Spec §5.04).
 ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh",
-                    "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
+                    "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig",
+                    "teilstrecke_abgetrennt"]
 ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
 
 

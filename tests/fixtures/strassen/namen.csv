@@ -1,6 +1,6 @@
 schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 00003,1,1900,jahr,Bredeneyer Straße,richtig
-00003,2,1933-07-13,tag,Hermann-Göring-Straße,falsch
+00003,2,1933-07-13,tag,Horst-Wessel-Straße,falsch
 00003,3,1945-06-01,tag,Bredeneyer Straße,falsch
 00010,1,1900,jahr,Gusestraße,richtig
 00010,2,1938-10-21,tag,Goosestraße,falsch
@@ -46,3 +46,62 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 03517,3,1929-07-12,tag,Zum Oberhof,falsch
 03677,1,1897-11-04,tag,Hermannstraße,falsch
 03677,2,1977-11-29,tag,Strängerstraße,falsch
+00238,1,1901-12-13,tag,Frohnhauser Straße (tlw.),falsch
+00238,2,1963-09-04,tag,Am Richtenberg,falsch
+00348,1,1901-12-13,tag,Frohnhauser Straße (tlw.),falsch
+00348,2,1961-02-22,tag,Berzeliusstraße,falsch
+00658,1,1891-04-30,tag,Frohnhauser Straße,falsch
+00658,2,1915-07-09,tag,Gartenkamp (tlw.),falsch
+00658,3,1937-11-20,tag,Dreigarbenfeld,falsch
+00930,1,1860,jahr,Frohnhauser Straße,falsch
+00930,2,1885,vor,Herrenbankstraße (Umb.),falsch
+00930,3,,unbekannt,Essen-Mülheimer-Straße (Umb.),falsch
+00930,4,1901-12-13,tag,Frohnhauser Straße,falsch
+02266,1,,unbekannt,Frohnhauser Straße,wahr
+02266,2,1911-04-21,tag,Nöggerathstraße,falsch
+02266,3,1915-07-09,tag,Gartenkamp (tlw.),falsch
+02266,4,1937-11-20,tag,Nöggerathstraße (Verl.),falsch
+02437,1,1891-04-30,tag,Frohnhauser Straße,falsch
+02437,2,1915-07-09,tag,Gartenkamp (tlw.),falsch
+02437,3,1937-11-20,tag,Pollerbecks Brink,falsch
+00053,1,,unbekannt,Viehofer Chausee,wahr
+00053,2,1908-08-07,tag,Altenessener Straße,falsch
+00053,3,,unbekannt,Essen-Horster-Straße,wahr
+00053,4,1915-07-09,tag,Altenessener Straße (Verl.),falsch
+01796,1,1875-07-20,tag,Annastraße (Altenessen),falsch
+01796,2,1891-04-30,tag,Altenessener Straße (Borbeck),falsch
+01796,3,1915-07-09,tag,Krablerstraße,falsch
+02867,1,1892-03-29,tag,Altenessener Straße,falsch
+02867,2,1896-02-13,tag,Stoppenberger Straße,falsch
+02867,3,1915-07-09,tag,Seumannstraße,falsch
+02867,4,1933-05-08,tag,Seumannstraße (Verl.),falsch
+03102,1,1892-03-29,tag,Altenessener Straße,falsch
+03102,2,1933-06-17,tag,Tuttmannstraße,falsch
+03215,1,1501,jahrhundert,Veyver Strate,falsch
+03215,2,1825,jahr,Viehofer Straße,falsch
+03215,3,1826,vor,Altenessener Straße,falsch
+03215,4,1933-04-20,tag,Adolf-Hitler-Straße (Umb.),falsch
+03215,5,1945-05-15,tag,Viehofer Straße (Umb.),falsch
+03215,6,1915-07-09,tag,Viehofer Straße (Verl.),falsch
+01157,1,1891-04-30,tag,Bahnstraße,falsch
+01157,2,1891-04-30,tag,Phönixstraße (tlw.),falsch
+01157,3,1891-04-30,tag,Emscherstraße,falsch
+01157,4,1915-07-09,tag,Vogelheimer Straße,falsch
+01157,5,1936-01-15,tag,Hafenstraße,falsch
+03230,1,1875-07-20,tag,Vogelheimer Straße,falsch
+03230,2,1891-04-30,tag,Bernestraße,falsch
+03230,3,1915-07-09,tag,Langenhorster Straße (Umb.),falsch
+03230,4,1936-01-15,tag,Vogelheimer Straße (Umb.),falsch
+00433,1,1907-08-06,tag,Werdener Straße,falsch
+00433,2,1907-08-06,tag,Essener Straße,falsch
+00433,3,1915-07-09,tag,Bredeneyer Straße,falsch
+00433,4,1933-07-13,tag,Hermann-Göring-Straße,falsch
+00433,5,1945-06-18,tag,Bredeneyer Straße,falsch
+00433,6,1934-01-12,tag,Im Löwental,falsch
+00433,7,1968-11-21,tag,Bredeneyer Straße (Verl.),falsch
+02656,1,,unbekannt,Kettwiger Chaussee (Essen),wahr
+02656,2,,unbekannt,Kettwiger Chaussee (Rüttenscheid),wahr
+02656,3,1897-09-06,tag,Essener Straße,falsch
+02656,4,1906-01-26,tag,Rüttenscheider Straße,falsch
+02656,5,1933-07-13,tag,Hermann-Göring-Straße (Umb.),falsch
+02656,6,1945-06-18,tag,Rüttenscheider Straße (Umb.),falsch

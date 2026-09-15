@@ -3,14 +3,24 @@ from __future__ import annotations
 
 import difflib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from pipeline.lib.io import lies_csv
 from pipeline.lib.normalisierung import norm_stadtteil, norm_strasse
 
-# Zeitfenster, in dem ein Namensstadium für das Adreßbuch 1936 gelten muss.
+# Primäres Zeitfenster: das Namensstadium muss irgendwann im Erhebungsjahr 1936 gelten.
+# Nur solche Stadien sind Homonyme (Spec §8.1, entschieden 2026-09-15).
+FENSTER_1936 = ("1936-01-01", "1936-12-31")
+
+# Weites Rückfallfenster: greift nur, wenn zu einem Namen kein Kandidat für 1936
+# existiert. Solche Auflösungen werden mit zeitlich_abweichend=ja gekennzeichnet.
 FENSTER = ("1930-01-01", "1937-12-31")
+
+# Dickhoff kennzeichnet später abgetrennte Teilstrecken derselben Straße mit "(tlw.)"
+# (z. B. "Frohnhauser Straße (tlw.)" → Am Richtenberg 1963). Solche Kandidaten sind
+# keine Homonyme, sondern Stücke derselben Straße von 1936.
+_TEILSTRECKE = re.compile(r"\(tlw\.?\)")
 
 # Kettwig und Burgaltendorf gehörten 1936 nicht zu Essen (Eingemeindung 1975).
 # Kandidaten, deren Stadtteile vollständig hier liegen, können keine Adresse
@@ -43,11 +53,15 @@ VORORT_STADTTEILE_ALLE: frozenset[str] = frozenset().union(*VORORT_STADTTEILE.va
 # Straßenschlüssel, gewinnt die vorderste.
 QUELLEN = ("heutig", "konkordanz", "stadium")
 
-# Zeitstatus eines Kandidaten:
-#   "fenster"    — ein datiertes Namensstadium deckt 1930–1937 ab
-#   "undatiert"  — kein datiertes Stadium mit diesem Namen (Gültigkeit unbekannt)
-#   "ausserhalb" — nur datierte Stadien außerhalb des Fensters (nur Rückfallkandidat)
-ZEIT_FENSTER, ZEIT_UNDATIERT, ZEIT_AUSSERHALB = "fenster", "undatiert", "ausserhalb"
+# Zeitstatus eines Kandidaten, in absteigender Güte:
+#   "1936"       — ein Namensstadium gilt irgendwann 1936 (der Normalfall)
+#   "undatiert"  — keine Datumsangabe zu diesem Namen, Gültigkeit unbekannt
+#   "weit"       — gilt nur im Rückfallfenster 1930–1937, nicht 1936
+#   "ausserhalb" — gilt auch dort nicht
+# "1936" und "undatiert" bilden die erste Auswahlstufe; die beiden anderen kommen
+# nur zum Zug, wenn die erste Stufe leer bleibt.
+ZEIT_1936, ZEIT_UNDATIERT, ZEIT_WEIT, ZEIT_AUSSERHALB = "1936", "undatiert", "weit", "ausserhalb"
+ZEIT_ERSTE_STUFE = (ZEIT_1936, ZEIT_UNDATIERT)
 
 
 @dataclass(frozen=True)
@@ -58,6 +72,7 @@ class Kandidat:
     quelle: str
     zeitlich: str
     konkordanz_eindeutig: str = ""
+    teilstrecke: bool = False
 
     @property
     def rang(self) -> int:
@@ -76,6 +91,7 @@ class Aufloesung:
     mehrdeutig: str = "nein"
     kandidaten: str = ""
     grund_mehrdeutig: str = ""
+    teilstrecke_abgetrennt: str = "nein"
 
 
 OFFEN = Aufloesung(strasse_heute="", schl_nr="", stadtteil="", herkunft="offen")
@@ -86,14 +102,33 @@ def _ohne_klammer(name: str) -> str:
     return re.sub(r"\s*\(.*?\)\s*", " ", name).strip()
 
 
-def _schneidet_fenster(gueltig_ab: str, gueltig_bis: str) -> bool:
-    """Prüft, ob [gueltig_ab, gueltig_bis) das Fenster 1930–1937 schneidet.
+def _schneidet(gueltig_ab: str, gueltig_bis: str, fenster: tuple[str, str]) -> bool:
+    """Prüft, ob [gueltig_ab, gueltig_bis) das Fenster schneidet.
 
     Die Daten liegen in gemischter Präzision vor ("1900" neben "1933-07-13");
     der Vergleich als Zeichenkette ist dafür ausreichend, weil kürzere Angaben
-    lexikographisch an der Jahresgrenze einsortieren.
+    lexikographisch an der Jahresgrenze einsortieren. Ein unbekanntes Anfangsdatum
+    wird als "0000" gelesen: bei bekanntem Ende (Nachfolgestadium) ist die
+    Gültigkeit damit nach oben begrenzt und prüfbar.
     """
-    return gueltig_ab[:10] <= FENSTER[1] and gueltig_bis[:10] >= FENSTER[0]
+    return (gueltig_ab[:10] or "0000") <= fenster[1] and gueltig_bis[:10] >= fenster[0]
+
+
+def _folgedatum(stufen: list[dict], i: int) -> str:
+    """Ende der Gültigkeit von Stadium `i`: das Datum des ersten folgenden Stadiums.
+
+    Die Stadiumsnummern in `namen.csv` sind nicht durchweg chronologisch (Viehofer
+    Straße 03215: Stadium 5 = 1945, Stadium 6 = 1915). Übersprungen werden deshalb
+    alle folgenden Stadien ohne Datum und alle, die vor dem eigenen Datum liegen —
+    sonst entstehen leere oder falsch verkürzte Gültigkeiten. Gibt es kein
+    Folgestadium, ist das Stadium offen ("9999" als obere Schranke).
+    """
+    eigen = stufen[i]["gueltig_ab"].strip()
+    for spaeter in stufen[i + 1:]:
+        datum = spaeter["gueltig_ab"].strip()
+        if datum and datum[:10] >= eigen[:10]:
+            return datum
+    return "9999"
 
 
 class Strassenindex:
@@ -118,15 +153,18 @@ class Strassenindex:
             self.konk.setdefault(norm_strasse(z["ehemalig"]), []).append(z)
         namen = lies_csv(strassen_dir / "namen.csv")
         namen.sort(key=lambda z: (z["schl_nr"], int(z["stadium"])))
+        je_strasse: dict[str, list[dict]] = {}
+        for z in namen:
+            je_strasse.setdefault(z["schl_nr"], []).append(z)
         self.stadien: dict[str, list[dict]] = {}
         self.stadien_je_strasse: dict[str, list[dict]] = {}
-        for i, z in enumerate(namen):
-            folge = namen[i + 1] if i + 1 < len(namen) and namen[i + 1]["schl_nr"] == z["schl_nr"] else None
-            # Das letzte Stadium einer Straße ist offen; "9999" ist die obere Schranke.
-            eintrag = dict(z, gueltig_bis=folge["gueltig_ab"] if folge else "9999",
-                           name_norm=norm_strasse(_ohne_klammer(z["name"])))
-            self.stadien.setdefault(eintrag["name_norm"], []).append(eintrag)
-            self.stadien_je_strasse.setdefault(z["schl_nr"], []).append(eintrag)
+        for schl_nr, stufen in je_strasse.items():
+            for i, z in enumerate(stufen):
+                eintrag = dict(z, gueltig_bis=_folgedatum(stufen, i),
+                               name_norm=norm_strasse(_ohne_klammer(z["name"])),
+                               teilstrecke=bool(_TEILSTRECKE.search(z["name"])))
+                self.stadien.setdefault(eintrag["name_norm"], []).append(eintrag)
+                self.stadien_je_strasse.setdefault(schl_nr, []).append(eintrag)
         self.zuordnung: dict[tuple[str, str], dict] = {}
         if zuordnung_pfad.exists():
             for z in lies_csv(zuordnung_pfad):
@@ -139,34 +177,61 @@ class Strassenindex:
         stadtteile = self.stadtteile.get(schl_nr, [])
         return bool(stadtteile) and set(stadtteile) <= NICHT_ESSEN_1936
 
+    def _namensstadien(self, schl_nr: str, name_norm: str) -> list[dict]:
+        """Alle Stadien dieser Straße, die den gesuchten Namen tragen."""
+        return [s for s in self.stadien_je_strasse.get(schl_nr, []) if s["name_norm"] == name_norm]
+
     def _zeitstatus(self, schl_nr: str, name_norm: str) -> str:
-        """Bestimmt, ob der Name für diese Straße 1936 galt (siehe ZEIT_*-Konstanten)."""
-        stufen = [s for s in self.stadien_je_strasse.get(schl_nr, []) if s["name_norm"] == name_norm]
-        datiert = [s for s in stufen if s["gueltig_ab"].strip()]
-        if not datiert:
-            # Keine datierte Gültigkeit bekannt: Kandidat bleibt gültig, aber gekennzeichnet.
+        """Bestimmt, wie gut der Name für diese Straße 1936 belegt ist (ZEIT_*-Konstanten).
+
+        Ein Stadium gilt als datiert, sobald eine der beiden Grenzen bekannt ist: ein
+        Stadium ohne Anfangsdatum, aber mit Nachfolger (z. B. Nöggerathstraße 02266,
+        "Frohnhauser Straße" bis 1911-04-21) ist für 1936 nachweislich ungültig.
+        Undatiert heißt: keine der beiden Grenzen bekannt.
+        """
+        stufen = self._namensstadien(schl_nr, name_norm)
+        datiert = [s for s in stufen if s["gueltig_ab"].strip() or s["gueltig_bis"] != "9999"]
+        if any(_schneidet(s["gueltig_ab"], s["gueltig_bis"], FENSTER_1936) for s in datiert):
+            return ZEIT_1936
+        if len(datiert) < len(stufen) or not stufen:
+            # Mindestens ein Stadium ohne jede Datumsangabe: Gültigkeit unbekannt.
             return ZEIT_UNDATIERT
-        if any(_schneidet_fenster(s["gueltig_ab"], s["gueltig_bis"]) for s in datiert):
-            return ZEIT_FENSTER
+        if any(_schneidet(s["gueltig_ab"], s["gueltig_bis"], FENSTER) for s in datiert):
+            return ZEIT_WEIT
         return ZEIT_AUSSERHALB
+
+    def _ist_teilstrecke(self, schl_nr: str, name_norm: str) -> bool:
+        """Trägt der Name für diese Straße ausschließlich den Zusatz "(tlw.)"?"""
+        stufen = self._namensstadien(schl_nr, name_norm)
+        return bool(stufen) and all(s["teilstrecke"] for s in stufen)
 
     def _sammle(self, strasse_norm: str) -> list[Kandidat]:
         """Sammelt alle Kandidaten zu einem Namen von 1936 (ohne Nicht-Essener Orte)."""
         roh: list[Kandidat] = []
         for schl_nr in self.heutig.get(strasse_norm, []):
+            # Das heutige Lemma trägt nie einen Teilstreckenzusatz.
             roh.append(Kandidat(schl_nr, "heutig", self._zeitstatus(schl_nr, strasse_norm)))
         for z in self.konk.get(strasse_norm, []):
             # konkordanz_1936.csv ist bereits auf den Stichtag 1936-06-30 abgeleitet.
-            roh.append(Kandidat(z["schl_nr"], "konkordanz", ZEIT_FENSTER, z["eindeutig"]))
+            roh.append(Kandidat(z["schl_nr"], "konkordanz", ZEIT_1936, z["eindeutig"],
+                                bool(_TEILSTRECKE.search(z.get("zusatz", "")))))
         for s in self.stadien.get(strasse_norm, []):
-            roh.append(Kandidat(s["schl_nr"], "stadium", self._zeitstatus(s["schl_nr"], strasse_norm)))
+            roh.append(Kandidat(s["schl_nr"], "stadium", self._zeitstatus(s["schl_nr"], strasse_norm),
+                                teilstrecke=self._ist_teilstrecke(s["schl_nr"], strasse_norm)))
         return [k for k in roh if not self._nicht_essen_1936(k.schl_nr)]
 
     def _beste_je_schluessel(self, kandidaten: list[Kandidat]) -> dict[str, Kandidat]:
-        """Fasst Kandidaten je Straßenschlüssel zusammen; die höchste Quelle gewinnt."""
+        """Fasst Kandidaten je Straßenschlüssel zusammen; die höchste Quelle gewinnt.
+
+        Teilstrecke ist nur, wer in *jeder* Quelle als Teilstrecke geführt wird —
+        eine Quelle mit schlichtem Namen hebt die Kennzeichnung auf.
+        """
         beste: dict[str, Kandidat] = {}
         for k in sorted(kandidaten, key=lambda k: k.rang):
             beste.setdefault(k.schl_nr, k)
+        for schl_nr, k in beste.items():
+            if k.teilstrecke and not all(a.teilstrecke for a in kandidaten if a.schl_nr == schl_nr):
+                beste[schl_nr] = replace(k, teilstrecke=False)
         return beste
 
     # --- Filter ---------------------------------------------------------------
@@ -191,21 +256,29 @@ class Strassenindex:
         return True
 
     # --- Ergebnisbau ----------------------------------------------------------
-    def _fertig(self, kandidat: Kandidat) -> Aufloesung:
-        """Baut die eindeutige Auflösung zu einem Kandidaten."""
+    def _fertig(self, kandidat: Kandidat, abgetrennt: str = "nein", kandidaten: str = "") -> Aufloesung:
+        """Baut die eindeutige Auflösung zu einem Kandidaten.
+
+        Wurden Teilstrecken-Kandidaten beiseitegelegt, stehen sie weiter in
+        `kandidaten` und `teilstrecke_abgetrennt` ist "ja".
+        """
         s = self.strassen[kandidat.schl_nr]
         return Aufloesung(
             strasse_heute=s["lemma"],
             schl_nr=kandidat.schl_nr,
             stadtteil="; ".join(self.stadtteile[kandidat.schl_nr]),
             herkunft=kandidat.quelle,
-            zeitlich_abweichend="nein" if kandidat.zeitlich == ZEIT_FENSTER else "ja",
+            zeitlich_abweichend="nein" if kandidat.zeitlich == ZEIT_1936 else "ja",
             mehrdeutig="nein",
+            kandidaten=kandidaten,
+            teilstrecke_abgetrennt=abgetrennt,
         )
 
-    def _mehrdeutig(self, kandidaten: dict[str, Kandidat], grund: str) -> Aufloesung:
+    def _mehrdeutig(self, entscheidend: dict[str, Kandidat], grund: str,
+                    kandidaten: dict[str, Kandidat] | None = None,
+                    abgetrennt: str = "nein") -> Aufloesung:
         """Baut ein mehrdeutiges Ergebnis mit allen beteiligten Straßenschlüsseln."""
-        beste = min(kandidaten.values(), key=lambda k: k.rang)
+        beste = min(entscheidend.values(), key=lambda k: k.rang)
         return Aufloesung(
             strasse_heute="",
             schl_nr="",
@@ -213,8 +286,9 @@ class Strassenindex:
             herkunft=beste.quelle,
             zeitlich_abweichend="nein",
             mehrdeutig="ja",
-            kandidaten=";".join(kandidaten),
+            kandidaten=";".join(kandidaten if kandidaten is not None else entscheidend),
             grund_mehrdeutig=grund,
+            teilstrecke_abgetrennt=abgetrennt,
         )
 
     # --- Auflösung ------------------------------------------------------------
@@ -240,23 +314,33 @@ class Strassenindex:
         if not kandidaten:
             return OFFEN
 
-        # 3. Zeitlich belegte Kandidaten zuerst; nur wenn keiner übrig bleibt,
-        #    kommen die außerhalb des Fensters datierten als Rückfall zum Zug.
-        im_fenster = [k for k in kandidaten if k.zeitlich != ZEIT_AUSSERHALB]
-        aktiv = im_fenster or kandidaten
+        # 3. Erste Stufe: Kandidaten, die 1936 gelten oder undatiert sind. Nur wenn
+        #    diese Stufe leer bleibt, kommt das weite Fenster 1930–1937 als Rückfall
+        #    zum Zug (dann mit zeitlich_abweichend=ja).
+        erste_stufe = [k for k in kandidaten if k.zeitlich in ZEIT_ERSTE_STUFE]
+        aktiv = erste_stufe or kandidaten
 
         # 4. Vorort-Filter.
         passend = [k for k in aktiv if self._passt(k.schl_nr, vorort, teil)]
         if not passend:
             return self._mehrdeutig(self._beste_je_schluessel(aktiv), "vorort_widerspruch")
 
-        # 5. Entscheidung: nur ein einziger Straßenschlüssel wird aufgelöst.
+        # 5. Teilstrecken ("(tlw.)") sind Stücke derselben Straße, keine Homonyme:
+        #    gibt es daneben Kandidaten mit dem schlichten Namen, entscheiden nur diese.
         beste = self._beste_je_schluessel(passend)
-        if len(beste) == 1:
-            return self._fertig(next(iter(beste.values())))
+        schlicht = {s: k for s, k in beste.items() if not k.teilstrecke}
+        entscheidend = schlicht or beste
+        abgetrennt = "ja" if len(entscheidend) < len(beste) else "nein"
+
+        # 6. Entscheidung: nur ein einziger Straßenschlüssel wird aufgelöst.
+        if len(entscheidend) == 1:
+            return self._fertig(next(iter(entscheidend.values())), abgetrennt,
+                                ";".join(beste) if abgetrennt == "ja" else "")
         nur_unklare_konkordanz = all(k.quelle == "konkordanz" and k.konkordanz_eindeutig == "nein"
-                                     for k in beste.values())
-        return self._mehrdeutig(beste, "konkordanz_nicht_eindeutig" if nur_unklare_konkordanz else "homonym_1936")
+                                     for k in entscheidend.values())
+        return self._mehrdeutig(entscheidend,
+                                "konkordanz_nicht_eindeutig" if nur_unklare_konkordanz else "homonym_1936",
+                                beste, abgetrennt)
 
     def vorschlaege(self, strasse_norm: str, n: int = 3) -> list[tuple[str, str, float]]:
         """Schlägt ähnliche Straßennamen vor (Name im Datensatz, heutiges Lemma, Ähnlichkeit)."""

@@ -1,8 +1,8 @@
 stadtteil,ehemalig,heutig,schl_nr,datum_praezision,quelle,zusatz,eindeutig
-Bredeney,Hermann-Göring-Straße,Bredeneyer Straße,00003,tag,Dickhoff 2015,,ja
+Bredeney,Horst-Wessel-Straße,Bredeneyer Straße,00003,tag,Dickhoff 2015,,ja
 Kray,Achtermbergstraße,Achternbergstraße,00004,tag,Dickhoff 2015,(Umb.),ja
 Kettwig,Hochstraße,Am Bilstein,00005,tag,Dickhoff 2015,,nein
-Frohnhausen,Frohnhauser Straße,Am Richtenberg,00006,tag,Dickhoff 2015,,nein
+Frohnhausen,Frohnhauser Chaussee,Am Richtenberg,00006,tag,Dickhoff 2015,,nein
 Kupferdreh,Hauptstraße,Kupferdreher Straße,00011,tag,Dickhoff 2015,,ja
 Ostviertel,Taubenstraße,Natorpstraße,02287,tag,Dickhoff 2015,(Verl.),ja
 Fischlaken,Hermannstraße,Alinenhöhe,00037,tag,Dickhoff 2015,,ja
@@ -11,3 +11,6 @@ Kettwig,Hermannstraße,Strängerstraße,03677,tag,Dickhoff 2015,,ja
 Stadtkern,II. Weberstraße,Gerswidastraße,01022,vor,Dickhoff 2015,,ja
 Altendorf,Hochstraße,Am Kruppwald,00013,tag,Dickhoff 2015,,nein
 Frohnhausen,Hochstraße,Am Richtenberg,00006,tag,Dickhoff 2015,,nein
+Frohnhausen,Frohnhauser Straße,Am Richtenberg,00238,tag,Dickhoff 2015,(tlw.),nein
+Frohnhausen,Frohnhauser Straße,Berzeliusstraße,00348,tag,Dickhoff 2015,(tlw.),nein
+Rüttenscheid,Hermann-Göring-Straße,Rüttenscheider Straße,02656,tag,Dickhoff 2015,(Umb.),ja

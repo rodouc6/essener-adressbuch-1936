@@ -4,7 +4,8 @@ from pipeline.lib.bericht import erzeuge
 def test_bericht_enthaelt_kernzahlen():
     def e_(**kw):
         basis = dict(teil="I", stufe="haus", grund="", herkunft="heutig", parse_status="ok",
-                     mehrdeutig="nein", grund_mehrdeutig="", zeitlich_abweichend="nein")
+                     mehrdeutig="nein", grund_mehrdeutig="", zeitlich_abweichend="nein",
+                     teilstrecke_abgetrennt="nein")
         basis.update(kw)
         return basis
     e = [e_(), e_(stufe="offen", grund="kein_treffer"), e_(teil="II", stufe="strasse", herkunft="konkordanz")]
@@ -20,7 +21,8 @@ def test_bericht_enthaelt_kernzahlen():
 
 def eintrag(**kw):
     basis = dict(teil="I", stufe="haus", grund="", herkunft="heutig", parse_status="ok",
-                 mehrdeutig="nein", grund_mehrdeutig="", zeitlich_abweichend="nein")
+                 mehrdeutig="nein", grund_mehrdeutig="", zeitlich_abweichend="nein",
+                 teilstrecke_abgetrennt="nein")
     basis.update(kw)
     return basis
 
@@ -54,4 +56,10 @@ def test_bericht_ohne_statistik_laeuft():
 def test_bericht_zeitlich_abweichend_tabelle():
     e = [eintrag(zeitlich_abweichend="ja"), eintrag()]
     md, _ = erzeuge(e, [adresse()], strassen=[], dubletten=[], ausgeschlossen=[], vorschlaege=[])
-    assert "Zeitlich abweichend" in md
+    assert "Zeitlich abweichend" in md and "| ja | 1 |" in md
+
+
+def test_bericht_teilstrecke_tabelle():
+    md, _ = erzeuge([eintrag(teilstrecke_abgetrennt="ja"), eintrag()], [adresse()], strassen=[],
+                    dubletten=[], ausgeschlossen=[], vorschlaege=[])
+    assert "Teilstrecke abgetrennt" in md

@@ -14,14 +14,18 @@ _PRAEFIX = r"(?:I{1,3}|IV|\d+)\.\s"
 _PRAEFIX_RE = re.compile(rf"^{_PRAEFIX}")
 
 # Ordinalzahl innerhalb des Straßennamens ("Platz des 21. März 5"): eine Zahl mit
-# Punkt und folgendem Leerzeichen gehört zum Namen, nicht zur Hausnummer. Der
-# Quantor ist possessiv (`*+`), damit die Gruppe nicht zurückgenommen wird und
-# "Platz des 21. März" ohne Nummer nicht doch als Hausnummer 21 gelesen wird.
-_ORDINAL_IM_NAMEN = r"(?:[^\d]*?\d+\.\s)*+"
+# Punkt gehört zum Namen, wenn ihr ein Wort folgt. Steht dahinter eine weitere
+# Zahl, ist es eine Hausnummernliste ("Hubertstr. 234. 234A") und die erste Zahl
+# bleibt die Hausnummer. Der Quantor ist possessiv (`*+`), damit die Gruppe nicht
+# zurückgenommen wird und "Platz des 21. März" ohne Nummer nicht doch als
+# Hausnummer 21 gelesen wird.
+_ORDINAL_IM_NAMEN = r"(?:[^\d]*?\d+\.\s(?=[^\W\d_]))*+"
 
 # Buchstabenzusatz mit Leerzeichen ("Weg 3 B"). Nur A-H, damit die römischen
-# Lage-Ziffern I, II, III, IV, V unberührt bleiben.
-_ZUSATZ_MIT_LEERZEICHEN = re.compile(r"^(?P<zus>[A-Ha-h])(?![a-zäöüß])(?P<rest>.*)$")
+# Lage-Ziffern I, II, III, IV, V unberührt bleiben. Ein folgender Punkt schließt
+# den Zusatz aus: "38 a. d. Hindenburgstraße" ist eine Lageangabe, "53 H." eine
+# Abkürzung, kein Hausnummernzusatz.
+_ZUSATZ_MIT_LEERZEICHEN = re.compile(r"^(?P<zus>[A-Ha-h])(?![a-zäöüß.])(?P<rest>.*)$")
 
 
 @dataclass(frozen=True)

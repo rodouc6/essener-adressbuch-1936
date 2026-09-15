@@ -26,7 +26,7 @@ def test_heutig_mehrdeutig_mit_vorort_aufgeloest(idx):
 
 
 def test_konkordanz_eindeutig(idx):
-    a = idx.aufloesen("hermann-göring-straße", "")
+    a = idx.aufloesen("horst-wessel-straße", "")
     assert (a.strasse_heute, a.herkunft, a.zeitlich_abweichend) == ("Bredeneyer Straße", "konkordanz", "nein")
 
 
@@ -139,12 +139,12 @@ def test_gerswidastrasse_stadium_im_fenster_schlaegt_heutiges_lemma(idx):
     assert (a.mehrdeutig, a.zeitlich_abweichend) == ("nein", "nein")
 
 
-def test_hermannstrasse_kernstadt_bleibt_mehrdeutig(idx):
-    """Teil I ohne Vorort = Kernstadt: Katernberg und Fischlaken fallen weg,
-    es bleiben aber mehrere Kernstadt-Hermannstraßen → homonym_1936."""
+def test_hermannstrasse_kernstadt_wird_eindeutig(idx):
+    """Teil I ohne Vorort = Kernstadt: Katernberg und Fischlaken fallen über den
+    Vorort-Filter weg, die Holsterhauser Hermannstraße (01569) endete schon 1902.
+    Es bleibt die Kernstadt-Hermannstraße, die 1937 zur Eltingstraße wurde."""
     a = idx.aufloesen("hermannstraße", "", "I")
-    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
-    assert set(a.kandidaten.split(";")) == {"00770", "01569"}
+    assert (a.strasse_heute, a.schl_nr, a.herkunft, a.mehrdeutig) == ("Eltingstraße", "00770", "konkordanz", "nein")
 
 
 def test_hermannstrasse_teil_ii_ohne_vorort_bleibt_mehrdeutig(idx):
@@ -179,7 +179,7 @@ def test_unbekannter_vorort_ist_keine_information(idx):
 
 def test_quellenprioritaet_konkordanz_vor_stadium(idx):
     """Derselbe Schlüssel aus Konkordanz und Stadium → Herkunft konkordanz."""
-    a = idx.aufloesen("hermann-göring-straße", "", "I")
+    a = idx.aufloesen("horst-wessel-straße", "", "I")
     assert (a.schl_nr, a.herkunft) == ("00003", "konkordanz")
 
 
@@ -196,3 +196,60 @@ def test_nicht_essen_1936_konstante():
 def test_vorort_stadtteile_alle_ist_vereinigung():
     assert VORORT_STADTTEILE_ALLE == frozenset().union(*VORORT_STADTTEILE.values())
     assert "Katernberg" in VORORT_STADTTEILE_ALLE and "Nordviertel" not in VORORT_STADTTEILE_ALLE
+
+
+# --- Fix-Runde 2: Fenster 1936, Teilstrecken, gueltig_bis ---------------------
+
+
+def test_fenster_1936_altenessener_strasse(idx):
+    """Nur Stadien, die irgendwann 1936 gelten, sind Homonyme: Tuttmannstraße und
+    Viehofer Straße hießen bis 1933 so, Krablerstraße bis 1915 — bleibt 00053."""
+    a = idx.aufloesen("altenessener straße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft) == ("Altenessener Straße", "00053", "heutig")
+    assert (a.mehrdeutig, a.zeitlich_abweichend) == ("nein", "nein")
+
+
+def test_fenster_1936_beide_haelften_des_jahres(idx):
+    """01157 hieß bis 1936-01-15 Vogelheimer Straße, 03230 ab 1936-01-15 — beide
+    gelten 1936, also echtes Homonym."""
+    a = idx.aufloesen("vogelheimer straße", "", "I")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
+    assert set(a.kandidaten.split(";")) == {"03230", "01157"}
+
+
+def test_homonym_ohne_teilstrecke_bleibt_mehrdeutig(idx):
+    """Zwei Straßen hießen 1936 Hermann-Göring-Straße, keine davon Teilstrecke."""
+    a = idx.aufloesen("hermann-göring-straße", "", "I")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
+    assert set(a.kandidaten.split(";")) == {"02656", "00433"}
+    assert a.teilstrecke_abgetrennt == "nein"
+
+
+def test_teilstrecke_schlaegt_nicht_als_homonym_durch(idx):
+    """Am Richtenberg und Berzeliusstraße sind 1961/63 abgetrennte Teilstrecken
+    der Frohnhauser Straße ("(tlw.)") — kein Homonym, 00930 wird aufgelöst."""
+    a = idx.aufloesen("frohnhauser straße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft, a.mehrdeutig) == ("Frohnhauser Straße", "00930", "heutig", "nein")
+    assert a.teilstrecke_abgetrennt == "ja"
+    assert {"00238", "00348"} <= set(a.kandidaten.split(";"))
+
+
+def test_ohne_teilstrecke_ist_das_feld_nein(idx):
+    assert idx.aufloesen("bochumer straße", "Steele", "II").teilstrecke_abgetrennt == "nein"
+
+
+def test_gueltig_bis_ueberspringt_rueckdatierte_stadien(idx):
+    """03215 (Viehofer Straße) hat nicht chronologische Stadiumsnummern
+    (Stadium 5 = 1945, Stadium 6 = 1915). Das Stadium "Altenessener Straße"
+    (1826) endet trotzdem 1933-04-20 und gilt damit nicht 1936."""
+    st = {s["stadium"]: s for s in idx.stadien_je_strasse["03215"]}
+    assert st["3"]["gueltig_bis"] == "1933-04-20"
+    assert st["5"]["gueltig_bis"] == "9999"
+    assert st["4"]["gueltig_bis"] == "1945-05-15"
+
+
+def test_halb_datiertes_stadium_gilt_als_datiert(idx):
+    """02266 trägt "Frohnhauser Straße" ohne Anfangsdatum, aber mit bekanntem Ende
+    (1911-04-21) — der Name galt 1936 nachweislich nicht."""
+    a = idx.aufloesen("frohnhauser straße", "", "I")
+    assert "02266" not in a.kandidaten and a.schl_nr != "02266"

@@ -14,9 +14,11 @@ adressen = lies_csv(B / "04_geokodiert.csv")
 eintraege = lies_csv(B / "eintraege.csv")
 statistik_pfad = B / "04_statistik.json"
 statistik = json.loads(statistik_pfad.read_text(encoding="utf-8")) if statistik_pfad.exists() else None
+zuordnung_pfad = W / "kuratierung" / "strassen_zuordnung.csv"
+zuordnung = lies_csv(zuordnung_pfad) if zuordnung_pfad.exists() else []
 md, geo = erzeuge(eintraege, adressen, lies_csv(B / "03_strassen.csv"), lies_csv(B / "dubletten.csv"),
                   lies_csv(B / "01_ausgeschlossen.csv"), lies_csv(B / "strassen_vorschlaege.csv"),
-                  zuordnung=lies_csv(W / "kuratierung" / "strassen_zuordnung.csv"), statistik=statistik)
+                  zuordnung=zuordnung, statistik=statistik)
 (B / "bericht.md").write_text(md, encoding="utf-8")
 (B / "kontrollpunkte.geojson").write_text(json.dumps(geo, ensure_ascii=False), encoding="utf-8")
 print(md[:2000])

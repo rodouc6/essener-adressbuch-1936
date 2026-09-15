@@ -113,7 +113,10 @@ def _orte(t: dict) -> set[str]:
 
 
 def _feinster_ort(t: dict) -> str:
-    """Feinste bekannte Ortsangabe (neighbourhood > suburb > quarter), normalisiert."""
+    """Feinste bekannte Ortsangabe, normalisiert.
+
+    Reihenfolge wie _ORTS_FELDER: neighbourhood > suburb > quarter > village > hamlet.
+    """
     adr = t.get("address", {})
     for feld in _ORTS_FELDER:
         wert = adr.get(feld, "")
