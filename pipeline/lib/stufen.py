@@ -33,20 +33,24 @@ def parse_zeilen(zeilen: list[dict]) -> list[dict]:
 
 
 AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend", "mehrdeutig", "kandidaten", "grund_mehrdeutig"]
-PAARFELDER = ["strasse_norm", "vorort", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
-VORSCHLAGSFELDER = ["strasse_norm", "vorort", "zeilen", "beispiel"] + [
+PAARFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
+VORSCHLAGSFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + [
     f"{k}_{i}" for i in (1, 2, 3) for k in ("kandidat", "lemma", "aehnlichkeit")]
+PAARSCHLUESSEL = ("strasse_norm", "Vorort", "teil")
 
 
 def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], list[dict], list[dict]]:
-    """Löst je Zeile die Straße auf, baut die Paartabelle (strasse_norm, vorort) und eine Vorschlagsliste.
+    """Löst je Zeile die Straße auf, baut die Paartabelle und eine Vorschlagsliste.
+
+    Ein Paar ist (strasse_norm, Vorort, teil): der Buchteil gehört dazu, weil ein leerer
+    Vorort in Teil I die Kernstadt bedeutet, in Teil II/III dagegen keine Information ist.
 
     Rückgabe: (Zeilen mit Auflösungsfeldern, Paartabelle nach Zeilenzahl absteigend,
     Vorschlagsliste für offene/mehrdeutige Paare nach Zeilenzahl absteigend).
     """
-    paare: dict[tuple[str, str], dict] = {}
+    paare: dict[tuple[str, str, str], dict] = {}
     for z in zeilen:
-        k = (z["strasse_norm"], z["Vorort"])
+        k = (z["strasse_norm"], z["Vorort"], z["teil"])
         if k not in paare:
             if k[0]:
                 auf = asdict(idx.aufloesen(*k))
@@ -55,18 +59,19 @@ def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], 
                 # mit den Enum-Neutralwerten "nein" statt leerem String.
                 auf = {f: "" for f in AUFLOESUNGSFELDER}
                 auf.update(herkunft="offen", mehrdeutig="nein", zeitlich_abweichend="nein")
-            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "zeilen": 0, "beispiel": z["Adresse"], **auf}
+            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "teil": k[2], "zeilen": 0,
+                        "beispiel": z["Adresse"], **auf}
         paare[k]["zeilen"] += 1
     out = []
     for z in zeilen:
-        p = paare[(z["strasse_norm"], z["Vorort"])]
+        p = paare[(z["strasse_norm"], z["Vorort"], z["teil"])]
         d = dict(z)
         d.update({f: p[f] for f in AUFLOESUNGSFELDER})
         out.append(d)
     vorschlaege = []
     for p in paare.values():
         if p["herkunft"] == "offen" or p["mehrdeutig"] == "ja":
-            v = {f: p[f] for f in ("strasse_norm", "vorort", "zeilen", "beispiel")}
+            v = {f: p[f] for f in ("strasse_norm", "vorort", "teil", "zeilen", "beispiel")}
             for i, (kand, lemma, sim) in enumerate(idx.vorschlaege(p["strasse_norm"]) if p["strasse_norm"] else [], start=1):
                 v[f"kandidat_{i}"], v[f"lemma_{i}"], v[f"aehnlichkeit_{i}"] = kand, lemma, str(sim)
             vorschlaege.append({f: v.get(f, "") for f in VORSCHLAGSFELDER})

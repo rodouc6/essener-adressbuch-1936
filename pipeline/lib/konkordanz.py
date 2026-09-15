@@ -1,4 +1,4 @@
-"""Straßenindex: löst normierte Straßennamen von 1936 auf heutige Straßen auf (Auflösungsleiter a–f)."""
+"""Straßenindex: löst normierte Straßennamen von 1936 als Kandidatenmengen auf heutige Straßen auf."""
 from __future__ import annotations
 
 import difflib
@@ -9,7 +9,13 @@ from pathlib import Path
 from pipeline.lib.io import lies_csv
 from pipeline.lib.normalisierung import norm_stadtteil, norm_strasse
 
+# Zeitfenster, in dem ein Namensstadium für das Adreßbuch 1936 gelten muss.
 FENSTER = ("1930-01-01", "1937-12-31")
+
+# Kettwig und Burgaltendorf gehörten 1936 nicht zu Essen (Eingemeindung 1975).
+# Kandidaten, deren Stadtteile vollständig hier liegen, können keine Adresse
+# des Adreßbuchs 1936 sein und entfallen ausnahmslos.
+NICHT_ESSEN_1936 = frozenset({"Kettwig", "Burgaltendorf"})
 
 # Vorort (Buch 1936, Stadtkreise vor 1929) → heutige Stadtteile (Dickhoff-Schreibweise).
 # Grundlage: Eingemeindungen 1929; Zuordnung ist ein Prüfkriterium, kein Beleg. Bei Widerspruch
@@ -29,10 +35,38 @@ VORORT_STADTTEILE: dict[str, frozenset[str]] = {
     "Werden": frozenset({"Werden"}),
 }
 
+# Alle Stadtteile, die 1936 zu einem der zwölf Vororte gehörten. Ein Eintrag aus
+# Teil I (Kernstadt) ohne Vorortangabe kann keiner dieser Stadtteile sein.
+VORORT_STADTTEILE_ALLE: frozenset[str] = frozenset().union(*VORORT_STADTTEILE.values())
+
+# Herkunftsquellen in absteigender Priorität: liefern mehrere Quellen denselben
+# Straßenschlüssel, gewinnt die vorderste.
+QUELLEN = ("heutig", "konkordanz", "stadium")
+
+# Zeitstatus eines Kandidaten:
+#   "fenster"    — ein datiertes Namensstadium deckt 1930–1937 ab
+#   "undatiert"  — kein datiertes Stadium mit diesem Namen (Gültigkeit unbekannt)
+#   "ausserhalb" — nur datierte Stadien außerhalb des Fensters (nur Rückfallkandidat)
+ZEIT_FENSTER, ZEIT_UNDATIERT, ZEIT_AUSSERHALB = "fenster", "undatiert", "ausserhalb"
+
+
+@dataclass(frozen=True)
+class Kandidat:
+    """Eine mögliche heutige Straße für einen Namen von 1936."""
+
+    schl_nr: str
+    quelle: str
+    zeitlich: str
+    konkordanz_eindeutig: str = ""
+
+    @property
+    def rang(self) -> int:
+        return QUELLEN.index(self.quelle)
+
 
 @dataclass(frozen=True)
 class Aufloesung:
-    """Ergebnis einer Straßenauflösung samt Herkunft auf der Auflösungsleiter."""
+    """Ergebnis einer Straßenauflösung samt Herkunft und Mehrdeutigkeitsgrund."""
 
     strasse_heute: str
     schl_nr: str
@@ -44,7 +78,7 @@ class Aufloesung:
     grund_mehrdeutig: str = ""
 
 
-OFFEN = Aufloesung("", "", "", "offen")
+OFFEN = Aufloesung(strasse_heute="", schl_nr="", stadtteil="", herkunft="offen")
 
 
 def _ohne_klammer(name: str) -> str:
@@ -52,11 +86,24 @@ def _ohne_klammer(name: str) -> str:
     return re.sub(r"\s*\(.*?\)\s*", " ", name).strip()
 
 
-class Strassenindex:
-    """Löst normierte Straßennamen aus dem Adressbuch 1936 auf heutige Straßen auf.
+def _schneidet_fenster(gueltig_ab: str, gueltig_bis: str) -> bool:
+    """Prüft, ob [gueltig_ab, gueltig_bis) das Fenster 1930–1937 schneidet.
 
-    Auflösungsleiter (Priorität absteigend): kuratierte Zuordnung, heutiger Name,
-    Konkordanz 1936, historisches Namensstadium, sonst offen.
+    Die Daten liegen in gemischter Präzision vor ("1900" neben "1933-07-13");
+    der Vergleich als Zeichenkette ist dafür ausreichend, weil kürzere Angaben
+    lexikographisch an der Jahresgrenze einsortieren.
+    """
+    return gueltig_ab[:10] <= FENSTER[1] and gueltig_bis[:10] >= FENSTER[0]
+
+
+class Strassenindex:
+    """Löst normierte Straßennamen aus dem Adreßbuch 1936 auf heutige Straßen auf.
+
+    Modell (Spec §5.03): die kuratierte Zuordnung schlägt alles; sonst werden alle
+    Kandidaten aus heutigem Lemma, Konkordanz 1936 und Namensstadien gesammelt,
+    um Nicht-Essener Orte und um Vorort-Widersprüche gekürzt und nur dann
+    aufgelöst, wenn genau ein Straßenschlüssel übrig bleibt. Unter mehreren
+    passenden Kandidaten wird nie gewählt.
     """
 
     def __init__(self, strassen_dir: Path, zuordnung_pfad: Path):
@@ -72,131 +119,144 @@ class Strassenindex:
         namen = lies_csv(strassen_dir / "namen.csv")
         namen.sort(key=lambda z: (z["schl_nr"], int(z["stadium"])))
         self.stadien: dict[str, list[dict]] = {}
+        self.stadien_je_strasse: dict[str, list[dict]] = {}
         for i, z in enumerate(namen):
             folge = namen[i + 1] if i + 1 < len(namen) and namen[i + 1]["schl_nr"] == z["schl_nr"] else None
-            eintrag = dict(z, gueltig_bis=folge["gueltig_ab"] if folge else "9999")
-            self.stadien.setdefault(norm_strasse(_ohne_klammer(z["name"])), []).append(eintrag)
+            # Das letzte Stadium einer Straße ist offen; "9999" ist die obere Schranke.
+            eintrag = dict(z, gueltig_bis=folge["gueltig_ab"] if folge else "9999",
+                           name_norm=norm_strasse(_ohne_klammer(z["name"])))
+            self.stadien.setdefault(eintrag["name_norm"], []).append(eintrag)
+            self.stadien_je_strasse.setdefault(z["schl_nr"], []).append(eintrag)
         self.zuordnung: dict[tuple[str, str], dict] = {}
         if zuordnung_pfad.exists():
             for z in lies_csv(zuordnung_pfad):
                 self.zuordnung[(norm_strasse(z["strasse_roh_norm"]), z["vorort"])] = z
         self._pool = sorted(set(self.stadien) | set(self.heutig))
 
-    # --- Hilfen ---------------------------------------------------------------
-    def _passt(self, schl_nr: str, vorort: str) -> bool:
-        """Prüft, ob der Vorort mit den heutigen Stadtteilen des Kandidaten vereinbar ist.
-
-        Ein Kandidat, dessen Stadtteilliste ausschließlich aus Kettwig besteht, passt nie
-        (auch nicht bei leerem Vorort): Kettwig gehörte 1936 nicht zu Essen.
-        """
+    # --- Kandidaten -----------------------------------------------------------
+    def _nicht_essen_1936(self, schl_nr: str) -> bool:
+        """Liegt die Straße vollständig in einem 1936 nicht Essener Ort?"""
         stadtteile = self.stadtteile.get(schl_nr, [])
-        if stadtteile and set(stadtteile) == {"Kettwig"}:
-            return False
-        if not vorort:
-            return True
-        erlaubt = VORORT_STADTTEILE.get(vorort, frozenset())
-        return any(t in erlaubt for t in stadtteile)
+        return bool(stadtteile) and set(stadtteile) <= NICHT_ESSEN_1936
 
-    def _fertig(self, schl_nr: str, herkunft: str, zeitlich: str = "nein") -> Aufloesung:
-        """Baut eine eindeutig aufgelöste Auflösung für einen bekannten Straßenschlüssel."""
-        s = self.strassen[schl_nr]
-        return Aufloesung(s["lemma"], schl_nr, "; ".join(self.stadtteile[schl_nr]), herkunft, zeitlich, "nein")
+    def _zeitstatus(self, schl_nr: str, name_norm: str) -> str:
+        """Bestimmt, ob der Name für diese Straße 1936 galt (siehe ZEIT_*-Konstanten)."""
+        stufen = [s for s in self.stadien_je_strasse.get(schl_nr, []) if s["name_norm"] == name_norm]
+        datiert = [s for s in stufen if s["gueltig_ab"].strip()]
+        if not datiert:
+            # Keine datierte Gültigkeit bekannt: Kandidat bleibt gültig, aber gekennzeichnet.
+            return ZEIT_UNDATIERT
+        if any(_schneidet_fenster(s["gueltig_ab"], s["gueltig_bis"]) for s in datiert):
+            return ZEIT_FENSTER
+        return ZEIT_AUSSERHALB
 
-    def _entscheide(self, kandidaten: list[str], vorort: str, herkunft: str,
-                     zeitlich: str = "nein") -> tuple[Aufloesung | None, list[str]]:
-        """Prüft eine Stufe der Leiter.
+    def _sammle(self, strasse_norm: str) -> list[Kandidat]:
+        """Sammelt alle Kandidaten zu einem Namen von 1936 (ohne Nicht-Essener Orte)."""
+        roh: list[Kandidat] = []
+        for schl_nr in self.heutig.get(strasse_norm, []):
+            roh.append(Kandidat(schl_nr, "heutig", self._zeitstatus(schl_nr, strasse_norm)))
+        for z in self.konk.get(strasse_norm, []):
+            # konkordanz_1936.csv ist bereits auf den Stichtag 1936-06-30 abgeleitet.
+            roh.append(Kandidat(z["schl_nr"], "konkordanz", ZEIT_FENSTER, z["eindeutig"]))
+        for s in self.stadien.get(strasse_norm, []):
+            roh.append(Kandidat(s["schl_nr"], "stadium", self._zeitstatus(s["schl_nr"], strasse_norm)))
+        return [k for k in roh if not self._nicht_essen_1936(k.schl_nr)]
 
-        Liefert (Ergebnis, []), wenn die Stufe entscheidet (genau ein passender Kandidat →
-        eindeutig aufgelöst; mehrere passende Kandidaten → mehrdeutig mit Grund
-        "mehrere_kandidaten", jeweils fertig). Liefert (None, kandidaten), wenn kein Kandidat
-        zum Vorort passt (Widerspruch) — die Leiter steigt dann zur nächsten Stufe weiter, die
-        gemerkten Kandidaten tragen zu deren möglichem Mehrdeutigkeits-Ergebnis bei.
+    def _beste_je_schluessel(self, kandidaten: list[Kandidat]) -> dict[str, Kandidat]:
+        """Fasst Kandidaten je Straßenschlüssel zusammen; die höchste Quelle gewinnt."""
+        beste: dict[str, Kandidat] = {}
+        for k in sorted(kandidaten, key=lambda k: k.rang):
+            beste.setdefault(k.schl_nr, k)
+        return beste
+
+    # --- Filter ---------------------------------------------------------------
+    def _passt(self, schl_nr: str, vorort: str, teil: str) -> bool:
+        """Prüft, ob Vorort bzw. Teil mit den heutigen Stadtteilen des Kandidaten vereinbar sind.
+
+        Ein 1936 nicht Essener Kandidat passt nie. Ein bekannter Vorort verlangt einen
+        Stadtteil aus seiner Menge. Teil I ohne Vorort ist Kernstadt und verlangt einen
+        Stadtteil außerhalb aller Vorort-Mengen. Teil II/III ohne Vorort und ein
+        unbekannter Vorort sind keine Information und filtern nicht — ein fehlender
+        Eintrag ist nie ein Widerspruch. Eine Straße ohne Stadtteilangabe passt immer.
         """
-        kandidaten = list(dict.fromkeys(kandidaten))
-        passend = [s for s in kandidaten if self._passt(s, vorort)]
-        if len(passend) == 1:
-            return self._fertig(passend[0], herkunft, zeitlich), []
-        if len(passend) > 1:
-            return Aufloesung("", "", "", herkunft, zeitlich, "ja", ";".join(passend), "mehrere_kandidaten"), []
-        return None, kandidaten
+        if self._nicht_essen_1936(schl_nr):
+            return False
+        stadtteile = self.stadtteile.get(schl_nr, [])
+        if not stadtteile:
+            return True
+        if vorort in VORORT_STADTTEILE:
+            return any(t in VORORT_STADTTEILE[vorort] for t in stadtteile)
+        if not vorort and teil == "I":
+            return any(t not in VORORT_STADTTEILE_ALLE for t in stadtteile)
+        return True
 
-    # --- Leiter ---------------------------------------------------------------
-    def aufloesen(self, strasse_norm: str, vorort: str) -> Aufloesung:
-        """Löst einen normierten Straßennamen von 1936 samt Vorort auf die heutige Straße auf.
+    # --- Ergebnisbau ----------------------------------------------------------
+    def _fertig(self, kandidat: Kandidat) -> Aufloesung:
+        """Baut die eindeutige Auflösung zu einem Kandidaten."""
+        s = self.strassen[kandidat.schl_nr]
+        return Aufloesung(
+            strasse_heute=s["lemma"],
+            schl_nr=kandidat.schl_nr,
+            stadtteil="; ".join(self.stadtteile[kandidat.schl_nr]),
+            herkunft=kandidat.quelle,
+            zeitlich_abweichend="nein" if kandidat.zeitlich == ZEIT_FENSTER else "ja",
+            mehrdeutig="nein",
+        )
+
+    def _mehrdeutig(self, kandidaten: dict[str, Kandidat], grund: str) -> Aufloesung:
+        """Baut ein mehrdeutiges Ergebnis mit allen beteiligten Straßenschlüsseln."""
+        beste = min(kandidaten.values(), key=lambda k: k.rang)
+        return Aufloesung(
+            strasse_heute="",
+            schl_nr="",
+            stadtteil="",
+            herkunft=beste.quelle,
+            zeitlich_abweichend="nein",
+            mehrdeutig="ja",
+            kandidaten=";".join(kandidaten),
+            grund_mehrdeutig=grund,
+        )
+
+    # --- Auflösung ------------------------------------------------------------
+    def aufloesen(self, strasse_norm: str, vorort: str, teil: str = "") -> Aufloesung:
+        """Löst einen normierten Straßennamen von 1936 auf die heutige Straße auf.
 
         strasse_norm wird zusätzlich durch norm_strasse geschickt (die Funktion ist
         idempotent), da die kuratierte Tabelle mit norm_strasse(...)-Schlüsseln geführt wird.
+        `teil` ist der Buchteil I/II/III; er unterscheidet die Kernstadt (I) von den
+        Vorortbänden (II/III), in denen ein leerer Vorort keine Information ist.
         """
         strasse_norm = norm_strasse(strasse_norm)
-        # e) Kuratierung schlägt alles, weil vom Menschen belegt
+
+        # 1. Kuratierung schlägt alles, weil vom Menschen belegt.
         z = self.zuordnung.get((strasse_norm, vorort)) or self.zuordnung.get((strasse_norm, ""))
         if z:
-            return Aufloesung(z["strasse_heute"], z["schl_nr"], "; ".join(self.stadtteile.get(z["schl_nr"], [])), "kuratiert")
+            return Aufloesung(strasse_heute=z["strasse_heute"], schl_nr=z["schl_nr"],
+                              stadtteil="; ".join(self.stadtteile.get(z["schl_nr"], [])),
+                              herkunft="kuratiert")
 
-        # a, b/c, d werden nacheinander geprüft; bei einem echten Vorort-Widerspruch (ein
-        # gegebener Vorort passt zu keinem Kandidaten der Stufe) steigt die Leiter weiter,
-        # statt abzubrechen. Kandidaten ohne passenden Treffer werden für den Fallback am Ende
-        # gemerkt (Herkunft der ersten Stufe mit Kandidaten, Kandidaten aller betroffenen
-        # Stufen ohne Dubletten).
-        #
-        # Ohne Vorort kann "kein passend" nur an der Kettwig-Regel liegen (bei leerem Vorort
-        # passt sonst jeder Kandidat trivial) — es gibt dann kein Vorort-Signal, das eine
-        # weitere Stufe rechtfertigen würde. Die Auflösung bleibt in diesem Fall offen, statt
-        # über andere Stufen zu raten.
-        gemerkt: list[str] = []
-        gemerkt_herkunft = ""
+        # 2. Kandidaten sammeln.
+        kandidaten = self._sammle(strasse_norm)
+        if not kandidaten:
+            return OFFEN
 
-        def _stufe(kandidaten: list[str], herkunft: str, zeitlich: str = "nein") -> Aufloesung | None:
-            nonlocal gemerkt_herkunft
-            ergebnis, offen = self._entscheide(kandidaten, vorort, herkunft, zeitlich)
-            if ergebnis is not None:
-                return ergebnis
-            if not vorort:
-                return OFFEN
-            if not gemerkt_herkunft:
-                gemerkt_herkunft = herkunft
-            for k in offen:
-                if k not in gemerkt:
-                    gemerkt.append(k)
-            return None
+        # 3. Zeitlich belegte Kandidaten zuerst; nur wenn keiner übrig bleibt,
+        #    kommen die außerhalb des Fensters datierten als Rückfall zum Zug.
+        im_fenster = [k for k in kandidaten if k.zeitlich != ZEIT_AUSSERHALB]
+        aktiv = im_fenster or kandidaten
 
-        # a) heutiger Name
-        if strasse_norm in self.heutig:
-            ergebnis = _stufe(self.heutig[strasse_norm], "heutig")
-            if ergebnis is not None:
-                return ergebnis
+        # 4. Vorort-Filter.
+        passend = [k for k in aktiv if self._passt(k.schl_nr, vorort, teil)]
+        if not passend:
+            return self._mehrdeutig(self._beste_je_schluessel(aktiv), "vorort_widerspruch")
 
-        # b/c) Konkordanz 1936
-        if strasse_norm in self.konk:
-            zeilen = self.konk[strasse_norm]
-            eindeutig = [z for z in zeilen if z["eindeutig"] == "ja"]
-            if eindeutig:
-                ergebnis = _stufe([z["schl_nr"] for z in eindeutig], "konkordanz")
-                if ergebnis is not None:
-                    return ergebnis
-            elif vorort:
-                ergebnis = _stufe([z["schl_nr"] for z in zeilen], "konkordanz")
-                if ergebnis is not None:
-                    return ergebnis
-            else:
-                # Konkordanz selbst mehrdeutig und kein Vorort zur Klärung: fertig, keine weitere Stufe.
-                return Aufloesung("", "", "", "konkordanz", "nein", "ja",
-                                   ";".join(z["schl_nr"] for z in zeilen), "konkordanz_nicht_eindeutig")
-
-        # d) anderes Namensstadium
-        if strasse_norm in self.stadien:
-            st = self.stadien[strasse_norm]
-            im_fenster = [z for z in st if z["gueltig_ab"][:10] <= FENSTER[1] and z["gueltig_bis"][:10] >= FENSTER[0]]
-            if im_fenster:
-                ergebnis = _stufe([z["schl_nr"] for z in im_fenster], "stadium", "nein")
-            else:
-                ergebnis = _stufe([z["schl_nr"] for z in st], "stadium", "ja")
-            if ergebnis is not None:
-                return ergebnis
-
-        if gemerkt:
-            return Aufloesung("", "", "", gemerkt_herkunft, "nein", "ja", ";".join(gemerkt), "vorort_widerspruch")
-        return OFFEN
+        # 5. Entscheidung: nur ein einziger Straßenschlüssel wird aufgelöst.
+        beste = self._beste_je_schluessel(passend)
+        if len(beste) == 1:
+            return self._fertig(next(iter(beste.values())))
+        nur_unklare_konkordanz = all(k.quelle == "konkordanz" and k.konkordanz_eindeutig == "nein"
+                                     for k in beste.values())
+        return self._mehrdeutig(beste, "konkordanz_nicht_eindeutig" if nur_unklare_konkordanz else "homonym_1936")
 
     def vorschlaege(self, strasse_norm: str, n: int = 3) -> list[tuple[str, str, float]]:
         """Schlägt ähnliche Straßennamen vor (Name im Datensatz, heutiges Lemma, Ähnlichkeit)."""

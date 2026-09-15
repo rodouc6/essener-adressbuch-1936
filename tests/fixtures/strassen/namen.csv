@@ -6,3 +6,43 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 00010,2,1938-10-21,tag,Goosestraße,falsch
 00001,1,1880,jahr,Carlstraße,richtig
 00001,2,1910-01-01,tag,Karlstraße,falsch
+00002,1,1880,jahr,Hauptstraße,wahr
+00004,1,1900,jahr,Achternbergstraße,wahr
+00005,1,1900,jahr,Am Bilstein,wahr
+00006,1,1900,jahr,Am Richtenberg,wahr
+00007,1,1900,jahr,Bochumer Straße,wahr
+00008,1,1890-05-01,tag,Schulstraße,wahr
+00009,1,1890-05-01,tag,Schulstraße,wahr
+00011,1,1900,jahr,Kupferdreher Straße,wahr
+00012,1,1900,jahr,Ruhrtalstraße,wahr
+00013,1,1900,jahr,Am Kruppwald,wahr
+00037,1,1922-06-02,tag,Hermannstraße,falsch
+00037,2,1937-11-20,tag,Alinenhöhe,falsch
+00506,1,1912,vor,Hermannstraße,falsch
+00506,2,1912,vor,Lindenstraße,falsch
+00506,3,1937-02-25,tag,Butenbergs Kamp,falsch
+00770,1,1887-06-10,tag,Hermannstraße,falsch
+00770,2,1937-11-20,tag,Eltingstraße,falsch
+01022,1,1826,vor,II. Weberstraße,falsch
+01022,2,1966-06-13,tag,Gerswidastraße,falsch
+01119,1,1897-09-06,tag,Gertrudenstraße,falsch
+01119,2,1906-01-26,tag,Gerswidastraße,falsch
+01119,3,1965-06-03,tag,Girardetstaße,falsch
+01250,1,1889-07-05,tag,Taubenstraße,falsch
+01250,2,1889-11-29,tag,Heinickestraße,falsch
+01259,1,1905,vor,Hermannstraße,falsch
+01259,2,1906-01-26,tag,Hektorstraße,falsch
+01282,1,1892-03-29,tag,Hermannstraße,falsch
+01307,1,1891-04-30,tag,Hermannstraße,falsch
+01307,2,1915-07-09,tag,Himmelpforten,falsch
+01569,1,,unbekannt,Hermannstraße,wahr
+01569,2,1902-05-16,tag,Jheringstraße,falsch
+02287,1,1889-07-05,tag,Taubenstraße,falsch
+02287,2,1925-09-19,tag,Taubenstraße (Verl.),falsch
+02287,3,1971-03-17,tag,Natorpstraße,falsch
+03046,1,1966-12-12,tag,Taubenstraße,falsch
+03517,1,,unbekannt,Hermannstraße,wahr
+03517,2,,unbekannt,Parkweg,wahr
+03517,3,1929-07-12,tag,Zum Oberhof,falsch
+03677,1,1897-11-04,tag,Hermannstraße,falsch
+03677,2,1977-11-29,tag,Strängerstraße,falsch

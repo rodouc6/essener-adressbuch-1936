@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from pipeline.lib.konkordanz import VORORT_STADTTEILE, Strassenindex
+from pipeline.lib.konkordanz import NICHT_ESSEN_1936, VORORT_STADTTEILE, VORORT_STADTTEILE_ALLE, Strassenindex
 
 FIX = Path(__file__).parent / "fixtures"
 
@@ -80,9 +80,17 @@ def test_vorort_widerspruch_faellt_zur_konkordanz_durch(idx):
 
 
 def test_kettwig_allein_ist_nie_treffer(idx):
-    # Kettwig gehörte 1936 nicht zu Essen: ohne Vorort darf die Kettwiger Hauptstraße nicht als heutig gelten
+    # Kettwig gehörte 1936 nicht zu Essen: die Kettwiger Hauptstraße (00002) darf auch
+    # ohne Vorort nie Kandidat sein. Im Kandidatenmengen-Modell bleibt dann der einzige
+    # verbleibende Kandidat aus der Konkordanz übrig (00011), statt die Auflösung abzubrechen.
     a = idx.aufloesen("hauptstraße", "")
-    assert a.herkunft == "offen"
+    assert a.schl_nr != "00002" and "00002" not in a.kandidaten
+
+
+def test_nur_in_kettwig_gelegene_strasse_bleibt_offen(idx):
+    # Am Bilstein liegt ausschließlich in Kettwig → kein Kandidat → offen
+    a = idx.aufloesen("am bilstein", "")
+    assert (a.herkunft, a.strasse_heute, a.kandidaten) == ("offen", "", "")
 
 
 def test_kettwig_mit_weiterem_stadtteil_bleibt_zulaessig(idx):
@@ -96,10 +104,95 @@ def test_vorort_widerspruch_ohne_alternative_bleibt_mehrdeutig_mit_grund(idx):
 
 
 def test_mehrere_passende_kandidaten_haben_grund(idx):
+    # Kandidatenmengen-Modell: mehrere passende Kandidaten heißen jetzt homonym_1936 (Spec §5.03)
     a = idx.aufloesen("schulstraße", "")
-    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "mehrere_kandidaten"
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "homonym_1936"
 
 
 def test_konkordanz_nicht_eindeutig_hat_grund(idx):
     a = idx.aufloesen("hochstraße", "")
     assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "konkordanz_nicht_eindeutig"
+
+
+# --- Kandidatenmengen-Modell (Gesamt-Review 2026-09-15, Spec §5.03) ----------
+
+
+def test_taubenstrasse_heutiger_name_erst_1966(idx):
+    """Heutige Taubenstraße liegt in Burgaltendorf und heißt erst seit 1966 so;
+    1936 war die Taubenstraße im Ostviertel (heute Natorpstraße)."""
+    a = idx.aufloesen("taubenstraße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft) == ("Natorpstraße", "02287", "konkordanz")
+    assert (a.mehrdeutig, a.zeitlich_abweichend) == ("nein", "nein")
+
+
+def test_burgaltendorf_ist_nie_kandidat(idx):
+    """Burgaltendorf gehörte 1936 nicht zu Essen — 03046 darf nicht auftauchen."""
+    a = idx.aufloesen("taubenstraße", "", "I")
+    assert "03046" not in a.kandidaten and a.schl_nr != "03046"
+
+
+def test_gerswidastrasse_stadium_im_fenster_schlaegt_heutiges_lemma(idx):
+    """Die heutige Gerswidastraße im Stadtkern trägt den Namen erst seit 1966;
+    1936 hieß die heutige Girardetstraße in Rüttenscheid so."""
+    a = idx.aufloesen("gerswidastraße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft) == ("Girardetstraße", "01119", "stadium")
+    assert (a.mehrdeutig, a.zeitlich_abweichend) == ("nein", "nein")
+
+
+def test_hermannstrasse_kernstadt_bleibt_mehrdeutig(idx):
+    """Teil I ohne Vorort = Kernstadt: Katernberg und Fischlaken fallen weg,
+    es bleiben aber mehrere Kernstadt-Hermannstraßen → homonym_1936."""
+    a = idx.aufloesen("hermannstraße", "", "I")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
+    assert set(a.kandidaten.split(";")) == {"00770", "01569"}
+
+
+def test_hermannstrasse_teil_ii_ohne_vorort_bleibt_mehrdeutig(idx):
+    """Teil II ohne Vorort = keine Information: kein Filter, also mehrdeutig."""
+    a = idx.aufloesen("hermannstraße", "", "II")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
+    assert "01282" in a.kandidaten
+
+
+def test_hermannstrasse_mit_vorort_wird_eindeutig(idx):
+    a = idx.aufloesen("hermannstraße", "Heidhausen", "II")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft, a.mehrdeutig) == ("Alinenhöhe", "00037", "konkordanz", "nein")
+
+
+def test_kernstadt_schliesst_reine_vorort_kandidaten_aus(idx):
+    """Schulstraße gibt es nur in Steele und Kray — in Teil I passt keiner."""
+    a = idx.aufloesen("schulstraße", "", "I")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "vorort_widerspruch")
+    assert set(a.kandidaten.split(";")) == {"00008", "00009"}
+
+
+def test_teil_ii_ohne_vorort_filtert_nicht(idx):
+    a = idx.aufloesen("schulstraße", "", "II")
+    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
+
+
+def test_unbekannter_vorort_ist_keine_information(idx):
+    """"Frillenburg" steht nicht in der Tabelle → kein Filter, kein Widerspruch."""
+    a = idx.aufloesen("bochumer straße", "Frillenburg", "II")
+    assert (a.schl_nr, a.mehrdeutig) == ("00007", "nein")
+
+
+def test_quellenprioritaet_konkordanz_vor_stadium(idx):
+    """Derselbe Schlüssel aus Konkordanz und Stadium → Herkunft konkordanz."""
+    a = idx.aufloesen("hermann-göring-straße", "", "I")
+    assert (a.schl_nr, a.herkunft) == ("00003", "konkordanz")
+
+
+def test_kuratiert_greift_auch_ohne_vorort_in_der_tabelle(idx):
+    """Zuordnungszeile mit leerem Vorort gilt für jeden Vorort (Fallback (strasse, ""))."""
+    a = idx.aufloesen("am lichtbogen", "Kray", "II")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft) == ("Bochumer Straße", "00007", "kuratiert")
+
+
+def test_nicht_essen_1936_konstante():
+    assert NICHT_ESSEN_1936 == frozenset({"Kettwig", "Burgaltendorf"})
+
+
+def test_vorort_stadtteile_alle_ist_vereinigung():
+    assert VORORT_STADTTEILE_ALLE == frozenset().union(*VORORT_STADTTEILE.values())
+    assert "Katernberg" in VORORT_STADTTEILE_ALLE and "Nordviertel" not in VORORT_STADTTEILE_ALLE
