@@ -20,7 +20,8 @@ FENSTER = ("1930-01-01", "1937-12-31")
 # Dickhoff kennzeichnet später abgetrennte Teilstrecken derselben Straße mit "(tlw.)"
 # (z. B. "Frohnhauser Straße (tlw.)" → Am Richtenberg 1963). Solche Kandidaten sind
 # keine Homonyme, sondern Stücke derselben Straße von 1936.
-_TEILSTRECKE = re.compile(r"\(tlw\.?\)")
+# Der Zusatz steht auch kombiniert („(tlw. Umb.)“, „(Umb. tlw.)“); entscheidend ist „tlw“ in der Klammer.
+_TEILSTRECKE = re.compile(r"\([^)]*\btlw\.?[^)]*\)")
 
 # Kettwig und Burgaltendorf gehörten 1936 nicht zu Essen (Eingemeindung 1975).
 # Kandidaten, deren Stadtteile vollständig hier liegen, können keine Adresse
@@ -92,6 +93,10 @@ class Aufloesung:
     kandidaten: str = ""
     grund_mehrdeutig: str = ""
     teilstrecke_abgetrennt: str = "nein"
+    # "ja": Teil II/III ohne Vorort, Kernstadt nur angenommen (95 % belegt, Spec §5.03 Runde 3).
+    vorort_angenommen: str = "nein"
+    # "ja": kuratierter Hausnummernbereich, dessen Nummern heute nicht mehr gelten → nur Straßenebene.
+    nummer_unsicher: str = "nein"
 
 
 OFFEN = Aufloesung(strasse_heute="", schl_nr="", stadtteil="", herkunft="offen")
@@ -165,10 +170,11 @@ class Strassenindex:
                                teilstrecke=bool(_TEILSTRECKE.search(z["name"])))
                 self.stadien.setdefault(eintrag["name_norm"], []).append(eintrag)
                 self.stadien_je_strasse.setdefault(schl_nr, []).append(eintrag)
-        self.zuordnung: dict[tuple[str, str], dict] = {}
+        # Kuratierte Zuordnung: je (Name, Vorort) eine oder — bei Hausnummernbereichen — mehrere Zeilen.
+        self.zuordnung: dict[tuple[str, str], list[dict]] = {}
         if zuordnung_pfad.exists():
             for z in lies_csv(zuordnung_pfad):
-                self.zuordnung[(norm_strasse(z["strasse_roh_norm"]), z["vorort"])] = z
+                self.zuordnung.setdefault((norm_strasse(z["strasse_roh_norm"]), z["vorort"]), []).append(z)
         self._pool = sorted(set(self.stadien) | set(self.heutig))
 
     # --- Kandidaten -----------------------------------------------------------
@@ -252,11 +258,53 @@ class Strassenindex:
         if vorort in VORORT_STADTTEILE:
             return any(t in VORORT_STADTTEILE[vorort] for t in stadtteile)
         if not vorort and teil == "I":
-            return any(t not in VORORT_STADTTEILE_ALLE for t in stadtteile)
+            return self._kernstadt(stadtteile)
         return True
 
+    @staticmethod
+    def _kernstadt(stadtteile: list[str]) -> bool:
+        """Liegt die Straße (auch) in der Kernstadt von 1936? Vorort- und Nicht-Essener Orte zählen nicht."""
+        return any(t not in VORORT_STADTTEILE_ALLE and t not in NICHT_ESSEN_1936 for t in stadtteile)
+
+    # --- Kuratierung ----------------------------------------------------------
+    @staticmethod
+    def _im_bereich(z: dict, hausnr: str) -> bool:
+        """Passt die Hausnummer in den Bereich der Zuordnungszeile? Ohne Bereich passt alles."""
+        von, bis = z.get("hausnr_von", "").strip(), z.get("hausnr_bis", "").strip()
+        if not von and not bis:
+            return True
+        if not hausnr.strip().isdigit():
+            return False
+        n = int(hausnr)
+        return (not von or n >= int(von)) and (not bis or n <= int(bis))
+
+    def _kuratiert(self, strasse_norm: str, vorort: str, hausnr: str) -> dict | None:
+        """Die kuratierte Zeile zu Name, Vorort und Hausnummer.
+
+        Reihenfolge: Zeile mit genau diesem Vorort; bei leerem Vorort zusätzlich die Zeile
+        mit vorort="Kernstadt" (gilt nur für Einträge ohne Vorort, kein Platzhalter);
+        zuletzt die Zeile mit leerem Vorort (Platzhalter für alle Vororte, z. B. Schreibfehler).
+        """
+        schluessel = [(strasse_norm, vorort)]
+        if not vorort:
+            schluessel.append((strasse_norm, "Kernstadt"))
+        schluessel.append((strasse_norm, ""))
+        for schl in schluessel:
+            for z in self.zuordnung.get(schl, []):
+                if self._im_bereich(z, hausnr):
+                    return z
+        return None
+
+    def bereich(self, strasse_norm: str, vorort: str, hausnr: str) -> str:
+        """Kennung des greifenden Hausnummernbereichs („1-323“, „324-“) oder leer."""
+        z = self._kuratiert(norm_strasse(strasse_norm), vorort, hausnr)
+        if not z or not (z.get("hausnr_von", "").strip() or z.get("hausnr_bis", "").strip()):
+            return ""
+        return f"{z.get('hausnr_von', '').strip()}-{z.get('hausnr_bis', '').strip()}"
+
     # --- Ergebnisbau ----------------------------------------------------------
-    def _fertig(self, kandidat: Kandidat, abgetrennt: str = "nein", kandidaten: str = "") -> Aufloesung:
+    def _fertig(self, kandidat: Kandidat, abgetrennt: str = "nein", kandidaten: str = "",
+                vorort_angenommen: str = "nein") -> Aufloesung:
         """Baut die eindeutige Auflösung zu einem Kandidaten.
 
         Wurden Teilstrecken-Kandidaten beiseitegelegt, stehen sie weiter in
@@ -272,6 +320,7 @@ class Strassenindex:
             mehrdeutig="nein",
             kandidaten=kandidaten,
             teilstrecke_abgetrennt=abgetrennt,
+            vorort_angenommen=vorort_angenommen,
         )
 
     def _mehrdeutig(self, entscheidend: dict[str, Kandidat], grund: str,
@@ -292,22 +341,25 @@ class Strassenindex:
         )
 
     # --- Auflösung ------------------------------------------------------------
-    def aufloesen(self, strasse_norm: str, vorort: str, teil: str = "") -> Aufloesung:
+    def aufloesen(self, strasse_norm: str, vorort: str, teil: str = "", hausnr: str = "") -> Aufloesung:
         """Löst einen normierten Straßennamen von 1936 auf die heutige Straße auf.
 
         strasse_norm wird zusätzlich durch norm_strasse geschickt (die Funktion ist
         idempotent), da die kuratierte Tabelle mit norm_strasse(...)-Schlüsseln geführt wird.
         `teil` ist der Buchteil I/II/III; er unterscheidet die Kernstadt (I) von den
         Vorortbänden (II/III), in denen ein leerer Vorort keine Information ist.
+        `hausnr` greift nur für kuratierte Hausnummernbereiche (Straßen, die nach 1936
+        geteilt oder zusammengelegt wurden); ohne passende Nummer gilt die Automatik.
         """
         strasse_norm = norm_strasse(strasse_norm)
 
         # 1. Kuratierung schlägt alles, weil vom Menschen belegt.
-        z = self.zuordnung.get((strasse_norm, vorort)) or self.zuordnung.get((strasse_norm, ""))
+        z = self._kuratiert(strasse_norm, vorort, hausnr)
         if z:
             return Aufloesung(strasse_heute=z["strasse_heute"], schl_nr=z["schl_nr"],
                               stadtteil="; ".join(self.stadtteile.get(z["schl_nr"], [])),
-                              herkunft="kuratiert")
+                              herkunft="kuratiert",
+                              nummer_unsicher="ja" if z.get("nummer_unsicher", "").strip() == "ja" else "nein")
 
         # 2. Kandidaten sammeln.
         kandidaten = self._sammle(strasse_norm)
@@ -336,6 +388,14 @@ class Strassenindex:
         if len(entscheidend) == 1:
             return self._fertig(next(iter(entscheidend.values())), abgetrennt,
                                 ";".join(beste) if abgetrennt == "ja" else "")
+        # 7. Teil II/III ohne Vorort: ein leerer Vorort bedeutet dort zu 95 % Kernstadt
+        #    (Kreuztabelle 2026-09-15). Als Vorfilter zu riskant, als Entscheider unter sonst
+        #    gleichwertigen Kandidaten vertretbar — mit Flag, damit es sichtbar bleibt.
+        if not vorort and teil in ("II", "III"):
+            kern = {s: k for s, k in entscheidend.items() if self._kernstadt(self.stadtteile.get(s, []))}
+            if len(kern) == 1:
+                return self._fertig(next(iter(kern.values())), abgetrennt, ";".join(beste),
+                                    vorort_angenommen="ja")
         nur_unklare_konkordanz = all(k.quelle == "konkordanz" and k.konkordanz_eindeutig == "nein"
                                      for k in entscheidend.values())
         return self._mehrdeutig(entscheidend,

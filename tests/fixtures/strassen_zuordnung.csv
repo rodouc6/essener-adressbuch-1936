@@ -1,3 +1,6 @@
-strasse_roh_norm,vorort,strasse_heute,schl_nr,beleg,bearbeiter,datum
-hstr.,Kray,Schulstraße,00009,Test,Test,2026-09-15
-am lichtbogen,,Bochumer Straße,00007,Test,Test,2026-09-15
+strasse_roh_norm,vorort,strasse_heute,schl_nr,hausnr_von,hausnr_bis,nummer_unsicher,beleg,bearbeiter,datum
+hstr.,Kray,Schulstraße,00009,,,,Test,Test,2026-09-15
+am lichtbogen,,Bochumer Straße,00007,,,,Test,Test,2026-09-15
+hermann-göring-straße,,Rüttenscheider Straße,02656,1,323,nein,Test Nummernbereich,Test,2026-09-15
+hermann-göring-straße,,Bredeneyer Straße,00433,324,,ja,Test Nummernbereich,Test,2026-09-15
+karlstraße,Kernstadt,Karlstraße,00001,,,,Test Kernstadt-Zeile,Test,2026-09-15

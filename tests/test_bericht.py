@@ -63,3 +63,9 @@ def test_bericht_teilstrecke_tabelle():
     md, _ = erzeuge([eintrag(teilstrecke_abgetrennt="ja"), eintrag()], [adresse()], strassen=[],
                     dubletten=[], ausgeschlossen=[], vorschlaege=[])
     assert "Teilstrecke abgetrennt" in md
+
+
+def test_bericht_flags_runde3():
+    md, _ = erzeuge([eintrag(vorort_angenommen="ja", nummer_unsicher="ja"), eintrag()], [adresse()], strassen=[],
+                    dubletten=[], ausgeschlossen=[], vorschlaege=[])
+    assert "Vorort angenommen" in md and "Nummer unsicher" in md

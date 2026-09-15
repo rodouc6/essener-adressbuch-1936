@@ -107,6 +107,8 @@ function zeige() {
   if (h.zeitlich_abweichend === 'ja') fl.push(['Namensstadium nicht für 1936 belegt', '']);
   if (h.teilstrecke_abgetrennt === 'ja') fl.push(['Teilstrecke später abgetrennt – Nummerierung prüfen', '']);
   if (h.mehrdeutig === 'ja') fl.push(['mehrdeutig: ' + h.grund_mehrdeutig, '']);
+  if (h.vorort_angenommen === 'ja') fl.push(['Kernstadt nur angenommen (Teil II/III ohne Vorort)', '']);
+  if (h.nummer_unsicher === 'ja') fl.push(['Nummer unsicher – bewusst nur Straßenebene', '']);
   if (z.stufe === 'haus') fl.push(h.nummer_getroffen ? ['Hausnummer im OSM-Treffer', 'gut'] : ['Hausnummer NICHT im Treffer' + (h.zusatz_ignoriert === 'ja' ? ' (Zusatz ignoriert)' : ''), '']);
   $('flags').innerHTML = fl.map(([t, c]) => `<span class="flag ${c}">${t}</span>`).join('');
   $('stadien').innerHTML = (h.strassen || []).map(s => `<div><b>${s.lemma}</b> <span style="color:#666">(${s.schl_nr}; ${s.stadtteile})</span><table>` +

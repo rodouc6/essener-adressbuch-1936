@@ -202,12 +202,18 @@ def _strassenebene(client, strasse_heute, stadtteil, grund="") -> Verortung:
 
 
 def geokodiere(client, strasse_heute: str, hausnr: str, hausnr_zusatz: str, stadtteil: str,
-               parse_status: str, strasse_roh: str, landmarken: list[dict]) -> Verortung:
+               parse_status: str, strasse_roh: str, landmarken: list[dict],
+               nummer_unsicher: str = "nein") -> Verortung:
     """Verortet eine Adresse: Hausebene, sonst Straßenebene, sonst Landmarke, sonst offen.
 
     `stadtteil` ist eine mit „; “ getrennte Dickhoff-Liste möglicher Stadtteile;
     ein leerer Stadtteil bedeutet, dass keine Stadtteil-Prüfung stattfindet.
+    `nummer_unsicher="ja"` (kuratierter Hausnummernbereich, dessen Nummern heute nicht
+    mehr gelten) verortet bewusst nur auf Straßenebene — eine heutige Hausnummer wäre
+    ein falscher Treffer, auch wenn OSM sie kennt.
     """
+    if nummer_unsicher == "ja" and strasse_heute:
+        return _strassenebene(client, strasse_heute, stadtteil, grund="nummer_unsicher")
     if parse_status in ("ohne_nummer", "leer", "unklar") and not hausnr:
         roh = strasse_roh.lower()
         for lm in landmarken:

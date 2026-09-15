@@ -105,3 +105,14 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 02656,4,1906-01-26,tag,Rüttenscheider Straße,falsch
 02656,5,1933-07-13,tag,Hermann-Göring-Straße (Umb.),falsch
 02656,6,1945-06-18,tag,Rüttenscheider Straße (Umb.),falsch
+00014,1,1860,jahr,II. Hagenstraße,falsch
+00014,2,1915-07-09,tag,II. Hagen,falsch
+00015,1,1826,vor,Schwarze Horn,falsch
+00015,2,1915-07-09,tag,II. Hagen (tlw. Umb.),falsch
+00015,3,1957-12-12,tag,Schwarze Horn (Verl.),falsch
+00016,1,1911-06-16,tag,Charlottenstraße,falsch
+00017,1,1897-09-06,tag,Charlottenstraße,falsch
+00017,2,1937-11-20,tag,Dohmanns Kamp,falsch
+00018,1,1908,jahr,Steeler Straße,falsch
+00019,1,1900,jahr,Steeler Straße,falsch
+00019,2,1937-11-20,tag,Morgensteig,falsch

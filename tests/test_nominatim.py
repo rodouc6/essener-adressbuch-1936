@@ -253,3 +253,9 @@ def test_cache_schluessel_enthaelt_basis(tmp_path, monkeypatch):
     c.schliessen()
     for feld, wert in nm.BASIS.items():
         assert schluessel[feld] == wert
+
+
+def test_nummer_unsicher_sucht_keine_hausebene():
+    """Kuratierter Bereich mit unsicherer Nummer: Straßenebene mit Grund, auch wenn OSM die Nummer kennt."""
+    v = geo(FakeClient({"5 Bochumer Straße": HAUS, "Bochumer Straße": STRASSE}), nummer_unsicher="ja")
+    assert (v.stufe, v.grund) == ("strasse", "nummer_unsicher")

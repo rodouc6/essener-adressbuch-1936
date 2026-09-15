@@ -38,10 +38,12 @@ Kontrollkarte: `werkzeuge/kontrollkarte.html`; Prüfwerkzeug für die manuelle S
 | `landmarke` | kuratierter Punkt aus `kuratierung/landmarken.csv` |
 | `offen` | keine Verortung; `grund` sagt, warum |
 
-`grund` — nur bei `stufe=offen` gefüllt: `strasse_offen` (Straße nicht aufgelöst),
+`grund` — bei `stufe=offen`: `strasse_offen` (Straße nicht aufgelöst),
 `ohne_nummer`, `kein_treffer`, `mehrdeutig_strasse` (mehrere gleichnamige Straßen ohne
 unterscheidenden Stadtteil), `stadtteil_widerspruch`, `fehler` (Nominatim-Anfrage
-fehlgeschlagen; ein erneuter Lauf holt sie nach).
+fehlgeschlagen; ein erneuter Lauf holt sie nach). Bei `stufe=strasse` zusätzlich
+`nummer_unsicher` (kuratierter Hausnummernbereich, dessen Nummern heute nicht mehr gelten —
+die Hausebene wird bewusst nicht gesucht).
 
 `herkunft` — woher die heutige Straße kommt:
 
@@ -63,6 +65,27 @@ fehlgeschlagen; ein erneuter Lauf holt sie nach).
 | `homonym_1936` | mehrere verschiedene Straßen trugen 1936 diesen Namen |
 | `konkordanz_nicht_eindeutig` | alle Kandidaten stammen aus Konkordanzzeilen mit `eindeutig=nein` |
 | `vorort_widerspruch` | Kandidaten vorhanden, aber keiner passt zum Vorort bzw. zur Kernstadt |
+
+`vorort_angenommen=ja` — Teil II/III ohne Vorortangabe: unter sonst gleichwertigen Kandidaten
+hat die Kernstadt entschieden. Ein leerer Vorort bedeutet dort zu 95 % Kernstadt (Kreuztabelle
+2026-09-15), ist aber kein Beleg; alle Kandidaten bleiben in `kandidaten` notiert.
+
+`nummer_unsicher=ja` — die Zeile fiel in einen kuratierten Hausnummernbereich, dessen Nummern
+heute nicht mehr gelten (Straße nach 1936 geteilt, zusammengelegt oder neu gezählt); verortet
+wird nur die Straße.
+
+`kuratierung/strassen_zuordnung.csv` — vom Menschen belegte Straßenzuordnung, schlägt alles:
+
+| Spalte | Bedeutung |
+|---|---|
+| `strasse_roh_norm` | normierter Name von 1936 (`norm_strasse`) |
+| `vorort` | Vorort des Eintrags; `Kernstadt` = nur Einträge ohne Vorort; leer = Platzhalter für alle |
+| `strasse_heute`, `schl_nr` | Ziel (Dickhoff-Schlüssel) |
+| `hausnr_von`, `hausnr_bis` | optionaler Hausnummernbereich (je offen, wenn leer); ohne passende Nummer greift die Automatik |
+| `nummer_unsicher` | `ja` → nur Straßenebene (s. o.) |
+| `beleg`, `bearbeiter`, `datum` | Quelle der Entscheidung, kurz und nachprüfbar |
+
+Entscheidungen zu einzelnen Straßen: [`docs/entscheidungen_strassen.md`](docs/entscheidungen_strassen.md).
 
 `build/strassen_vorschlaege.csv` ist die Arbeitsliste für die Kuratierung: alle offenen und
 mehrdeutigen Paare mit unscharfen Kandidaten, nach Zeilenzahl sortiert.

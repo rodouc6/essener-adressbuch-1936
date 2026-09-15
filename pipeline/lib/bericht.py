@@ -54,6 +54,10 @@ def erzeuge(eintraege, adressen, strassen, dubletten, ausgeschlossen, vorschlaeg
                    Counter(e["grund_mehrdeutig"] for e in eintraege if e["mehrdeutig"] == "ja"), g)
     md += _tabelle("Zeitlich abweichend", Counter(e["zeitlich_abweichend"] for e in eintraege), g)
     md += _tabelle("Teilstrecke abgetrennt", Counter(e["teilstrecke_abgetrennt"] for e in eintraege), g)
+    md += _tabelle("Vorort angenommen (Teil II/III ohne Vorort, Kernstadt-Entscheid)",
+                   Counter(e.get("vorort_angenommen", "nein") for e in eintraege), g)
+    md += _tabelle("Nummer unsicher (kuratierter Bereich, nur Straßenebene)",
+                   Counter(e.get("nummer_unsicher", "nein") for e in eintraege), g)
     md += _tabelle("Parse-Status", Counter(e["parse_status"] for e in eintraege), g)
     md += _vorort_tabelle()
     for teil in ("I", "II", "III"):

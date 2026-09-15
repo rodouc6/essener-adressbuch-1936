@@ -33,8 +33,10 @@ def parse_zeilen(zeilen: list[dict]) -> list[dict]:
 
 
 AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend",
-                     "mehrdeutig", "kandidaten", "grund_mehrdeutig", "teilstrecke_abgetrennt"]
-PAARFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
+                     "mehrdeutig", "kandidaten", "grund_mehrdeutig", "teilstrecke_abgetrennt",
+                     "vorort_angenommen", "nummer_unsicher"]
+# hausnr_bereich: Kennung des kuratierten Hausnummernbereichs („1-323“), sonst leer.
+PAARFELDER = ["strasse_norm", "vorort", "teil", "hausnr_bereich", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
 VORSCHLAGSFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + [
     f"{k}_{i}" for i in (1, 2, 3) for k in ("kandidat", "lemma", "aehnlichkeit")]
 PAARSCHLUESSEL = ("strasse_norm", "Vorort", "teil")
@@ -43,30 +45,36 @@ PAARSCHLUESSEL = ("strasse_norm", "Vorort", "teil")
 def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], list[dict], list[dict]]:
     """Löst je Zeile die Straße auf, baut die Paartabelle und eine Vorschlagsliste.
 
-    Ein Paar ist (strasse_norm, Vorort, teil): der Buchteil gehört dazu, weil ein leerer
-    Vorort in Teil I die Kernstadt bedeutet, in Teil II/III dagegen keine Information ist.
+    Ein Paar ist (strasse_norm, Vorort, teil, hausnr_bereich): der Buchteil gehört dazu, weil
+    ein leerer Vorort in Teil I die Kernstadt bedeutet, in Teil II/III dagegen nur eine
+    Annahme; der Hausnummernbereich ist nur bei kuratierten Bereichen gesetzt (sonst leer)
+    und macht die Auflösung dort adressgenau.
 
     Rückgabe: (Zeilen mit Auflösungsfeldern, Paartabelle nach Zeilenzahl absteigend,
     Vorschlagsliste für offene/mehrdeutige Paare nach Zeilenzahl absteigend).
     """
-    paare: dict[tuple[str, str, str], dict] = {}
+    paare: dict[tuple[str, str, str, str], dict] = {}
+    hausnr_je_paar: dict[tuple, str] = {}
     for z in zeilen:
-        k = (z["strasse_norm"], z["Vorort"], z["teil"])
+        hausnr = z.get("hausnr", "")
+        k = (z["strasse_norm"], z["Vorort"], z["teil"],
+             idx.bereich(z["strasse_norm"], z["Vorort"], hausnr) if z["strasse_norm"] else "")
         if k not in paare:
             if k[0]:
-                auf = asdict(idx.aufloesen(*k))
+                auf = asdict(idx.aufloesen(k[0], k[1], k[2], hausnr))
             else:
                 # Leerer strasse_norm: idx.aufloesen wird nicht aufgerufen, Paar bleibt offen
                 # mit den Enum-Neutralwerten "nein" statt leerem String.
                 auf = {f: "" for f in AUFLOESUNGSFELDER}
                 auf.update(herkunft="offen", mehrdeutig="nein", zeitlich_abweichend="nein",
-                           teilstrecke_abgetrennt="nein")
-            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "teil": k[2], "zeilen": 0,
-                        "beispiel": z["Adresse"], **auf}
+                           teilstrecke_abgetrennt="nein", vorort_angenommen="nein", nummer_unsicher="nein")
+            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "teil": k[2], "hausnr_bereich": k[3],
+                        "zeilen": 0, "beispiel": z["Adresse"], **auf}
         paare[k]["zeilen"] += 1
+        hausnr_je_paar[id(z)] = k[3]
     out = []
     for z in zeilen:
-        p = paare[(z["strasse_norm"], z["Vorort"], z["teil"])]
+        p = paare[(z["strasse_norm"], z["Vorort"], z["teil"], hausnr_je_paar[id(z)])]
         d = dict(z)
         d.update({f: p[f] for f in AUFLOESUNGSFELDER})
         out.append(d)
@@ -92,7 +100,7 @@ VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "displ
 # nachjoinen muss (Spec §5.04).
 ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh",
                     "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig",
-                    "teilstrecke_abgetrennt"]
+                    "teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher"]
 ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
 
 
@@ -111,7 +119,7 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
     """
     gruppen: dict[tuple, int] = {}
     for z in zeilen:
-        k = tuple(z[f] for f in ADRESSSCHLUESSEL)
+        k = tuple(z.get(f, "") for f in ADRESSSCHLUESSEL)
         gruppen[k] = gruppen.get(k, 0) + 1
     schluessel = sorted(gruppen, key=lambda k: -gruppen[k])
 
@@ -119,7 +127,8 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
         d = dict(zip(ADRESSSCHLUESSEL, k))
         try:
             return k, geokodiere(client, d["strasse_heute"], d["hausnr"], d["hausnr_zusatz"], d["stadtteil"],
-                                 d["parse_status"], d["strasse_roh"], landmarken)
+                                 d["parse_status"], d["strasse_roh"], landmarken,
+                                 nummer_unsicher=d.get("nummer_unsicher", "nein"))
         except requests.RequestException as e:
             return k, Verortung(stufe="offen", grund="fehler", display_name=str(e)[:120])
 
@@ -129,7 +138,7 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
             ergebnis[k] = v
     out = []
     for z in zeilen:
-        v = ergebnis[tuple(z[f] for f in ADRESSSCHLUESSEL)]
+        v = ergebnis[tuple(z.get(f, "") for f in ADRESSSCHLUESSEL)]
         d = dict(z)
         d.update(asdict(v))
         out.append(d)

@@ -43,7 +43,7 @@ def test_loese_strassen_leerer_strasse_norm():
 def test_paare_trennen_nach_teil():
     """Derselbe Name in Teil I (Kernstadt) und Teil II ist ein anderes Paar und geht
     anders aus: die Hermannstraße ohne Vorort wird in Teil I eindeutig (Kernstadt,
-    Eltingstraße), in Teil II bleibt sie mehrdeutig (Katernberg kommt hinzu)."""
+    Eltingstraße), in Teil II nur unter Kernstadt-Annahme (Flag vorort_angenommen)."""
     idx = Strassenindex(FIX / "strassen", FIX / "strassen_zuordnung.csv")
     zeilen = [
         {"id": "1", "strasse_norm": "hermannstraße", "Vorort": "", "teil": "I", "Adresse": "Hermannstr. 1"},
@@ -52,4 +52,23 @@ def test_paare_trennen_nach_teil():
     out, paare, _ = loese_strassen(zeilen, idx)
     assert len(paare) == 2
     assert (out[0]["mehrdeutig"], out[0]["strasse_heute"]) == ("nein", "Eltingstraße")
-    assert out[1]["mehrdeutig"] == "ja" and "01282" in out[1]["kandidaten"]
+    assert (out[1]["strasse_heute"], out[1]["vorort_angenommen"]) == ("Eltingstraße", "ja")
+    assert out[0]["vorort_angenommen"] == "nein" and "01282" in out[1]["kandidaten"]
+
+
+def test_hausnummernbereich_trennt_paare():
+    """Kuratierte Hausnummernbereiche lösen je Adresse auf; die Paartabelle führt den Bereich."""
+    idx = Strassenindex(FIX / "strassen", FIX / "strassen_zuordnung.csv")
+    zeilen = [
+        {"id": "1", "strasse_norm": "hermann-göring-straße", "Vorort": "", "teil": "I", "hausnr": "100", "Adresse": "Hermann-Göring-Str. 100"},
+        {"id": "2", "strasse_norm": "hermann-göring-straße", "Vorort": "", "teil": "I", "hausnr": "400", "Adresse": "Hermann-Göring-Str. 400"},
+        {"id": "3", "strasse_norm": "hermann-göring-straße", "Vorort": "", "teil": "I", "hausnr": "", "Adresse": "Hermann-Göring-Str."},
+    ]
+    out, paare, _ = loese_strassen(zeilen, idx)
+    assert (out[0]["strasse_heute"], out[0]["nummer_unsicher"]) == ("Rüttenscheider Straße", "nein")
+    assert (out[1]["strasse_heute"], out[1]["nummer_unsicher"]) == ("Bredeneyer Straße", "ja")
+    assert out[2]["mehrdeutig"] == "ja"
+    p = {(x["strasse_norm"], x["hausnr_bereich"]): x for x in paare}
+    assert p[("hermann-göring-straße", "1-323")]["zeilen"] == "1"
+    assert p[("hermann-göring-straße", "324-")]["strasse_heute"] == "Bredeneyer Straße"
+    assert p[("hermann-göring-straße", "")]["mehrdeutig"] == "ja"

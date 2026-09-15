@@ -21,7 +21,8 @@ from pipeline.lib.konkordanz import Strassenindex
 from pipeline.lib.normalisierung import norm_strasse
 
 GEO_FELDER = ("herkunft", "mehrdeutig", "grund_mehrdeutig", "teilstrecke_abgetrennt",
-              "zeitlich_abweichend", "zusatz_ignoriert", "osm_type", "osm_id")
+              "zeitlich_abweichend", "vorort_angenommen", "nummer_unsicher",
+              "zusatz_ignoriert", "osm_type", "osm_id")
 SCHLUESSEL = ("strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_roh")
 
 

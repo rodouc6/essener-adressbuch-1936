@@ -63,7 +63,7 @@ def test_adressschluessel_enthaelt_herkunftsfelder():
     """Herkunft, Zeitflag und Mehrdeutigkeit gehören zum Adressschlüssel, damit
     04_geokodiert.csv je Adresse eindeutig ist und 05 nicht nachjoinen muss."""
     from pipeline.lib.stufen import ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-5:-1] == ["herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
+    assert ADRESSSCHLUESSEL[-7:-3] == ["herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
 
 
 def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
@@ -78,5 +78,26 @@ def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
 
 def test_adressschluessel_enthaelt_teilstrecke():
     from pipeline.lib.stufen import ADRESSFELDER, ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-1] == "teilstrecke_abgetrennt"
-    assert "teilstrecke_abgetrennt" in ADRESSFELDER
+    assert ADRESSSCHLUESSEL[-3:] == ["teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher"]
+    assert "teilstrecke_abgetrennt" in ADRESSFELDER and "nummer_unsicher" in ADRESSFELDER
+
+
+def test_nummer_unsicher_verortet_nur_auf_strassenebene():
+    basis = dict(strasse_heute="Bochumer Straße", hausnr="5", hausnr_zusatz="", stadtteil="Steele",
+                 parse_status="ok", strasse_roh="Hermann-Göring-Str.", herkunft="kuratiert",
+                 zeitlich_abweichend="nein", mehrdeutig="nein", grund_mehrdeutig="",
+                 teilstrecke_abgetrennt="nein", vorort_angenommen="nein")
+    z = [dict(basis, nummer_unsicher="nein"), dict(basis, nummer_unsicher="ja")]
+
+    class MitStrasse(FakeClient):
+        def suche(self, params):
+            if params["street"].startswith("5 "):
+                return super().suche(params)
+            return [{"lat": "1", "lon": "2", "osm_type": "way", "osm_id": "7", "class": "highway", "type": "residential",
+                     "display_name": "Bochumer Straße, Steele, Essen",
+                     "address": {"road": "Bochumer Straße", "suburb": "Steele", "city": "Essen"}}]
+
+    out, adressen = geokodiere_zeilen(z, MitStrasse(), [], threads=2)
+    assert len(adressen) == 2
+    assert out[0]["stufe"] == "haus"
+    assert (out[1]["stufe"], out[1]["grund"]) == ("strasse", "nummer_unsicher")

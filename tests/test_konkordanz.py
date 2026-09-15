@@ -147,11 +147,12 @@ def test_hermannstrasse_kernstadt_wird_eindeutig(idx):
     assert (a.strasse_heute, a.schl_nr, a.herkunft, a.mehrdeutig) == ("Eltingstraße", "00770", "konkordanz", "nein")
 
 
-def test_hermannstrasse_teil_ii_ohne_vorort_bleibt_mehrdeutig(idx):
-    """Teil II ohne Vorort = keine Information: kein Filter, also mehrdeutig."""
+def test_hermannstrasse_teil_ii_ohne_vorort_nimmt_kernstadt_an(idx):
+    """Teil II ohne Vorort: kein Vorfilter, aber unter gleichwertigen Kandidaten entscheidet
+    die Kernstadt (Runde 3) — sichtbar über vorort_angenommen=ja, alle Kandidaten bleiben notiert."""
     a = idx.aufloesen("hermannstraße", "", "II")
-    assert (a.mehrdeutig, a.grund_mehrdeutig) == ("ja", "homonym_1936")
-    assert "01282" in a.kandidaten
+    assert (a.strasse_heute, a.schl_nr, a.mehrdeutig, a.vorort_angenommen) == ("Eltingstraße", "00770", "nein", "ja")
+    assert {"01282", "00037", "00770"} <= set(a.kandidaten.split(";"))
 
 
 def test_hermannstrasse_mit_vorort_wird_eindeutig(idx):
@@ -253,3 +254,59 @@ def test_halb_datiertes_stadium_gilt_als_datiert(idx):
     (1911-04-21) — der Name galt 1936 nachweislich nicht."""
     a = idx.aufloesen("frohnhauser straße", "", "I")
     assert "02266" not in a.kandidaten and a.schl_nr != "02266"
+
+
+# --- Runde 3 (2026-09-15, nach Stichprobe): Teilstrecken-Varianten, Kernstadt, Nummernbereiche ---
+
+def test_teilstrecke_auch_mit_zusatz_umb(idx):
+    """„II. Hagen (tlw. Umb.)“ ist eine Teilstrecke, kein Doppelname."""
+    a = idx.aufloesen("ii. hagen", "", "I")
+    assert (a.schl_nr, a.mehrdeutig, a.teilstrecke_abgetrennt) == ("00014", "nein", "ja")
+
+
+def test_burgaltendorf_zaehlt_nicht_als_kernstadt(idx):
+    """Ein Kandidat in Burgaltendorf/Überruhr kann keine Kernstadt-Adresse aus Teil I sein."""
+    a = idx.aufloesen("charlottenstraße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.mehrdeutig) == ("Dohmanns Kamp", "00017", "nein")
+
+
+def test_kernstadt_entscheidet_in_teil_ii_mit_flag(idx):
+    a = idx.aufloesen("steeler straße", "", "II")
+    assert (a.schl_nr, a.mehrdeutig, a.vorort_angenommen) == ("00018", "nein", "ja")
+
+
+def test_kernstadt_in_teil_i_ohne_flag(idx):
+    a = idx.aufloesen("steeler straße", "", "I")
+    assert (a.schl_nr, a.vorort_angenommen) == ("00018", "nein")
+
+
+def test_vorort_kray_schlaegt_kernstadtannahme(idx):
+    a = idx.aufloesen("steeler straße", "Kray", "II")
+    assert (a.schl_nr, a.vorort_angenommen) == ("00019", "nein")
+
+
+def test_kuratierter_hausnummernbereich(idx):
+    a = idx.aufloesen("hermann-göring-straße", "", "I", hausnr="100")
+    assert (a.schl_nr, a.herkunft, a.nummer_unsicher) == ("02656", "kuratiert", "nein")
+    b = idx.aufloesen("hermann-göring-straße", "", "I", hausnr="400")
+    assert (b.schl_nr, b.herkunft, b.nummer_unsicher) == ("00433", "kuratiert", "ja")
+
+
+def test_hausnummernbereich_ohne_nummer_faellt_auf_automatik_zurueck(idx):
+    a = idx.aufloesen("hermann-göring-straße", "", "I", hausnr="")
+    assert a.herkunft != "kuratiert"
+
+
+def test_bereichsschluessel(idx):
+    assert idx.bereich("hermann-göring-straße", "", "100") == "1-323"
+    assert idx.bereich("hermann-göring-straße", "", "400") == "324-"
+    assert idx.bereich("hermann-göring-straße", "", "") == ""
+    assert idx.bereich("bochumer straße", "Steele", "5") == ""
+
+
+def test_kernstadt_zeile_greift_nur_ohne_vorort(idx):
+    """vorort="Kernstadt" in der Zuordnungstabelle: gilt für Zeilen ohne Vorort, nicht als Platzhalter."""
+    a = idx.aufloesen("karlstraße", "", "I")
+    assert (a.schl_nr, a.herkunft) == ("00001", "kuratiert")
+    b = idx.aufloesen("karlstraße", "Kray", "I")
+    assert b.herkunft != "kuratiert"
