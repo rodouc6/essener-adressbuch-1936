@@ -75,19 +75,46 @@ def _road_passt(t: dict, strasse_heute: str) -> bool:
     return norm_strasse(t.get("address", {}).get("road", "")) == norm_strasse(strasse_heute)
 
 
-def _suburb(t: dict) -> str:
-    return norm_stadtteil(t.get("address", {}).get("suburb", ""))
+_ORTS_FELDER = ("neighbourhood", "suburb", "quarter")
+
+
+def _orte(t: dict) -> set[str]:
+    """Alle in der OSM-Antwort genannten Stadtteil-artigen Felder, normalisiert (leere ausgefiltert)."""
+    adr = t.get("address", {})
+    return {norm_stadtteil(adr.get(feld, "")) for feld in _ORTS_FELDER} - {""}
+
+
+def _feinster_ort(t: dict) -> str:
+    """Feinste bekannte Ortsangabe (neighbourhood > suburb > quarter), normalisiert."""
+    adr = t.get("address", {})
+    for feld in _ORTS_FELDER:
+        wert = adr.get(feld, "")
+        if wert:
+            return norm_stadtteil(wert)
+    return ""
+
+
+def _erlaubte_stadtteile(stadtteil: str) -> set[str]:
+    return {norm_stadtteil(s) for s in stadtteil.split(";") if s.strip()} if stadtteil else set()
 
 
 def _stadtteil_status(t: dict, stadtteil: str) -> str:
-    """'ok' wenn Prüfung nicht möglich oder bestanden, sonst 'widerspruch'."""
+    """'ok' wenn Prüfung nicht möglich oder bestanden, sonst 'widerspruch'.
+
+    Geprüft wird gegen die Vereinigung aus `neighbourhood`, `suburb` und `quarter`
+    (mind. eines muss in der erlaubten Dickhoff-Liste liegen). Kettwig gehörte 1936
+    nicht zu Essen (vgl. konkordanz.py) und wird deshalb verworfen, außer die
+    übergebene Stadtteil-Liste nennt Kettwig ausdrücklich.
+    """
+    orte = _orte(t)
+    erlaubt = _erlaubte_stadtteile(stadtteil)
+    if "Kettwig" in orte and "Kettwig" not in erlaubt:
+        return "widerspruch"
     if not stadtteil:
         return "ok"
-    erlaubt = {norm_stadtteil(s) for s in stadtteil.split(";") if s.strip()}
-    sub = _suburb(t)
-    if not sub:
+    if not orte:
         return "ok"
-    return "ok" if sub in erlaubt else "widerspruch"
+    return "ok" if orte & erlaubt else "widerspruch"
 
 
 def _treffer(t: dict, stufe: str, grund: str = "", zusatz_ignoriert: str = "nein") -> Verortung:
@@ -97,6 +124,7 @@ def _treffer(t: dict, stufe: str, grund: str = "", zusatz_ignoriert: str = "nein
 
 def _hausebene(client, strasse_heute, hausnr, zusatz, stadtteil) -> Verortung | None:
     """Sucht auf Hausebene: erst mit Zusatz, dann (falls vorhanden) ohne Zusatz."""
+    zusatz = zusatz.lower()
     for z, ignoriert in ((zusatz, "nein"), ("", "ja")) if zusatz else (("", "nein"),):
         for t in client.suche({"street": f"{hausnr}{z} {strasse_heute}", "city": "Essen"}):
             adr = t.get("address", {})
@@ -119,8 +147,10 @@ def _strassenebene(client, strasse_heute, stadtteil, grund="") -> Verortung:
     passend = [t for t in treffer if _stadtteil_status(t, stadtteil) == "ok"]
     if stadtteil and not passend:
         return Verortung(stufe="offen", grund="stadtteil_widerspruch")
-    suburbs = {_suburb(t) for t in passend}
-    if len(suburbs) > 1 and not stadtteil:
+    if not passend:
+        return Verortung(stufe="offen", grund="kein_treffer")
+    gruppen = {_feinster_ort(t) for t in passend}
+    if len(gruppen) > 1 and not stadtteil:
         return Verortung(stufe="offen", grund="mehrdeutig_strasse")
     return _treffer(passend[0], "strasse", grund)
 

@@ -90,6 +90,30 @@ def test_ohne_nummer_mit_strasse_gibt_strassenebene():
     assert v.stufe == "strasse" and v.grund == "ohne_nummer"
 
 
+def test_haus_treffer_ueber_neighbourhood():
+    treffer = [dict(HAUS[0], address={"house_number": "5", "road": "Bochumer Straße",
+                                       "neighbourhood": "Steele", "suburb": "Altenessen"})]
+    v = geo(FakeClient({"5 Bochumer Straße": treffer}), stadtteil="Steele")
+    assert v.stufe == "haus"
+
+
+def test_kettwig_ohne_stadtteil_wird_abgelehnt():
+    kettwig = [dict(STRASSE[0], address={"road": "Bochumer Straße", "suburb": "Kettwig vor der Brücke"})]
+    v = geo(FakeClient({"5 Bochumer Straße": [], "Bochumer Straße": kettwig}), stadtteil="")
+    assert v.stufe == "offen" and v.grund == "kein_treffer"
+
+
+def test_kettwig_mit_stadtteil_wird_akzeptiert():
+    kettwig = [dict(STRASSE[0], address={"road": "Bochumer Straße", "suburb": "Kettwig vor der Brücke"})]
+    v = geo(FakeClient({"5 Bochumer Straße": [], "Bochumer Straße": kettwig}), stadtteil="Kettwig; Werden")
+    assert v.stufe == "strasse"
+
+
+def test_zusatz_gross_matcht_osm_klein():
+    v = geo(FakeClient({"5A Bochumer Straße": [], "5a Bochumer Straße": HAUS}), hausnr_zusatz="A")
+    assert v.stufe == "haus" and v.zusatz_ignoriert == "nein"
+
+
 def test_cache_roundtrip(tmp_path, monkeypatch):
     aufrufe = []
 
