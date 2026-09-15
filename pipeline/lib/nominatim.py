@@ -50,6 +50,8 @@ class Client:
         self.url = basis_url.rstrip("/") + "/search"
         self.cache_pfad = Path(cache_pfad)
         self.cache: dict[str, list] = {}
+        self.treffer = 0      # aus dem Cache beantwortete Anfragen
+        self.anfragen = 0     # Anfragen insgesamt
         self._lock = threading.Lock()
         if self.cache_pfad.exists():
             with open(self.cache_pfad, encoding="utf-8") as f:
@@ -67,7 +69,9 @@ class Client:
         """Sucht bei Nominatim, gecacht über den sortierten JSON-Schlüssel der Anfrage."""
         k = self._schluessel(params)
         with self._lock:
+            self.anfragen += 1
             if k in self.cache:
+                self.treffer += 1
                 return self.cache[k]
         r = requests.get(self.url, params={**BASIS, **params}, timeout=15)
         r.raise_for_status()

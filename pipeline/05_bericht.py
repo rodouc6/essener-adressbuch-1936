@@ -8,15 +8,15 @@ from pipeline.lib.io import lies_csv, projektwurzel
 
 W = projektwurzel()
 B = W / "build"
+# 04_geokodiert.csv trägt die Auflösungsfelder selbst im Schlüssel (ADRESSSCHLUESSEL),
+# ein Hand-Join über die Einträge ist deshalb nicht mehr nötig.
 adressen = lies_csv(B / "04_geokodiert.csv")
 eintraege = lies_csv(B / "eintraege.csv")
-herkunft = {}
-for e in eintraege:
-    herkunft.setdefault((e["strasse_heute"], e["hausnr"], e["hausnr_zusatz"], e["stadtteil"], e["parse_status"], e["strasse_roh"]), e["herkunft"])
-for a in adressen:
-    a["herkunft"] = herkunft.get((a["strasse_heute"], a["hausnr"], a["hausnr_zusatz"], a["stadtteil"], a["parse_status"], a["strasse_roh"]), "")
+statistik_pfad = B / "04_statistik.json"
+statistik = json.loads(statistik_pfad.read_text(encoding="utf-8")) if statistik_pfad.exists() else None
 md, geo = erzeuge(eintraege, adressen, lies_csv(B / "03_strassen.csv"), lies_csv(B / "dubletten.csv"),
-                  lies_csv(B / "01_ausgeschlossen.csv"), lies_csv(B / "strassen_vorschlaege.csv"))
+                  lies_csv(B / "01_ausgeschlossen.csv"), lies_csv(B / "strassen_vorschlaege.csv"),
+                  zuordnung=lies_csv(W / "kuratierung" / "strassen_zuordnung.csv"), statistik=statistik)
 (B / "bericht.md").write_text(md, encoding="utf-8")
 (B / "kontrollpunkte.geojson").write_text(json.dumps(geo, ensure_ascii=False), encoding="utf-8")
-print(md[:1500])
+print(md[:2000])

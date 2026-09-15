@@ -85,7 +85,11 @@ def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], 
 
 
 VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "display_name", "zusatz_ignoriert"]
-ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh"]
+# Schlüssel einer eindeutigen Adresse. Die vier Auflösungsfelder gehören dazu, damit
+# 04_geokodiert.csv je Adresse eindeutig ist und Stufe 05 die Herkunft nicht von Hand
+# nachjoinen muss (Spec §5.04).
+ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh",
+                    "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
 ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
 
 
