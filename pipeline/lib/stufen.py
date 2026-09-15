@@ -1,9 +1,11 @@
-"""Zeilenweise Anwendung der Bibliotheksfunktionen (Stufen 02 und 03)."""
+"""Zeilenweise Anwendung der Bibliotheksfunktionen (Stufen 02, 03 und 04)."""
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 
 from pipeline.lib.konkordanz import Strassenindex
+from pipeline.lib.nominatim import Verortung, geokodiere
 from pipeline.lib.normalisierung import norm_strasse
 from pipeline.lib.parser import parse_adresse
 
@@ -68,3 +70,45 @@ def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], 
     for v in vorschlaege:
         v["zeilen"] = str(v["zeilen"])
     return out, paarliste, vorschlaege
+
+
+VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "display_name", "zusatz_ignoriert"]
+ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh"]
+ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
+
+
+def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], threads: int = 8) -> tuple[list[dict], list[dict]]:
+    """Geokodiert je eindeutiger Adresse (nicht je Zeile), parallel über einen Thread-Pool.
+
+    Adressen werden über ADRESSSCHLUESSEL dedupliziert und absteigend nach Zeilenzahl
+    verortet. Rückgabe: (Zeilen mit Verortungsfeldern, Adresstabelle mit Zeilenzahl
+    und Verortungsfeldern, nach Zeilenzahl absteigend sortiert).
+    """
+    gruppen: dict[tuple, int] = {}
+    for z in zeilen:
+        k = tuple(z[f] for f in ADRESSSCHLUESSEL)
+        gruppen[k] = gruppen.get(k, 0) + 1
+    schluessel = sorted(gruppen, key=lambda k: -gruppen[k])
+
+    def arbeit(k: tuple) -> tuple[tuple, Verortung]:
+        d = dict(zip(ADRESSSCHLUESSEL, k))
+        return k, geokodiere(client, d["strasse_heute"], d["hausnr"], d["hausnr_zusatz"], d["stadtteil"],
+                             d["parse_status"], d["strasse_roh"], landmarken)
+
+    ergebnis: dict[tuple, Verortung] = {}
+    with ThreadPoolExecutor(max_workers=threads) as ex:
+        for k, v in ex.map(arbeit, schluessel):
+            ergebnis[k] = v
+    out = []
+    for z in zeilen:
+        v = ergebnis[tuple(z[f] for f in ADRESSSCHLUESSEL)]
+        d = dict(z)
+        d.update(asdict(v))
+        out.append(d)
+    adressen = []
+    for k in schluessel:
+        a = dict(zip(ADRESSSCHLUESSEL, k))
+        a["zeilen"] = str(gruppen[k])
+        a.update(asdict(ergebnis[k]))
+        adressen.append(a)
+    return out, adressen
