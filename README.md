@@ -61,6 +61,8 @@ die Hausebene wird bewusst nicht gesucht).
 Reihenfolge der Automatik: Kuratierung, dann Vorort-Filter (Vorort bzw. Kernstadt), dann die
 Zeitstufung nur unter den räumlich passenden Kandidaten — 1936 belegt oder undatiert, sonst
 weites Fenster 1930–1937, sonst außerhalb datiert. Die Stufen verschmelzen nicht zu Homonymen.
+Die Stufe „außerhalb“ greift automatisch nur, wenn der Name heute gilt (Dickhoffs Kette ist dann
+lückenhaft, nicht die Straße falsch); erloschene Namen bleiben `name_erloschen` und werden kuratiert.
 Der Vorort-Filter steht vor der Zeitstufung, weil Dickhoffs Ketten einen Namen bei Teil-
 Umbenennungen für die ganze Straße beenden (Altendorfer Straße „bis 1933“); sonst verdrängt
 eine 1936 gültige Namensschwester im falschen Ort den richtigen Kandidaten.
@@ -72,6 +74,7 @@ eine 1936 gültige Namensschwester im falschen Ort den richtigen Kandidaten.
 | `homonym_1936` | mehrere verschiedene Straßen trugen 1936 diesen Namen |
 | `konkordanz_nicht_eindeutig` | alle Kandidaten stammen aus Konkordanzzeilen mit `eindeutig=nein` |
 | `vorort_widerspruch` | Kandidaten vorhanden, aber keiner passt zum Vorort bzw. zur Kernstadt |
+| `name_erloschen` | der Name gehört bei Dickhoff nur Straßen, die ihn schon vor 1930 verloren haben und heute anders heißen — nicht automatisch vergeben, weil Dickhoff keine verschwundenen Straßen führt (Kandidat steht in `kandidaten` als Vorschlag) |
 
 `vorort_angenommen=ja` — Teil II/III ohne Vorortangabe: unter sonst gleichwertigen Kandidaten
 hat die Kernstadt entschieden. Ein leerer Vorort bedeutet dort zu 95 % Kernstadt (Kreuztabelle

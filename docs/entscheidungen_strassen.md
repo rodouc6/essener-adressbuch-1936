@@ -85,3 +85,32 @@ Veränderungsmenge für die nächste gezielte Stichprobe vorgesehen.
 
 **Nebenfund.** OCR-Fehler im Straßendatensatz: 02333 Stadium 3 „Ostenderstraße“ → Oslenderstraße
 (Overlay in essener-strassen, für v1.0.2).
+
+**R4.2 Erloschene Namen nicht automatisch (nach Stichprobe r4, 60 Zeilen, s. `stichprobe.md`).**
+Grundsatzfrage des Projektleiters: Dickhoff ist kein Lexikon aller Straßen, die es je gab. Messung:
+Dickhoff deckt 3.337 von 3.388 heutigen Straßen (98,5 %), führt aber keine verschwundenen Straßen.
+Daraus folgt: Ein Name, den Dickhoff nur für eine Straße kennt, die ihn vor 1930 verlor, gehört 1936
+meist einer verschwundenen Namensschwester. Die Stichprobe bestätigt das: Stufe „außerhalb“ mit
+erloschenem Namen 11 falsch (Josephstraße → Westerdorfstraße: Plan zeigt dort Westerdorfstr.;
+Luisenstraße, Königstraße, Kalkstraße, Voßstraße …), 6 richtig, 2 dritter Name, 3 unklar. Stufe „weit“
+dagegen 29 richtig oder plausibel, 0 klar falsch, 6 unklar. Regel: „außerhalb“ greift nur noch, wenn der
+Name heute gilt (Oberdorfstraße, Berzeliusstraße: Dickhoff datiert den heutigen Namen erst nach 1937,
+die Kette ist lückenhaft); sonst `mehrdeutig=ja`, `grund_mehrdeutig=name_erloschen`, Kandidat als
+Vorschlag. Die sechs am Plan bestätigten Fälle plus die Ritterstraße stehen jetzt kuratiert mit Beleg
+(Wilhelmstraße Werden → Tuchmachersteig, Berliner Straße Steele → Bochumer Straße, Deipenbeckstalweg →
+Deipenbecktal, Querstraße Karnap → Boshamerweg, Maxstraße Kray → Kiwittstraße, Hermannstraße Heisingen →
+Butenbergs Kamp, Ritterstraße → Rauterstraße). Kosten: 149 Paare, 2.906 Zeilen zurück auf offen
+(1,2 %), kein Schlüsselwechsel. Größte offene Prüfstellen daraus: Provinzialstraße Katernberg/
+Schonnebeck → Gelsenkirchener Straße (492 Zeilen), Josephstraße (316, Lage 1936 unbekannt),
+Luisenstraße (221), Altenhofstraße Katernberg → Schonnebeckhöfe (194), Viehauser Straße Werden (133).
+Volllauf nach R4.2: haus 62,4 %, strasse 26,6 %, offen 11,0 %; mehrdeutig 9.940, zeitlich abweichend 9.194 Zeilen.
+
+**Lehre zur Stichprobe r4.** Das Urteil wurde am geflaggten Dickhoff-Stadium gemessen („richtig“ = Plan
+zeigt Dickhoffs Namen), nicht an der Pipeline; die Bemerkung nennt den am Plan gelesenen Namen. Beides ist
+umrechenbar, aber die Anleitung muss künftig die Prüffrage eindeutig festlegen. Der am Plan gelesene Name
+ist die wertvollere Information — er belegt Straßen unabhängig von Dickhoff.
+
+**Offen aus r4.** Altendorfer Straße: der Plan zeigt um die heutige Nr. 262 „Thomaestraße“ (Teil-Umbenennung
+1933); Nummernkreis 1936 gegen Ausdehnung der Thomaestraße prüfen (Muster Hermann-Göring-Straße). Heutige
+Namen mit Dickhoff-Datierung nach 1937 (103 Paare, 3.091 Zeilen) sind automatisch, aber nur mit einer
+Stichprobenzeile geprüft → Kandidat für eine gezielte Stichprobe.

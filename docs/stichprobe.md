@@ -1,7 +1,6 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall) und r3 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r4.csv`
-(gezielt zu Runde 4) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall), r3 und r4 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
@@ -76,7 +75,7 @@ Eickenscheidter Fuhr 8); Gesamtquote haus 62,5 % unverändert. Einzelfall ohne F
 („eher Beiseweg“, unklar). Lehre wie bei der Ritterstraße: Dickhoff führt heutige Namen mit ihrer
 Kette, aber nicht jede Verlegung eines Straßenzugs; wo heutige und 1935er Führung abweichen, hilft nur der Plan.
 
-## Stichprobe r4 — gezielte Prüfung zu Runde 4 (gezogen 2026-09-15, Prüfung offen)
+## Stichprobe r4 — gezielte Prüfung zu Runde 4 (gezogen und geprüft 2026-09-15)
 
 Grundmenge: die 176 Straße-Paare, die der Regelfix R4.1 (Vorort-Filter vor Zeitstufung,
 `docs/entscheidungen_strassen.md`) neu aufgelöst hat, 3.485 Zeilen, alle `zeitlich_abweichend=ja`;
@@ -91,3 +90,19 @@ allein der Plan: steht der alte Name dort an der heutigen Straße, ist Dickhoffs
 Kette vermischt Stränge (Muster Ritterstraße) → `richtig`; steht er woanders → `falsche_strasse` mit
 Hinweis, wo. Entscheidungsregel vorab: mehr als vier `falsche_strasse` unter den 40 großen Paaren,
 und die Rückfallstufe „außerhalb“ wird nicht mehr automatisch, sondern nur kuratiert vergeben.
+
+**Ergebnis.** Geprüft wurde abweichend von der Anleitung: `richtig` = der Plan zeigt am Punkt das von Dickhoff
+für 1935 erwartete (geflaggte) Stadium; `falsche_strasse`/`unklar` = der Plan zeigt einen anderen Namen, der
+in `bemerkung` steht. Umgerechnet auf die Pipeline-Frage (liegt der Punkt auf der Straße des Buches?):
+
+| Rückfallstufe | Pipeline richtig | plausibel | falsch | dritter Name | unklar |
+|---|---:|---:|---:|---:|---:|
+| weit (Umbenennung 1930–1937) | 14 (Plan zeigt Buchnamen) | 15 | 0 | 1 | 7 |
+| außerhalb, Name erloschen | 6 | 0 | 11 (Plan zeigt Dickhoffs Namen) | 2 | 3 |
+| außerhalb, Name gilt heute | 0 | 1 | 0 | 0 | 0 |
+
+Die Entscheidungsregel (>4 falsche Straßen unter den großen Paaren) hat ausgelöst → R4.2: Stufe „außerhalb“
+nur noch für heute gültige Namen, sonst `name_erloschen`. Die sechs am Plan bestätigten erloschenen Namen sind
+kuratiert (`strassen_zuordnung.csv`, Beleg „Stadtplan 1935 zeigt … am Punkt“). Offen aus den Bemerkungen:
+Sevenarstr. 18 Katernberg liegt am Plan an der Rotthauser Str.; Markt Steele = Hansamarkt?; Stoppenberger
+Straße 87: Grenze Gelsenkirchener/Mittelstraße; Werdener Str. 44: Hespertaler Landstraße oder Hammer Straße.

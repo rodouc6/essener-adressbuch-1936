@@ -41,10 +41,21 @@ def test_stadium_im_fenster(idx):
     assert (a.strasse_heute, a.herkunft, a.zeitlich_abweichend) == ("Goosestraße", "stadium", "nein")
 
 
-def test_stadium_ausserhalb_fenster(idx):
-    # Carlstraße endete 1910 → weit vor 1930 → zeitlich_abweichend
+def test_stadium_ausserhalb_fenster_erloschener_name_wird_nicht_automatisch_vergeben(idx):
+    # Carlstraße endete 1910. Dickhoff führt keine verschwundenen Straßen; ein 20 Jahre vor 1936
+    # erloschener Name gehört eher einer verschwundenen Namensschwester (R4.2, Stichprobe r4:
+    # 11 von 17 solcher Zuordnungen am Stadtplan 1935 widerlegt). → offen mit Kandidat als Vorschlag.
     a = idx.aufloesen("carlstraße", "")
-    assert (a.strasse_heute, a.herkunft, a.zeitlich_abweichend) == ("Karlstraße", "stadium", "ja")
+    assert (a.strasse_heute, a.mehrdeutig, a.grund_mehrdeutig) == ("", "ja", "name_erloschen")
+    assert "00001" in a.kandidaten
+
+
+def test_heutiger_name_mit_spaeter_datierung_bleibt_automatisch(idx):
+    # Oberdorfstraße gilt heute; Dickhoff datiert den Namen erst ab 1950. Das Buch führt ihn 1936
+    # → die Kette ist unvollständig, nicht die Straße falsch: aufgelöst, aber zeitlich abweichend.
+    a = idx.aufloesen("oberdorfstraße", "", "I")
+    assert (a.strasse_heute, a.herkunft, a.zeitlich_abweichend, a.mehrdeutig) == \
+        ("Oberdorfstraße", "heutig", "ja", "nein")
 
 
 def test_kuratiert(idx):

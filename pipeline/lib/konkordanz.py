@@ -386,6 +386,13 @@ class Strassenindex:
             if treffer:
                 passend = treffer
                 break
+        # 4b. Außerhalb datierte Namen, die heute nicht mehr gelten, werden nicht automatisch
+        #     vergeben: Dickhoff führt keine verschwundenen Straßen, ein Jahrzehnte vor 1936
+        #     erloschener Name gehört meist einer verschwundenen Namensschwester (R4.2; Stichprobe
+        #     r4 am Stadtplan 1935: 11 von 17 widerlegt). Gilt der Name heute, ist nur Dickhoffs
+        #     Kette lückenhaft (Oberdorfstraße "ab 1950") — der Kandidat bleibt, zeitlich abweichend.
+        if stufe == (ZEIT_AUSSERHALB,) and not any(k.quelle == "heutig" for k in passend):
+            return self._mehrdeutig(self._beste_je_schluessel(passend), "name_erloschen")
 
         # 5. Teilstrecken ("(tlw.)") sind Stücke derselben Straße, keine Homonyme:
         #    gibt es daneben Kandidaten mit dem schlichten Namen, entscheiden nur diese.
