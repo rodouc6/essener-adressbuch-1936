@@ -45,11 +45,43 @@ Grenzstreifen 140–144 `nummer_unsicher`. Fund Beuststraße: heutige Nr. 49–6
 Herkulesstraße von 1935 (Umwidmung fehlt bei Dickhoff) → Beuststraße ab 47 und Herkulesstraße ganz
 nur Straßenebene. Kosten: 154 Hausnummern-Treffer, Quote unverändert 62,5 %.
 
-**Bewusst offen gelassen.** Bredeneyer Straße ohne Vorort (Name galt 1936 offiziell nicht),
-Im Hesselbruch (141 Nummern gegen 28 heute), Kapellenstraße; Vorortfälle mit nicht eindeutiger
+**Bewusst offen gelassen.** Im Hesselbruch (141 Nummern gegen 28 heute), Kapellenstraße; Vorortfälle mit nicht eindeutiger
 Konkordanz (Kirchstraße Katernberg, Wallstraße, Bruchweiher …); 2.635 offene Namen ohne Dickhoff-
 Treffer (verschwundene Straßen, brauchen Landmarken vom Stadtplan 1935).
 
 **Lehre aus der Ritterstraße.** `zeitlich_abweichend=ja` ist kein Fehlerindikator: Dickhoffs
 Namensketten fassen bei zusammengelegten Straßen mehrere Stränge zusammen, das abgeleitete
 Gültigkeitsende kann Artefakt sein. Prüfung am Stadtplan 1935, nicht per Automatik.
+
+## Runde 4 (2026-09-15, Nacht): Vorort-Widerspruch zerlegt
+
+**Befund.** 7.828 Zeilen `vorort_widerspruch` (994 Paare). Zwei Drittel sind Teil-I-Zeilen ohne
+Vorort, deren einziger 1936 gültiger Kandidat im Vorort liegt. Ursache bei den großen Fällen: Die
+Zeitstufung lief vor dem Vorort-Filter und warf „weit“ datierte Kandidaten weg. Altendorfer Straße
+(941 Zeilen): Dickhoff beendet den Namen 1933 mit „Thomaestraße (tlw. Umb.)“ für die ganze
+Kernstadtstraße; übrig blieb die Horster Altendorfer Straße (bis 1937), die als Vorortstraße
+scheiterte. Gleiches Muster Viktoriastraße Katernberg (Verl. 1937), Stoppenberger Straße Katernberg.
+
+**R4.1 Vorort-Filter vor Zeitstufung.** Erst räumlich filtern, dann zeitlich stufen: 1936/undatiert,
+sonst weit (1930–1937), sonst außerhalb — die Stufen verschmelzen nicht zu Homonymen (Schölerpad,
+„Altendorfer Straße“ bis 1896, verdrängt nicht die bis 1933 so benannte Straße). Rückfälle tragen
+`zeitlich_abweichend=ja`. Kein zuvor aufgelöstes Paar wechselt still den Schlüssel; drei Umsprünge
+innerhalb der Rückfallstufe: Rotthausener Straße Katernberg → Ückendorfer Straße (Name bis 1935,
+statt Auf der Reihe bis 1896), Bredeneyer Straße ohne Vorort → 00433 (weit, statt Homonym mit
+Heisinger/Westfalenstraße), Phönixberg Kupferdreh → Oslenderstraße (Phönixberg bis 1934, statt der
+erst 2000 benannten heutigen Straße; Prüfstelle). Tests: Fixture 00050/01371/02805.
+
+**Wirkung.** 179 Paare, 3.578 Zeilen neu aufgelöst, alle mit `zeitlich_abweichend=ja`; Widerspruch
+7.828 → 4.064 Zeilen (Rest: kein Kandidat in Essen passt, Ø 5 Zeilen je Paar → Schreibvarianten,
+Dickhoff-Lücken). haus 62,5 → 63,0 %, offen 11,3 → 9,8 %, mehrdeutig 10.519 → 7.034,
+zeitlich abweichend 9.019 → 12.504 Zeilen.
+
+**Prüfstellen daraus (Stadtplan 1935).** Neu aufgelöste Paare mit Namen, die Dickhoff außerhalb
+1930–1937 datiert, obwohl das Buch sie 1936 vielfach führt: Josephstraße → Westerdorfstraße
+Altenessen (316 Zeilen), Luisenstraße → Lydiastraße Rüttenscheid (221), Königstraße → Porscheplatz
+(100), Heinrichstraße Katernberg → Middeldorper Weg (85), Wilhelmstraße Werden → Tuchmachersteig
+(72), Berliner Straße Steele → Bochumer Straße (40). Dickhoffs Datum oder Strang-Vermischung; als
+Veränderungsmenge für die nächste gezielte Stichprobe vorgesehen.
+
+**Nebenfund.** OCR-Fehler im Straßendatensatz: 02333 Stadium 3 „Ostenderstraße“ → Oslenderstraße
+(Overlay in essener-strassen, für v1.0.2).

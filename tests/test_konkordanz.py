@@ -310,3 +310,31 @@ def test_kernstadt_zeile_greift_nur_ohne_vorort(idx):
     assert (a.schl_nr, a.herkunft) == ("00001", "kuratiert")
     b = idx.aufloesen("karlstraße", "Kray", "I")
     assert b.herkunft != "kuratiert"
+
+
+def test_vorort_filter_greift_vor_dem_zeitfenster_rueckfall(idx):
+    # Altendorfer Straße (Kernstadt, 00050) gilt bei Dickhoff nur bis zur Teil-Umbenennung 1933
+    # → "weit". Die Horster Altendorfer Straße (01371) gilt 1936, liegt aber im Vorort Steele.
+    # Teil I ohne Vorort darf nicht am Vorort-Kandidaten scheitern, sondern muss auf den
+    # weit datierten Kernstadt-Kandidaten zurückfallen — gekennzeichnet als zeitlich abweichend.
+    a = idx.aufloesen("altendorfer straße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.mehrdeutig, a.zeitlich_abweichend) == \
+        ("Altendorfer Straße", "00050", "nein", "ja")
+
+
+def test_vorort_filter_vor_zeitfenster_mit_vorort(idx):
+    a = idx.aufloesen("altendorfer straße", "Steele", "I")
+    assert (a.schl_nr, a.zeitlich_abweichend) == ("01371", "nein")
+
+
+def test_widerspruch_bleibt_wenn_auch_weite_kandidaten_nicht_passen(idx):
+    a = idx.aufloesen("altendorfer straße", "Kray", "I")
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "vorort_widerspruch"
+
+
+def test_rueckfall_ist_gestuft_weit_vor_ausserhalb(idx):
+    # Schölerpad (02805) hieß bis 1896 ebenfalls Altendorfer Straße ("außerhalb"). Der weit
+    # datierte Kandidat 00050 (bis 1933) ist der nähere Rückfall und darf nicht mit dem
+    # außerhalb datierten zum Homonym verschmelzen.
+    a = idx.aufloesen("altendorfer straße", "", "I")
+    assert (a.schl_nr, a.mehrdeutig, a.zeitlich_abweichend) == ("00050", "nein", "ja")

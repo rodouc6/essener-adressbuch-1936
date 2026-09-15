@@ -366,16 +366,26 @@ class Strassenindex:
         if not kandidaten:
             return OFFEN
 
-        # 3. Erste Stufe: Kandidaten, die 1936 gelten oder undatiert sind. Nur wenn
-        #    diese Stufe leer bleibt, kommt das weite Fenster 1930–1937 als Rückfall
-        #    zum Zug (dann mit zeitlich_abweichend=ja).
-        erste_stufe = [k for k in kandidaten if k.zeitlich in ZEIT_ERSTE_STUFE]
-        aktiv = erste_stufe or kandidaten
-
-        # 4. Vorort-Filter.
-        passend = [k for k in aktiv if self._passt(k.schl_nr, vorort, teil)]
+        # 3. Vorort-Filter — vor der Zeitstufung, damit ein 1936 gültiger Kandidat im
+        #    falschen Ort nicht den räumlich richtigen, aber nur weit datierten verdrängt
+        #    (Altendorfer Straße: Dickhoffs Teil-Umbenennung 1933 beendet den Namen für
+        #    die ganze Kernstadtstraße, übrig bliebe sonst nur die Horster Namensschwester).
+        passend = [k for k in kandidaten if self._passt(k.schl_nr, vorort, teil)]
         if not passend:
-            return self._mehrdeutig(self._beste_je_schluessel(aktiv), "vorort_widerspruch")
+            erste_stufe = [k for k in kandidaten if k.zeitlich in ZEIT_ERSTE_STUFE]
+            return self._mehrdeutig(self._beste_je_schluessel(erste_stufe or kandidaten),
+                                    "vorort_widerspruch")
+
+        # 4. Zeitstufung unter den passenden Kandidaten: erst 1936 gültig oder undatiert,
+        #    sonst das weite Fenster 1930–1937, sonst außerhalb datierte (die beiden
+        #    Rückfälle mit zeitlich_abweichend=ja). Die Stufen verschmelzen nicht zu
+        #    Homonymen: Schölerpad (Altendorfer Straße bis 1896) verdrängt nicht die
+        #    bis 1933 so benannte Kernstadtstraße.
+        for stufe in (ZEIT_ERSTE_STUFE, (ZEIT_WEIT,), (ZEIT_AUSSERHALB,)):
+            treffer = [k for k in passend if k.zeitlich in stufe]
+            if treffer:
+                passend = treffer
+                break
 
         # 5. Teilstrecken ("(tlw.)") sind Stücke derselben Straße, keine Homonyme:
         #    gibt es daneben Kandidaten mit dem schlichten Namen, entscheiden nur diese.

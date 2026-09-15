@@ -116,3 +116,10 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 00018,1,1908,jahr,Steeler Straße,falsch
 00019,1,1900,jahr,Steeler Straße,falsch
 00019,2,1937-11-20,tag,Morgensteig,falsch
+00050,1,1901-12-04,tag,Altendorfer Straße,falsch
+00050,2,1933-05-08,tag,Thomaestraße (tlw. Umb.),falsch
+00050,3,1945-05-15,tag,Altendorfer Straße (tlw. Umb.),falsch
+01371,1,1919-04-01,tag,Altendorfer Straße,falsch
+01371,2,1937-11-20,tag,Horster Straße,falsch
+02805,1,1880,jahr,Altendorfer Straße,falsch
+02805,2,1896-10-08,tag,Schölerpad,falsch

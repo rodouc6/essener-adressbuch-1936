@@ -58,6 +58,13 @@ die Hausebene wird bewusst nicht gesucht).
 `zeitlich_abweichend=ja` — der gewählte Namensstand ist für 1936 nicht datiert belegt
 (undatiertes Stadium oder nur Stadien außerhalb des Fensters 1930–1937).
 
+Reihenfolge der Automatik: Kuratierung, dann Vorort-Filter (Vorort bzw. Kernstadt), dann die
+Zeitstufung nur unter den räumlich passenden Kandidaten — 1936 belegt oder undatiert, sonst
+weites Fenster 1930–1937, sonst außerhalb datiert. Die Stufen verschmelzen nicht zu Homonymen.
+Der Vorort-Filter steht vor der Zeitstufung, weil Dickhoffs Ketten einen Namen bei Teil-
+Umbenennungen für die ganze Straße beenden (Altendorfer Straße „bis 1933“); sonst verdrängt
+eine 1936 gültige Namensschwester im falschen Ort den richtigen Kandidaten.
+
 `mehrdeutig=ja` mit `grund_mehrdeutig` — es blieb mehr als ein Kandidat übrig oder keiner passte:
 
 | Wert | Bedeutung |
