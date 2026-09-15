@@ -42,7 +42,7 @@ Befunde aus den `unklar`-Fällen:
 - **Umbenennungen 1935-11-14 / 1936-01-15.** Sieben Straßen-Fälle (Waterloostr., Krayer Str.,
   Huttropstr., Sulterkamp, Am Parkfriedhof, Alfredstr. Leithe, Löhstr. Kupferdreh) zeigen im
   Stadtplan 1935 den Altnamen; das Adreßbuch führt bereits den Neunamen (bzw. bei Alfredstr. noch
-  den Altnamen). Die Auflösung ist jeweils korrekt; das Werkzeug markiert seit b047407+1 den
+  den Altnamen). Die Auflösung ist jeweils korrekt; das Prüfwerkzeug markiert seit eb80c94 den
   Namen des Plans 1935.
 - **Ritterstr. [Ostviertel] → Rauterstraße (101 Zeilen, `zeitlich_abweichend`).** Laut Dickhoff hieß
   die Rauterstraße nur 1868–1904 Ritterstraße; ein 1936 hundertfach belegter Name kann das nicht
