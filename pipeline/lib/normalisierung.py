@@ -16,6 +16,8 @@ _TYPO = str.maketrans({"´": "'", "’": "'", "`": "'", " ": " ", "–": "-", "�
 _ERSETZUNGEN = [
     (re.compile(r"\bstr\.(?=\s|$)"), "straße"),          # "Bochumer str." → "bochumer straße"
     (re.compile(r"(?<=[a-zäöüß\-])str\.(?=\s|$)"), "straße"),  # "karlstr." → "karlstraße"
+    (re.compile(r"(?<=[a-zäöüß])str$"), "straße"),       # "Luisenstr" → "luisenstraße" (ohne Punkt)
+    (re.compile(r"\bstr$"), "straße"),                   # "Bochumer Str" → "bochumer straße" (ohne Punkt)
     (re.compile(r"strasse\b"), "straße"),
     (re.compile(r"\bpl\.(?=\s|$)"), "platz"),
     (re.compile(r"(?<=[a-zäöüß\-])pl\.(?=\s|$)"), "platz"),

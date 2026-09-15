@@ -8,6 +8,10 @@ from dataclasses import dataclass
 _ROEMISCH = {"i": "I", "ii": "II", "iii": "III", "iv": "IV", "v": "V"}
 _LAGE_WORT = re.compile(r"^(erdg|untg|erdgesch|erdgeschoss|untergeschoss|hochpt|parterre)\.?$", re.I)
 
+# Ordinal- bzw. römisches Präfix ("1. Weberstr.", "II. Schichtstr."), das Teil
+# des Straßennamens bleibt statt als Hausnummer-vor-Straße zu gelten.
+_PRAEFIX = r"(?:I{1,3}|IV|\d+)\.\s"
+
 
 @dataclass(frozen=True)
 class Adresse:
@@ -35,17 +39,24 @@ def parse_adresse(text: str) -> Adresse:
     if not t:
         return _leer("leer")
 
-    # Führt ein römisches Ordnungswort ("II. Schichtstr.") die Straße an,
-    # zählt die führende Ziffer nicht als Hausnummer-vor-Straße.
-    fuehrt_roemisch = re.match(r"^(I{1,3}|IV)\.\s", t) is not None
-    if re.match(r"^\d", t) and not fuehrt_roemisch:
+    # Führt ein Ordnungswort ("II. Schichtstr.", "1. Weberstr.") die Straße
+    # an, zählt die führende Ziffer nicht als Hausnummer-vor-Straße. Eine
+    # führende Zahl ist nur dann unklar, wenn ihr kein ". " folgt.
+    fuehrt_praefix = re.match(r"^(?:I{1,3}|IV|\d+)\.\s", t) is not None
+    if re.match(r"^\d", t) and not fuehrt_praefix:
         return _leer("unklar", t)
 
     # Straße = alles vor der ersten "echten" Ziffer (Hausnummer), getrennt
-    # durch Komma oder Leerzeichen; ein optionales "Nr." vor der Zahl wird
-    # übersprungen.
+    # durch Komma, Leerzeichen oder direkt angeklebt (ggf. mit einem
+    # zusätzlichen OCR-Punkt); ein optionales "Nr." vor der Zahl wird
+    # übersprungen. Der Straßenteil endet lazy, darf aber mit einem Punkt
+    # enden (z. B. "Ludwigstr.9"). Liegt ein Ordinal-/römisches Präfix vor,
+    # muss die Hauptregex es verpflichtend konsumieren – sonst würde die
+    # führende Ziffer des Präfixes fälschlich als Hausnummer gelesen
+    # ("1. Postneubau a. Hbf." darf nicht zu Hausnr. "1" werden).
+    praefix = _PRAEFIX if fuehrt_praefix else ""
     m = re.match(
-        r"^(?P<strasse>(?:(?:I{1,3}|IV)\.\s)?[^\d]*?)(?:,\s*|\s+)(?:Nr\.\s*)?(?P<rest>\d.*)$",
+        rf"^(?P<strasse>{praefix}[^\d]*?\.?)(?:,\s*|\s*\.?\s*)(?:Nr\.\s*)?(?P<rest>\d.*)$",
         t,
     )
     if not m:

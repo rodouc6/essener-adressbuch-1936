@@ -14,6 +14,8 @@ from pipeline.lib.normalisierung import VORORTE, norm_stadtteil, norm_strasse, n
     ("Herm.-Göring-Str.", "herm.-göring-straße"),
     ("Am krausen Bäumchen", "am krausen bäumchen"),
     ("Hermann–Göring–Straße", "hermann-göring-straße"),
+    ("Luisenstr", "luisenstraße"),
+    ("Bochumer Str", "bochumer straße"),
 ])
 def test_norm_strasse(roh, erwartet):
     assert norm_strasse(roh) == erwartet

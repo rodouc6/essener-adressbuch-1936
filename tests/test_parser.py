@@ -32,6 +32,16 @@ def a(**kw):
     ("II. Schichtstr., Zechengelände", a(strasse_roh="II. Schichtstr.", zusatz_frei="Zechengelände", status="ohne_nummer")),
     ("Am krausen Bäumchen 18", a(strasse_roh="Am krausen Bäumchen", hausnr="18")),
     ("Hstr. 12a", a(strasse_roh="Hstr.", hausnr="12", hausnr_zusatz="a")),
+    ("Ludwigstr.9", a(strasse_roh="Ludwigstr.", hausnr="9")),
+    ("Aktienstr.13 I", a(strasse_roh="Aktienstr.", hausnr="13", lage="I")),
+    ("Mittelstr.12a", a(strasse_roh="Mittelstr.", hausnr="12", hausnr_zusatz="a")),
+    ("Hohe Kuppe6", a(strasse_roh="Hohe Kuppe", hausnr="6")),
+    ("Huyssenallee77", a(strasse_roh="Huyssenallee", hausnr="77")),
+    ("Byfanger Str. .145", a(strasse_roh="Byfanger Str.", hausnr="145")),
+    ("Luisenstr .26", a(strasse_roh="Luisenstr", hausnr="26")),
+    ("Hstr..9", a(strasse_roh="Hstr.", hausnr="9")),
+    ("1. Weberstr. 22/24", a(strasse_roh="1. Weberstr.", hausnr="22", zusatz_frei="/24")),
+    ("1. Postneubau a. Hbf.", a(strasse_roh="1. Postneubau a. Hbf.", status="ohne_nummer")),
 ])
 def test_parse_adresse(text, erwartet):
     assert parse_adresse(text) == erwartet
