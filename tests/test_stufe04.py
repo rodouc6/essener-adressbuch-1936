@@ -1,3 +1,5 @@
+import requests
+
 from pipeline.lib.stufen import geokodiere_zeilen
 
 
@@ -22,3 +24,29 @@ def test_geokodiere_zeilen_dedupliziert_adressen():
     assert [o["stufe"] for o in out] == ["haus", "haus", "haus", "offen"]
     assert c.n == 1
     assert len(adressen) == 2 and adressen[0]["zeilen"] == "3"
+
+
+class FakeClientMitFehler:
+    """Wirft für eine Adresse eine requests.RequestException, alle anderen funktionieren normal."""
+
+    def suche(self, params):
+        if params["street"].startswith("9 "):
+            raise requests.RequestException("Verbindung fehlgeschlagen")
+        if params["street"].startswith("5 "):
+            return [{"lat": "1", "lon": "2", "osm_type": "way", "osm_id": "9", "class": "building", "type": "yes",
+                     "display_name": "x", "address": {"house_number": "5", "road": "Bochumer Straße", "suburb": "Steele"}}]
+        return []
+
+
+def test_geokodiere_zeilen_faengt_request_exception_pro_adresse():
+    z = [
+        dict(strasse_heute="Bochumer Straße", hausnr="5", hausnr_zusatz="", stadtteil="Steele",
+             parse_status="ok", strasse_roh="Bochumer Str."),
+        dict(strasse_heute="Fehlerstraße", hausnr="9", hausnr_zusatz="", stadtteil="",
+             parse_status="ok", strasse_roh="Fehlerstr."),
+    ]
+    out, adressen = geokodiere_zeilen(z, FakeClientMitFehler(), [], threads=2)
+    stufen = {o["strasse_heute"]: (o["stufe"], o["grund"]) for o in out}
+    assert stufen["Bochumer Straße"] == ("haus", "")
+    assert stufen["Fehlerstraße"] == ("offen", "fehler")
+    assert len(adressen) == 2

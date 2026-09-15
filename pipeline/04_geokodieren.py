@@ -11,11 +11,15 @@ from pipeline.lib.stufen import ADRESSFELDER, AUFLOESUNGSFELDER, PARSEFELDER, VE
 
 W = projektwurzel()
 client = Client(os.environ.get("NOMINATIM_URL", "http://localhost:8080"), W / "build" / "cache" / "nominatim.jsonl")
-landmarken = lade_landmarken(W / "kuratierung" / "landmarken.csv")
-zeilen, adressen = geokodiere_zeilen(lies_csv(W / "build" / "03_aufgeloest.csv"), client, landmarken, threads=8)
-client.schliessen()
+try:
+    landmarken = lade_landmarken(W / "kuratierung" / "landmarken.csv")
+    zeilen, adressen = geokodiere_zeilen(lies_csv(W / "build" / "03_aufgeloest.csv"), client, landmarken, threads=8)
+finally:
+    client.schliessen()
 schreib_csv(W / "build" / "04_geokodiert.csv", adressen, ADRESSFELDER)
 schreib_csv(W / "build" / "eintraege.csv", zeilen, einlesen.AUSGABEFELDER + PARSEFELDER + AUFLOESUNGSFELDER + VERORTUNGSFELDER)
 c = Counter((z["stufe"], z["grund"]) for z in zeilen)
 for k, v in c.most_common():
     print(f"{k[0]:10s} {k[1]:22s} {v:7d} {v / len(zeilen) * 100:5.1f}%")
+fehler = sum(1 for a in adressen if a["grund"] == "fehler")
+print(f"Fehler: {fehler} Adressen")

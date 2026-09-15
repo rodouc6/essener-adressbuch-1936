@@ -1,8 +1,15 @@
-"""Zeilenweise Anwendung der Bibliotheksfunktionen (Stufen 02, 03 und 04)."""
+"""Zeilenweise Anwendung der Bibliotheksfunktionen (Stufen 02, 03 und 04).
+
+Stufe 04 (`geokodiere_zeilen`) kennt zusätzlich zu den in `nominatim.geokodiere`
+vergebenen Gründen den Grund `fehler` (`stufe="offen"`): eine fehlgeschlagene
+HTTP-Anfrage an Nominatim für diese Adresse, siehe Docstring dort.
+"""
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
+
+import requests
 
 from pipeline.lib.konkordanz import Strassenindex
 from pipeline.lib.nominatim import Verortung, geokodiere
@@ -83,6 +90,12 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
     Adressen werden über ADRESSSCHLUESSEL dedupliziert und absteigend nach Zeilenzahl
     verortet. Rückgabe: (Zeilen mit Verortungsfeldern, Adresstabelle mit Zeilenzahl
     und Verortungsfeldern, nach Zeilenzahl absteigend sortiert).
+
+    Schlägt die HTTP-Anfrage für eine Adresse fehl (`requests.RequestException`, z. B.
+    Timeout, 5xx, Verbindungsabbruch), wird diese Adresse als `stufe="offen"`,
+    `grund="fehler"` mit einer kurzen Fehlermeldung in `display_name` markiert; der
+    Lauf wird nicht abgebrochen. Da fehlgeschlagene Anfragen nie in den Cache
+    geschrieben werden, holt ein erneuter Lauf sie automatisch nach.
     """
     gruppen: dict[tuple, int] = {}
     for z in zeilen:
@@ -92,8 +105,11 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
 
     def arbeit(k: tuple) -> tuple[tuple, Verortung]:
         d = dict(zip(ADRESSSCHLUESSEL, k))
-        return k, geokodiere(client, d["strasse_heute"], d["hausnr"], d["hausnr_zusatz"], d["stadtteil"],
-                             d["parse_status"], d["strasse_roh"], landmarken)
+        try:
+            return k, geokodiere(client, d["strasse_heute"], d["hausnr"], d["hausnr_zusatz"], d["stadtteil"],
+                                 d["parse_status"], d["strasse_roh"], landmarken)
+        except requests.RequestException as e:
+            return k, Verortung(stufe="offen", grund="fehler", display_name=str(e)[:120])
 
     ergebnis: dict[tuple, Verortung] = {}
     with ThreadPoolExecutor(max_workers=threads) as ex:
