@@ -23,7 +23,7 @@ def parse_zeilen(zeilen: list[dict]) -> list[dict]:
     return out
 
 
-AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend", "mehrdeutig", "kandidaten"]
+AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend", "mehrdeutig", "kandidaten", "grund_mehrdeutig"]
 PAARFELDER = ["strasse_norm", "vorort", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
 VORSCHLAGSFELDER = ["strasse_norm", "vorort", "zeilen", "beispiel"] + [
     f"{k}_{i}" for i in (1, 2, 3) for k in ("kandidat", "lemma", "aehnlichkeit")]

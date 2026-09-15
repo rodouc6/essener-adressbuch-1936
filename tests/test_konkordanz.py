@@ -71,3 +71,35 @@ def test_vorschlaege(idx):
 def test_vorort_stadtteile_vollstaendig():
     assert set(VORORT_STADTTEILE) == {"Frillendorf", "Heidhausen", "Heisingen", "Karnap", "Katernberg", "Kray", "Kupferdreh", "Schonnebeck", "Steele", "Stoppenberg", "Ueberruhr", "Werden"}
     assert "Fischlaken" in VORORT_STADTTEILE["Heidhausen"]
+
+
+def test_vorort_widerspruch_faellt_zur_konkordanz_durch(idx):
+    # Hauptstraße existiert heute nur in Kettwig; Vorort Kupferdreh → Konkordanz kennt die Umbenennung
+    a = idx.aufloesen("hauptstraße", "Kupferdreh")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft, a.mehrdeutig) == ("Kupferdreher Straße", "00011", "konkordanz", "nein")
+
+
+def test_kettwig_allein_ist_nie_treffer(idx):
+    # Kettwig gehörte 1936 nicht zu Essen: ohne Vorort darf die Kettwiger Hauptstraße nicht als heutig gelten
+    a = idx.aufloesen("hauptstraße", "")
+    assert a.herkunft == "offen"
+
+
+def test_kettwig_mit_weiterem_stadtteil_bleibt_zulaessig(idx):
+    a = idx.aufloesen("ruhrtalstraße", "Werden")
+    assert (a.strasse_heute, a.mehrdeutig) == ("Ruhrtalstraße", "nein")
+
+
+def test_vorort_widerspruch_ohne_alternative_bleibt_mehrdeutig_mit_grund(idx):
+    a = idx.aufloesen("bochumer straße", "Kray")
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "vorort_widerspruch" and "00007" in a.kandidaten
+
+
+def test_mehrere_passende_kandidaten_haben_grund(idx):
+    a = idx.aufloesen("schulstraße", "")
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "mehrere_kandidaten"
+
+
+def test_konkordanz_nicht_eindeutig_hat_grund(idx):
+    a = idx.aufloesen("hochstraße", "")
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "konkordanz_nicht_eindeutig"

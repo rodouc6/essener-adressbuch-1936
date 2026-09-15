@@ -41,6 +41,7 @@ class Aufloesung:
     zeitlich_abweichend: str = "nein"
     mehrdeutig: str = "nein"
     kandidaten: str = ""
+    grund_mehrdeutig: str = ""
 
 
 OFFEN = Aufloesung("", "", "", "offen")
@@ -83,24 +84,41 @@ class Strassenindex:
 
     # --- Hilfen ---------------------------------------------------------------
     def _passt(self, schl_nr: str, vorort: str) -> bool:
-        """Prüft, ob der Vorort mit den heutigen Stadtteilen des Kandidaten vereinbar ist."""
+        """Prüft, ob der Vorort mit den heutigen Stadtteilen des Kandidaten vereinbar ist.
+
+        Ein Kandidat, dessen Stadtteilliste ausschließlich aus Kettwig besteht, passt nie
+        (auch nicht bei leerem Vorort): Kettwig gehörte 1936 nicht zu Essen.
+        """
+        stadtteile = self.stadtteile.get(schl_nr, [])
+        if stadtteile and set(stadtteile) == {"Kettwig"}:
+            return False
         if not vorort:
             return True
         erlaubt = VORORT_STADTTEILE.get(vorort, frozenset())
-        return any(t in erlaubt for t in self.stadtteile.get(schl_nr, []))
+        return any(t in erlaubt for t in stadtteile)
 
     def _fertig(self, schl_nr: str, herkunft: str, zeitlich: str = "nein") -> Aufloesung:
         """Baut eine eindeutig aufgelöste Auflösung für einen bekannten Straßenschlüssel."""
         s = self.strassen[schl_nr]
         return Aufloesung(s["lemma"], schl_nr, "; ".join(self.stadtteile[schl_nr]), herkunft, zeitlich, "nein")
 
-    def _entscheide(self, kandidaten: list[str], vorort: str, herkunft: str, zeitlich: str = "nein") -> Aufloesung:
-        """Wählt unter mehreren Kandidaten anhand des Vororts aus; bei Widerspruch/Mehrdeutigkeit bleibt offen."""
+    def _entscheide(self, kandidaten: list[str], vorort: str, herkunft: str,
+                     zeitlich: str = "nein") -> tuple[Aufloesung | None, list[str]]:
+        """Prüft eine Stufe der Leiter.
+
+        Liefert (Ergebnis, []), wenn die Stufe entscheidet (genau ein passender Kandidat →
+        eindeutig aufgelöst; mehrere passende Kandidaten → mehrdeutig mit Grund
+        "mehrere_kandidaten", jeweils fertig). Liefert (None, kandidaten), wenn kein Kandidat
+        zum Vorort passt (Widerspruch) — die Leiter steigt dann zur nächsten Stufe weiter, die
+        gemerkten Kandidaten tragen zu deren möglichem Mehrdeutigkeits-Ergebnis bei.
+        """
         kandidaten = list(dict.fromkeys(kandidaten))
         passend = [s for s in kandidaten if self._passt(s, vorort)]
         if len(passend) == 1:
-            return self._fertig(passend[0], herkunft, zeitlich)
-        return Aufloesung("", "", "", herkunft, zeitlich, "ja", ";".join(kandidaten))
+            return self._fertig(passend[0], herkunft, zeitlich), []
+        if len(passend) > 1:
+            return Aufloesung("", "", "", herkunft, zeitlich, "ja", ";".join(passend), "mehrere_kandidaten"), []
+        return None, kandidaten
 
     # --- Leiter ---------------------------------------------------------------
     def aufloesen(self, strasse_norm: str, vorort: str) -> Aufloesung:
@@ -114,25 +132,70 @@ class Strassenindex:
         z = self.zuordnung.get((strasse_norm, vorort)) or self.zuordnung.get((strasse_norm, ""))
         if z:
             return Aufloesung(z["strasse_heute"], z["schl_nr"], "; ".join(self.stadtteile.get(z["schl_nr"], [])), "kuratiert")
+
+        # a, b/c, d werden nacheinander geprüft; bei einem echten Vorort-Widerspruch (ein
+        # gegebener Vorort passt zu keinem Kandidaten der Stufe) steigt die Leiter weiter,
+        # statt abzubrechen. Kandidaten ohne passenden Treffer werden für den Fallback am Ende
+        # gemerkt (Herkunft der ersten Stufe mit Kandidaten, Kandidaten aller betroffenen
+        # Stufen ohne Dubletten).
+        #
+        # Ohne Vorort kann "kein passend" nur an der Kettwig-Regel liegen (bei leerem Vorort
+        # passt sonst jeder Kandidat trivial) — es gibt dann kein Vorort-Signal, das eine
+        # weitere Stufe rechtfertigen würde. Die Auflösung bleibt in diesem Fall offen, statt
+        # über andere Stufen zu raten.
+        gemerkt: list[str] = []
+        gemerkt_herkunft = ""
+
+        def _stufe(kandidaten: list[str], herkunft: str, zeitlich: str = "nein") -> Aufloesung | None:
+            nonlocal gemerkt_herkunft
+            ergebnis, offen = self._entscheide(kandidaten, vorort, herkunft, zeitlich)
+            if ergebnis is not None:
+                return ergebnis
+            if not vorort:
+                return OFFEN
+            if not gemerkt_herkunft:
+                gemerkt_herkunft = herkunft
+            for k in offen:
+                if k not in gemerkt:
+                    gemerkt.append(k)
+            return None
+
         # a) heutiger Name
         if strasse_norm in self.heutig:
-            return self._entscheide(self.heutig[strasse_norm], vorort, "heutig")
+            ergebnis = _stufe(self.heutig[strasse_norm], "heutig")
+            if ergebnis is not None:
+                return ergebnis
+
         # b/c) Konkordanz 1936
         if strasse_norm in self.konk:
             zeilen = self.konk[strasse_norm]
             eindeutig = [z for z in zeilen if z["eindeutig"] == "ja"]
             if eindeutig:
-                return self._entscheide([z["schl_nr"] for z in eindeutig], vorort, "konkordanz")
-            if vorort:
-                return self._entscheide([z["schl_nr"] for z in zeilen], vorort, "konkordanz")
-            return Aufloesung("", "", "", "konkordanz", "nein", "ja", ";".join(z["schl_nr"] for z in zeilen))
+                ergebnis = _stufe([z["schl_nr"] for z in eindeutig], "konkordanz")
+                if ergebnis is not None:
+                    return ergebnis
+            elif vorort:
+                ergebnis = _stufe([z["schl_nr"] for z in zeilen], "konkordanz")
+                if ergebnis is not None:
+                    return ergebnis
+            else:
+                # Konkordanz selbst mehrdeutig und kein Vorort zur Klärung: fertig, keine weitere Stufe.
+                return Aufloesung("", "", "", "konkordanz", "nein", "ja",
+                                   ";".join(z["schl_nr"] for z in zeilen), "konkordanz_nicht_eindeutig")
+
         # d) anderes Namensstadium
         if strasse_norm in self.stadien:
             st = self.stadien[strasse_norm]
             im_fenster = [z for z in st if z["gueltig_ab"][:10] <= FENSTER[1] and z["gueltig_bis"][:10] >= FENSTER[0]]
             if im_fenster:
-                return self._entscheide([z["schl_nr"] for z in im_fenster], vorort, "stadium", "nein")
-            return self._entscheide([z["schl_nr"] for z in st], vorort, "stadium", "ja")
+                ergebnis = _stufe([z["schl_nr"] for z in im_fenster], "stadium", "nein")
+            else:
+                ergebnis = _stufe([z["schl_nr"] for z in st], "stadium", "ja")
+            if ergebnis is not None:
+                return ergebnis
+
+        if gemerkt:
+            return Aufloesung("", "", "", gemerkt_herkunft, "nein", "ja", ";".join(gemerkt), "vorort_widerspruch")
         return OFFEN
 
     def vorschlaege(self, strasse_norm: str, n: int = 3) -> list[tuple[str, str, float]]:
