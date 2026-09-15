@@ -2,6 +2,8 @@
 
 Aufruf:  python3 werkzeuge/stichprobe.py [seed]            → docs/stichprobe_<seed>.csv
          python3 werkzeuge/stichprobe.py gezielt <name>    → docs/stichprobe_<name>.csv
+         python3 werkzeuge/stichprobe.py paare <name>      → docs/stichprobe_<name>.csv
+                                                            aus docs/stichprobe_<name>_paare.csv
 
 Zufallsstichprobe: 200 Adressen der Stufe `haus` und 100 der Stufe `strasse`, mit festem
 Seed aus einer sortierten Grundmenge — derselbe Lauf ergibt dieselbe Stichprobe.
@@ -10,6 +12,11 @@ Gezielte Stichprobe (Runde 3, docs/entscheidungen_strassen.md): prüft nur die v
 Regeln berührten Adressen — 40 mit angenommener Kernstadt (Teil II/III ohne Vorort), 40 aus
 kuratierten Hausnummernbereichen, bevorzugt nahe den Bereichsgrenzen (±15 Nummern), 20 neu
 erkannte Teilstrecken. Spalte `gruppe` nennt den Grund der Ziehung.
+
+Paar-Stichprobe (Runde 4): prüft eine Liste von Straße-Paaren (Spalten `strasse_norm`,
+`strasse_heute`, `zeilen`), etwa die von einer Regeländerung neu aufgelösten. Die 40 zeilenstärksten
+Paare erhalten je eine Adresse (Gruppe `neu_gross`, bevorzugt Stufe haus), aus den übrigen kommen
+20 zufällige Adressen (`neu_rest`). Geprüft wird damit die Straße, nicht die Hausnummer.
 
 `urteil` und `bemerkung` bleiben leer und werden von Hand gefüllt (Vokabular: docs/stichprobe.md).
 """
@@ -22,11 +29,14 @@ import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
+from pipeline.lib.normalisierung import norm_strasse
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
           "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
 UMFANG = {"haus": 200, "strasse": 100}
 UMFANG_GEZIELT = {"kernstadt_angenommen": 40, "bereichsgrenze": 40, "teilstrecke_neu": 20}
+UMFANG_PAARE = {"neu_gross": 40, "neu_rest": 20}
+_STUFENRANG = {"haus": 0, "strasse": 1}
 GRENZSTREIFEN = 15
 # Teilstrecken, die erst durch die OCR-Korrekturen vom 2026-09-15 erkannt werden (essener-strassen v1.0.1).
 TEILSTRECKEN_NEU = ["Beuststraße", "Walpurgisstraße", "II. Hagen"]
@@ -95,6 +105,35 @@ def ziehe_gezielt(adressen: list[dict], grenzen: dict[str, set[int]], teilstreck
     return probe
 
 
+def ziehe_paare(adressen: list[dict], paare: list[dict], seed: int) -> list[dict]:
+    """Zieht je eine Adresse für die zeilenstärksten Paare und zufällige Adressen aus dem Rest.
+
+    Ein Paar ist (strasse_norm, strasse_heute); Adressen werden über norm_strasse(strasse_roh)
+    und strasse_heute zugeordnet. Nur verortete Adressen, Stufe haus vor strasse.
+    """
+    rnd = random.Random(seed)
+    je_paar: dict[tuple[str, str], list[dict]] = {}
+    for a in adressen:
+        if a.get("lat") and a.get("stufe") in _STUFENRANG:
+            je_paar.setdefault((norm_strasse(a["strasse_roh"]), a["strasse_heute"]), []).append(a)
+    zeilen: dict[tuple[str, str], int] = {}
+    for z in paare:
+        k = (z["strasse_norm"], z["strasse_heute"])
+        zeilen[k] = zeilen.get(k, 0) + int(z["zeilen"])
+    reihe = sorted((k for k in zeilen if k in je_paar), key=lambda k: (-zeilen[k], k))
+    gross, rest = reihe[:UMFANG_PAARE["neu_gross"]], reihe[UMFANG_PAARE["neu_gross"]:]
+    probe: list[dict] = []
+    for k in gross:
+        kandidaten = sorted(je_paar[k], key=lambda a: (_STUFENRANG[a["stufe"]], _SORT(a)))
+        bestes = kandidaten[0]["stufe"]
+        probe.append(_zeile(rnd.choice([a for a in kandidaten if a["stufe"] == bestes]), "neu_gross"))
+    restmenge = [a for k in rest for a in je_paar[k]]
+    probe += [_zeile(a, "neu_rest") for a in _wahl(restmenge, UMFANG_PAARE["neu_rest"], rnd)]
+    for g in UMFANG_PAARE:
+        print(f"{g}: {sum(1 for p in probe if p['gruppe'] == g)} gezogen")
+    return probe
+
+
 def main(argv: list[str]) -> None:
     W = projektwurzel()
     adressen = lies_csv(W / "build" / "04_geokodiert.csv")
@@ -102,6 +141,10 @@ def main(argv: list[str]) -> None:
         name = argv[1] if len(argv) > 1 else "r3"
         grenzen = grenzen_aus_zuordnung(lies_csv(W / "kuratierung" / "strassen_zuordnung.csv"))
         probe = ziehe_gezielt(adressen, grenzen, TEILSTRECKEN_NEU, seed=2026)
+    elif argv[:1] == ["paare"]:
+        name = argv[1] if len(argv) > 1 else "r4"
+        paare = lies_csv(W / "docs" / f"stichprobe_{name}_paare.csv")
+        probe = ziehe_paare(adressen, paare, seed=2026)
     else:
         name = argv[0] if argv else "2026"
         probe = ziehe(adressen, int(name))

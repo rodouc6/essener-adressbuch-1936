@@ -1,0 +1,177 @@
+strasse_norm,vorort,teil,zeilen,schl_nr,strasse_heute,stadtteil_heute,zeitlich_abweichend,vorher
+altendorfer straße,,I,941,00050,Altendorfer Straße,Altendorf; Bochold; Schonnebeck; Westviertel,ja,vorort_widerspruch
+josephstraße,,I,316,03367,Westerdorfstraße,Altenessen-Süd,ja,vorort_widerspruch
+luisenstraße,,I,221,02024,Lydiastraße,Rüttenscheid,ja,vorort_widerspruch
+bredeneyer straße,,I,146,00433,Bredeneyer Straße,Bredeney; Werden,ja,homonym_1936
+viktoriastraße,Katernberg,I,134,03221,Viktoriastraße,Katernberg,ja,vorort_widerspruch
+königstraße,,I,100,02402,Porscheplatz,Stadtkern,ja,vorort_widerspruch
+gelsenkirchener straße,Stoppenberg,I,98,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+stoppenberger straße,Katernberg,I,89,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+heinrichstraße,Katernberg,I,85,02137,Middeldorper Weg,Katernberg,ja,vorort_widerspruch
+steeler straße,Kupferdreh,I,77,01903,Langenberger Straße,Überruhr-Hinsel; Überruhr-Holthausen; Byfang,ja,vorort_widerspruch
+wilhelmstraße,Werden,I,72,03095,Tuchmachersteig,Werden,ja,vorort_widerspruch
+bredeneyer straße,,III,43,00433,Bredeneyer Straße,Bredeney; Werden,ja,homonym_1936
+berliner straße,Steele,I,40,00380,Bochumer Straße,Steele,ja,vorort_widerspruch
+bachstraße,Stoppenberg,I,39,03103,Twentmannstraße,Altenessen-Süd; Stoppenberg,ja,vorort_widerspruch
+hauptstraße,Kray,I,39,02639,Rotthauser Straße,Kray,ja,vorort_widerspruch
+markt,Kupferdreh,I,38,01847,Kupferdreher Markt,Kupferdreh,ja,vorort_widerspruch
+querstraße,Karnap,I,36,00405,Boshamerweg,Karnap,ja,vorort_widerspruch
+bredeneyer straße,,II,33,00433,Bredeneyer Straße,Bredeney; Werden,ja,homonym_1936
+werdener straße,Kupferdreh,I,32,01181,Hammer Straße,Fischlaken; Heidhausen; Kupferdreh,ja,vorort_widerspruch
+helenenstraße,Stoppenberg,I,31,03103,Twentmannstraße,Altenessen-Süd; Stoppenberg,ja,vorort_widerspruch
+deipenbeckstalweg,Ueberruhr,I,30,00611,Deipenbecktal,Byfang; Überruhr-Holthausen; Burgaltendorf,ja,vorort_widerspruch
+bruchstraße,,I,27,03320,Waterloostraße,Nordviertel,ja,vorort_widerspruch
+maxstraße,Kray,I,27,01716,Kiwittstraße,Kray,ja,vorort_widerspruch
+rotthausener straße,Katernberg,I,27,03142,Ückendorfer Straße,Katernberg,ja,homonym_1936
+kalkstraße,,I,26,03377,Wickingstraße,Altenessen-Süd,ja,vorort_widerspruch
+mühlenstraße,Kray,I,26,02161,Morgensteig,Kray; Schonnebeck,ja,vorort_widerspruch
+voßstraße,,I,24,03429,Wolbeckstraße,Altenessen-Nord,ja,vorort_widerspruch
+berliner straße,Steele,III,19,00380,Bochumer Straße,Steele,ja,vorort_widerspruch
+knappenstraße,,I,19,02440,Pookweg,Bochold,ja,vorort_widerspruch
+schlägelstraße,Frillendorf,I,19,01040,Gleisdreieck,Frillendorf,ja,vorort_widerspruch
+heinrichstraße,Katernberg,II,18,02137,Middeldorper Weg,Katernberg,ja,vorort_widerspruch
+bahnhofstraße,Ueberruhr,I,17,02263,Nockwinkel,Überruhr-Hinsel,ja,vorort_widerspruch
+buschstraße,Schonnebeck,I,17,00669,Drostenbusch,Schonnebeck,ja,vorort_widerspruch
+heimstraße,,I,16,01473,Im Hesselbruch,Bergeborbeck,ja,vorort_widerspruch
+schulstraße,,I,15,02995,Sulterkamp,Bergeborbeck,ja,vorort_widerspruch
+gelsenkirchener straße,Stoppenberg,II,14,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+ruhrstraße,,I,14,00599,Dammannstraße,Südostviertel,ja,vorort_widerspruch
+stoppenberger straße,Katernberg,II,14,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+viktoriastraße,,I,14,00918,Friedrich-List-Straße,Südviertel,ja,vorort_widerspruch
+deipenbeckstalweg,Ueberruhr,II,13,00611,Deipenbecktal,Byfang; Überruhr-Holthausen; Burgaltendorf,ja,vorort_widerspruch
+schlägelstraße,,I,13,02241,Neukölnstraße,Gerschede,ja,vorort_widerspruch
+buschstraße,,I,12,03440,Wüstenhöferstraße,Altendorf; Bochold; Borbeck-Mitte,ja,vorort_widerspruch
+königstraße,Karnap,I,12,01665,Karnaper Straße,Karnap,ja,vorort_widerspruch
+steeler straße,Kupferdreh,II,12,01903,Langenberger Straße,Überruhr-Hinsel; Überruhr-Holthausen; Byfang,ja,vorort_widerspruch
+hauptstraße,Kray,III,11,02639,Rotthauser Straße,Kray,ja,vorort_widerspruch
+mintropstraße,,I,11,02651,Rüscherie,Holsterhausen,ja,vorort_widerspruch
+poststraße,,I,11,03508,Zipfelweg,Bochold,ja,vorort_widerspruch
+sevenarstraße,Katernberg,I,11,00222,Auf der Reihe,Katernberg,ja,vorort_widerspruch
+stoppenberger straße,Katernberg,III,11,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+katharinenstraße,Karnap,I,10,01258,Heisterholz,Karnap,ja,vorort_widerspruch
+lindenstraße,Kray,I,10,03291,Wackenberg,Leithe,ja,vorort_widerspruch
+werdener straße,Kupferdreh,II,10,01181,Hammer Straße,Fischlaken; Heidhausen; Kupferdreh,ja,vorort_widerspruch
+oststraße,Kupferdreh,I,9,00507,Byfanger Straße,Byfang; Kupferdreh,ja,vorort_widerspruch
+turmstraße,Steele,I,9,02238,Neuholland,Steele,ja,vorort_widerspruch
+wilhelmstraße,Werden,II,9,03095,Tuchmachersteig,Werden,ja,vorort_widerspruch
+horster straße,Katernberg,I,8,00775,Emscherstraße,Altenessen-Nord; Katernberg,ja,vorort_widerspruch
+markt,Kupferdreh,II,8,01847,Kupferdreher Markt,Kupferdreh,ja,vorort_widerspruch
+sedanstraße,Karnap,I,8,03299,Waldemey,Karnap,ja,vorort_widerspruch
+steeler straße,Kupferdreh,III,8,01903,Langenberger Straße,Überruhr-Hinsel; Überruhr-Holthausen; Byfang,ja,vorort_widerspruch
+wilhelmstraße,Steele,I,8,01626,Kaiser-Wilhelm-Straße,Steele,ja,vorort_widerspruch
+goethestraße,Katernberg,I,7,00637,Distelbeckhof,Katernberg; Stoppenberg,ja,vorort_widerspruch
+markt,Kupferdreh,III,7,01847,Kupferdreher Markt,Kupferdreh,ja,vorort_widerspruch
+schulstraße,Ueberruhr,I,7,01312,Hinseler Hof,Überruhr-Hinsel; Überruhr-Holthausen,ja,vorort_widerspruch
+antoniusstraße,,I,6,01761,Kölner Straße,Frohnhausen,ja,vorort_widerspruch
+mathiasstraße,Kray,I,6,01794,Korumhöhe,Leithe,ja,vorort_widerspruch
+nordstraße,Katernberg,I,6,01592,Josef-Hoeren-Straße,Katernberg; Stoppenberg,ja,vorort_widerspruch
+nordstraße,,I,6,02607,Ripshorster Straße,Dellwig,ja,vorort_widerspruch
+augustastraße,,I,5,02593,Ribbeckstraße,Stadtkern; Ostviertel,ja,homonym_1936
+franziskastraße,,I,5,00893,Franziskastraße,Rüttenscheid,ja,vorort_widerspruch
+hüttenstraße,Kupferdreh,I,5,02333,Oslenderstraße,Kupferdreh,ja,vorort_widerspruch
+mittelstraße,Kupferdreh,I,5,00324,Benderstraße,Kupferdreh,ja,vorort_widerspruch
+wiesenstraße,Kupferdreh,I,5,00507,Byfanger Straße,Byfang; Kupferdreh,ja,vorort_widerspruch
+am stadtgarten,,I,4,00012,Admiral-Scheer-Straße,Südviertel,ja,vorort_widerspruch
+bahnhofstraße,Ueberruhr,III,4,02263,Nockwinkel,Überruhr-Hinsel,ja,vorort_widerspruch
+bottroper straße,Karnap,I,4,00188,Arenbergstraße,Karnap,ja,vorort_widerspruch
+ernststraße,Werden,I,4,02391,Pastorsacker,Werden,ja,vorort_widerspruch
+friedrichstraße,Heisingen,I,4,00273,Baderweg,Heisingen,ja,vorort_widerspruch
+hermannstraße,Heisingen,I,4,00506,Butenbergs Kamp,Heisingen,ja,vorort_widerspruch
+humboldtstraße,Katernberg,II,4,00474,Büchelsloh,Katernberg,ja,vorort_widerspruch
+kaiserstraße,Steele,I,4,01626,Kaiser-Wilhelm-Straße,Steele,ja,vorort_widerspruch
+kirchstraße,Karnap,I,4,02111,Meersternweg,Karnap,ja,vorort_widerspruch
+kirchstraße,Steele,I,4,01478,Im Kirchspiel,Steele,ja,vorort_widerspruch
+klarastraße,,I,4,01718,Klarastraße,Rüttenscheid,ja,vorort_widerspruch
+markt,Steele,I,4,01621,Kaiser-Otto-Platz,Steele,ja,vorort_widerspruch
+märkische straße,,I,4,01152,Hachestraße,Stadtkern; Westviertel,ja,vorort_widerspruch
+rosenstraße,Katernberg,I,4,00328,Bergbaustraße,Katernberg,ja,vorort_widerspruch
+bergstraße,,I,3,03532,Zwölfling,Stadtkern,ja,vorort_widerspruch
+bruchstraße,Steele,I,3,00439,Breloher Steig,Horst,ja,vorort_widerspruch
+gartenstraße,Heisingen,I,3,02277,Nottekampsbank,Heisingen,ja,vorort_widerspruch
+gelsenkirchener straße,Stoppenberg,III,3,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+heinrichstraße,Katernberg,III,3,02137,Middeldorper Weg,Katernberg,ja,vorort_widerspruch
+hellweg,,I,3,00330,Bergerhauser Straße,Huttrop; Bergerhausen,ja,vorort_widerspruch
+hochstraße,Schonnebeck,I,3,00884,Forschepoeterweg,Schonnebeck,ja,vorort_widerspruch
+hochstraße,Kray,I,3,02807,Schöllerskampstraße,Kray,ja,vorort_widerspruch
+lessingstraße,Karnap,I,3,01101,Grüteringhof,Karnap,ja,vorort_widerspruch
+maxstraße,Kray,II,3,01716,Kiwittstraße,Kray,ja,vorort_widerspruch
+mühlenstraße,Kray,II,3,02161,Morgensteig,Kray; Schonnebeck,ja,vorort_widerspruch
+nikolausstraße,,I,3,02890,Skagerrakstraße,Südviertel,ja,vorort_widerspruch
+rottstraße,,I,3,02640,Rottstraße,Stadtkern,ja,vorort_widerspruch
+uhlandstraße,Kray,I,3,03314,Warndtleite,Leithe,ja,vorort_widerspruch
+viktoriastraße,Katernberg,II,3,03221,Viktoriastraße,Katernberg,ja,vorort_widerspruch
+wiesenstraße,Stoppenberg,I,3,01653,Kapitelwiese,Stoppenberg,ja,vorort_widerspruch
+wiesenstraße,Heisingen,I,3,01941,Lelei,Heisingen,ja,vorort_widerspruch
+wilhelmstraße,Werden,III,3,03095,Tuchmachersteig,Werden,ja,vorort_widerspruch
+bachstraße,Stoppenberg,II,2,03103,Twentmannstraße,Altenessen-Süd; Stoppenberg,ja,vorort_widerspruch
+bachstraße,Stoppenberg,III,2,03103,Twentmannstraße,Altenessen-Süd; Stoppenberg,ja,vorort_widerspruch
+bergstraße,Kupferdreh,I,2,01310,Hinsbecker Berg,Kupferdreh,ja,vorort_widerspruch
+brunnenstraße,,I,2,00466,Brunnenstraße,Südviertel,ja,vorort_widerspruch
+dammstraße,Kupferdreh,I,2,02465,Prinz-Wilhelm-Damm,Kupferdreh,ja,vorort_widerspruch
+deipenbeckstalweg,Ueberruhr,III,2,00611,Deipenbecktal,Byfang; Überruhr-Holthausen; Burgaltendorf,ja,vorort_widerspruch
+emscherstraße,Stoppenberg,I,2,00637,Distelbeckhof,Katernberg; Stoppenberg,ja,vorort_widerspruch
+freiligrathstraße,Katernberg,I,2,00904,Heinrich-Lersch-Straße,Katernberg,ja,vorort_widerspruch
+friedrichstraße,Stoppenberg,I,2,00803,Stadtteilbibliothek 1930 Esternhovede,Stoppenberg,ja,vorort_widerspruch
+gartenstraße,Kray,I,2,02433,Pleskengarten,Leithe,ja,vorort_widerspruch
+hansastraße,,I,2,01357,Hollestraße,Stadtkern; Ostviertel,ja,vorort_widerspruch
+hermannstraße,Heisingen,II,2,00506,Butenbergs Kamp,Heisingen,ja,vorort_widerspruch
+horster straße,Karnap,I,2,02013,Lünschermannborn,Karnap,ja,vorort_widerspruch
+horster straße,Steele,I,2,01371,Horster Straße,Horst,ja,vorort_widerspruch
+humboldtstraße,Katernberg,I,2,00474,Büchelsloh,Katernberg,ja,vorort_widerspruch
+katernberger straße,Katernberg,I,2,01675,Katernberger Straße,Katernberg,ja,vorort_widerspruch
+kirchstraße,Steele,III,2,01478,Im Kirchspiel,Steele,ja,vorort_widerspruch
+kirchstraße,Heisingen,I,2,02408,Petzelsberg,Heisingen,ja,vorort_widerspruch
+maxstraße,Kray,III,2,01716,Kiwittstraße,Kray,ja,vorort_widerspruch
+metzer straße,Karnap,I,2,02321,Obringer Voerde,Karnap,ja,vorort_widerspruch
+mühlenstraße,Kray,III,2,02161,Morgensteig,Kray; Schonnebeck,ja,vorort_widerspruch
+neustraße,Heisingen,I,2,03326,Wechselpfad,Heisingen,ja,vorort_widerspruch
+oststraße,Kupferdreh,III,2,00507,Byfanger Straße,Byfang; Kupferdreh,ja,vorort_widerspruch
+querstraße,Karnap,II,2,00405,Boshamerweg,Karnap,ja,vorort_widerspruch
+rademachers weg,Steele,I,2,03084,Tossens Büschken,Horst; Freisenbruch,ja,homonym_1936
+weststraße,Kupferdreh,I,2,02420,Phoenixhütte,Kupferdreh,ja,vorort_widerspruch
+altenessener straße,Stoppenberg,I,1,03102,Tuttmannstraße,Stoppenberg,ja,vorort_widerspruch
+bahnhofstraße,Karnap,I,1,00411,Boyer Straße,Karnap,ja,vorort_widerspruch
+bahnhofstraße,Karnap,III,1,00411,Boyer Straße,Karnap,ja,vorort_widerspruch
+bismarckstraße,Katernberg,I,1,01674,Katernberger Markt,Katernberg,ja,vorort_widerspruch
+blumenkamp,Stoppenberg,I,1,00805,Etterbach,Stoppenberg,ja,vorort_widerspruch
+dammstraße,,I,1,03412,Winkhausstraße,Altenessen-Nord,ja,vorort_widerspruch
+ernststraße,Werden,III,1,02391,Pastorsacker,Werden,ja,vorort_widerspruch
+feldstraße,Heisingen,I,1,00807,Eupenstraße,Heisingen,ja,vorort_widerspruch
+freiligrathstraße,Katernberg,III,1,00904,Heinrich-Lersch-Straße,Katernberg,ja,vorort_widerspruch
+gelsenkirchener straße,Karnap,I,1,01997,Lohwiese,Karnap,ja,vorort_widerspruch
+gelsenkirchener straße,Karnap,III,1,01997,Lohwiese,Karnap,ja,vorort_widerspruch
+gelsenkirchener straße,Schonnebeck,I,1,01004,Gelsenkirchener Straße,Katernberg; Schonnebeck; Stoppenberg,ja,vorort_widerspruch
+goethestraße,Kray,I,1,03234,Volksgartenweg,Leithe,ja,vorort_widerspruch
+gustavstraße,Heisingen,I,1,00310,Beckumsfeld,Heisingen,ja,vorort_widerspruch
+helenenstraße,Stoppenberg,II,1,03103,Twentmannstraße,Altenessen-Süd; Stoppenberg,ja,vorort_widerspruch
+herbertstraße,,I,1,00910,Fridtjof-Nansen-Straße,Rüttenscheid,ja,homonym_1936
+hubertstraße,Schonnebeck,I,1,00339,Berkenberg,Kray; Schonnebeck,ja,vorort_widerspruch
+humannstraße,,I,1,03263,Volkeningstraße,Ostviertel,ja,vorort_widerspruch
+hövelstraße,Heidhausen,I,1,02436,Pörtingsiepen,Fischlaken,ja,vorort_widerspruch
+kaiserstraße,Steele,III,1,01626,Kaiser-Wilhelm-Straße,Steele,ja,vorort_widerspruch
+kampstraße,Karnap,I,1,01664,Karnaper Markt,Karnap,ja,vorort_widerspruch
+kampstraße,Heisingen,I,1,01118,Geismarweg,Heisingen,ja,vorort_widerspruch
+kirchstraße,Kupferdreh,I,1,02853,Schwermannstraße,Kupferdreh,ja,vorort_widerspruch
+koloniestraße,,I,1,00308,Beckstädtstraße,Vogelheim,ja,vorort_widerspruch
+marktstraße,Heisingen,I,1,02742,Schangstraße,Heisingen,ja,vorort_widerspruch
+mühlenbergstraße,Heisingen,III,1,02119,Memelstraße,Heisingen,ja,vorort_widerspruch
+mühlenbergstraße,Heisingen,I,1,02119,Memelstraße,Heisingen,ja,vorort_widerspruch
+mühlenweg,,I,1,02062,Mählerweg,Huttrop; Steele,ja,vorort_widerspruch
+nottekampstraße,Heisingen,I,1,02277,Nottekampsbank,Heisingen,ja,vorort_widerspruch
+rosenstraße,Kray,I,1,03234,Volksgartenweg,Leithe,ja,vorort_widerspruch
+rotthausener straße,Katernberg,III,1,03142,Ückendorfer Straße,Katernberg,ja,homonym_1936
+rotthausener straße,,III,1,03142,Ückendorfer Straße,Katernberg,ja,homonym_1936
+ruhrstraße,Kupferdreh,I,1,01641,Kampmannbrücke,Heisingen; Kupferdreh,ja,vorort_widerspruch
+ruhrstraße,Heidhausen,I,1,03204,Velberter Straße,Werden; Heidhausen; Fischlaken,ja,vorort_widerspruch
+schloßstraße,Heisingen,I,1,02923,Staelsfeld,Heisingen,ja,vorort_widerspruch
+schwarzbachstraße,,I,1,01365,Holzschragen,Altenessen-Nord,ja,vorort_widerspruch
+sternstraße,Heisingen,I,1,00273,Baderweg,Heisingen,ja,vorort_widerspruch
+südstraße,,I,1,00763,Ellernstraße,Altenessen-Süd,ja,vorort_widerspruch
+waldstraße,,I,1,03380,Wiedfeldtstraße,Bredeney; Stadtwald; Rüttenscheid,ja,vorort_widerspruch
+werdener straße,Heidhausen,I,1,01181,Hammer Straße,Fischlaken; Heidhausen; Kupferdreh,ja,vorort_widerspruch
+werdener straße,Kupferdreh,III,1,01181,Hammer Straße,Fischlaken; Heidhausen; Kupferdreh,ja,vorort_widerspruch
+werdener straße,,I,1,00901,Freiherr-vom-Stein-Straße,Bredeney; Heisingen,ja,vorort_widerspruch
+wiesenstraße,Heisingen,III,1,01941,Lelei,Heisingen,ja,vorort_widerspruch
+wörthstraße,Karnap,I,1,00345,Berswortschanze,Karnap,ja,vorort_widerspruch
+yorckstraße,,I,1,00049,Altenbergstraße,Nordviertel,ja,homonym_1936
+zollvereinstraße,Stoppenberg,I,1,01488,Im Mühlenbruch,Stoppenberg,ja,vorort_widerspruch

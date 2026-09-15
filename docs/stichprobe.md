@@ -1,11 +1,11 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall) und r3 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_2027.csv`
-liegt gezogen bereit und wird erst nach der nächsten Regelrunde geprüft. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall) und r3 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r4.csv`
+(gezielt zu Runde 4) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
-Erzeugt mit `python3 werkzeuge/stichprobe.py 2026` (gezielt: `python3 werkzeuge/stichprobe.py gezielt r3`) aus `build/04_geokodiert.csv` — derselbe Lauf
+Erzeugt mit `python3 werkzeuge/stichprobe.py 2026` (gezielt: `python3 werkzeuge/stichprobe.py gezielt r3`; Paarliste: `python3 werkzeuge/stichprobe.py paare r4`) aus `build/04_geokodiert.csv` — derselbe Lauf
 ergibt dieselbe Stichprobe. Nach einem Neulauf der Pipeline muss sie neu gezogen und neu geprüft werden.
 Prüfung je Zeile: `display_name` und Koordinate gegen OSM und gegen den Stadtplan 1935.
 `urteil` ∈ {richtig, falsche_strasse, falsche_nummer, falscher_stadtteil, unklar}; `bemerkung` frei.
@@ -75,3 +75,19 @@ Wirkung des Nachlaufs: 154 Hausnummern-Treffer zu Straßenebene (Beuststraße 58
 Eickenscheidter Fuhr 8); Gesamtquote haus 62,5 % unverändert. Einzelfall ohne Folge: Holsterhauser Str. 13
 („eher Beiseweg“, unklar). Lehre wie bei der Ritterstraße: Dickhoff führt heutige Namen mit ihrer
 Kette, aber nicht jede Verlegung eines Straßenzugs; wo heutige und 1935er Führung abweichen, hilft nur der Plan.
+
+## Stichprobe r4 — gezielte Prüfung zu Runde 4 (gezogen 2026-09-15, Prüfung offen)
+
+Grundmenge: die 176 Straße-Paare, die der Regelfix R4.1 (Vorort-Filter vor Zeitstufung,
+`docs/entscheidungen_strassen.md`) neu aufgelöst hat, 3.485 Zeilen, alle `zeitlich_abweichend=ja`;
+Liste in `docs/stichprobe_r4_paare.csv` (Spalte `vorher` = alter Grund, `zeitlich_abweichend`).
+Ziehung `stichprobe.py paare r4`: die 40 zeilenstärksten Paare mit je einer Adresse (`neu_gross`,
+deckt rund 85 % der Zeilen), 20 zufällige Adressen aus den übrigen 136 Paaren (`neu_rest`).
+
+**Prüffrage ist die Straße, nicht die Hausnummer:** Trägt die Straße am Stadtplan 1935 den Namen aus
+dem Adreßbuch (Feld „Name im Plan 1935“ im Werkzeug)? Bei Namen, die Dickhoff vor 1930 enden lässt
+(Josephstraße → Westerdorfstraße, Luisenstraße → Lydiastraße, Königstraße → Porscheplatz), entscheidet
+allein der Plan: steht der alte Name dort an der heutigen Straße, ist Dickhoffs Datum falsch oder die
+Kette vermischt Stränge (Muster Ritterstraße) → `richtig`; steht er woanders → `falsche_strasse` mit
+Hinweis, wo. Entscheidungsregel vorab: mehr als vier `falsche_strasse` unter den 40 großen Paaren,
+und die Rückfallstufe „außerhalb“ wird nicht mehr automatisch, sondern nur kuratiert vergeben.

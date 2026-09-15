@@ -45,3 +45,32 @@ def test_ziehe_gezielt_ist_reproduzierbar():
     a = ziehe_gezielt(adressen, {}, [], seed=7)
     b = ziehe_gezielt(adressen, {}, [], seed=7)
     assert [p["strasse_roh"] for p in a] == [p["strasse_roh"] for p in b]
+
+
+def test_ziehe_paare_grosse_paare_je_eine_adresse_und_rest_zufaellig():
+    from werkzeuge.stichprobe import ziehe_paare
+    from pipeline.lib.normalisierung import norm_strasse
+    paare = [{"strasse_norm": norm_strasse(f"Probe{i}str."), "strasse_heute": f"H{i}", "zeilen": str(100 - i)}
+             for i in range(50)]
+    adressen = []
+    for i in range(50):
+        adressen += [adr(strasse_roh=f"Probe{i}str.", strasse_heute=f"H{i}", hausnr=str(h)) for h in range(1, 6)]
+    adressen.append(adr(strasse_roh="Fremdstr.", strasse_heute="F"))
+    probe = ziehe_paare(adressen, paare, seed=3)
+    gross = [p for p in probe if p["gruppe"] == "neu_gross"]
+    rest = [p for p in probe if p["gruppe"] == "neu_rest"]
+    assert len(gross) == 40 and len(rest) == 20
+    # je großes Paar genau eine Adresse, und zwar aus den 40 zeilenstärksten
+    assert sorted(p["strasse_heute"] for p in gross) == sorted(f"H{i}" for i in range(40))
+    assert {p["strasse_heute"] for p in rest} <= {f"H{i}" for i in range(40, 50)}
+    assert "F" not in {p["strasse_heute"] for p in probe}
+
+
+def test_ziehe_paare_bevorzugt_hausebene_und_verortete():
+    from werkzeuge.stichprobe import ziehe_paare
+    paare = [{"strasse_norm": "astraße", "strasse_heute": "A", "zeilen": "9"}]  # norm_strasse("Astr.")
+    adressen = [adr(strasse_roh="Astr.", strasse_heute="A", stufe="offen", lat="", lon=""),
+                adr(strasse_roh="Astr.", strasse_heute="A", stufe="strasse", hausnr="2"),
+                adr(strasse_roh="Astr.", strasse_heute="A", stufe="haus", hausnr="3")]
+    probe = ziehe_paare(adressen, paare, seed=1)
+    assert [p["stufe"] for p in probe] == ["haus"]

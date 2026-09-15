@@ -1,0 +1,61 @@
+stufe,strasse_roh,hausnr,hausnr_zusatz,stadtteil,strasse_heute,display_name,lat,lon,urteil,bemerkung,gruppe
+haus,Altendorfer Straße,262,,Altendorf; Bochold; Schonnebeck; Westviertel,Altendorfer Straße,"Ave W. Wolter KG, 262, Altendorfer Straße, Altendorf, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45143, Deutschland",51.4600803,6.98246614141602,,,neu_gross
+haus,Josephstraße,19,,Altenessen-Süd,Westerdorfstraße,"19, Westerdorfstraße, Großenbruch, Altenessen-Süd, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45326, Deutschland",51.47857784999999,7.006144682165653,,,neu_gross
+haus,Bredeneyer Str.,3,,Bredeney; Werden,Bredeneyer Straße,"Apotheke am Alfredusbad, 3, Bredeneyer Straße, Bredeney, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45133, Deutschland",51.4211361,7.0009465,,,neu_gross
+haus,Luisenstr.,7,,Rüttenscheid,Lydiastraße,"7, Lydiastraße, Rüttenscheid, Stadtbezirk II, Essen, Nordrhein-Westfalen, 45131, Deutschland",51.4257523,7.002837185751295,,,neu_gross
+haus,Viktoriastr.,9,a,Katernberg,Viktoriastraße,"9, Viktoriastraße, Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.49608135,7.047424937991021,,,neu_gross
+haus,Gelsenkirchener Straße,17,,Katernberg; Schonnebeck; Stoppenberg,Gelsenkirchener Straße,"17, Gelsenkirchener Straße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.47750925,7.037337877617924,,,neu_gross
+haus,Stoppenberger Straße,87,,Katernberg; Schonnebeck; Stoppenberg,Gelsenkirchener Straße,"87, Gelsenkirchener Straße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.481218150000004,7.041393941552564,,,neu_gross
+haus,Heinrichstr.,18,,Katernberg,Middeldorper Weg,"18, Middeldorper Weg, Pestalozzidorf ""Im Grund"", Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.493465799999996,7.05499797109413,,,neu_gross
+strasse,Königstr.,8,,Stadtkern,Porscheplatz,"Porscheplatz, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4570092,7.0134638,,,neu_gross
+haus,Steeler Straße,111,,Überruhr-Hinsel; Überruhr-Holthausen; Byfang,Langenberger Straße,"111, Langenberger Straße, Überruhr-Hinsel, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45277, Deutschland",51.437857199999996,7.077195423632549,,,neu_gross
+haus,Wilhelmstr.,43,,Werden,Tuchmachersteig,"43, Tuchmachersteig, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.3923391,7.00787495,,,neu_gross
+haus,Berliner Str.,47,,Steele,Bochumer Straße,"Arbeit und Bildung Essen GmbH Beratungsbüro Essen-Ost, 47, Bochumer Straße, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.4460115,7.080975,,,neu_gross
+haus,Markt,7,,Kupferdreh,Kupferdreher Markt,"Spieltreff, 7, Kupferdreher Markt, Kupferdreh, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.3909153,7.0821296,,,neu_gross
+haus,Hauptstr.,46,,Kray,Rotthauser Straße,"46, Rotthauser Straße, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45309, Deutschland",51.4740656,7.081830135636644,,,neu_gross
+haus,Deipenbeckstalweg,4,,Byfang; Überruhr-Holthausen; Burgaltendorf,Deipenbecktal,"4, Deipenbecktal, Überruhr-Holthausen, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45277, Deutschland",51.4073938,7.0830673492151845,,,neu_gross
+haus,Werdener Str.,44,,Fischlaken; Heidhausen; Kupferdreh,Hammer Straße,"44, Hammer Straße, Unterhesper, Heidhausen, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.38328605,7.038978393995291,,,neu_gross
+haus,Bachstraße,13,,Altenessen-Süd; Stoppenberg,Twentmannstraße,"13, Twentmannstraße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.47659715,7.03065185161778,,,neu_gross
+haus,Querstr.,1,,Karnap,Boshamerweg,"1, Boshamerweg, Karnap, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.51792725,7.004527153602563,,,neu_gross
+haus,Helenenstr.,19,,Altenessen-Süd; Stoppenberg,Twentmannstraße,"19, Twentmannstraße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.47668995,7.029965021610801,,,neu_gross
+haus,Maxstr.,7,,Kray,Kiwittstraße,"7, Kiwittstraße, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4618635,7.07390803965747,,,neu_gross
+haus,Mühlenstr.,11,a,Kray; Schonnebeck,Morgensteig,"11, Morgensteig, Schonnebeck, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45309, Deutschland",51.4722859,7.062065505811682,,,neu_gross
+haus,Rotthausener Str.,30,,Katernberg,Ückendorfer Straße,"30, Ückendorfer Straße, Pestalozzidorf ""Im Grund"", Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.4919042,7.0503442,,,neu_gross
+haus,Bruchstr.,30,,Nordviertel,Waterloostraße,"30, Waterloostraße, Eltingviertel, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.46709215,7.015607985468888,,,neu_gross
+haus,Kalkstr.,39,,Altenessen-Süd,Wickingstraße,"39, Wickingstraße, Großenbruch, Altenessen-Süd, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45326, Deutschland",51.4840077,7.0018974747965235,,,neu_gross
+haus,Voßstr.,14,,Altenessen-Nord,Wolbeckstraße,"14, Wolbeckstraße, Altenessen-Nord, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.4957687,7.00373658091397,,,neu_gross
+haus,Bahnhofstr.,73,,Überruhr-Hinsel,Nockwinkel,"73, Nockwinkel, Überruhr-Hinsel, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45277, Deutschland",51.4290668,7.073764313768116,,,neu_gross
+haus,Knappenstr.,8,,Bochold,Pookweg,"8, Pookweg, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.47267495,6.965857701285046,,,neu_gross
+strasse,Schlägelstr.,22,,Frillendorf,Gleisdreieck,"Gleisdreieck, Frillendorf, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4642683,7.0378228,,,neu_gross
+haus,Buschstr.,31,,Schonnebeck,Drostenbusch,"31, Drostenbusch, Schonnebeck, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45309, Deutschland",51.4850187,7.04872691390668,,,neu_gross
+haus,Heimstr.,26,,Bergeborbeck,Im Hesselbruch,"26, Im Hesselbruch, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.48856965,6.956743803360893,,,neu_gross
+haus,Schulstr.,62,a,Bergeborbeck,Sulterkamp,"62, Sulterkamp, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4876949,6.969779045277564,,,neu_gross
+haus,Ruhrstr.,96,,Südostviertel,Dammannstraße,"96, Dammannstraße, Südostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.446928799999995,7.026305226715038,,,neu_gross
+haus,Viktoriastr.,21,,Südviertel,Friedrich-List-Straße,"21, Friedrich-List-Straße, Sternviertel, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.4421922,7.012024953082134,,,neu_gross
+haus,Schlägelstr.,5,,Gerschede,Neukölnstraße,"5, Neukölnstraße, Gerschede, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45357, Deutschland",51.4864439,6.938498974082415,,,neu_gross
+haus,Buschstr.,79,,Altendorf; Bochold; Borbeck-Mitte,Wüstenhöferstraße,"79, Wüstenhöferstraße, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.4662689,6.9562355371621605,,,neu_gross
+haus,Königstraße,240,,Karnap,Karnaper Straße,"240, Karnaper Straße, Karnap, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.53100445,7.0125477931069575,,,neu_gross
+haus,Mintropstr.,10,,Holsterhausen,Rüscherie,"10, Rüscherie, Holsterhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45147, Deutschland",51.437824199999994,6.979988505699772,,,neu_gross
+haus,Oststr.,28,,Byfang; Kupferdreh,Byfanger Straße,"28, Byfanger Straße, Kupferdreh, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.391010800000004,7.08582917079679,,,neu_gross
+haus,Poststr.,12,,Bochold,Zipfelweg,"12, Zipfelweg, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.48111565,6.978038099404888,,,neu_gross
+haus,Sevenarstr.,18,a,Katernberg,Auf der Reihe,"18, Auf der Reihe, Pestalozzidorf ""Im Grund"", Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.488257450000006,7.065767504296879,,,neu_gross
+strasse,Katernberger Str.,100,a,Katernberg,Katernberger Straße,"Katernberger Straße, Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.5033894,7.0494422,,,neu_rest
+haus,Lessingstr.,7,,Karnap,Grüteringhof,"7, Grüteringhof, Karnap, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.5201359,7.0108327872787335,,,neu_rest
+haus,Lessingstr.,30,,Karnap,Grüteringhof,"30, Grüteringhof, Karnap, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.518793,7.012602879760678,,,neu_rest
+strasse,Markt,4,,Steele,Kaiser-Otto-Platz,"Kaiser-Otto-Platz, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.4479944,7.0758525,,,neu_rest
+haus,Hermannstraße,21,,Heisingen,Butenbergs Kamp,"21, Butenbergs Kamp, Heisingen, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45259, Deutschland",51.39923345,7.065574249999997,,,neu_rest
+haus,Lindenstraße,23,,Leithe,Wackenberg,"23, Wackenberg, Leithe, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4666175,7.098837217087317,,,neu_rest
+haus,Turmstr.,14,,Steele,Neuholland,"14, Neuholland, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.446055799999996,7.086528146206149,,,neu_rest
+strasse,Hüttenstr.,81,,Kupferdreh,Oslenderstraße,"Oslenderstraße, Dilldorf, Kupferdreh, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.384683,7.0826234,,,neu_rest
+haus,Ernststr.,5,,Werden,Pastorsacker,"5, Pastorsacker, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.3963992,7.009341884639996,,,neu_rest
+strasse,Mathiasstraße,49,,Leithe,Korumhöhe,"Korumhöhe, Leithe, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.464652,7.0966816,,,neu_rest
+haus,Freiligrathstr.,25,,Katernberg,Heinrich-Lersch-Straße,"25, Heinrich-Lersch-Straße, Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.499316199999996,7.0399380615744676,,,neu_rest
+haus,Bottroper Str.,59,,Karnap,Arenbergstraße,"59, Arenbergstraße, Karnap, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.5179884,6.9976275,,,neu_rest
+strasse,Humannstr.,27,,Ostviertel,Volkeningstraße,"Volkeningstraße, Ostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4573792,7.0240632,,,neu_rest
+haus,Ernststr.,3,a,Werden,Pastorsacker,"3, Pastorsacker, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.39644365,7.009264563295454,,,neu_rest
+haus,Schulstraße,3,,Überruhr-Hinsel; Überruhr-Holthausen,Hinseler Hof,"3, Hinseler Hof, Überruhr-Hinsel, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45277, Deutschland",51.42858245,7.076988873833374,,,neu_rest
+haus,Schulstraße,2,,Überruhr-Hinsel; Überruhr-Holthausen,Hinseler Hof,"2, Hinseler Hof, Überruhr-Hinsel, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45277, Deutschland",51.42860725,7.076608676710553,,,neu_rest
+haus,Markt,9,,Steele,Kaiser-Otto-Platz,"Praxis Dr. med. Thorsten Rau Facharzt für Innere Medizin, 9, Kaiser-Otto-Platz, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.4482522,7.0760632,,,neu_rest
+strasse,Kirchstr.,26,,Steele,Im Kirchspiel,"Im Kirchspiel, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.4480518,7.0749903,,,neu_rest
+strasse,Hellweg,139,,Huttrop; Bergerhausen,Bergerhauser Straße,"Bergerhauser Straße, Bergerhausen, Stadtbezirk II, Essen, Nordrhein-Westfalen, 45136, Deutschland",51.4431734,7.0374161,,,neu_rest
+haus,Horster Str.,54,,Horst,Horster Straße,"54, Horster Straße, Horst, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45279, Deutschland",51.431380149999995,7.0985224399161755,,,neu_rest
