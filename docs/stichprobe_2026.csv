@@ -135,7 +135,7 @@ haus,Witteringstr.,82,,Südviertel; Rüttenscheid,Witteringstraße,"82, Witterin
 haus,Helmstr.,68,,Frintrop; Dellwig,Helmstraße,"68, Helmstraße, Frintrop, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45359, Deutschland",51.48231425,6.908586951601123,richtig,
 haus,Rebenlaube,12,,Bredeney,Rebenlaube,"12, Rebenlaube, Bredeney, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45133, Deutschland",51.4226939,6.996813392866846,richtig,
 haus,Feldstr.,16,,Borbeck-Mitte; Bergeborbeck,Kuhlmannsfeld,"16, Kuhlmannsfeld, Borbeck-Mitte, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.4795475,6.951130857541319,richtig,
-haus,Alfredstr.,27,,Leithe,Brüninghofer Weg,"27, Brüninghofer Weg, Leithe, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4671412,7.095779935326448,unklar,Auf der Karte ist die Brüningstr. verzeichnet.
+haus,Alfredstr.,27,,Leithe,Brüninghofer Weg,"27, Brüninghofer Weg, Leithe, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4671412,7.095779935326448,richtig,Auf der Karte ist die Brüningstr. verzeichnet. | Plan 1935 zeigt Altnamen: Brüningstraße (Plan) / Alfredstraße → Brüninghofer Weg 1936-01-15
 haus,Förderstr.,20,,Vogelheim,Förderstraße,"20, Förderstraße, Vogelheim, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4927961,6.982938991234154,unklar,keine Gebäude und Str.nr. eingezeichnet
 haus,Manteuffelstr.,4,a,Südostviertel,Manteuffelstraße,"4a, Manteuffelstraße, Südostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.450565,7.029847,richtig,
 haus,Eligiushöhe,17,,Steele,Eligiushöhe,"17, Eligiushöhe, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.445309699999996,7.060715836975083,richtig,
@@ -235,7 +235,7 @@ strasse,Kattendahl,23,,Frintrop,Kattendahl,"Kattendahl, Frintrop, Stadtbezirk IV
 strasse,Seibertzstr.,3,,Frohnhausen,Seibertzstraße,"Seibertzstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.4541377,6.9723089,richtig,
 strasse,Frankenstr.,267,,Bredeney; Stadtwald; Rellinghausen,Frankenstraße,"Frankenstraße, Bredeney, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45133, Deutschland",51.4140107,6.9967072,richtig,
 strasse,Kruppstr.,155,,Holsterhausen; Südviertel,Kruppstraße,"Kruppstraße, Sternviertel, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.4500187,7.0129038,unklar,Frau-Berta-Krupp-Str.?
-strasse,Am Parkfriedhof,77,,Huttrop,Am Parkfriedhof,"Am Parkfriedhof, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4493221,7.0436994,unklar,
+strasse,Am Parkfriedhof,77,,Huttrop,Am Parkfriedhof,"Am Parkfriedhof, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4493221,7.0436994,richtig,Plan 1935 zeigt Altnamen: Luegstraße → Am Parkfriedhof 1936-01-15
 strasse,Nöckersberg,28,,Byfang,Nöckersberg,"Nöckersberg, Byfang, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.406472,7.095108,unklar,wie Dickhoff: beide Straßen
 strasse,Niederfeldstraße,36,,Altendorf,Niederfeldstraße,"Niederfeldstraße, Altendorf, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45143, Deutschland",51.465071,6.9769422,richtig,
 strasse,Severinstraße,67,,Ostviertel,Severinstraße,"Severinstraße, Ostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4587347,7.019622,richtig,
@@ -247,13 +247,13 @@ strasse,Dortmunder Str.,401,,Kray,Dorstfelder Straße,"Dorstfelder Straße, Kray
 strasse,Sartoriusstr.,97,,Rellinghausen,Sartoriusstraße,"Sartoriusstraße, Rellinghausen, Stadtbezirk II, Essen, Nordrhein-Westfalen, 45134, Deutschland",51.4238846,7.0561743,unklar,
 strasse,Vereinstr.,34,,Stadtkern,Vereinstraße,"Vereinstraße, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4558414,7.0094566,richtig,
 strasse,Teichstr.,23,,Stadtkern,Teichstraße,"Teichstraße, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4535227,7.0146551,richtig,
-strasse,Ritterstraße,16,,Ostviertel,Rauterstraße,"Rauterstraße, Ostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4585493,7.0275299,unklar,
+strasse,Ritterstraße,16,,Ostviertel,Rauterstraße,"Rauterstraße, Ostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4585493,7.0275299,richtig,Plan 1935 beschriftet die Diagonale zwischen Elisen-/Frillendorfer Str. und Steingröverstr. als Ritterstr.; deckt sich mit der heutigen Rauterstraße (OSM way 27368124). Dickhoffs Kette (Ritterstraße nur bis 1904) fasst zwei Straßenstränge zusammen.
 strasse,Weinberg,23,,Werden; Fischlaken,Weinberg,"Weinberg, Fischlaken, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.3905176,7.0162225,richtig,Weinberg/Tannenberg(?)
 strasse,I. Weberstr.,13,,Stadtkern,I. Weberstraße,"I. Weberstraße, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4587728,7.0106818,richtig,
 strasse,Amalienstr.,37,,Stoppenberg,Rüggenkamp,"Rüggenkamp, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4683708,7.0432999,richtig,
 strasse,Karpinskistr.,119,,Nordviertel; Ostviertel; Stoppenberg,Stoppenberger Straße,"Stoppenberger Straße, Eltingviertel, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4695236,7.0242677,richtig,
 strasse,Kl. Grabenstraße,5,,Stoppenberg,Von-Bergmann-Straße,"Von-Bergmann-Straße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4739251,7.0336672,richtig,
-strasse,Waterloostr.,38,,Nordviertel,Waterloostraße,"Waterloostraße, Eltingviertel, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4672366,7.0155547,unklar,Bruchstraße (?)
+strasse,Waterloostr.,38,,Nordviertel,Waterloostraße,"Waterloostraße, Eltingviertel, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4672366,7.0155547,richtig,Bruchstraße (?) | Plan 1935 zeigt Altnamen: Bruchstraße → Waterloostraße 1935-11-14
 strasse,am Schlagbaum,21,,Altenessen-Süd,Am Schlagbaum,"Am Schlagbaum, Altenessen-Süd, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45326, Deutschland",51.4940512,7.007781,richtig,
 strasse,Heßlerstr.,272,,Altenessen-Nord,Heßlerstraße,"Heßlerstraße, Altenessen-Nord, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.5088213,7.0074394,richtig,
 strasse,Emilienstr.,78,,Südviertel,Emilienstraße,"Emilienstraße, Sternviertel, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.44269,7.0140526,richtig,
@@ -269,9 +269,9 @@ strasse,Düppelstr.,5,c,Huttrop,Düppelstraße,"Düppelstraße, Huttrop, Stadtbe
 strasse,Segerothstraße,89,,Nordviertel; Westviertel,Segerothstraße,"Segerothstraße, Segeroth, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4661569,7.0003318,richtig,
 strasse,Steeler Str.,152,,Stadtkern; Ostviertel; Südostviertel; Huttrop; Steele,Steeler Straße,"Steeler Straße, Südostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4516314,7.0288989,richtig,Steeler Str.
 strasse,Wüstenhöferstr.,209,,Altendorf; Bochold; Borbeck-Mitte,Wüstenhöferstraße,"Wüstenhöferstraße, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.467718,6.9545465,richtig,
-strasse,Huttropstr.,34,,Huttrop,Huttropstraße,"Huttropstraße, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4425968,7.033785,unklar,
+strasse,Huttropstr.,34,,Huttrop,Huttropstraße,"Huttropstraße, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4425968,7.033785,richtig,Plan 1935 zeigt Altnamen: Herwarthstraße → Huttropstraße 1935-11-14
 strasse,Rellinghauser Str.,149,,Südviertel; Rüttenscheid; Huttrop; Bergerhausen; Rellinghausen,Rellinghauser Straße,"Rellinghauser Straße, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.4398716,7.0229175,richtig,
-strasse,Krayer Str.,75,,Kray; Steele,Krayer Straße,"Krayer Straße, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4702001,7.0833375,unklar,Hautpstr. (?)
+strasse,Krayer Str.,75,,Kray; Steele,Krayer Straße,"Krayer Straße, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4702001,7.0833375,richtig,Hautpstr. (?) | Plan 1935 zeigt Altnamen: Gelsenkirchener Straße → Krayer Straße 1936-01-15
 strasse,Zimmerstr.,67,,Westviertel,Zimmerstraße,"Zimmerstraße, Westviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4547919,7.0031932,richtig,
 strasse,Unionstraße,51,,Nordviertel,Universitätsstraße,"Universitätsstraße, Segeroth, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4631253,7.0071561,richtig,
 strasse,Karpinskistr.,107,,Nordviertel; Ostviertel; Stoppenberg,Stoppenberger Straße,"Stoppenberger Straße, Eltingviertel, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4695236,7.0242677,richtig,
@@ -289,7 +289,7 @@ strasse,Söllingstr.,84,,Ostviertel,Söllingstraße,"Söllingstraße, Ostviertel
 strasse,Neuessener Str.,24,,Altenessen-Nord,Neuessener Straße,"Neuessener Straße, Altenessen-Nord, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.5042209,6.9988121,richtig,
 strasse,Haskenstr.,55,,Altendorf,Haskenstraße,"Haskenstraße, Altendorf, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45143, Deutschland",51.4615031,6.9782374,richtig,
 strasse,III. Hagen,33,,Stadtkern,III. Hagen,"III. Hagen, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4552169,7.0095831,richtig,
-strasse,Sulterkamp,63,,Bergeborbeck,Sulterkamp,"Sulterkamp, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4887005,6.9761019,unklar,
+strasse,Sulterkamp,63,,Bergeborbeck,Sulterkamp,"Sulterkamp, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4887005,6.9761019,richtig,Plan 1935 zeigt Altnamen: Schulstraße → Sulterkamp 1935-11-14
 strasse,Bruckmannstr.,100,,Katernberg; Altenessen-Süd,Stauderstraße,"Stauderstraße, Altenessen-Süd, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45326, Deutschland",51.4978652,7.0238525,richtig,
 strasse,Kaiserstr.,72,a,Katernberg,Viktoriastraße,"Viktoriastraße, Katernberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45327, Deutschland",51.5004246,7.0430787,richtig,
 strasse,Twingenbergplatz,6,,Huttrop,Twingenbergplatz,"Twingenbergplatz, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4551519,7.0406369,unklar,
