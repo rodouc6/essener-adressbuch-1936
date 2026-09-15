@@ -111,7 +111,8 @@ function zeige() {
   $('flags').innerHTML = fl.map(([t, c]) => `<span class="flag ${c}">${t}</span>`).join('');
   $('stadien').innerHTML = (h.strassen || []).map(s => `<div><b>${s.lemma}</b> <span style="color:#666">(${s.schl_nr}; ${s.stadtteile})</span><table>` +
     s.stadien.map(st => { const akt = st.gueltig_ab <= '1936-12-31' && (!st.gueltig_bis || st.gueltig_bis > '1936-01-01');
-      return `<tr class="${akt ? 'aktiv' : ''}"><td class="j">${st.gueltig_ab || '?'} – ${st.gueltig_bis || 'heute'}</td><td>${st.name}</td></tr>`; }).join('') + '</table></div>').join('') || '<i>kein Straßenschlüssel</i>';
+      const plan = st.gueltig_ab <= '1935-06-30' && (!st.gueltig_bis || st.gueltig_bis > '1935-06-30');
+      return `<tr class="${akt ? 'aktiv' : ''}"><td class="j">${st.gueltig_ab || '?'} – ${st.gueltig_bis || 'heute'}</td><td>${st.name}${plan && !akt ? ' <span class="flag">Name im Plan 1935</span>' : ''}${plan && akt && st.gueltig_bis && st.gueltig_bis <= '1936-12-31' ? ' <span class="flag">im Plan 1935, 1936 umbenannt</span>' : ''}</td></tr>`; }).join('') + '</table></div>').join('') || '<i>kein Straßenschlüssel</i>';
   $('urteile').innerHTML = URTEILE.map((u, n) => `<button data-u="${u}" class="${z.urteil === u ? 'gewaehlt' : ''}" ${z.stufe === 'strasse' && u === 'falsche_nummer' ? 'disabled' : ''}><kbd>${n + 1}</kbd>${u}</button>`).join('');
   $('bemerkung').value = z.bemerkung;
   const ll = [+z.lat, +z.lon];
