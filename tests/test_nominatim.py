@@ -239,6 +239,7 @@ def test_cache_roundtrip(tmp_path, monkeypatch):
     assert len(aufrufe) == 1
     c2 = nm.Client("http://x", tmp_path / "cache.jsonl")
     assert c2.suche({"city": "Essen", "street": "A"}) == [{"lat": "1", "lon": "2"}]
+    c2.schliessen()
     assert len(aufrufe) == 1
     zeile = json.loads((tmp_path / "cache.jsonl").read_text().splitlines()[0])
     assert json.loads(zeile["k"])["v"] == nm.SCHEMA_VERSION
