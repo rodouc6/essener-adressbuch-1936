@@ -24,3 +24,17 @@ def test_loese_strassen():
     v = [x for x in vorschlaege if x["strasse_norm"] == "archternbergstraße"][0]
     assert v["lemma_1"] == "Achternbergstraße" and v["zeilen"] == "1"
     assert vorschlaege[0]["zeilen"] >= vorschlaege[-1]["zeilen"]  # nach Zeilenzahl absteigend
+
+
+def test_loese_strassen_leerer_strasse_norm():
+    """Zeilen ohne Straßenname (strasse_norm=='') bleiben offen mit Enum-Neutralwerten statt leerem String."""
+    idx = Strassenindex(FIX / "strassen", FIX / "strassen_zuordnung.csv")
+    zeilen = [{"id": "1", "strasse_norm": "", "Vorort": "", "Adresse": ""}]
+    out, paare, _ = loese_strassen(zeilen, idx)
+    assert out[0]["herkunft"] == "offen"
+    assert out[0]["mehrdeutig"] == "nein"
+    assert out[0]["zeitlich_abweichend"] == "nein"
+    assert out[0]["strasse_heute"] == ""
+    assert out[0]["grund_mehrdeutig"] == ""
+    p = {(x["strasse_norm"], x["vorort"]): x for x in paare}
+    assert p[("", "")]["herkunft"] == "offen"

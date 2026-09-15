@@ -39,9 +39,14 @@ def loese_strassen(zeilen: list[dict], idx: Strassenindex) -> tuple[list[dict], 
     for z in zeilen:
         k = (z["strasse_norm"], z["Vorort"])
         if k not in paare:
-            a = idx.aufloesen(*k) if k[0] else None
-            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "zeilen": 0, "beispiel": z["Adresse"],
-                        **({f: "" for f in AUFLOESUNGSFELDER} | ({"herkunft": "offen"} if a is None else asdict(a)))}
+            if k[0]:
+                auf = asdict(idx.aufloesen(*k))
+            else:
+                # Leerer strasse_norm: idx.aufloesen wird nicht aufgerufen, Paar bleibt offen
+                # mit den Enum-Neutralwerten "nein" statt leerem String.
+                auf = {f: "" for f in AUFLOESUNGSFELDER}
+                auf.update(herkunft="offen", mehrdeutig="nein", zeitlich_abweichend="nein")
+            paare[k] = {"strasse_norm": k[0], "vorort": k[1], "zeilen": 0, "beispiel": z["Adresse"], **auf}
         paare[k]["zeilen"] += 1
     out = []
     for z in zeilen:
