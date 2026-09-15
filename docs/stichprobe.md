@@ -1,12 +1,8 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Aktuell zu prüfen:** `docs/stichprobe_r3.csv` — gezielte Stichprobe zu Runde 3 (100 Zeilen, Spalte
-`gruppe`): 40 `kernstadt_angenommen` (Prüffrage: liegt die Straße wirklich in der Kernstadt, oder zeigt
-der Plan 1935 eine gleichnamige im Vorort?), 40 `bereichsgrenze` (Adressen nahe den kuratierten
-Hausnummerngrenzen: sitzt die Nummer heute noch an der richtigen Stelle?), 20 `teilstrecke_neu`.
-Prüfseite: `pruefung.html?seed=r3`. Entscheidungsregel: mehr als zwei Vorortfälle unter den 40
-Kernstadt-Zeilen → Annahme zurücknehmen oder nachschärfen. Die Zufallsstichprobe `stichprobe_2027.csv`
-liegt gezogen bereit, wird aber erst nach der nächsten Regelrunde geprüft; Seed 2026 ist abgeschlossen.
+**Stand:** Seed 2026 (Zufall) und r3 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_2027.csv`
+liegt gezogen bereit und wird erst nach der nächsten Regelrunde geprüft. Gezielte Stichproben
+(`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
 Erzeugt mit `python3 werkzeuge/stichprobe.py 2026` (gezielt: `python3 werkzeuge/stichprobe.py gezielt r3`) aus `build/04_geokodiert.csv` — derselbe Lauf
@@ -66,3 +62,16 @@ Befunde:
 - **Verlängerte Straßen** (Stubertal Verl. 1972, Förderstr. Verl. 1930, Königsberger Str.,
   Schmiedestraße): Hausnummer kann auf dem späteren Abschnitt liegen; ohne Eckzahlen nicht
   entscheidbar. Bleibt `unklar`.
+
+## Ergebnis r3 — gezielte Stichprobe zu Runde 3 (Prüfung 2026-09-15)
+
+| Gruppe | richtig | unklar | falsche_strasse | Schluss |
+|---|---:|---:|---:|---|
+| kernstadt_angenommen (40) | 37 | 3 | 0 | Annahme hält (Regel: >2 Vorortfälle → zurücknehmen). Flag bleibt. |
+| bereichsgrenze (40) | 37 | 2 | 1 | Grenzen aus Nummernkreis/Anker halten (Rüttenscheider 12/12, Heinrich-Strunk 9/9). Nr. 144 Eickenscheidter Fuhr liegt am Plan an der Burggrafenstraße → Grenzstreifen 140–144 auf `nummer_unsicher`. |
+| teilstrecke_neu (20) | 7 | 10 | 3 | **Fund:** heutige Beuststraße 49–63 verläuft auf der Herkulesstraße von 1935 (Abzweig zur Zeche Hercules); Dickhoff verzeichnet die Umwidmung nicht. Nr. 38–45 richtig. → Beuststraße ab 47 und Herkulesstraße ganz auf `nummer_unsicher`. |
+
+Wirkung des Nachlaufs: 154 Hausnummern-Treffer zu Straßenebene (Beuststraße 58, Herkulesstraße 88,
+Eickenscheidter Fuhr 8); Gesamtquote haus 62,5 % unverändert. Einzelfall ohne Folge: Holsterhauser Str. 13
+(„eher Beiseweg“, unklar). Lehre wie bei der Ritterstraße: Dickhoff führt heutige Namen mit ihrer
+Kette, aber nicht jede Verlegung eines Straßenzugs; wo heutige und 1935er Führung abweichen, hilft nur der Plan.

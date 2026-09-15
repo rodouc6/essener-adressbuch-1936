@@ -39,6 +39,12 @@ Fuhr (>144 Gerhard-Stötzel-Straße), Helmholtzstraße (→ Heinrich-Strunk-Stra
 Walpurgisstraße (>77 Im Walpurgistal), Wittekindstraße (>94 unsicher), Karlstraße (Kernstadt →
 Altenessen-Nord), Vogelheimer Straße (→ heutige; das Buch nutzt schon den Neunamen Hafenstraße).
 
+**R3.5 Nachlauf nach gezielter Stichprobe (100 Zeilen, s. `stichprobe.md`).** Kernstadt-Annahme
+bestätigt (0 Vorortfälle unter 40). Bereichsgrenzen bestätigt bis auf Eickenscheidter Fuhr 144 →
+Grenzstreifen 140–144 `nummer_unsicher`. Fund Beuststraße: heutige Nr. 49–63 liegen auf der
+Herkulesstraße von 1935 (Umwidmung fehlt bei Dickhoff) → Beuststraße ab 47 und Herkulesstraße ganz
+nur Straßenebene. Kosten: 154 Hausnummern-Treffer, Quote unverändert 62,5 %.
+
 **Bewusst offen gelassen.** Bredeneyer Straße ohne Vorort (Name galt 1936 offiziell nicht),
 Im Hesselbruch (141 Nummern gegen 28 heute), Kapellenstraße; Vorortfälle mit nicht eindeutiger
 Konkordanz (Kirchstraße Katernberg, Wallstraße, Bruchweiher …); 2.635 offene Namen ohne Dickhoff-
