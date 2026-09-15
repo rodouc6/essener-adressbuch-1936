@@ -1,4 +1,7 @@
 """Stufe 01: data/essen1936.csv → build/01_bereinigt.csv, build/dubletten.csv, build/01_ausgeschlossen.csv"""
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
 from pipeline.lib import einlesen
 from pipeline.lib.io import projektwurzel, schreib_csv
 
