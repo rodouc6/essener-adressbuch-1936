@@ -1,9 +1,9 @@
 """Erzeugt Prüfhinweise zur manuellen Stichprobe (Spec §6) für werkzeuge/pruefung.html.
 
-Aufruf: python3 werkzeuge/stichprobe_hinweise.py [seed]
+Aufruf: python3 werkzeuge/stichprobe_hinweise.py [name]   (Seed oder Name, z. B. 2026, r3)
 
-Liest docs/stichprobe_<seed>.csv, build/04_geokodiert.csv, build/03_strassen.csv und die
-Straßendatenbank (essener-strassen) und schreibt build/stichprobe_hinweise.json: je
+Liest docs/stichprobe_<name>.csv, build/04_geokodiert.csv, build/03_strassen.csv und die
+Straßendatenbank (essener-strassen) und schreibt build/stichprobe_hinweise_<name>.json: je
 Stichprobenzeile (gleiche Reihenfolge) die Herkunft der Straßenauflösung, die OSM-Kennung,
 ob die Hausnummer im Treffer vorkommt und die Dickhoff-Namensstadien aller beteiligten Straßen.
 Die Stichproben-CSV selbst bleibt unverändert.
@@ -54,7 +54,7 @@ def hinweis(zeile: dict, geo: dict, schl_nrs: list[str], idx: Strassenindex) -> 
     return h
 
 
-def main(seed: int) -> None:
+def main(name: str) -> None:
     W = projektwurzel()
     idx = Strassenindex(strassen_dir(), W / "kuratierung" / "strassen_zuordnung.csv")
     geo = {tuple(z[f] for f in SCHLUESSEL): z for z in lies_csv(W / "build" / "04_geokodiert.csv")}
@@ -62,17 +62,17 @@ def main(seed: int) -> None:
     for z in lies_csv(W / "build" / "03_strassen.csv"):
         if z["schl_nr"]:
             schl.setdefault((z["strasse_norm"], z["strasse_heute"]), set()).add(z["schl_nr"])
-    probe = lies_csv(W / "docs" / f"stichprobe_{seed}.csv")
+    probe = lies_csv(W / "docs" / f"stichprobe_{name}.csv")
     hinweise = []
     for zeile in probe:
         g = geo.get(tuple(zeile[f] for f in SCHLUESSEL), {})
         nrs = sorted(schl.get((norm_strasse(zeile["strasse_roh"]), zeile["strasse_heute"]), set()))
         hinweise.append(hinweis(zeile, g, nrs, idx))
-    ziel = W / "build" / "stichprobe_hinweise.json"
+    ziel = W / "build" / f"stichprobe_hinweise_{name}.json"
     ziel.write_text(json.dumps(hinweise, ensure_ascii=False, indent=1), encoding="utf-8")
     ohne = sum(1 for h in hinweise if not h["strassen"])
     print(f"geschrieben: {ziel.relative_to(W)} ({len(hinweise)} Zeilen, {ohne} ohne Straßenschlüssel)")
 
 
 if __name__ == "__main__":
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else 2026)
+    main(sys.argv[1] if len(sys.argv) > 1 else "2026")

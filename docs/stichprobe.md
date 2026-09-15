@@ -1,17 +1,22 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Aktuell zu prüfen:** `docs/stichprobe_2027.csv` (Volllauf nach Runde 3, s. `entscheidungen_strassen.md`);
-Prüfseite mit `pruefung.html?seed=2027`. Seed 2026 ist abgeschlossen und bleibt als Beleg liegen.
+**Aktuell zu prüfen:** `docs/stichprobe_r3.csv` — gezielte Stichprobe zu Runde 3 (100 Zeilen, Spalte
+`gruppe`): 40 `kernstadt_angenommen` (Prüffrage: liegt die Straße wirklich in der Kernstadt, oder zeigt
+der Plan 1935 eine gleichnamige im Vorort?), 40 `bereichsgrenze` (Adressen nahe den kuratierten
+Hausnummerngrenzen: sitzt die Nummer heute noch an der richtigen Stelle?), 20 `teilstrecke_neu`.
+Prüfseite: `pruefung.html?seed=r3`. Entscheidungsregel: mehr als zwei Vorortfälle unter den 40
+Kernstadt-Zeilen → Annahme zurücknehmen oder nachschärfen. Die Zufallsstichprobe `stichprobe_2027.csv`
+liegt gezogen bereit, wird aber erst nach der nächsten Regelrunde geprüft; Seed 2026 ist abgeschlossen.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
-Erzeugt mit `python3 werkzeuge/stichprobe.py 2026` aus `build/04_geokodiert.csv` — derselbe Lauf
+Erzeugt mit `python3 werkzeuge/stichprobe.py 2026` (gezielt: `python3 werkzeuge/stichprobe.py gezielt r3`) aus `build/04_geokodiert.csv` — derselbe Lauf
 ergibt dieselbe Stichprobe. Nach einem Neulauf der Pipeline muss sie neu gezogen und neu geprüft werden.
 Prüfung je Zeile: `display_name` und Koordinate gegen OSM und gegen den Stadtplan 1935.
 `urteil` ∈ {richtig, falsche_strasse, falsche_nummer, falscher_stadtteil, unklar}; `bemerkung` frei.
 
 ## Prüfwerkzeug
 
-    python3 werkzeuge/stichprobe_hinweise.py 2026   # einmal je Stichprobe → build/stichprobe_hinweise.json
+    python3 werkzeuge/stichprobe_hinweise.py r3     # einmal je Stichprobe → build/stichprobe_hinweise_<name>.json
     python3 werkzeuge/serve.py                       # → http://localhost:8765/werkzeuge/pruefung.html
 
 Die Seite blättert durch die Stichprobe, zeigt OSM heute und Stadtplan 1935 nebeneinander an der

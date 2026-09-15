@@ -3,8 +3,8 @@
     python3 werkzeuge/serve.py [port]   → http://localhost:8765/werkzeuge/pruefung.html
 
 Liefert das Projektverzeichnis statisch aus und nimmt unter
-POST /speichern/stichprobe_<seed>.csv die geprüfte Stichprobe als JSON
-({"zeilen": [...]}) entgegen. Geschrieben wird docs/stichprobe_<seed>.csv mit den
+POST /speichern/stichprobe_<name>.csv die geprüfte Stichprobe als JSON
+({"zeilen": [...]}) entgegen. Geschrieben wird docs/stichprobe_<name>.csv mit den
 Spalten aus werkzeuge/stichprobe.py; `urteil` muss leer oder aus dem Vokabular
 von docs/stichprobe.md sein, sonst wird nichts geschrieben (400).
 """
@@ -21,9 +21,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from pipeline.lib.io import projektwurzel, schreib_csv
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
-          "display_name", "lat", "lon", "urteil", "bemerkung"]
+          "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
 URTEILE = {"", "richtig", "falsche_strasse", "falsche_nummer", "falscher_stadtteil", "unklar"}
-_ZIEL = re.compile(r"^/speichern/(stichprobe_\d+\.csv)$")
+_ZIEL = re.compile(r"^/speichern/(stichprobe_[A-Za-z0-9_-]+\.csv)$")
 
 
 class Handler(SimpleHTTPRequestHandler):

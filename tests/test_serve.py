@@ -10,7 +10,7 @@ import pytest
 from werkzeuge.serve import Handler, FELDER
 
 KOPF = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
-        "display_name", "lat", "lon", "urteil", "bemerkung"]
+        "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
 
 
 @pytest.fixture

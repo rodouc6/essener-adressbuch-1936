@@ -94,7 +94,7 @@ function zeige() {
   const z = zeilen[i], h = hinweise[i] || {};
   $('pos').textContent = `${i + 1} / ${zeilen.length}`;
   $('fortschritt').textContent = `${zeilen.filter(offen).length} offen · haus ${zeilen.filter(z => z.stufe === 'haus' && offen(z)).length}, strasse ${zeilen.filter(z => z.stufe === 'strasse' && offen(z)).length}`;
-  $('stufe').textContent = z.stufe; $('stufe').className = 'flag ' + (z.stufe === 'haus' ? 'gut' : '');
+  $('stufe').textContent = z.stufe + (z.gruppe ? ' · ' + z.gruppe : ''); $('stufe').className = 'flag ' + (z.stufe === 'haus' ? 'gut' : '');
   $('strasse_roh').textContent = z.strasse_roh;
   $('hausnr').textContent = z.hausnr + z.hausnr_zusatz + (z.stufe === 'strasse' ? '  (nicht verortet, zählt nicht)' : '');
   $('stadtteil').textContent = z.stadtteil || '— (Kernstadt oder unbekannt)';
@@ -162,10 +162,10 @@ document.addEventListener('keydown', e => {
 
 // --- Start ---
 Promise.all([fetch(CSV).then(r => { if (!r.ok) throw new Error(CSV + ' nicht gefunden'); return r.text(); }),
-             fetch('../build/stichprobe_hinweise.json').then(r => r.ok ? r.json() : [])])
+             fetch(`../build/stichprobe_hinweise_${SEED}.json`).then(r => r.ok ? r.json() : [])])
   .then(([text, hw]) => {
     [felder, zeilen] = parseCsv(text); hinweise = hw;
-    if (hinweise.length && hinweise.length !== zeilen.length) $('status').textContent = 'Hinweise passen nicht zur Stichprobe – stichprobe_hinweise.py neu ausführen';
+    if (hinweise.length && hinweise.length !== zeilen.length) $('status').textContent = 'Hinweise passen nicht zur Stichprobe – stichprobe_hinweise.py ' + SEED + ' ausführen';
     i = Math.max(0, zeilen.findIndex(offen)); zeige(); ladePlan();
   }).catch(e => { $('status').textContent = 'FEHLER: ' + e.message; $('status').className = 'status fehler'; });
 </script></body></html>
