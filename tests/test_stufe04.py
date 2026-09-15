@@ -11,7 +11,7 @@ class FakeClient:
         self.n += 1
         if params["street"].startswith("5 "):
             return [{"lat": "1", "lon": "2", "osm_type": "way", "osm_id": "9", "class": "building", "type": "yes",
-                     "display_name": "x", "address": {"house_number": "5", "road": "Bochumer Straße", "suburb": "Steele"}}]
+                     "display_name": "x", "address": {"house_number": "5", "road": "Bochumer Straße", "suburb": "Steele", "city": "Essen"}}]
         return []
 
 
@@ -34,7 +34,7 @@ class FakeClientMitFehler:
             raise requests.RequestException("Verbindung fehlgeschlagen")
         if params["street"].startswith("5 "):
             return [{"lat": "1", "lon": "2", "osm_type": "way", "osm_id": "9", "class": "building", "type": "yes",
-                     "display_name": "x", "address": {"house_number": "5", "road": "Bochumer Straße", "suburb": "Steele"}}]
+                     "display_name": "x", "address": {"house_number": "5", "road": "Bochumer Straße", "suburb": "Steele", "city": "Essen"}}]
         return []
 
 
