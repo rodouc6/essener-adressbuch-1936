@@ -23,7 +23,9 @@ Ausgaben liegen in `build/` (löschbar, nicht im Git). Vom Menschen gepflegte Ta
 
 Tests: `python3 -m pytest -q` (keine Netzverbindung nötig).
 Lokale Vorschau der Ergebnisse: `python3 werkzeuge/serve.py` (statt `python3 -m http.server`,
-weil PMTiles Range-Requests braucht).
+weil PMTiles Range-Requests braucht und der Server die geprüfte Stichprobe zurückschreibt).
+Kontrollkarte: `werkzeuge/kontrollkarte.html`; Prüfwerkzeug für die manuelle Stichprobe:
+`werkzeuge/pruefung.html` (Anleitung in `docs/stichprobe.md`).
 
 ## Vokabulare der Ausgabespalten
 

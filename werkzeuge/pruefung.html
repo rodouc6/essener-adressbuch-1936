@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Prüfung der Stichprobe</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+html,body{height:100%;margin:0;font:14px/1.4 system-ui,sans-serif;color:#222}
+body{display:grid;grid-template-rows:auto 1fr;grid-template-columns:380px 1fr;height:100vh}
+header{grid-column:1/3;display:flex;gap:16px;align-items:center;padding:6px 12px;background:#f3f3f3;border-bottom:1px solid #ccc}
+header .status{margin-left:auto;color:#555}header .status.fehler{color:#b00020;font-weight:600}
+aside{padding:10px 12px;overflow:auto;border-right:1px solid #ccc}
+#karten{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#ccc}
+#karten>div{position:relative;background:#eee}
+.karte{height:100%}.titel{position:absolute;z-index:1000;top:6px;left:50px;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:3px;font-size:12px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#666;margin:14px 0 4px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}dt{color:#666}dd{margin:0;word-break:break-word}
+.flag{display:inline-block;background:#fde68a;padding:0 6px;border-radius:3px;margin:2px 4px 0 0;font-size:12px}
+.flag.gut{background:#d1fae5}
+table{border-collapse:collapse;font-size:12px;width:100%}td{padding:1px 4px;vertical-align:top;border-top:1px solid #eee}td.j{color:#666;white-space:nowrap}
+tr.aktiv td{background:#fff7d6;font-weight:600}
+.urteile{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.urteile button{padding:6px 10px;border:1px solid #999;border-radius:4px;background:#fff;cursor:pointer}
+.urteile button:disabled{opacity:.35;cursor:default}.urteile button.gewaehlt{background:#1a7f37;color:#fff;border-color:#1a7f37}
+.urteile button kbd{opacity:.6;margin-right:4px}
+textarea{width:100%;box-sizing:border-box;height:64px;margin-top:6px}
+.nav button{padding:4px 10px}
+.hilfe{font-size:12px;color:#666;margin-top:12px}
+</style></head>
+<body>
+<header>
+  <span class="nav"><button id="zurueck" title="Pfeil links">◀</button> <b id="pos"></b> <button id="vor" title="Pfeil rechts">▶</button></span>
+  <span id="fortschritt"></span>
+  <label><input type="checkbox" id="nurOffene" checked> nur offene</label>
+  <span class="status" id="status"></span>
+</header>
+<aside>
+  <h2>Eintrag 1936 <span id="stufe" class="flag"></span></h2>
+  <dl><dt>Straße</dt><dd id="strasse_roh"></dd><dt>Hausnr.</dt><dd id="hausnr"></dd><dt>Vorort(e)</dt><dd id="stadtteil"></dd></dl>
+  <h2>Ergebnis der Pipeline</h2>
+  <dl><dt>Heute</dt><dd id="strasse_heute"></dd><dt>Nominatim</dt><dd id="display_name"></dd><dt>Koordinate</dt><dd id="koord"></dd></dl>
+  <div id="flags"></div>
+  <h2>Namensstadien (Dickhoff)</h2>
+  <div id="stadien"></div>
+  <h2>Urteil</h2>
+  <div class="urteile" id="urteile"></div>
+  <textarea id="bemerkung" placeholder="Bemerkung (Esc verlässt das Feld)"></textarea>
+  <p class="hilfe">Tasten 1–5 = Urteil, ←/→ = blättern, Enter = nächste offene Zeile. Jede Änderung wird sofort in die CSV geschrieben.</p>
+</aside>
+<div id="karten">
+  <div><div class="titel">OpenStreetMap heute</div><div id="k1" class="karte"></div></div>
+  <div><div class="titel">Stadtplan 1935 (Stadt Essen, nur zur Prüfung)</div><div id="k2" class="karte"></div></div>
+</div>
+<script>
+const SEED = new URLSearchParams(location.search).get('seed') || '2026';
+const CSV = `../docs/stichprobe_${SEED}.csv`;
+const URTEILE = ['richtig', 'falsche_strasse', 'falsche_nummer', 'falscher_stadtteil', 'unklar'];
+let felder = [], zeilen = [], hinweise = [], i = 0;
+
+// --- CSV (RFC 4180) ---
+function parseCsv(text) {
+  const rows = []; let row = [], feld = '', q = false;
+  for (let k = 0; k < text.length; k++) {
+    const c = text[k];
+    if (q) { if (c === '"') { if (text[k+1] === '"') { feld += '"'; k++; } else q = false; } else feld += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(feld); feld = ''; }
+    else if (c === '\n') { row.push(feld); rows.push(row); row = []; feld = ''; }
+    else if (c !== '\r') feld += c;
+  }
+  if (feld || row.length) { row.push(feld); rows.push(row); }
+  const kopf = rows.shift();
+  return [kopf, rows.filter(r => r.length > 1).map(r => Object.fromEntries(kopf.map((f, j) => [f, r[j] ?? ''])))];
+}
+
+// --- Karten ---
+const k1 = L.map('k1'), k2 = L.map('k2', {zoomControl: false});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap', maxZoom: 19}).addTo(k1);
+const plan = L.imageOverlay('', [[0,0],[0,0]], {opacity: 1}).addTo(k2);
+function ladePlan() {
+  const b = k2.getBounds(), s = k2.getSize();
+  plan.setUrl(`https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export?bbox=${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}&bboxSR=4326&imageSR=4326&size=${s.x},${s.y}&format=png&transparent=true&f=image`);
+  plan.setBounds(b);
+}
+let sync = false;
+function koppeln(a, b) { a.on('move', () => { if (sync) return; sync = true; b.setView(a.getCenter(), a.getZoom(), {animate: false}); sync = false; }); }
+koppeln(k1, k2); koppeln(k2, k1);
+k2.on('moveend', ladePlan);
+const m1 = L.circleMarker([0,0], {radius: 8, color: '#d00', weight: 3, fillOpacity: .2}).addTo(k1);
+const m2 = L.circleMarker([0,0], {radius: 8, color: '#d00', weight: 3, fillOpacity: .2}).addTo(k2);
+
+// --- Anzeige ---
+const $ = id => document.getElementById(id);
+function offen(z) { return !z.urteil; }
+function zeige() {
+  const z = zeilen[i], h = hinweise[i] || {};
+  $('pos').textContent = `${i + 1} / ${zeilen.length}`;
+  $('fortschritt').textContent = `${zeilen.filter(offen).length} offen · haus ${zeilen.filter(z => z.stufe === 'haus' && offen(z)).length}, strasse ${zeilen.filter(z => z.stufe === 'strasse' && offen(z)).length}`;
+  $('stufe').textContent = z.stufe; $('stufe').className = 'flag ' + (z.stufe === 'haus' ? 'gut' : '');
+  $('strasse_roh').textContent = z.strasse_roh;
+  $('hausnr').textContent = z.hausnr + z.hausnr_zusatz + (z.stufe === 'strasse' ? '  (nicht verortet, zählt nicht)' : '');
+  $('stadtteil').textContent = z.stadtteil || '— (Kernstadt oder unbekannt)';
+  $('strasse_heute').textContent = z.strasse_heute;
+  $('display_name').textContent = z.display_name;
+  const osm = h.osm_type && h.osm_id ? ` · <a href="https://www.openstreetmap.org/${h.osm_type}/${h.osm_id}" target="_blank">OSM-Objekt</a>` : '';
+  $('koord').innerHTML = `<a href="https://www.openstreetmap.org/?mlat=${z.lat}&mlon=${z.lon}#map=18/${z.lat}/${z.lon}" target="_blank">${(+z.lat).toFixed(5)}, ${(+z.lon).toFixed(5)}</a>${osm}`;
+  const fl = [];
+  if (h.herkunft) fl.push(['Auflösung: ' + h.herkunft, h.herkunft === 'heutig' || h.herkunft === 'kuratiert' ? 'gut' : '']);
+  if (h.zeitlich_abweichend === 'ja') fl.push(['Namensstadium nicht für 1936 belegt', '']);
+  if (h.teilstrecke_abgetrennt === 'ja') fl.push(['Teilstrecke später abgetrennt – Nummerierung prüfen', '']);
+  if (h.mehrdeutig === 'ja') fl.push(['mehrdeutig: ' + h.grund_mehrdeutig, '']);
+  if (z.stufe === 'haus') fl.push(h.nummer_getroffen ? ['Hausnummer im OSM-Treffer', 'gut'] : ['Hausnummer NICHT im Treffer' + (h.zusatz_ignoriert === 'ja' ? ' (Zusatz ignoriert)' : ''), '']);
+  $('flags').innerHTML = fl.map(([t, c]) => `<span class="flag ${c}">${t}</span>`).join('');
+  $('stadien').innerHTML = (h.strassen || []).map(s => `<div><b>${s.lemma}</b> <span style="color:#666">(${s.schl_nr}; ${s.stadtteile})</span><table>` +
+    s.stadien.map(st => { const akt = st.gueltig_ab <= '1936-12-31' && (!st.gueltig_bis || st.gueltig_bis > '1936-01-01');
+      return `<tr class="${akt ? 'aktiv' : ''}"><td class="j">${st.gueltig_ab || '?'} – ${st.gueltig_bis || 'heute'}</td><td>${st.name}</td></tr>`; }).join('') + '</table></div>').join('') || '<i>kein Straßenschlüssel</i>';
+  $('urteile').innerHTML = URTEILE.map((u, n) => `<button data-u="${u}" class="${z.urteil === u ? 'gewaehlt' : ''}" ${z.stufe === 'strasse' && u === 'falsche_nummer' ? 'disabled' : ''}><kbd>${n + 1}</kbd>${u}</button>`).join('');
+  $('bemerkung').value = z.bemerkung;
+  const ll = [+z.lat, +z.lon];
+  m1.setLatLng(ll); m2.setLatLng(ll);
+  k1.setView(ll, Math.max(k1.getZoom() || 0, 17), {animate: false});
+}
+
+// --- Speichern ---
+let timer = null;
+function speichern() {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    try {
+      const r = await fetch(`/speichern/stichprobe_${SEED}.csv`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({zeilen})});
+      const t = await r.text();
+      $('status').textContent = r.ok ? `gespeichert ${new Date().toLocaleTimeString('de-DE')}` : `FEHLER: ${t}`;
+      $('status').className = 'status' + (r.ok ? '' : ' fehler');
+    } catch (e) { $('status').textContent = 'FEHLER: Server nicht erreichbar'; $('status').className = 'status fehler'; }
+  }, 300);
+}
+function setzeUrteil(u) {
+  const z = zeilen[i];
+  if (z.stufe === 'strasse' && u === 'falsche_nummer') return;
+  z.urteil = z.urteil === u ? '' : u;
+  speichern(); zeige();
+}
+
+// --- Navigation ---
+function gehe(d) {
+  const nur = $('nurOffene').checked;
+  let j = i;
+  for (let s = 0; s < zeilen.length; s++) { j = (j + d + zeilen.length) % zeilen.length; if (!nur || offen(zeilen[j])) { i = j; break; } }
+  zeige();
+}
+$('zurueck').onclick = () => gehe(-1); $('vor').onclick = () => gehe(1);
+$('urteile').onclick = e => { const b = e.target.closest('button'); if (b && !b.disabled) setzeUrteil(b.dataset.u); };
+$('bemerkung').oninput = () => { zeilen[i].bemerkung = $('bemerkung').value; speichern(); };
+document.addEventListener('keydown', e => {
+  if (e.target === $('bemerkung')) { if (e.key === 'Escape') $('bemerkung').blur(); return; }
+  if (e.key >= '1' && e.key <= '5') setzeUrteil(URTEILE[+e.key - 1]);
+  else if (e.key === 'ArrowLeft') gehe(-1);
+  else if (e.key === 'ArrowRight') gehe(1);
+  else if (e.key === 'Enter') { const nur = $('nurOffene').checked; $('nurOffene').checked = true; gehe(1); $('nurOffene').checked = nur; }
+});
+
+// --- Start ---
+Promise.all([fetch(CSV).then(r => { if (!r.ok) throw new Error(CSV + ' nicht gefunden'); return r.text(); }),
+             fetch('../build/stichprobe_hinweise.json').then(r => r.ok ? r.json() : [])])
+  .then(([text, hw]) => {
+    [felder, zeilen] = parseCsv(text); hinweise = hw;
+    if (hinweise.length && hinweise.length !== zeilen.length) $('status').textContent = 'Hinweise passen nicht zur Stichprobe – stichprobe_hinweise.py neu ausführen';
+    i = Math.max(0, zeilen.findIndex(offen)); zeige(); ladePlan();
+  }).catch(e => { $('status').textContent = 'FEHLER: ' + e.message; $('status').className = 'status fehler'; });
+</script></body></html>
