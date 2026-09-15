@@ -84,6 +84,13 @@ hat die Kernstadt entschieden. Ein leerer Vorort bedeutet dort zu 95 % Kernstadt
 heute nicht mehr gelten (Straße nach 1936 geteilt, zusammengelegt oder neu gezählt); verortet
 wird nur die Straße.
 
+`schreibvariante=ja` mit `strasse_angeglichen` — der Buchname fand keinen Kandidaten und wurde über
+gestufte Schlüsselformen (ß/ss; Leerzeichen, Bindestrich, Punkt; ck/k, th/t, dt/t, ph/f, c/k, y/i, ie/i;
+Umlaut-Umschrift, ei/ey; Endung -ener/-er, Genitiv-s, Doppelbuchstaben) an genau einen Dickhoff-Namen
+angeglichen (`strasse_angeglichen`, normiert), der dann die normale Kette durchläuft. Mehrere Namen mit
+gleichem Schlüssel → keine Angleichung. Der Buchname bleibt in `strasse_roh` erhalten; Karte und
+Prüfwerkzeug zeigen beide Schreibweisen (Regelliste: `pipeline/lib/normalisierung.py`, SCHLUESSELSTUFEN).
+
 `kuratierung/strassen_zuordnung.csv` — vom Menschen belegte Straßenzuordnung, schlägt alles:
 
 | Spalte | Bedeutung |

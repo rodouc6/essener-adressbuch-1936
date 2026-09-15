@@ -76,3 +76,48 @@ def norm_stadtteil(text: str) -> str:
     if alias:
         return alias
     return t.replace("- ", "")
+
+
+# --- Schlüsselformen für Schreibvarianten (Runde 5) ---------------------------------
+# Jede Stufe ist strenger als die vorige und wirft mehr Unterschiede weg. Zwei Namen gelten
+# als Schreibvarianten, wenn sie auf irgendeiner Stufe denselben Schlüssel haben — der
+# Straßenindex nutzt das nur, wenn der Name sonst keinen Kandidaten hat, und nur bei
+# genau einem Dickhoff-Namen mit gleichem Schlüssel. Stufen: 0 ß/ss · 1 Leerzeichen,
+# Bindestrich, Punkt, Apostroph · 2 ck/k, th/t, dt/t, ph/f, c/k, y/i, ie/i · 3 Umlaut-
+# Umschrift, ei/ey/ai · 4 Endung -ener/-er, Genitiv-s, Doppelbuchstaben.
+def _k0(s: str) -> str:
+    return s.replace("ß", "ss")
+
+
+def _k1(s: str) -> str:
+    return re.sub(r"[\s\-\.']", "", _k0(s))
+
+
+def _k2(s: str) -> str:
+    s = _k1(s)
+    for a, b in (("ck", "k"), ("th", "t"), ("dt", "t"), ("ph", "f"), ("c", "k"), ("y", "i"), ("ie", "i")):
+        s = s.replace(a, b)
+    return s
+
+
+def _k3(s: str) -> str:
+    s = _k2(s)
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ae", "e"), ("oe", "o"), ("ue", "u"),
+                 ("ey", "ai"), ("ei", "ai")):
+        s = s.replace(a, b)
+    return s
+
+
+def _k4(s: str) -> str:
+    s = _k3(s)
+    s = re.sub(r"enerstrasse$", "erstrasse", s)      # heidhausener → heidhauser
+    s = re.sub(r"s(strasse|weg|platz|berg|kamp|hof)$", r"\1", s)  # einigkeitsstraße → einigkeitstraße
+    return re.sub(r"([a-z])\1", r"\1", s)            # schederhoff → schederhof
+
+
+SCHLUESSELSTUFEN = (_k0, _k1, _k2, _k3, _k4)
+
+
+def schluesselformen(name_norm: str) -> list[str]:
+    """Schlüsselformen eines normalisierten Namens, je Stufe eine (siehe SCHLUESSELSTUFEN)."""
+    return [f(name_norm) for f in SCHLUESSELSTUFEN]

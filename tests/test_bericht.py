@@ -69,3 +69,9 @@ def test_bericht_flags_runde3():
     md, _ = erzeuge([eintrag(vorort_angenommen="ja", nummer_unsicher="ja"), eintrag()], [adresse()], strassen=[],
                     dubletten=[], ausgeschlossen=[], vorschlaege=[])
     assert "Vorort angenommen" in md and "Nummer unsicher" in md
+
+
+def test_bericht_schreibvariante_tabelle():
+    md, _ = erzeuge([eintrag(schreibvariante="ja"), eintrag()], [adresse()], strassen=[],
+                    dubletten=[], ausgeschlossen=[], vorschlaege=[])
+    assert "Schreibvariante" in md

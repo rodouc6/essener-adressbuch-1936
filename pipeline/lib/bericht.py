@@ -58,6 +58,8 @@ def erzeuge(eintraege, adressen, strassen, dubletten, ausgeschlossen, vorschlaeg
                    Counter(e.get("vorort_angenommen", "nein") for e in eintraege), g)
     md += _tabelle("Nummer unsicher (kuratierter Bereich, nur Straßenebene)",
                    Counter(e.get("nummer_unsicher", "nein") for e in eintraege), g)
+    md += _tabelle("Schreibvariante (Buchname über Schlüsselform an Dickhoff-Namen angeglichen)",
+                   Counter(e.get("schreibvariante", "nein") for e in eintraege), g)
     md += _tabelle("Parse-Status", Counter(e["parse_status"] for e in eintraege), g)
     md += _vorort_tabelle()
     for teil in ("I", "II", "III"):

@@ -7,7 +7,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from pipeline.lib.io import lies_csv
-from pipeline.lib.normalisierung import norm_stadtteil, norm_strasse
+from pipeline.lib.normalisierung import norm_stadtteil, norm_strasse, schluesselformen
 
 # Primäres Zeitfenster: das Namensstadium muss irgendwann im Erhebungsjahr 1936 gelten.
 # Nur solche Stadien sind Homonyme (Spec §8.1, entschieden 2026-09-15).
@@ -97,6 +97,10 @@ class Aufloesung:
     vorort_angenommen: str = "nein"
     # "ja": kuratierter Hausnummernbereich, dessen Nummern heute nicht mehr gelten → nur Straßenebene.
     nummer_unsicher: str = "nein"
+    # "ja": der Buchname fand keinen Kandidaten und wurde über Schlüsselformen (Runde 5) an genau
+    # einen Dickhoff-Namen angeglichen; `strasse_angeglichen` nennt diesen normierten Namen.
+    schreibvariante: str = "nein"
+    strasse_angeglichen: str = ""
 
 
 OFFEN = Aufloesung(strasse_heute="", schl_nr="", stadtteil="", herkunft="offen")
@@ -176,8 +180,27 @@ class Strassenindex:
             for z in lies_csv(zuordnung_pfad):
                 self.zuordnung.setdefault((norm_strasse(z["strasse_roh_norm"]), z["vorort"]), []).append(z)
         self._pool = sorted(set(self.stadien) | set(self.heutig))
+        # Schlüsselformen aller Dickhoff-Namen je Stufe (Runde 5): Schlüssel → Menge normierter Namen.
+        self._schluessel: list[dict[str, set[str]]] = [{} for _ in schluesselformen("x")]
+        for name in self._pool:
+            for i, k in enumerate(schluesselformen(name)):
+                self._schluessel[i].setdefault(k, set()).add(name)
 
     # --- Kandidaten -----------------------------------------------------------
+    def angleichen(self, strasse_norm: str) -> str:
+        """Sucht stufenweise den einen Dickhoff-Namen mit gleicher Schlüsselform (Schreibvariante).
+
+        Gibt den normierten Dickhoff-Namen zurück oder "", wenn keine Stufe genau einen Namen
+        liefert. Mehrere Namen auf einer Stufe (Meyer-/Maierstraße) beenden die Suche: nicht raten.
+        """
+        for i, k in enumerate(schluesselformen(strasse_norm)):
+            namen = self._schluessel[i].get(k, set()) - {strasse_norm}
+            if len(namen) == 1:
+                return next(iter(namen))
+            if len(namen) > 1:
+                return ""
+        return ""
+
     def _nicht_essen_1936(self, schl_nr: str) -> bool:
         """Liegt die Straße vollständig in einem 1936 nicht Essener Ort?"""
         stadtteile = self.stadtteile.get(schl_nr, [])
@@ -361,10 +384,15 @@ class Strassenindex:
                               herkunft="kuratiert",
                               nummer_unsicher="ja" if z.get("nummer_unsicher", "").strip() == "ja" else "nein")
 
-        # 2. Kandidaten sammeln.
+        # 2. Kandidaten sammeln. Ohne Kandidaten: Schreibvariante? (Runde 5) Der angeglichene
+        #    Name durchläuft dieselbe Kette, das Ergebnis trägt schreibvariante=ja.
         kandidaten = self._sammle(strasse_norm)
         if not kandidaten:
-            return OFFEN
+            angeglichen = self.angleichen(strasse_norm)
+            if not angeglichen or not self._sammle(angeglichen):
+                return OFFEN
+            a = self.aufloesen(angeglichen, vorort, teil, hausnr)
+            return replace(a, schreibvariante="ja", strasse_angeglichen=angeglichen)
 
         # 3. Vorort-Filter — vor der Zeitstufung, damit ein 1936 gültiger Kandidat im
         #    falschen Ort nicht den räumlich richtigen, aber nur weit datierten verdrängt

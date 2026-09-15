@@ -1,6 +1,7 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall), r3 und r4 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall), r3 und r4 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r5.csv`
+(Schreibvarianten, Runde 5) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
@@ -106,3 +107,18 @@ nur noch für heute gültige Namen, sonst `name_erloschen`. Die sechs am Plan be
 kuratiert (`strassen_zuordnung.csv`, Beleg „Stadtplan 1935 zeigt … am Punkt“). Offen aus den Bemerkungen:
 Sevenarstr. 18 Katernberg liegt am Plan an der Rotthauser Str.; Markt Steele = Hansamarkt?; Stoppenberger
 Straße 87: Grenze Gelsenkirchener/Mittelstraße; Werdener Str. 44: Hespertaler Landstraße oder Hammer Straße.
+
+## Stichprobe r5 — Schreibvarianten (gezogen 2026-09-16, Prüfung offen)
+
+Grundmenge: die 690 Paare, die Runde 5 über Schlüsselformen aufgelöst hat (`docs/stichprobe_r5_paare.csv`,
+Spalte `strasse_angeglichen`). Ziehung `stichprobe.py paare r5`: 40 zeilenstärkste Paare je eine Adresse
+(`neu_gross`), 20 zufällige aus dem Rest (`neu_rest`).
+
+**Prüffrage, eindeutig:** *Liegt der rote Punkt auf der Straße, die im Adreßbuch steht?* Maßstab ist das
+Buch, nicht Dickhoff. Am Stadtplan 1935 den Buchnamen (oder seine Schreibvariante, das Werkzeug zeigt
+„Schreibvariante: Buchname an … angeglichen“) an der Stelle des Punktes suchen.
+- Steht der Buchname bzw. die Variante dort → `richtig`.
+- Steht dort ein anderer Name → `falsche_strasse`, in `bemerkung` den Namen aus dem Plan.
+- Nicht lesbar oder unentscheidbar → `unklar`, Bemerkung.
+Entscheidungsregel vorab: mehr als drei `falsche_strasse` unter den 40 großen Paaren → die betroffene
+Schlüsselstufe wird zurückgenommen (die Stufe steht je Fall in der Paarliste ableitbar; ich werte sie aus).

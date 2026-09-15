@@ -63,7 +63,7 @@ def test_adressschluessel_enthaelt_herkunftsfelder():
     """Herkunft, Zeitflag und Mehrdeutigkeit gehören zum Adressschlüssel, damit
     04_geokodiert.csv je Adresse eindeutig ist und 05 nicht nachjoinen muss."""
     from pipeline.lib.stufen import ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-7:-3] == ["herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
+    assert ADRESSSCHLUESSEL[-9:-5] == ["herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
 
 
 def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
@@ -78,7 +78,8 @@ def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
 
 def test_adressschluessel_enthaelt_teilstrecke():
     from pipeline.lib.stufen import ADRESSFELDER, ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-3:] == ["teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher"]
+    assert ADRESSSCHLUESSEL[-5:] == ["teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher",
+                                     "schreibvariante", "strasse_angeglichen"]
     assert "teilstrecke_abgetrennt" in ADRESSFELDER and "nummer_unsicher" in ADRESSFELDER
 
 

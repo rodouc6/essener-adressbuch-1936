@@ -34,7 +34,7 @@ def parse_zeilen(zeilen: list[dict]) -> list[dict]:
 
 AUFLOESUNGSFELDER = ["strasse_heute", "schl_nr", "stadtteil", "herkunft", "zeitlich_abweichend",
                      "mehrdeutig", "kandidaten", "grund_mehrdeutig", "teilstrecke_abgetrennt",
-                     "vorort_angenommen", "nummer_unsicher"]
+                     "vorort_angenommen", "nummer_unsicher", "schreibvariante", "strasse_angeglichen"]
 # hausnr_bereich: Kennung des kuratierten Hausnummernbereichs („1-323“), sonst leer.
 PAARFELDER = ["strasse_norm", "vorort", "teil", "hausnr_bereich", "zeilen", "beispiel"] + AUFLOESUNGSFELDER
 VORSCHLAGSFELDER = ["strasse_norm", "vorort", "teil", "zeilen", "beispiel"] + [
@@ -100,7 +100,8 @@ VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "displ
 # nachjoinen muss (Spec §5.04).
 ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh",
                     "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig",
-                    "teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher"]
+                    "teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher",
+                    "schreibvariante", "strasse_angeglichen"]
 ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
 
 

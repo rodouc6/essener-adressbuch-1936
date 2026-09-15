@@ -114,3 +114,28 @@ ist die wertvollere Information — er belegt Straßen unabhängig von Dickhoff.
 1933); Nummernkreis 1936 gegen Ausdehnung der Thomaestraße prüfen (Muster Hermann-Göring-Straße). Heutige
 Namen mit Dickhoff-Datierung nach 1937 (103 Paare, 3.091 Zeilen) sind automatisch, aber nur mit einer
 Stichprobenzeile geprüft → Kandidat für eine gezielte Stichprobe.
+
+## Runde 5 (2026-09-16): Schreibvarianten regelbasiert
+
+**Vorgabe des Projektleiters.** Schreibvarianten nicht händisch durchsehen, sondern normalisieren und
+kenntlich machen; auf der Karte historische und heutige Schreibweise untereinander.
+
+**Befund.** 3.050 Namen ohne Kandidaten (14.909 Zeilen). Gemessen gegen alle Dickhoff-Namen in gestuften
+Schlüsselformen: 466 Paare, 2.729 Zeilen fallen mit genau einem Dickhoff-Namen zusammen, dazu ≈1.000
+Zeilen über Endungsvarianten; kein Fall mehrdeutig. Abkürzungen spielen keine Rolle (Herm.-Göring-Straße
+141 Zeilen, Rest Einzelfälle). Der Rest (≈10.000 Zeilen: Matthiasstraße 359, Stadtwiese 353,
+Friedrichshof 343, Maschinenstraße 223) sind verschwundene Straßen für den Stadtplan.
+
+**R5.1 Schlüsselformen als Rückfall.** Fünf Stufen (`SCHLUESSELSTUFEN` in normalisierung.py), jede
+strenger: ß/ss · Leerzeichen/Bindestrich/Punkt · ck/th/dt/ph/c/y/ie · Umlaut-Umschrift, ei/ey · Endung
+-ener/-er, Genitiv-s, Doppelbuchstaben. Greift nur, wenn der Buchname keinen Kandidaten hat; die erste
+Stufe mit genau einem Dickhoff-Namen entscheidet, mehrere Namen auf einer Stufe beenden die Suche
+(Maierstraße/Mairstraße). Der angeglichene Name durchläuft die ganze Kette (Vorort-Filter, Zeitstufung,
+R4.2). Flag `schreibvariante=ja`, `strasse_angeglichen` bis in Adresstabelle, Bericht, Prüfwerkzeug.
+Ergebnis Stufe 03: 785 Paare/4.754 Zeilen angeglichen, davon 690/3.883 aufgelöst (Klementinen- →
+Clementinenstraße → Brassertstraße 269; Eickenscheidter Straße Kray → Am Zehnthof 166; Einigkeit- →
+Einigkeitsstraße 215; Heidhausener → Heidhauser Straße 219; Ueberruhr- → Überruhrstraße 137; De-Wolf- →
+De-Wolff-Straße 120), 95 Paare bleiben Widerspruch/erloschen/homonym (Matthiasstraße → Mathiasstraße
+homonym). Offen ohne Kandidaten 14.909 → 10.155 Zeilen; kein Schlüsselwechsel bei zuvor aufgelösten.
+Volllauf: haus 62,4 → 63,5 %, strasse 26,6 → 27,0 %, offen 11,0 → 9,5 %; schreibvariante=ja 4.935 Zeilen.
+Prüfung: gezielte Stichprobe r5 (60 Zeilen aus den 690 Paaren).

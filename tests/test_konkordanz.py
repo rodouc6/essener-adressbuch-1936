@@ -349,3 +349,33 @@ def test_rueckfall_ist_gestuft_weit_vor_ausserhalb(idx):
     # außerhalb datierten zum Homonym verschmelzen.
     a = idx.aufloesen("altendorfer straße", "", "I")
     assert (a.schl_nr, a.mehrdeutig, a.zeitlich_abweichend) == ("00050", "nein", "ja")
+
+
+# --- Runde 5: Schreibvarianten ----------------------------------------------------
+def test_schreibvariante_wird_angeglichen_und_gekennzeichnet(idx):
+    a = idx.aufloesen("klementinenstraße", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.herkunft) == ("Clementinenstraße", "00021", "heutig")
+    assert (a.schreibvariante, a.strasse_angeglichen) == ("ja", "clementinenstraße")
+
+
+def test_exakter_name_ist_keine_schreibvariante(idx):
+    a = idx.aufloesen("clementinenstraße", "", "I")
+    assert (a.schreibvariante, a.strasse_angeglichen) == ("nein", "")
+
+
+def test_schreibvariante_durchlaeuft_vorort_filter(idx):
+    # Clementinenstraße liegt im Südviertel; Vorort Kray widerspricht → bleibt Widerspruch, kein Treffer
+    a = idx.aufloesen("klementinenstraße", "Kray", "I")
+    assert a.mehrdeutig == "ja" and a.grund_mehrdeutig == "vorort_widerspruch" and a.schreibvariante == "ja"
+
+
+def test_schreibvariante_nur_bei_eindeutigem_schluessel(idx):
+    # "mayerstraße" träfe auf Stufe 2 Maierstraße und Mairstraße zugleich → nicht raten, bleibt offen
+    a = idx.aufloesen("mayerstraße", "", "I")
+    assert a.herkunft == "offen" and a.schreibvariante == "nein"
+
+
+def test_schreibvariante_greift_nicht_vor_exaktem_treffer(idx):
+    # Karlstraße existiert exakt → keine Angleichung an etwas anderes
+    a = idx.aufloesen("karlstraße", "", "I")
+    assert a.schreibvariante == "nein"

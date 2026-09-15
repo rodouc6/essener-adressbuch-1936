@@ -124,3 +124,6 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 02805,1,1880,jahr,Altendorfer Straße,falsch
 02805,2,1896-10-08,tag,Schölerpad,falsch
 00020,1,1950-01-01,tag,Oberdorfstraße,falsch
+00021,1,1900,jahr,Clementinenstraße,wahr
+00022,1,1900,jahr,Mairstraße,wahr
+00023,1,1900,jahr,Maierstraße,wahr

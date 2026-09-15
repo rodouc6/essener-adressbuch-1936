@@ -55,3 +55,11 @@ def test_hinweis_ohne_schluessel_liefert_leere_strassenliste(idx):
              "stadtteil": "", "strasse_heute": "", "display_name": "Xstraße, Essen"}
     h = hinweis(zeile, {}, [], idx)
     assert h["strassen"] == [] and h["nummer_getroffen"] is False
+
+
+def test_hinweis_reicht_schreibvariante_durch(idx):
+    zeile = {"stufe": "haus", "strasse_roh": "Klementinenstr.", "hausnr": "1", "hausnr_zusatz": "",
+             "stadtteil": "", "strasse_heute": "Clementinenstraße", "display_name": "1, Clementinenstraße, Essen"}
+    geo = {"herkunft": "heutig", "schreibvariante": "ja", "strasse_angeglichen": "clementinenstraße"}
+    h = hinweis(zeile, geo, ["00021"], idx)
+    assert (h["schreibvariante"], h["strasse_angeglichen"]) == ("ja", "clementinenstraße")
