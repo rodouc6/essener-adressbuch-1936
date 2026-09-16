@@ -13,9 +13,17 @@ KOPF = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse
         "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
 
 
+KOPF_1935 = "strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum"
+KOPF_ZUORDNUNG = "strasse_roh_norm,vorort,strasse_heute,schl_nr,hausnr_von,hausnr_bis,nummer_unsicher,beleg,bearbeiter,datum"
+
+
 @pytest.fixture
 def server(tmp_path):
     (tmp_path / "docs").mkdir()
+    (tmp_path / "kuratierung").mkdir()
+    (tmp_path / "kuratierung" / "strassen_1935.csv").write_text(KOPF_1935 + "\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "strassen_zuordnung.csv").write_text(
+        KOPF_ZUORDNUNG + "\n" + 'x,Kray,Y,00001,1,9,nein,"Bereich, bleibt",T,2026-09-15\n', encoding="utf-8")
     ziel = tmp_path / "docs" / "stichprobe_7.csv"
     with open(ziel, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=KOPF, lineterminator="\n")
@@ -69,3 +77,66 @@ def test_post_lehnt_fremden_dateinamen_ab(server):
     with pytest.raises(urllib.error.HTTPError) as e:
         post(url + "/speichern/../pyproject.toml", {"zeilen": []})
     assert e.value.code in (400, 404)
+
+
+def lies(pfad):
+    with open(pfad, encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def test_stadtplan_zeile_wird_angefuegt_und_ersetzt(server):
+    url, ziel = server
+    pfad = ziel.parent.parent / "kuratierung" / "strassen_1935.csv"
+    z = {"strasse_roh_norm": "stadtwiese", "vorort": "Kernstadt", "befund": "punkt", "lat": "51.46", "lon": "7.01",
+         "name_im_plan": "Stadtwiese", "stadtteil": "Stadtkern", "bemerkung": "", "bearbeiter": "T", "datum": "2026-09-16"}
+    with post(url + "/kuratierung/strassen_1935.csv", {"zeile": z}) as r:
+        assert r.status == 200
+    with post(url + "/kuratierung/strassen_1935.csv", {"zeile": dict(z, lat="51.47", fremd="x")}) as r:
+        assert r.status == 200
+    rows = lies(pfad)
+    assert len(rows) == 1 and rows[0]["lat"] == "51.47" and list(rows[0]) == KOPF_1935.split(",")
+
+
+def test_stadtplan_lehnt_befund_und_koordinate_ab(server):
+    url, ziel = server
+    basis = {"strasse_roh_norm": "a", "vorort": "Kernstadt", "bearbeiter": "T", "datum": "2026-09-16"}
+    for z in (dict(basis, befund="vielleicht"), dict(basis, befund="punkt", lat="52.5", lon="13.4"),
+              dict(basis, befund="punkt", lat="", lon=""), dict(basis, vorort="", befund="nicht_gefunden")):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(url + "/kuratierung/strassen_1935.csv", {"zeile": z})
+        assert e.value.code == 400
+    with post(url + "/kuratierung/strassen_1935.csv", {"zeile": dict(basis, befund="nicht_gefunden")}) as r:
+        assert r.status == 200
+
+
+def test_zuordnung_wird_angefuegt_und_entfernt_stadtplanzeile(server):
+    url, ziel = server
+    kur = ziel.parent.parent / "kuratierung"
+    (kur / "strassen_1935.csv").write_text(KOPF_1935 + "\nprovinzialstraße,Kernstadt,nicht_gefunden,,,,,,T,2026-09-16\n", encoding="utf-8")
+    z = {"strasse_roh_norm": "provinzialstraße", "vorort": "Kernstadt", "strasse_heute": "Gelsenkirchener Straße",
+         "schl_nr": "01004", "beleg": "Stadtplan 1935 zeigt den Namen", "bearbeiter": "T", "datum": "2026-09-16"}
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": dict(z, schl_nr="1004")})
+    assert e.value.code == 400
+    with post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": z, "loesche_stadtplan": True}) as r:
+        assert r.status == 200
+    rows = lies(kur / "strassen_zuordnung.csv")
+    assert [r["strasse_roh_norm"] for r in rows] == ["x", "provinzialstraße"]
+    assert rows[0]["beleg"] == "Bereich, bleibt" and rows[1]["hausnr_von"] == ""
+    assert lies(kur / "strassen_1935.csv") == []
+
+
+def test_reverse_proxy(server, monkeypatch):
+    url, ziel = server
+    import werkzeuge.serve as sv
+
+    class R:
+        def raise_for_status(self): pass
+        def json(self): return {"address": {"suburb": "Stadtkern"}}
+
+    monkeypatch.setattr(sv.requests, "get", lambda *a, **kw: R())
+    with urllib.request.urlopen(url + "/reverse?lat=51.45&lon=7.01") as r:
+        assert json.loads(r.read())["address"]["suburb"] == "Stadtkern"
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(url + "/reverse?lat=1&lon=2")
+    assert e.value.code == 400

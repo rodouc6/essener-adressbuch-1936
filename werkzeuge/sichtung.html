@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Sichtung am Stadtplan 1935</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+html,body{height:100%;margin:0;font:14px/1.4 system-ui,sans-serif;color:#222}
+body{display:grid;grid-template-rows:auto 1fr;grid-template-columns:300px 400px 1fr;height:100vh}
+header{grid-column:1/4;display:flex;gap:16px;align-items:center;padding:6px 12px;background:#f3f3f3;border-bottom:1px solid #ccc;flex-wrap:wrap}
+header .status{margin-left:auto;color:#555}header .status.fehler{color:#b00020;font-weight:600}
+header input[type=text]{width:140px}header input[type=number]{width:56px}
+nav{overflow:auto;border-right:1px solid #ccc;font-size:13px}
+nav div{padding:3px 8px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;gap:6px}
+nav div:hover{background:#f7f7f7}nav div.aktiv{background:#fff7d6;font-weight:600}
+nav .z{color:#666;min-width:34px;text-align:right}nav .v{color:#888;font-size:12px}
+nav .s{margin-left:auto;font-size:12px}
+.s.punkt{color:#1a7f37}.s.zugeordnet{color:#1d4ed8}.s.nicht_gefunden{color:#9a3412}
+aside{padding:10px 12px;overflow:auto;border-right:1px solid #ccc}
+#karten{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#ccc}
+#karten>div{position:relative;background:#eee}
+.karte{height:100%;cursor:crosshair}.titel{position:absolute;z-index:1000;top:6px;left:50px;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:3px;font-size:12px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#666;margin:14px 0 4px}
+h2:first-child{margin-top:0}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}dt{color:#666}dd{margin:0;word-break:break-word}
+.flag{display:inline-block;background:#fde68a;padding:0 6px;border-radius:3px;margin:2px 4px 0 0;font-size:12px}
+.flag.gut{background:#d1fae5}.flag.blau{background:#dbeafe}.flag.rot{background:#fecaca}
+table{border-collapse:collapse;font-size:12px;width:100%}td{padding:1px 4px;vertical-align:top;border-top:1px solid #eee}td.j{color:#666;white-space:nowrap}
+tr.aktiv td{background:#fff7d6;font-weight:600}
+.kand{border:1px solid #ddd;border-radius:4px;padding:6px 8px;margin:6px 0}
+.kand .kopf{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.kand .quelle{color:#888;font-size:12px}
+button{padding:4px 10px;border:1px solid #999;border-radius:4px;background:#fff;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+button.primaer{background:#1a7f37;color:#fff;border-color:#1a7f37}
+button.warn{background:#fff7ed;border-color:#f59e0b}
+label.f{display:block;margin-top:6px;font-size:12px;color:#666}
+label.f input,label.f textarea{width:100%;box-sizing:border-box;font:inherit;color:#222}
+textarea{height:48px}
+.hilfe{font-size:12px;color:#666;margin-top:12px}
+.stand{padding:6px 8px;border-radius:4px;margin:6px 0;font-size:13px}
+.stand.punkt{background:#d1fae5}.stand.zugeordnet{background:#dbeafe}.stand.nicht_gefunden{background:#fed7aa}
+</style></head>
+<body>
+<header>
+  <span><button id="zurueck" title="Pfeil links">◀</button> <b id="pos"></b> <button id="vor" title="Pfeil rechts">▶</button></span>
+  <span id="fortschritt"></span>
+  <label><input type="checkbox" id="nurOffene" checked> nur ungesichtete</label>
+  <label>Zeilen ≥ <input type="number" id="minZeilen" value="20" min="1"></label>
+  <input type="text" id="suche" placeholder="Name filtern">
+  <span class="status" id="status"></span>
+</header>
+<nav id="liste"></nav>
+<aside>
+  <h2>Buchname 1936</h2>
+  <dl><dt>Name</dt><dd id="name"></dd><dt>Vorort</dt><dd id="vorort"></dd><dt>Zeilen</dt><dd id="zeilen"></dd><dt>Beispiele</dt><dd id="beispiele"></dd><dt>Pipeline</dt><dd id="gruende"></dd></dl>
+  <div id="stand"></div>
+  <h2>Dickhoff-Kandidaten</h2>
+  <div id="kandidaten"></div>
+  <h2>Punkt vom Stadtplan 1935</h2>
+  <div id="punkt" class="hilfe">Klick auf eine Karte setzt den Punkt (Straßenmitte).</div>
+  <label class="f">Name im Plan 1935<input id="name_im_plan"></label>
+  <label class="f">Stadtteil (Vorschlag aus OSM, prüfen)<input id="stadtteil"></label>
+  <label class="f">Bemerkung<textarea id="bemerkung"></textarea></label>
+  <p><button id="speichern" class="primaer" disabled>Punkt speichern</button> <button id="nichtGefunden" class="warn">Nicht gefunden</button></p>
+  <p class="hilfe">←/→ blättern, Enter = nächste ungesichtete. „Buchname steht hier“ bei einem Kandidaten schreibt in strassen_zuordnung.csv (Beleg: Stadtplan 1935); ein Punkt schreibt in strassen_1935.csv. Korrekturen: Zeile in der CSV ändern, dann sichtung_liste.py neu laufen lassen.</p>
+</aside>
+<div id="karten">
+  <div><div class="titel">OpenStreetMap heute</div><div id="k1" class="karte"></div></div>
+  <div><div class="titel">Stadtplan 1935 (Stadt Essen, nur zur Prüfung)</div><div id="k2" class="karte"></div></div>
+</div>
+<script>
+const BEARBEITER = 'Christos';
+const ESSEN = [51.4566, 7.0117];
+let gruppen = [], sichtbar = [], i = 0, marker = null;
+const $ = id => document.getElementById(id);
+
+// --- Karten ---
+const k1 = L.map('k1').setView(ESSEN, 14), k2 = L.map('k2', {zoomControl: false}).setView(ESSEN, 14);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap', maxZoom: 19}).addTo(k1);
+const plan = L.imageOverlay('', [[0,0],[0,0]], {opacity: 1}).addTo(k2);
+function ladePlan() {
+  const b = k2.getBounds(), s = k2.getSize();
+  plan.setUrl(`https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export?bbox=${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}&bboxSR=4326&imageSR=4326&size=${s.x},${s.y}&format=png&transparent=true&f=image`);
+  plan.setBounds(b);
+}
+let sync = false;
+function koppeln(a, b) { a.on('move', () => { if (sync) return; sync = true; b.setView(a.getCenter(), a.getZoom(), {animate: false}); sync = false; }); }
+koppeln(k1, k2); koppeln(k2, k1);
+k2.on('moveend', ladePlan);
+const m1 = L.circleMarker([0,0], {radius: 8, color: '#d00', weight: 3, fillOpacity: .2});
+const m2 = L.circleMarker([0,0], {radius: 8, color: '#d00', weight: 3, fillOpacity: .2});
+const kand1 = L.circleMarker([0,0], {radius: 7, color: '#1d4ed8', weight: 2, fillOpacity: .1, dashArray: '3'});
+const kand2 = L.circleMarker([0,0], {radius: 7, color: '#1d4ed8', weight: 2, fillOpacity: .1, dashArray: '3'});
+function setzeMarker(ll) {
+  marker = ll;
+  m1.setLatLng(ll).addTo(k1); m2.setLatLng(ll).addTo(k2);
+  $('punkt').innerHTML = `Punkt: ${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}`;
+  $('speichern').disabled = false;
+  stadtteilVorschlag(ll);
+}
+function loescheMarker() { marker = null; m1.remove(); m2.remove(); $('punkt').textContent = 'Klick auf eine Karte setzt den Punkt (Straßenmitte).'; $('speichern').disabled = true; }
+function zeigeKandidat(ll) { if (ll && ll.length) { kand1.setLatLng(ll).addTo(k1); kand2.setLatLng(ll).addTo(k2); } else { kand1.remove(); kand2.remove(); } }
+function springe(ll, zoom) { k1.setView(ll, zoom || Math.max(k1.getZoom(), 16), {animate: false}); }
+k1.on('click', e => setzeMarker([e.latlng.lat, e.latlng.lng]));
+k2.on('click', e => setzeMarker([e.latlng.lat, e.latlng.lng]));
+
+async function stadtteilVorschlag(ll) {
+  try {
+    const r = await fetch(`/reverse?lat=${ll[0]}&lon=${ll[1]}`);
+    if (!r.ok) return;
+    const a = (await r.json()).address || {};
+    const v = a.suburb || a.neighbourhood || a.quarter || a.city_district || '';
+    if (v && !$('stadtteil').dataset.hand) $('stadtteil').value = v;
+  } catch (e) {}
+}
+
+// --- Anzeige ---
+function buchname(g) {
+  // Beispiel ist die Rohadresse ("Stadtwiese 12"); Nummernteil abtrennen.
+  const b = g.beispiele[0] || g.strasse_norm;
+  return b.replace(/[\s,]*\d.*$/, '').trim() || b;
+}
+function filtern() {
+  const nur = $('nurOffene').checked, min = +$('minZeilen').value || 1, q = $('suche').value.trim().toLowerCase();
+  sichtbar = gruppen.filter(g => g.zeilen >= min && (!nur || !g.stand) && (!q || g.strasse_norm.includes(q) || (g.vorort || '').toLowerCase().includes(q)));
+  if (!sichtbar.length) { $('liste').innerHTML = '<div>keine Gruppe</div>'; return; }
+  i = Math.min(i, sichtbar.length - 1);
+  zeigeListe(); zeige();
+}
+function zeigeListe() {
+  $('liste').innerHTML = sichtbar.map((g, n) => `<div data-n="${n}" class="${n === i ? 'aktiv' : ''}"><span class="z">${g.zeilen}</span><span>${buchname(g)}</span><span class="v">${g.vorort || ''}</span><span class="s ${g.stand || ''}">${g.stand || ''}</span></div>`).join('');
+  const el = $('liste').querySelector('.aktiv'); if (el) el.scrollIntoView({block: 'nearest'});
+  const offen = gruppen.filter(g => !g.stand);
+  $('fortschritt').textContent = `${offen.length} von ${gruppen.length} Gruppen ungesichtet (${offen.reduce((s, g) => s + g.zeilen, 0)} Zeilen)`;
+}
+function stadien(s) {
+  return '<table>' + s.stadien.map(st => {
+    const akt = st.gueltig_ab <= '1936-12-31' && (!st.gueltig_bis || st.gueltig_bis > '1936-01-01');
+    const plan = st.gueltig_ab <= '1935-06-30' && (!st.gueltig_bis || st.gueltig_bis > '1935-06-30');
+    return `<tr class="${akt ? 'aktiv' : ''}"><td class="j">${st.gueltig_ab || '?'} – ${st.gueltig_bis || 'heute'}</td><td>${st.name}${plan ? ' <span class="flag">im Plan 1935</span>' : ''}</td></tr>`;
+  }).join('') + '</table>';
+}
+function zeige() {
+  const g = sichtbar[i]; if (!g) return;
+  $('pos').textContent = `${i + 1} / ${sichtbar.length}`;
+  $('name').innerHTML = `<b>${buchname(g)}</b> <span style="color:#666">(${g.strasse_norm})</span>`;
+  $('vorort').textContent = g.vorort || '— (ohne Vorort = Kernstadt)';
+  $('zeilen').textContent = `${g.zeilen} · Teil ${g.teile.join(', ')}`;
+  $('beispiele').textContent = g.beispiele.join(' · ');
+  $('gruende').innerHTML = g.gruende.map(x => `<span class="flag">${x}</span>`).join('');
+  const st = g.stand ? (g.stand === 'zugeordnet' ? `zugeordnet → <b>${g.strasse_heute}</b> (${g.schl_nr}); ${g.beleg || ''}` :
+    g.stand === 'punkt' ? `Punkt gesetzt: ${(+g.lat).toFixed(5)}, ${(+g.lon).toFixed(5)} · „${g.name_im_plan}“ · ${g.stadtteil || ''} ${g.bemerkung ? '· ' + g.bemerkung : ''}` :
+    `nicht gefunden ${g.bemerkung ? '· ' + g.bemerkung : ''}`) : '';
+  $('stand').innerHTML = st ? `<div class="stand ${g.stand}">${st}</div>` : '';
+  $('kandidaten').innerHTML = g.kandidaten.length ? g.kandidaten.map((s, n) => `<div class="kand"><div class="kopf"><b>${s.lemma}</b> <span class="quelle">${s.schl_nr}; ${s.stadtteile} · ${s.quelle}</span>
+    <button data-hin="${n}" ${s.koord.length ? '' : 'disabled title="keine OSM-Koordinate"'}>▶ hin</button> <button data-zu="${n}" class="primaer">Buchname steht hier</button></div>${stadien(s)}</div>`).join('') : '<i>keine Kandidaten (Dickhoff kennt den Namen nicht)</i>';
+  loescheMarker();
+  $('name_im_plan').value = buchname(g); $('stadtteil').value = ''; delete $('stadtteil').dataset.hand; $('bemerkung').value = '';
+  const erster = g.kandidaten.find(s => s.koord.length);
+  if (g.stand === 'punkt') { springe([+g.lat, +g.lon], 16); setzeMarker([+g.lat, +g.lon]); zeigeKandidat(null); }
+  else if (erster) { const ll = erster.koord.map(Number); zeigeKandidat(ll); springe(ll, 16); }
+  else { zeigeKandidat(null); springe(ESSEN, 14); }
+}
+
+// --- Speichern ---
+function meldung(text, fehler) { $('status').textContent = text; $('status').className = 'status' + (fehler ? ' fehler' : ''); }
+async function post(pfad, koerper) {
+  try {
+    const r = await fetch(pfad, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(koerper)});
+    const t = await r.text();
+    meldung(r.ok ? `${t} · ${new Date().toLocaleTimeString('de-DE')}` : 'FEHLER: ' + t, !r.ok);
+    return r.ok;
+  } catch (e) { meldung('FEHLER: Server nicht erreichbar', true); return false; }
+}
+const heute = () => new Date().toISOString().slice(0, 10);
+async function speicherePunkt(befund) {
+  const g = sichtbar[i];
+  const z = {strasse_roh_norm: g.strasse_norm, vorort: g.vorort_schluessel, befund, lat: befund === 'punkt' ? marker[0].toFixed(6) : '',
+             lon: befund === 'punkt' ? marker[1].toFixed(6) : '', name_im_plan: befund === 'punkt' ? $('name_im_plan').value.trim() : '',
+             stadtteil: befund === 'punkt' ? $('stadtteil').value.trim() : '', bemerkung: $('bemerkung').value.trim(), bearbeiter: BEARBEITER, datum: heute()};
+  if (befund === 'punkt' && !z.name_im_plan) { meldung('Name im Plan fehlt', true); return; }
+  if (g.stand === 'zugeordnet') { meldung('Gruppe ist bereits zugeordnet (strassen_zuordnung.csv geht vor) – Zeile dort erst entfernen', true); return; }
+  if (await post('/kuratierung/strassen_1935.csv', {zeile: z})) {
+    Object.assign(g, {stand: befund, lat: z.lat, lon: z.lon, name_im_plan: z.name_im_plan, stadtteil: z.stadtteil, bemerkung: z.bemerkung});
+    weiter();
+  }
+}
+async function zuordnen(n) {
+  const g = sichtbar[i], s = g.kandidaten[n];
+  const bem = $('bemerkung').value.trim();
+  const z = {strasse_roh_norm: g.strasse_norm, vorort: g.vorort || 'Kernstadt', strasse_heute: s.lemma, schl_nr: s.schl_nr,
+             hausnr_von: '', hausnr_bis: '', nummer_unsicher: '',
+             beleg: `Stadtplan 1935: „${buchname(g)}“ liegt an der heutigen ${s.lemma} (Sichtung ${heute()})${bem ? "; " + bem : ""}`,
+             bearbeiter: BEARBEITER, datum: heute()};
+  if (await post('/kuratierung/strassen_zuordnung.csv', {zeile: z, loesche_stadtplan: true})) {
+    Object.assign(g, {stand: 'zugeordnet', strasse_heute: s.lemma, schl_nr: s.schl_nr, beleg: z.beleg});
+    weiter();
+  }
+}
+function weiter() {
+  const nur = $('nurOffene').checked;
+  if (nur) { filtern(); } else { zeigeListe(); zeige(); }
+}
+
+// --- Navigation ---
+function gehe(d, nurOffene) {
+  if (!sichtbar.length) return;
+  let j = i;
+  for (let s = 0; s < sichtbar.length; s++) { j = (j + d + sichtbar.length) % sichtbar.length; if (!nurOffene || !sichtbar[j].stand) { i = j; break; } }
+  zeigeListe(); zeige();
+}
+$('zurueck').onclick = () => gehe(-1); $('vor').onclick = () => gehe(1);
+$('liste').onclick = e => { const d = e.target.closest('div[data-n]'); if (d) { i = +d.dataset.n; zeigeListe(); zeige(); } };
+$('kandidaten').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const g = sichtbar[i];
+  if (b.dataset.hin !== undefined) { const ll = g.kandidaten[+b.dataset.hin].koord.map(Number); zeigeKandidat(ll); springe(ll, 17); }
+  if (b.dataset.zu !== undefined) zuordnen(+b.dataset.zu);
+};
+$('speichern').onclick = () => speicherePunkt('punkt');
+$('nichtGefunden').onclick = () => speicherePunkt('nicht_gefunden');
+$('stadtteil').oninput = () => { $('stadtteil').dataset.hand = '1'; };
+['nurOffene', 'minZeilen', 'suche'].forEach(id => $(id).oninput = filtern);
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { if (e.key === 'Escape') e.target.blur(); return; }
+  if (e.key === 'ArrowLeft') gehe(-1);
+  else if (e.key === 'ArrowRight') gehe(1);
+  else if (e.key === 'Enter') gehe(1, true);
+});
+
+// --- Start ---
+fetch('../build/sichtung_1935.json').then(r => { if (!r.ok) throw new Error('build/sichtung_1935.json fehlt – werkzeuge/sichtung_liste.py ausführen'); return r.json(); })
+  .then(d => { gruppen = d.gruppen; meldung(`Liste vom ${d.erzeugt}`); filtern(); ladePlan(); })
+  .catch(e => meldung('FEHLER: ' + e.message, true));
+</script></body></html>

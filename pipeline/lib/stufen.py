@@ -11,7 +11,7 @@ from dataclasses import asdict
 
 import requests
 
-from pipeline.lib.konkordanz import Strassenindex
+from pipeline.lib.konkordanz import Strassenindex, stadtplan_schluessel
 from pipeline.lib.nominatim import Verortung, geokodiere
 from pipeline.lib.normalisierung import norm_strasse
 from pipeline.lib.parser import parse_adresse
@@ -98,15 +98,21 @@ VERORTUNGSFELDER = ["lat", "lon", "stufe", "grund", "osm_type", "osm_id", "displ
 # Schlüssel einer eindeutigen Adresse. Die vier Auflösungsfelder gehören dazu, damit
 # 04_geokodiert.csv je Adresse eindeutig ist und Stufe 05 die Herkunft nicht von Hand
 # nachjoinen muss (Spec §5.04).
+# `Vorort` gehört seit Runde 6 dazu: Punkte vom Stadtplan 1935 sind je (Buchname, Vorort) gesetzt.
 ADRESSSCHLUESSEL = ["strasse_heute", "hausnr", "hausnr_zusatz", "stadtteil", "parse_status", "strasse_roh",
                     "herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig",
                     "teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher",
-                    "schreibvariante", "strasse_angeglichen"]
+                    "schreibvariante", "strasse_angeglichen", "Vorort"]
 ADRESSFELDER = ADRESSSCHLUESSEL + ["zeilen"] + VERORTUNGSFELDER
 
 
-def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], threads: int = 8) -> tuple[list[dict], list[dict]]:
+def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], threads: int = 8,
+                      stadtplan: dict[tuple[str, str], dict] | None = None) -> tuple[list[dict], list[dict]]:
     """Geokodiert je eindeutiger Adresse (nicht je Zeile), parallel über einen Thread-Pool.
+
+    `stadtplan` sind die Punkte aus kuratierung/strassen_1935.csv (siehe konkordanz.lade_stadtplan_1935):
+    Adressen mit herkunft "stadtplan_1935" bekommen den Punkt ihrer (Buchname, Vorort)-Zeile auf
+    Straßenebene mit grund "stadtplan_1935", ohne Nominatim; fehlt die Zeile, bleiben sie offen.
 
     Adressen werden über ADRESSSCHLUESSEL dedupliziert und absteigend nach Zeilenzahl
     verortet. Rückgabe: (Zeilen mit Verortungsfeldern, Adresstabelle mit Zeilenzahl
@@ -126,6 +132,12 @@ def geokodiere_zeilen(zeilen: list[dict], client, landmarken: list[dict], thread
 
     def arbeit(k: tuple) -> tuple[tuple, Verortung]:
         d = dict(zip(ADRESSSCHLUESSEL, k))
+        if d["herkunft"] == "stadtplan_1935":
+            p = (stadtplan or {}).get(stadtplan_schluessel(d["strasse_roh"], d["Vorort"]))
+            if not p:
+                return k, Verortung(stufe="offen", grund="strasse_offen")
+            return k, Verortung(p["lat"], p["lon"], "strasse", "stadtplan_1935",
+                                display_name=f"{p.get('name_im_plan', '') or d['strasse_roh']} (Stadtplan 1935)")
         try:
             return k, geokodiere(client, d["strasse_heute"], d["hausnr"], d["hausnr_zusatz"], d["stadtteil"],
                                  d["parse_status"], d["strasse_roh"], landmarken,

@@ -63,7 +63,7 @@ def test_adressschluessel_enthaelt_herkunftsfelder():
     """Herkunft, Zeitflag und Mehrdeutigkeit gehören zum Adressschlüssel, damit
     04_geokodiert.csv je Adresse eindeutig ist und 05 nicht nachjoinen muss."""
     from pipeline.lib.stufen import ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-9:-5] == ["herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"]
+    assert {"herkunft", "zeitlich_abweichend", "mehrdeutig", "grund_mehrdeutig"} <= set(ADRESSSCHLUESSEL)
 
 
 def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
@@ -78,8 +78,8 @@ def test_adressen_mit_verschiedener_herkunft_bleiben_getrennt():
 
 def test_adressschluessel_enthaelt_teilstrecke():
     from pipeline.lib.stufen import ADRESSFELDER, ADRESSSCHLUESSEL
-    assert ADRESSSCHLUESSEL[-5:] == ["teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher",
-                                     "schreibvariante", "strasse_angeglichen"]
+    assert {"teilstrecke_abgetrennt", "vorort_angenommen", "nummer_unsicher",
+            "schreibvariante", "strasse_angeglichen", "Vorort"} <= set(ADRESSSCHLUESSEL)
     assert "teilstrecke_abgetrennt" in ADRESSFELDER and "nummer_unsicher" in ADRESSFELDER
 
 
@@ -102,3 +102,21 @@ def test_nummer_unsicher_verortet_nur_auf_strassenebene():
     assert len(adressen) == 2
     assert out[0]["stufe"] == "haus"
     assert (out[1]["stufe"], out[1]["grund"]) == ("strasse", "nummer_unsicher")
+
+
+def test_stadtplan_1935_liefert_strassenebene_ohne_nominatim():
+    z = [dict(id="1", strasse_heute="", hausnr="12", hausnr_zusatz="", stadtteil="Stadtkern", parse_status="ok",
+              strasse_roh="Stadtwiese", Vorort="", herkunft="stadtplan_1935", zeitlich_abweichend="nein",
+              mehrdeutig="nein", grund_mehrdeutig="", teilstrecke_abgetrennt="nein"),
+         dict(id="2", strasse_heute="", hausnr="3", hausnr_zusatz="", stadtteil="Stadtkern", parse_status="ok",
+              strasse_roh="Stadtwiese", Vorort="Kray", herkunft="stadtplan_1935", zeitlich_abweichend="nein",
+              mehrdeutig="nein", grund_mehrdeutig="", teilstrecke_abgetrennt="nein")]
+    plan = {("stadtwiese", "Kernstadt"): {"lat": "51.46", "lon": "7.01", "name_im_plan": "Stadtwiese"}}
+    c = FakeClient()
+    out, adressen = geokodiere_zeilen(z, c, [], threads=1, stadtplan=plan)
+    assert (out[0]["stufe"], out[0]["grund"], out[0]["lat"], out[0]["lon"]) == ("strasse", "stadtplan_1935", "51.46", "7.01")
+    assert "Stadtplan 1935" in out[0]["display_name"]
+    # Vorort Kray hat keinen Punkt: bleibt offen, kein stiller Rückgriff auf die Kernstadt-Zeile
+    assert (out[1]["stufe"], out[1]["grund"]) == ("offen", "strasse_offen")
+    assert c.n == 0
+    assert len(adressen) == 2 and {a["Vorort"] for a in adressen} == {"", "Kray"}

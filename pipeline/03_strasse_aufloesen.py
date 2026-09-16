@@ -9,7 +9,7 @@ from pipeline.lib.konkordanz import Strassenindex
 from pipeline.lib.stufen import AUFLOESUNGSFELDER, PARSEFELDER, PAARFELDER, VORSCHLAGSFELDER, loese_strassen
 
 W = projektwurzel()
-idx = Strassenindex(strassen_dir(), W / "kuratierung" / "strassen_zuordnung.csv")
+idx = Strassenindex(strassen_dir(), W / "kuratierung" / "strassen_zuordnung.csv", W / "kuratierung" / "strassen_1935.csv")
 zeilen, paare, vorschlaege = loese_strassen(lies_csv(W / "build" / "02_geparst.csv"), idx)
 schreib_csv(W / "build" / "03_aufgeloest.csv", zeilen, einlesen.AUSGABEFELDER + PARSEFELDER + AUFLOESUNGSFELDER)
 schreib_csv(W / "build" / "03_strassen.csv", paare, PAARFELDER)

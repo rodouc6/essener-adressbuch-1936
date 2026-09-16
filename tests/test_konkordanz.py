@@ -379,3 +379,47 @@ def test_schreibvariante_greift_nicht_vor_exaktem_treffer(idx):
     # Karlstraße existiert exakt → keine Angleichung an etwas anderes
     a = idx.aufloesen("karlstraße", "", "I")
     assert a.schreibvariante == "nein"
+
+
+# --- Stadtplan 1935 (kuratierung/strassen_1935.csv) --------------------------
+@pytest.fixture
+def idx_plan():
+    return Strassenindex(FIX / "strassen", FIX / "strassen_zuordnung.csv", FIX / "strassen_1935.csv")
+
+
+def test_stadtplan_1935_verortet_verschwundene_strasse(idx_plan):
+    a = idx_plan.aufloesen("stadtwiese", "", "I")
+    assert (a.strasse_heute, a.schl_nr, a.stadtteil, a.herkunft, a.mehrdeutig) == \
+        ("", "", "Stadtkern", "stadtplan_1935", "nein")
+
+
+def test_stadtplan_1935_nicht_gefunden_bleibt_offen(idx_plan):
+    a = idx_plan.aufloesen("carlstraße", "", "I")
+    assert a.herkunft != "stadtplan_1935" and a.strasse_heute == ""
+
+
+def test_stadtplan_1935_kernstadt_gilt_nur_ohne_vorort(idx_plan):
+    a = idx_plan.aufloesen("stadtwiese", "Kray", "II")
+    assert a.herkunft == "offen"
+
+
+def test_stadtplan_1935_schlaegt_automatik(idx_plan):
+    # Bochumer Straße Steele wäre automatisch "heutig"; der vom Menschen gesetzte Punkt gewinnt.
+    a = idx_plan.aufloesen("bochumer straße", "Steele")
+    assert a.herkunft == "stadtplan_1935" and a.stadtteil == "Steele"
+
+
+def test_zuordnungstabelle_geht_dem_stadtplan_vor(idx_plan):
+    a = idx_plan.aufloesen("hstr.", "Kray")
+    assert a.herkunft == "kuratiert" and a.schl_nr == "00009"
+
+
+def test_ohne_plan_tabelle_wie_bisher(idx):
+    assert idx.aufloesen("stadtwiese", "", "I").herkunft == "offen"
+
+
+def test_lade_stadtplan_1935_nur_punkte(tmp_path):
+    from pipeline.lib.konkordanz import lade_stadtplan_1935
+    punkte = lade_stadtplan_1935(FIX / "strassen_1935.csv")
+    assert ("stadtwiese", "Kernstadt") in punkte and ("carlstraße", "Kernstadt") not in punkte
+    assert lade_stadtplan_1935(tmp_path / "fehlt.csv") == {}

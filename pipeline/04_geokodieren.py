@@ -7,6 +7,7 @@ import os
 from collections import Counter
 from pipeline.lib import einlesen
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
+from pipeline.lib.konkordanz import lade_stadtplan_1935
 from pipeline.lib.nominatim import Client, lade_landmarken
 from pipeline.lib.stufen import ADRESSFELDER, AUFLOESUNGSFELDER, PARSEFELDER, VERORTUNGSFELDER, geokodiere_zeilen
 
@@ -14,7 +15,9 @@ W = projektwurzel()
 client = Client(os.environ.get("NOMINATIM_URL", "http://localhost:8080"), W / "build" / "cache" / "nominatim.jsonl")
 try:
     landmarken = lade_landmarken(W / "kuratierung" / "landmarken.csv")
-    zeilen, adressen = geokodiere_zeilen(lies_csv(W / "build" / "03_aufgeloest.csv"), client, landmarken, threads=8)
+    stadtplan = lade_stadtplan_1935(W / "kuratierung" / "strassen_1935.csv")
+    zeilen, adressen = geokodiere_zeilen(lies_csv(W / "build" / "03_aufgeloest.csv"), client, landmarken, threads=8,
+                                         stadtplan=stadtplan)
 finally:
     client.schliessen()
 statistik = {"cache_treffer": client.treffer, "cache_anfragen": client.anfragen}

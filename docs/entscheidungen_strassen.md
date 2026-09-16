@@ -140,3 +140,49 @@ homonym). Offen ohne Kandidaten 14.909 → 10.155 Zeilen; kein Schlüsselwechsel
 Volllauf: haus 62,4 → 63,5 %, strasse 26,6 → 27,0 %, offen 11,0 → 9,5 %; schreibvariante=ja 4.935 Zeilen.
 Prüfung: gezielte Stichprobe r5 (60 Zeilen aus den 690 Paaren), geprüft 2026-09-16: 59 richtig, 1 unklar,
 0 falsche Straße; keine Stufe zurückgenommen (Details in stichprobe.md).
+
+## Runde 6 (2026-09-16): Prüfstellen und Sichtung am Stadtplan 1935
+
+**Befund.** Die offenen Prüfstellen aus R4.2 (Provinzialstraße 523 Zeilen, Josephstraße 346, Luisenstraße 212,
+Altenhofstraße 221, Viehauser Straße 190, Heinrichstraße 233, Königstraße 97) sind fast alle Buchnamen ohne
+Vorort, zu denen Dickhoff nur einen vor 1930 erloschenen Namen kennt (`name_erloschen`). Sie zerfallen in zwei
+Sorten: (1) die Straße existiert heute unter anderem Namen und Dickhoffs Kette ist lückenhaft — der Stadtplan
+1935 zeigt den Buchnamen an der Kandidatenstraße; (2) die Straße ist verschwunden (Kernstadt: Josephstraße,
+Luisenstraße, Königstraße; dahinter Stadtwiese 362, Friedrichshof 347, Maschinenstraße 267) — Dickhoff führt
+sie nicht, OSM kennt sie nicht, die Lage kommt allein vom Plan. Insgesamt 2.963 offene Gruppen (Buchname,
+Vorort) mit 20.785 Zeilen, davon 196 Gruppen mit ≥ 20 Zeilen.
+
+**R6.1 Punkte vom Stadtplan 1935.** Neue Tabelle `kuratierung/strassen_1935.csv` (Schlüssel: normierter
+Buchname + Buchvorort, `Kernstadt` für Einträge ohne Vorort). Eine Zeile mit `befund=punkt` löst in Stufe 03
+mit `herkunft=stadtplan_1935` ohne heutige Straße auf (nach der Zuordnungstabelle, vor jeder Automatik) und
+bekommt in Stufe 04 den Punkt auf Straßenebene mit `grund=stadtplan_1935`, ohne Nominatim. `befund=nicht_gefunden`
+dokumentiert eine erfolglose Sichtung und verortet nichts. `Vorort` gehört dafür zum Adressschlüssel von Stufe 04.
+Sorte (1) wird weiter über `strassen_zuordnung.csv` kuratiert, Beleg „Stadtplan 1935: … liegt an der heutigen …“.
+
+**Werkzeug.** `werkzeuge/sichtung_liste.py` fasst alle offenen/mehrdeutigen Paare je (Buchname, Vorort) zusammen
+(Zeilen, Teile, Gründe, Dickhoff-Kandidaten mit Namensstadien und Sprungkoordinate aus Nominatim, ähnliche Namen)
+→ `build/sichtung_1935.json`; `werkzeuge/sichtung.html` zeigt OSM und Stadtplan 1935 nebeneinander, ein Klick
+setzt den Punkt, ein Knopf je Kandidat schreibt die Zuordnung; der Server (`serve.py`) schreibt beide Tabellen
+und liefert den Stadtteil-Vorschlag per Reverse-Geocoding. Anleitung: `docs/sichtung.md`.
+
+**R6.2 Altendorfer Straße nur Straßenebene (Prüfstelle aus r4).** Dickhoff: 1933-05-08 innerer Teil →
+Thomaestraße (tlw. Umb.), 1945 zurück. Das Buch 1936 zählt beide Straßen getrennt: Thomaestr. 1–293 mit
+Lücke 50–199 (Krupp-Werk), Altendorfer Str. dicht 1–350 ohne Lücke (Teil I 941, II 176, III 165 Zeilen);
+Eigentümer „Thomaestr. N“ aus dem Häuserteil wohnen laut Teil I in 20 von 51 Nummern unter Thomaestr. N,
+in 0 von 46 unter Altendorfer Str. N. „Altendorfer Str. N“ von 1936 ist also nicht die heutige Nr. N (der
+Plan zeigt an der heutigen 262 „Thomaestraße“); der äußere Teil zählte 1936 neu. → Zuordnungszeile
+`altendorfer straße, Kernstadt, nummer_unsicher=ja` (Muster Beuststraße R3.5), ≈1.280 Zeilen von Haus- auf
+Straßenebene. Thomaestraße → Altendorfer Straße mit Nummer bleibt (Annahme: alte Zählung behalten; Thomaestr. 1
+trifft heute Altendorfer Str. 1, Krupp-Lücke passt, Plan zeigt Thomaestraße bei heutiger 262). Offen: der
+Versatz der 1936er Zählung des äußeren Teils (Anker im Buch: Stadt Essen 278–282 und 23–27, Mülheimer
+Bergwerksverein 81–179, Hansa-Apotheke 18/20, Hermann-Apotheke 152 — keine davon heute an der Straße).
+
+**Gezielte Stichprobe r6.** Die 103 Paare (3.091 Zeilen), deren heutiger Name laut Dickhoff erst nach 1937
+beginnt und die die Stufe „außerhalb + heutig“ automatisch auflöst (Oberdorfstraße 360, Berzeliusstraße 331,
+Ruhrtalstraße Werden 233, Pieperstraße 197): Liste `docs/stichprobe_r6_paare.csv` mit `heutiger_name_ab` und
+`name_davor`, Ziehung `stichprobe.py paare r6` (46 Zeilen), Prüffrage in stichprobe.md.
+
+**Prüfstelle Straßendatensatz.** Dickhoff 01004 Gelsenkirchener Straße: Stadium 1 „1984-08-07 Provinzialstraße“
+neben „1892-03-29 Gelsenkirchener Straße“ (Länge 0) und „1892-03-29 Mittelstraße“ — die Datierung ist
+wahrscheinlich 1894, für essener-strassen v1.0.2 prüfen.
+

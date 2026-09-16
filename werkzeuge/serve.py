@@ -2,28 +2,100 @@
 
     python3 werkzeuge/serve.py [port]   → http://localhost:8765/werkzeuge/pruefung.html
 
-Liefert das Projektverzeichnis statisch aus und nimmt unter
-POST /speichern/stichprobe_<name>.csv die geprüfte Stichprobe als JSON
-({"zeilen": [...]}) entgegen. Geschrieben wird docs/stichprobe_<name>.csv mit den
-Spalten aus werkzeuge/stichprobe.py; `urteil` muss leer oder aus dem Vokabular
-von docs/stichprobe.md sein, sonst wird nichts geschrieben (400).
+Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
+
+- POST /speichern/stichprobe_<name>.csv — die geprüfte Stichprobe als JSON ({"zeilen": [...]}).
+  Geschrieben wird docs/stichprobe_<name>.csv mit den Spalten aus werkzeuge/stichprobe.py;
+  `urteil` muss leer oder aus dem Vokabular von docs/stichprobe.md sein, sonst 400.
+- POST /kuratierung/strassen_1935.csv — eine Zeile ({"zeile": {...}}) für die Punkte vom
+  Stadtplan 1935; ersetzt eine vorhandene Zeile mit gleichem (strasse_roh_norm, vorort).
+- POST /kuratierung/strassen_zuordnung.csv — eine Zeile für die Straßenzuordnung; ersetzt eine
+  vorhandene Zeile mit gleichem (strasse_roh_norm, vorort, hausnr_von, hausnr_bis). Mit
+  {"loesche_stadtplan": true} wird die Stadtplan-Zeile desselben Schlüssels entfernt.
+- GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
+  liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 """
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import re
 import sys
+import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+import requests
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from pipeline.lib.io import projektwurzel, schreib_csv
+from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
           "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
 URTEILE = {"", "richtig", "falsche_strasse", "falsche_nummer", "falscher_stadtteil", "unklar"}
 _ZIEL = re.compile(r"^/speichern/(stichprobe_[A-Za-z0-9_-]+\.csv)$")
+_KURATIERUNG = re.compile(r"^/kuratierung/(strassen_1935|strassen_zuordnung)\.csv$")
+
+# Grober Rahmen um das Stadtgebiet: ein Klick außerhalb ist ein Versehen, kein Beleg.
+ESSEN_RAHMEN = ((51.30, 51.58), (6.85, 7.20))
+BEFUNDE = {"punkt", "nicht_gefunden"}
+SCHLUESSEL_1935 = ("strasse_roh_norm", "vorort")
+SCHLUESSEL_ZUORDNUNG = ("strasse_roh_norm", "vorort", "hausnr_von", "hausnr_bis")
+
+
+def _in_essen(lat: str, lon: str) -> bool:
+    try:
+        la, lo = float(lat), float(lon)
+    except (TypeError, ValueError):
+        return False
+    return ESSEN_RAHMEN[0][0] <= la <= ESSEN_RAHMEN[0][1] and ESSEN_RAHMEN[1][0] <= lo <= ESSEN_RAHMEN[1][1]
+
+
+def pruefe_zeile(tabelle: str, z: dict) -> str:
+    """Prüft eine Kuratierungszeile; gibt die Fehlermeldung zurück oder "" wenn in Ordnung."""
+    if not isinstance(z, dict):
+        return "Zeile fehlt"
+    if not str(z.get("strasse_roh_norm", "")).strip() or not str(z.get("vorort", "")).strip():
+        return "strasse_roh_norm und vorort sind Pflicht"
+    if not str(z.get("beleg", z.get("bemerkung", ""))).strip() and tabelle == "strassen_zuordnung":
+        return "beleg ist Pflicht"
+    if tabelle == "strassen_1935":
+        befund = str(z.get("befund", "")).strip()
+        if befund not in BEFUNDE:
+            return f"unbekannter befund: {befund!r}"
+        if befund == "punkt" and not _in_essen(z.get("lat"), z.get("lon")):
+            return "Koordinate fehlt oder liegt außerhalb Essens"
+    else:
+        if not str(z.get("strasse_heute", "")).strip() or not re.fullmatch(r"\d{5}", str(z.get("schl_nr", ""))):
+            return "strasse_heute und fünfstellige schl_nr sind Pflicht"
+    return ""
+
+
+def upsert(pfad: pathlib.Path, zeile: dict, schluessel: tuple[str, ...]) -> int:
+    """Ersetzt die Zeile mit gleichem Schlüssel oder hängt an; Spalten aus der Kopfzeile. Gibt die Zeilenzahl zurück."""
+    zeilen = lies_csv(pfad)
+    with open(pfad, encoding="utf-8", newline="") as f:
+        felder = f.readline().rstrip("\r\n").split(",")
+    k = tuple(str(zeile.get(f, "")).strip() for f in schluessel)
+    zeilen = [z for z in zeilen if tuple(z.get(f, "").strip() for f in schluessel) != k]
+    zeilen.append({f: str(zeile.get(f, "")).strip() for f in felder})
+    schreib_csv(pfad, zeilen, felder)
+    return len(zeilen)
+
+
+def loesche(pfad: pathlib.Path, zeile: dict, schluessel: tuple[str, ...]) -> int:
+    """Entfernt alle Zeilen mit dem Schlüssel der übergebenen Zeile. Gibt die Zahl der entfernten zurück."""
+    if not pfad.exists():
+        return 0
+    zeilen = lies_csv(pfad)
+    with open(pfad, encoding="utf-8", newline="") as f:
+        felder = f.readline().rstrip("\r\n").split(",")
+    k = tuple(str(zeile.get(f, "")).strip() for f in schluessel)
+    rest = [z for z in zeilen if tuple(z.get(f, "").strip() for f in schluessel) != k]
+    if len(rest) != len(zeilen):
+        schreib_csv(pfad, rest, felder)
+    return len(zeilen) - len(rest)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -40,7 +112,35 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(daten)
 
+    def _json(self, code: int, daten) -> None:
+        roh = json.dumps(daten, ensure_ascii=False).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(roh)))
+        self.end_headers()
+        self.wfile.write(roh)
+
+    def do_GET(self) -> None:
+        url = urllib.parse.urlparse(self.path)
+        if url.path != "/reverse":
+            return super().do_GET()
+        q = urllib.parse.parse_qs(url.query)
+        lat, lon = q.get("lat", [""])[0], q.get("lon", [""])[0]
+        if not _in_essen(lat, lon):
+            return self._antwort(400, "lat/lon fehlen oder liegen außerhalb Essens")
+        basis = os.environ.get("NOMINATIM_URL", "http://localhost:8080").rstrip("/")
+        try:
+            r = requests.get(f"{basis}/reverse", params={"format": "json", "lat": lat, "lon": lon,
+                                                         "zoom": "16", "addressdetails": "1"}, timeout=5)
+            r.raise_for_status()
+            return self._json(200, r.json())
+        except (requests.RequestException, ValueError) as e:
+            return self._antwort(502, f"Nominatim nicht erreichbar: {e}")
+
     def do_POST(self) -> None:
+        k = _KURATIERUNG.match(self.path)
+        if k:
+            return self._kuratierung(k.group(1))
         m = _ZIEL.match(self.path)
         if not m:
             return self._antwort(404, "unbekanntes Ziel")
@@ -55,6 +155,27 @@ class Handler(SimpleHTTPRequestHandler):
         schreib_csv(self.wurzel / "docs" / m.group(1), zeilen, FELDER)
         self._antwort(200, f"{len(zeilen)} Zeilen gespeichert")
 
+    def _kuratierung(self, tabelle: str) -> None:
+        try:
+            koerper = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+            zeile = koerper["zeile"]
+        except (ValueError, KeyError, TypeError):
+            return self._antwort(400, "ungültiger Inhalt")
+        fehler = pruefe_zeile(tabelle, zeile)
+        if fehler:
+            return self._antwort(400, fehler)
+        pfad = self.wurzel / "kuratierung" / f"{tabelle}.csv"
+        if not pfad.exists():
+            return self._antwort(404, f"{tabelle}.csv fehlt")
+        if tabelle == "strassen_1935":
+            n = upsert(pfad, zeile, SCHLUESSEL_1935)
+            return self._antwort(200, f"{tabelle}.csv: {n} Zeilen")
+        n = upsert(pfad, zeile, SCHLUESSEL_ZUORDNUNG)
+        weg = 0
+        if koerper.get("loesche_stadtplan"):
+            weg = loesche(self.wurzel / "kuratierung" / "strassen_1935.csv", zeile, SCHLUESSEL_1935)
+        return self._antwort(200, f"{tabelle}.csv: {n} Zeilen" + (f", {weg} Stadtplan-Zeile(n) entfernt" if weg else ""))
+
     def log_message(self, fmt, *args):  # nur Speichervorgänge und Fehler ins Terminal
         if self.command == "POST" or (len(args) > 1 and not str(args[1]).startswith(("2", "3"))):
             super().log_message(fmt, *args)
@@ -62,7 +183,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main(port: int) -> None:
     srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"http://localhost:{port}/werkzeuge/pruefung.html  (Strg+C beendet)")
+    print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  (Strg+C beendet)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

@@ -56,7 +56,7 @@ def hinweis(zeile: dict, geo: dict, schl_nrs: list[str], idx: Strassenindex) -> 
 
 def main(name: str) -> None:
     W = projektwurzel()
-    idx = Strassenindex(strassen_dir(), W / "kuratierung" / "strassen_zuordnung.csv")
+    idx = Strassenindex(strassen_dir(), W / "kuratierung" / "strassen_zuordnung.csv", W / "kuratierung" / "strassen_1935.csv")
     geo = {tuple(z[f] for f in SCHLUESSEL): z for z in lies_csv(W / "build" / "04_geokodiert.csv")}
     schl: dict[tuple[str, str], set[str]] = {}
     for z in lies_csv(W / "build" / "03_strassen.csv"):

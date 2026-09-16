@@ -1,0 +1,47 @@
+stufe,strasse_roh,hausnr,hausnr_zusatz,stadtteil,strasse_heute,display_name,lat,lon,urteil,bemerkung,gruppe
+haus,Oberdorfstraße,3,,Altendorf; Frohnhausen,Oberdorfstraße,"3, Oberdorfstraße, Altendorf, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45143, Deutschland",51.46019495,6.980148936236347,,,neu_gross
+haus,Berzeliusstr.,3,,Frohnhausen,Berzeliusstraße,"3, Berzeliusstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.44999775,6.981633500946971,,,neu_gross
+haus,Ruhrtalstr.,47,,Kettwig; Werden,Ruhrtalstraße,"47, Ruhrtalstraße, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.383131950000006,6.990212391050952,,,neu_gross
+haus,Pieperstr.,6,,Frohnhausen,Pieperstraße,"6, Pieperstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.4541039,6.9665266500000005,,,neu_gross
+haus,Freistattstr.,14,,Nordviertel,Freistattstraße,"14, Freistattstraße, Segeroth, Nordviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4652734,6.99896509989592,,,neu_gross
+haus,Uhlenhautstr.,15,,Frohnhausen,Uhlenhautstraße,"15, Uhlenhautstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.454153500000004,6.962537655078671,,,neu_gross
+haus,Franz-Arens-Str.,8,,Südostviertel,Franz-Arens-Straße,"8, Franz-Arens-Straße, Südostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.45197245,7.022378177502924,,,neu_gross
+haus,Loerbroksstr.,6,,Frohnhausen,Loerbroksstraße,"6, Loerbroksstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.4541016,6.965320436613824,,,neu_gross
+haus,Gelsenkirchener Straße,76,,Katernberg; Schonnebeck; Stoppenberg,Gelsenkirchener Straße,"76, Gelsenkirchener Straße, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.480716,7.04137155,,,neu_gross
+haus,Heilermannstraße,8,,Südostviertel,Heilermannstraße,"8, Heilermannstraße, Südostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.45142655,7.028854271672914,,,neu_gross
+haus,Jenckestr.,9,a,Holsterhausen,Jenckestraße,"9, Jenckestraße, Holsterhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45145, Deutschland",51.44421265,6.979604584340511,,,neu_gross
+haus,Lorsbachstr.,7,,Frohnhausen,Lorsbachstraße,"7, Lorsbachstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.45381585,6.96284576257899,,,neu_gross
+haus,Am Bocklerbaum,5,,Kray,Am Bocklerbaum,"5, Am Bocklerbaum, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45307, Deutschland",51.4588201,7.075174550000003,,,neu_gross
+haus,Pothsberg,9,,Byfang; Kupferdreh,Pothsberg,"9, Pothsberg, Byfang, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.406981900000005,7.101382259098159,,,neu_gross
+haus,Bessemerstraße,2,,Bergeborbeck,Bessemerstraße,"2, Bessemerstraße, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.4772993,6.962089164724002,,,neu_gross
+haus,Mechtenbergstr.,23,,Kray,Mechtenbergstraße,"23, Mechtenbergstraße, Kray, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45309, Deutschland",51.4783056,7.084231471107842,,,neu_gross
+haus,Drogandstr.,5,,Borbeck-Mitte,Drogandstraße,"5, Drogandstraße, Borbeck-Mitte, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.4723353,6.9436010326530635,,,neu_gross
+haus,I. Schnieringstr.,4,,Altenessen-Nord,I. Schnieringstraße,"4, I. Schnieringstraße, Altenessen-Nord, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45329, Deutschland",51.5039999,7.000684646817563,,,neu_gross
+strasse,Pelzstr.,2,,Frohnhausen,Pelzstraße,"Pelzstraße, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45144, Deutschland",51.4536194,6.9651902,,,neu_gross
+haus,Raffaelstr.,10,,Holsterhausen,Raffaelstraße,"10, Raffaelstraße, Holsterhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45147, Deutschland",51.4400827,6.994391256034483,,,neu_gross
+haus,Asbeckstr.,3,,Bochold,Asbeckstraße,"3, Asbeckstraße, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4739984,6.97598805586105,,,neu_gross
+haus,Dinslaker Str.,13,a,Altendorf; Bochold,Dinslaker Straße,"13a, Dinslaker Straße, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45143, Deutschland",51.47052185,6.977451356711212,,,neu_gross
+haus,Sarnsbank,8,,Heidhausen,Sarnsbank,"8, Sarnsbank, Heidhausen, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.386318349999996,7.016840449999998,,,neu_gross
+haus,Pausstr.,2,,Gerschede,Pausstraße,"2, Pausstraße, Gerschede, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45357, Deutschland",51.485468600000004,6.944301518515285,,,neu_gross
+haus,Erzstr.,9,,Horst,Erzstraße,"9, Erzstraße, Horst, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45279, Deutschland",51.4343895,7.103431724713275,,,neu_gross
+haus,Riedheim,5,,Schonnebeck,Riedheim,"5, Riedheim, Schonnebeck, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45309, Deutschland",51.48774065,7.0510196722099145,,,neu_gross
+strasse,Nedelmannstr.,42,,Ostviertel,Nedelmannstraße,"Nedelmannstraße, Ostviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45139, Deutschland",51.4614016,7.0293975,,,neu_gross
+haus,Dünkelbergstr.,3,,Bergeborbeck,Dünkelbergstraße,"3, Dünkelbergstraße, Bergeborbeck, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.47876545,6.961426500471699,,,neu_gross
+haus,Forststr.,12,,Vogelheim,Forststraße,"12, Forststraße, Vogelheim, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45356, Deutschland",51.4918283,6.982547,,,neu_gross
+haus,Breddestraße,15,,Huttrop,Breddestraße,"15, Breddestraße, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4474082,7.053154022800856,,,neu_gross
+strasse,Reulsbergweg,332,,Kupferdreh; Byfang,Reulsbergweg,"Reulsbergweg, Dilldorf, Kupferdreh, Stadtbezirk VIII, Essen, Nordrhein-Westfalen, 45257, Deutschland",51.3864206,7.0906623,,,neu_gross
+haus,Bramkampstr.,22,,Frohnhausen; Holsterhausen,Bramkampstraße,"22, Bramkampstraße, Wickenburgsiedlung, Frohnhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45147, Deutschland",51.440326999999996,6.973693809735457,,,neu_gross
+haus,Asthöwerstr.,3,,Holsterhausen,Asthöwerstraße,"3, Asthöwerstraße, Holsterhausen, Stadtbezirk III, Essen, Nordrhein-Westfalen, 45147, Deutschland",51.4440334,6.982457445,,,neu_gross
+strasse,Rahmbruchsweg,45,,Stoppenberg,Rahmbruchsweg,"Rahmbruchsweg, Stoppenberg, Stadtbezirk VI, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.488293,7.0251087,,,neu_gross
+haus,Laubenhof,1,,Altenessen-Süd,Laubenhof,"1, Laubenhof, Großenbruch, Altenessen-Süd, Altenessen, Stadtbezirk V, Essen, Nordrhein-Westfalen, 45326, Deutschland",51.485312199999996,6.991412144229583,,,neu_gross
+strasse,Stattropstr.,61,,Huttrop,Stattropstraße,"Stattropstraße, Huttrop, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45138, Deutschland",51.4467442,7.0556722,,,neu_gross
+haus,Schwarze Horn,6,,Stadtkern,Schwarze Horn,"Banana Leaf, 6, Schwarze Horn, Stadtkern, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45127, Deutschland",51.4578914,7.0107192,,,neu_gross
+strasse,Nünningstr.,48,,Frillendorf,Nünningstraße,"Nünningstraße, Gewerbegebiet Ernestine, Frillendorf, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45141, Deutschland",51.4680333,7.0548747,,,neu_gross
+haus,Ruhrbruchshof,2,,Steele,Ruhrbruchshof,"Polizeiinspektion Mitte, 2, Ruhrbruchshof, Steele, Stadtbezirk VII, Essen, Nordrhein-Westfalen, 45276, Deutschland",51.445955999999995,7.083678844152628,,,neu_gross
+haus,Steinbrink,6,,Bochold,Steinbrink,"6, Steinbrink, Bochold, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45355, Deutschland",51.4711868,6.963047331555457,,,neu_gross
+haus,Münstermannstr.,12,,Gerschede,Münstermannstraße,"12, Münstermannstraße, Gerschede, Stadtbezirk IV, Essen, Nordrhein-Westfalen, 45357, Deutschland",51.48385845,6.941387205743801,,,neu_rest
+strasse,Frau-Bertha-Krupp-Str.,16,,Südviertel,Frau-Bertha-Krupp-Straße,"Frau-Bertha-Krupp-Straße, Sternviertel, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.4494706,7.0177322,,,neu_rest
+strasse,Kassiepenstr.,12,,Bergerhausen,Kassiepenstraße,"Kassiepenstraße, Bergerhausen, Stadtbezirk II, Essen, Nordrhein-Westfalen, 45136, Deutschland",51.432418,7.0473539,,,neu_rest
+strasse,Frau-Bertha-Krupp-Straße,13,,Südviertel,Frau-Bertha-Krupp-Straße,"Frau-Bertha-Krupp-Straße, Sternviertel, Südviertel, Stadtbezirk I, Essen, Nordrhein-Westfalen, 45128, Deutschland",51.4494706,7.0177322,,,neu_rest
+strasse,Schleuse,1,,Werden,Schleuse,"Schleuse, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.3813325,6.9956615,,,neu_rest
+haus,Schleuse,7,,Werden,Schleuse,"7, Schleuse, Werden, Stadtbezirk IX, Essen, Nordrhein-Westfalen, 45239, Deutschland",51.381232,6.995808250000003,,,neu_rest

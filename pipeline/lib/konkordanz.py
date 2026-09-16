@@ -140,18 +140,45 @@ def _folgedatum(stufen: list[dict], i: int) -> str:
     return "9999"
 
 
+# Kuratierte Punkte vom Stadtplan 1935 (kuratierung/strassen_1935.csv): Straßen, die es heute
+# nicht mehr gibt oder die kein Dickhoff-Name trifft, vom Menschen am georeferenzierten Plan
+# verortet. `vorort` ist der Buchvorort, "Kernstadt" steht für Einträge ohne Vorort.
+STADTPLAN_KERNSTADT = "Kernstadt"
+
+
+def lade_stadtplan_1935(pfad: Path) -> dict[tuple[str, str], dict]:
+    """Lädt die Punkte vom Stadtplan 1935: (normierter Buchname, Vorort/Kernstadt) → Zeile.
+
+    Nur Zeilen mit `befund=punkt` und Koordinate zählen; `nicht_gefunden` dokumentiert eine
+    erfolglose Sichtung und verortet nichts.
+    """
+    if not Path(pfad).exists():
+        return {}
+    return {(norm_strasse(z["strasse_roh_norm"]), z["vorort"].strip() or STADTPLAN_KERNSTADT): z
+            for z in lies_csv(pfad)
+            if z.get("befund", "").strip() == "punkt" and z.get("lat", "").strip() and z.get("lon", "").strip()}
+
+
+def stadtplan_schluessel(strasse_norm: str, vorort: str) -> tuple[str, str]:
+    """Schlüssel eines Bucheintrags in der Stadtplan-Tabelle (leerer Vorort → Kernstadt)."""
+    return (norm_strasse(strasse_norm), vorort.strip() or STADTPLAN_KERNSTADT)
+
+
 class Strassenindex:
     """Löst normierte Straßennamen aus dem Adreßbuch 1936 auf heutige Straßen auf.
 
-    Modell (Spec §5.03): die kuratierte Zuordnung schlägt alles; sonst werden alle
+    Modell (Spec §5.03): die kuratierte Zuordnung schlägt alles, danach ein vom Menschen
+    am Stadtplan 1935 gesetzter Punkt (herkunft "stadtplan_1935", ohne heutige Straße); sonst werden alle
     Kandidaten aus heutigem Lemma, Konkordanz 1936 und Namensstadien gesammelt,
     um Nicht-Essener Orte und um Vorort-Widersprüche gekürzt und nur dann
     aufgelöst, wenn genau ein Straßenschlüssel übrig bleibt. Unter mehreren
     passenden Kandidaten wird nie gewählt.
     """
 
-    def __init__(self, strassen_dir: Path, zuordnung_pfad: Path):
+    def __init__(self, strassen_dir: Path, zuordnung_pfad: Path, stadtplan_pfad: Path | None = None):
         self.strassen = {z["schl_nr"]: z for z in lies_csv(strassen_dir / "strassen.csv")}
+        # Punkte vom Stadtplan 1935 (leer, wenn kein Pfad oder keine Datei).
+        self.stadtplan = lade_stadtplan_1935(stadtplan_pfad) if stadtplan_pfad else {}
         self.stadtteile = {s: [norm_stadtteil(t) for t in z["stadtteile"].split(";") if t.strip()]
                            for s, z in self.strassen.items()}
         self.heutig: dict[str, list[str]] = {}
@@ -383,6 +410,13 @@ class Strassenindex:
                               stadtteil="; ".join(self.stadtteile.get(z["schl_nr"], [])),
                               herkunft="kuratiert",
                               nummer_unsicher="ja" if z.get("nummer_unsicher", "").strip() == "ja" else "nein")
+
+        # 1b. Punkt vom Stadtplan 1935: ebenfalls vom Menschen belegt, aber ohne heutige Straße.
+        #     Die Koordinate vergibt Stufe 04 (geokodiere_zeilen) aus derselben Tabelle.
+        p = self.stadtplan.get(stadtplan_schluessel(strasse_norm, vorort))
+        if p:
+            return Aufloesung(strasse_heute="", schl_nr="", stadtteil=p.get("stadtteil", "").strip(),
+                              herkunft="stadtplan_1935")
 
         # 2. Kandidaten sammeln. Ohne Kandidaten: Schreibvariante? (Runde 5) Der angeglichene
         #    Name durchläuft dieselbe Kette, das Ergebnis trägt schreibvariante=ja.

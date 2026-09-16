@@ -25,7 +25,8 @@ Tests: `python3 -m pytest -q` (keine Netzverbindung nötig).
 Lokale Vorschau der Ergebnisse: `python3 werkzeuge/serve.py` (statt `python3 -m http.server`,
 weil PMTiles Range-Requests braucht und der Server die geprüfte Stichprobe zurückschreibt).
 Kontrollkarte: `werkzeuge/kontrollkarte.html`; Prüfwerkzeug für die manuelle Stichprobe:
-`werkzeuge/pruefung.html` (Anleitung in `docs/stichprobe.md`).
+`werkzeuge/pruefung.html` (Anleitung in `docs/stichprobe.md`); Sichtung offener Straßen am
+Stadtplan 1935: `werkzeuge/sichtung.html` nach `python3 werkzeuge/sichtung_liste.py` (Anleitung in `docs/sichtung.md`).
 
 ## Vokabulare der Ausgabespalten
 
@@ -34,7 +35,7 @@ Kontrollkarte: `werkzeuge/kontrollkarte.html`; Prüfwerkzeug für die manuelle S
 | Wert | Bedeutung |
 |---|---|
 | `haus` | Punkt auf der Hausnummer |
-| `strasse` | Punkt auf der Straße (Hausnummer nicht gefunden oder nicht vorhanden) |
+| `strasse` | Punkt auf der Straße (Hausnummer nicht gefunden, nicht vorhanden oder nicht verlässlich; `grund` sagt, warum) |
 | `landmarke` | kuratierter Punkt aus `kuratierung/landmarken.csv` |
 | `offen` | keine Verortung; `grund` sagt, warum |
 
@@ -43,13 +44,15 @@ Kontrollkarte: `werkzeuge/kontrollkarte.html`; Prüfwerkzeug für die manuelle S
 unterscheidenden Stadtteil), `stadtteil_widerspruch`, `fehler` (Nominatim-Anfrage
 fehlgeschlagen; ein erneuter Lauf holt sie nach). Bei `stufe=strasse` zusätzlich
 `nummer_unsicher` (kuratierter Hausnummernbereich, dessen Nummern heute nicht mehr gelten —
-die Hausebene wird bewusst nicht gesucht).
+die Hausebene wird bewusst nicht gesucht) und `stadtplan_1935` (Punkt vom Menschen am Stadtplan 1935
+gesetzt, `kuratierung/strassen_1935.csv`; keine heutige Straße, kein Nominatim).
 
 `herkunft` — woher die heutige Straße kommt:
 
 | Wert | Bedeutung |
 |---|---|
 | `kuratiert` | vom Menschen belegt (`kuratierung/strassen_zuordnung.csv`) |
+| `stadtplan_1935` | vom Menschen am Stadtplan 1935 verortet, keine heutige Straße (`kuratierung/strassen_1935.csv`) |
 | `heutig` | Name gilt heute und galt 1936 für genau diese Straße |
 | `konkordanz` | Umbenennung nach `konkordanz_1936.csv` |
 | `stadium` | anderes Namensstadium aus `namen.csv` |
@@ -58,7 +61,7 @@ die Hausebene wird bewusst nicht gesucht).
 `zeitlich_abweichend=ja` — der gewählte Namensstand ist für 1936 nicht datiert belegt
 (undatiertes Stadium oder nur Stadien außerhalb des Fensters 1930–1937).
 
-Reihenfolge der Automatik: Kuratierung, dann Vorort-Filter (Vorort bzw. Kernstadt), dann die
+Reihenfolge der Automatik: Kuratierung (Zuordnung, dann Stadtplan-Punkt), dann Vorort-Filter (Vorort bzw. Kernstadt), dann die
 Zeitstufung nur unter den räumlich passenden Kandidaten — 1936 belegt oder undatiert, sonst
 weites Fenster 1930–1937, sonst außerhalb datiert. Die Stufen verschmelzen nicht zu Homonymen.
 Die Stufe „außerhalb“ greift automatisch nur, wenn der Name heute gilt (Dickhoffs Kette ist dann
@@ -101,6 +104,17 @@ Prüfwerkzeug zeigen beide Schreibweisen (Regelliste: `pipeline/lib/normalisieru
 | `hausnr_von`, `hausnr_bis` | optionaler Hausnummernbereich (je offen, wenn leer); ohne passende Nummer greift die Automatik |
 | `nummer_unsicher` | `ja` → nur Straßenebene (s. o.) |
 | `beleg`, `bearbeiter`, `datum` | Quelle der Entscheidung, kurz und nachprüfbar |
+
+`kuratierung/strassen_1935.csv` — Straßen, die kein Dickhoff-Name trifft (verschwunden oder Kette lückenhaft),
+vom Menschen am georeferenzierten Stadtplan 1935 verortet (Werkzeug `werkzeuge/sichtung.html`):
+
+| Spalte | Bedeutung |
+|---|---|
+| `strasse_roh_norm`, `vorort` | normierter Buchname und Buchvorort; `Kernstadt` = Einträge ohne Vorort |
+| `befund` | `punkt` (verortet) oder `nicht_gefunden` (gesichtet, im Plan nicht auffindbar — verortet nichts) |
+| `lat`, `lon` | Straßenmitte am Stadtplan 1935 (Stufe `strasse`, Grund `stadtplan_1935`) |
+| `name_im_plan`, `stadtteil` | Schreibweise im Plan; heutiger Stadtteil (Vorschlag aus OSM, geprüft) |
+| `bemerkung`, `bearbeiter`, `datum` | Beleg und Nachvollziehbarkeit |
 
 Entscheidungen zu einzelnen Straßen: [`docs/entscheidungen_strassen.md`](docs/entscheidungen_strassen.md).
 

@@ -1,0 +1,5 @@
+strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum
+stadtwiese,Kernstadt,punkt,51.4600,7.0100,Stadtwiese,Stadtkern,,Test,2026-09-16
+carlstraße,Kernstadt,nicht_gefunden,,,,,Plan unleserlich,Test,2026-09-16
+bochumer straße,Steele,punkt,51.4500,7.0800,Bochumer Straße,Steele,Test: Kuratierung schlägt Automatik,Test,2026-09-16
+hstr.,Kray,punkt,51.4700,7.0900,H-Straße,Kray,Test: Zuordnungstabelle geht vor,Test,2026-09-16

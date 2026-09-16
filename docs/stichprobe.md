@@ -1,7 +1,7 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall), r3, r4 und r5 (gezielt) sind geprüft, Ergebnisse unten.
-`stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall), r3, r4 und r5 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r6.csv`
+(heutige Namen mit Dickhoff-Datierung nach 1937) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
@@ -147,3 +147,22 @@ Erhebungsstand). Nach Schlüsselstufe (erste Stufe, auf der Buch- und Dickhoff-F
 Stufe 1 (Leerzeichen/Bindestrich/Punkt) 24 Zeilen, Stufe 2 (ck/th/dt/ph/c/y/ie) 11, Stufe 3 (Umlaut,
 ei/ey) 5, Stufe 4 (Endung, Genitiv-s, Doppelbuchstaben) 20; Stufe 0 (ß/ss) nicht in der Stichprobe. Die
 Entscheidungsregel hat nicht ausgelöst, keine Schlüsselstufe wird zurückgenommen.
+
+## Stichprobe r6 — heutige Namen, die Dickhoff erst nach 1937 datiert (gezogen 2026-09-16, Prüfung offen)
+
+Grundmenge: die 103 Paare (3.091 Zeilen), bei denen der Buchname heute gilt, Dickhoffs Kette den Namen aber
+erst nach 1937 beginnen lässt (`docs/stichprobe_r6_paare.csv`, Spalten `heutiger_name_ab`, `name_davor`). Die
+Automatik löst sie seit R4.2 als „außerhalb + heutig“ auf (Annahme: Dickhoffs Kette ist lückenhaft, nicht die
+Straße falsch), geprüft war das bisher mit einer einzigen Zeile. Ziehung `stichprobe.py paare r6`: 40
+zeilenstärkste Paare je eine Adresse (`neu_gross`), 6 aus dem Rest (`neu_rest`).
+
+**Prüffrage:** *Liegt der rote Punkt auf der Straße, die im Adreßbuch steht?* Am Stadtplan 1935 den Buchnamen
+an der Stelle des Punktes suchen.
+- Steht der Buchname dort → `richtig` (Dickhoffs Kette ist lückenhaft).
+- Steht dort ein anderes Namensstadium *derselben* Straße laut Dickhoff (Werkzeug: „Name im Plan 1935“) →
+  `richtig`, Bemerkung mit Stadium.
+- Steht dort ein anderer Name → `falsche_strasse`, in `bemerkung` den Namen aus dem Plan.
+- Nicht lesbar oder unentscheidbar → `unklar`, Bemerkung.
+Entscheidungsregel vorab: mehr als drei `falsche_strasse` unter den 40 großen Paaren → die Stufe „außerhalb +
+heutig“ wird nicht mehr automatisch, sondern nur kuratiert vergeben.
+
