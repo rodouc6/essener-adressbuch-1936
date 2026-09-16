@@ -138,4 +138,5 @@ Einigkeitsstraße 215; Heidhausener → Heidhauser Straße 219; Ueberruhr- → �
 De-Wolff-Straße 120), 95 Paare bleiben Widerspruch/erloschen/homonym (Matthiasstraße → Mathiasstraße
 homonym). Offen ohne Kandidaten 14.909 → 10.155 Zeilen; kein Schlüsselwechsel bei zuvor aufgelösten.
 Volllauf: haus 62,4 → 63,5 %, strasse 26,6 → 27,0 %, offen 11,0 → 9,5 %; schreibvariante=ja 4.935 Zeilen.
-Prüfung: gezielte Stichprobe r5 (60 Zeilen aus den 690 Paaren).
+Prüfung: gezielte Stichprobe r5 (60 Zeilen aus den 690 Paaren), geprüft 2026-09-16: 59 richtig, 1 unklar,
+0 falsche Straße; keine Stufe zurückgenommen (Details in stichprobe.md).

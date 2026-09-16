@@ -1,7 +1,7 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall), r3 und r4 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r5.csv`
-(Schreibvarianten, Runde 5) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall), r3, r4 und r5 (gezielt) sind geprüft, Ergebnisse unten.
+`stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
@@ -108,7 +108,7 @@ kuratiert (`strassen_zuordnung.csv`, Beleg „Stadtplan 1935 zeigt … am Punkt�
 Sevenarstr. 18 Katernberg liegt am Plan an der Rotthauser Str.; Markt Steele = Hansamarkt?; Stoppenberger
 Straße 87: Grenze Gelsenkirchener/Mittelstraße; Werdener Str. 44: Hespertaler Landstraße oder Hammer Straße.
 
-## Stichprobe r5 — Schreibvarianten (gezogen 2026-09-16, Prüfung offen)
+## Stichprobe r5 — Schreibvarianten (gezogen 2026-09-16, geprüft 2026-09-16)
 
 Grundmenge: die 690 Paare, die Runde 5 über Schlüsselformen aufgelöst hat (`docs/stichprobe_r5_paare.csv`,
 Spalte `strasse_angeglichen`). Ziehung `stichprobe.py paare r5`: 40 zeilenstärkste Paare je eine Adresse
@@ -119,6 +119,31 @@ Buch, nicht Dickhoff. Am Stadtplan 1935 den Buchnamen (oder seine Schreibvariant
 „Schreibvariante: Buchname an … angeglichen“) an der Stelle des Punktes suchen.
 - Steht der Buchname bzw. die Variante dort → `richtig`.
 - Steht dort ein anderer Name → `falsche_strasse`, in `bemerkung` den Namen aus dem Plan.
+- Ausnahme (nachgetragen nach der Prüfung): Zeigt der Plan ein anderes Namensstadium *derselben* Straße
+  laut Dickhoff (Vorgängername, weil die Umbenennung zwischen Planstand 1935 und Buch 1936 liegt, oder
+  Nachfolgername, weil das Buch den alten Namen weiterführt) → `richtig`, Bemerkung mit Stadium und Datum.
 - Nicht lesbar oder unentscheidbar → `unklar`, Bemerkung.
 Entscheidungsregel vorab: mehr als drei `falsche_strasse` unter den 40 großen Paaren → die betroffene
 Schlüsselstufe wird zurückgenommen (die Stufe steht je Fall in der Paarliste ableitbar; ich werte sie aus).
+
+**Ergebnis.** 59 × `richtig`, 1 × `unklar` (Isingertor 4, Steele: Plan schwer lesbar), 0 × `falsche_strasse`.
+Sieben Zeilen waren zunächst als `falsche_strasse` geurteilt, weil der Plan einen anderen Namen zeigt; alle
+sieben sind laut Dickhoff Namensstadien derselben Straße und wurden mit Beleg auf `richtig` gesetzt (die
+Prüffrage hatte diesen Fall nicht benannt, Ausnahme oben nachgetragen):
+
+| Buch 1936 | Punkt liegt auf | Plan 1935 zeigt | Dickhoff |
+|---|---|---|---|
+| Ölberg 10, Katernberg | Oelberg | Niermannstraße | umbenannt 1935-01-14 |
+| Kösters-Busch 31, Stoppenberg | Kösters Busch | Zechenstraße | umbenannt 1936-01-15 |
+| Ueckendorfer Str. 57, Katernberg | Ückendorfer Straße | Rotthausener Straße | umbenannt 1935-11-14 |
+| Merziger Au 9, Leithe | Merziger Aue | Fliederstraße | umbenannt 1935-11-14 |
+| Wilhelm Bernsau Weg 19, Werden | Wilhelm-Bernsau-Weg | Steinhäuser Weg | umbenannt 1935-06-03 |
+| Eickenscheidter Str. 25, Kray | Am Zehnthof | Am Zehnthof | ursprünglicher Name von 00149, seit 1933-05-08 Am Zehnthof |
+| Yorkstr. 16, Nordviertel | Altenbergstraße | Altenbergstraße | Yorckstraße 1898–1931, seit 1931-12-11 Altenbergstraße |
+
+Die fünf Vorgängernamen sind das erwartete Bild (Plan älter als die Umbenennung, Buch jünger); die zwei
+Nachfolgernamen bestätigen, dass das Adreßbuch Umbenennungen oft Jahre später nachzieht (vgl.
+Erhebungsstand). Nach Schlüsselstufe (erste Stufe, auf der Buch- und Dickhoff-Form zusammenfallen):
+Stufe 1 (Leerzeichen/Bindestrich/Punkt) 24 Zeilen, Stufe 2 (ck/th/dt/ph/c/y/ie) 11, Stufe 3 (Umlaut,
+ei/ey) 5, Stufe 4 (Endung, Genitiv-s, Doppelbuchstaben) 20; Stufe 0 (ß/ss) nicht in der Stichprobe. Die
+Entscheidungsregel hat nicht ausgelöst, keine Schlüsselstufe wird zurückgenommen.
