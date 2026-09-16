@@ -423,3 +423,30 @@ def test_lade_stadtplan_1935_nur_punkte(tmp_path):
     punkte = lade_stadtplan_1935(FIX / "strassen_1935.csv")
     assert ("stadtwiese", "Kernstadt") in punkte and ("carlstraße", "Kernstadt") not in punkte
     assert lade_stadtplan_1935(tmp_path / "fehlt.csv") == {}
+
+
+# --- R6.3: heutiger Name, den Dickhoff erst nach 1937 datiert -----------------------------
+def test_heutiger_name_spaeter_mit_anderem_namen_1936_bleibt_offen(idx):
+    # Berzeliusstraße gilt heute, laut Dickhoff erst seit 1961; 1936 hieß die Straße Frohnhauser
+    # Straße (tlw.). Die Berzeliusstraße des Buches lag also woanders (Stichprobe r6: 10 von 10
+    # solcher Fälle am Plan 1935 widerlegt) → nicht automatisch, Kandidat als Vorschlag.
+    a = idx.aufloesen("berzeliusstraße", "", "I")
+    assert (a.strasse_heute, a.mehrdeutig, a.grund_mehrdeutig, a.herkunft) == ("", "ja", "name_spaeter", "heutig")
+    assert "00024" in a.kandidaten
+
+
+def test_heutiger_name_spaeter_schreibvariante_zaehlt_nicht_als_anderer_name(idx):
+    # Brahmkampstraße → Bramkampstraße 1938: derselbe Name in anderer Schreibung, kein Widerspruch.
+    a = idx.aufloesen("bramkampstraße", "", "I")
+    assert (a.strasse_heute, a.herkunft, a.zeitlich_abweichend, a.mehrdeutig) == \
+        ("Bramkampstraße", "heutig", "ja", "nein")
+
+
+def test_anderer_name_1936_aehnliche_aber_verschiedene_namen():
+    import difflib
+    from pipeline.lib.konkordanz import SCHREIBVARIANTE_AEHNLICHKEIT
+    r = lambda a, b: difflib.SequenceMatcher(None, a, b).ratio()
+    assert r("brahmkampstraße", "bramkampstraße") >= SCHREIBVARIANTE_AEHNLICHKEIT
+    assert r("raffaelstraße", "rafaelstraße") >= SCHREIBVARIANTE_AEHNLICHKEIT
+    assert r("marienstraße", "martinstraße") < SCHREIBVARIANTE_AEHNLICHKEIT
+    assert r("gartenstraße", "pausstraße") < SCHREIBVARIANTE_AEHNLICHKEIT

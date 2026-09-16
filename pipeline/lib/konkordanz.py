@@ -62,6 +62,11 @@ QUELLEN = ("heutig", "konkordanz", "stadium")
 # "1936" und "undatiert" bilden die erste Auswahlstufe; die beiden anderen kommen
 # nur zum Zug, wenn die erste Stufe leer bleibt.
 ZEIT_1936, ZEIT_UNDATIERT, ZEIT_WEIT, ZEIT_AUSSERHALB = "1936", "undatiert", "weit", "ausserhalb"
+
+# Zwei Namensstadien derselben Straße gelten als Schreibvarianten, wenn eine Schlüsselform (Runde 5)
+# übereinstimmt oder die Zeichenähnlichkeit diese Schwelle erreicht (Brahmkamp-/Bramkampstraße 0,97,
+# Rafael-/Raffaelstraße 0,96, 1./I. Schnieringstraße 0,95; Marien-/Martinstraße 0,92 liegt darunter).
+SCHREIBVARIANTE_AEHNLICHKEIT = 0.94
 ZEIT_ERSTE_STUFE = (ZEIT_1936, ZEIT_UNDATIERT)
 
 
@@ -255,6 +260,28 @@ class Strassenindex:
         if any(_schneidet(s["gueltig_ab"], s["gueltig_bis"], FENSTER) for s in datiert):
             return ZEIT_WEIT
         return ZEIT_AUSSERHALB
+
+    def _anderer_name_1936(self, schl_nr: str, name_norm: str) -> bool:
+        """Belegt Dickhoff für diese Straße 1936 einen anderen Namen als den gesuchten?
+
+        Zählt nur datierte Stadien, die das Fenster 1936 schneiden, und keine Schreibvarianten
+        des gesuchten Namens (gleiche Schlüsselform auf irgendeiner Stufe oder Ähnlichkeit ab
+        SCHREIBVARIANTE_AEHNLICHKEIT, z. B. Brahmkamp-/Bramkampstraße, Rafael-/Raffaelstraße).
+        """
+        eigene = schluesselformen(name_norm)
+        for s in self.stadien_je_strasse.get(schl_nr, []):
+            if s["name_norm"] == name_norm:
+                continue
+            if not (s["gueltig_ab"].strip() or s["gueltig_bis"] != "9999"):
+                continue
+            if not _schneidet(s["gueltig_ab"], s["gueltig_bis"], FENSTER_1936):
+                continue
+            if any(a == b for a, b in zip(eigene, schluesselformen(s["name_norm"]))):
+                continue
+            if difflib.SequenceMatcher(None, name_norm, s["name_norm"]).ratio() >= SCHREIBVARIANTE_AEHNLICHKEIT:
+                continue
+            return True
+        return False
 
     def _ist_teilstrecke(self, schl_nr: str, name_norm: str) -> bool:
         """Trägt der Name für diese Straße ausschließlich den Zusatz "(tlw.)"?"""
@@ -455,6 +482,16 @@ class Strassenindex:
         #     Kette lückenhaft (Oberdorfstraße "ab 1950") — der Kandidat bleibt, zeitlich abweichend.
         if stufe == (ZEIT_AUSSERHALB,) and not any(k.quelle == "heutig" for k in passend):
             return self._mehrdeutig(self._beste_je_schluessel(passend), "name_erloschen")
+        # 4c. Gilt der Name heute, aber Dickhoff belegt für 1936 einen *anderen* Namen derselben
+        #     Straße (meist ein später umbenannter Abschnitt „(tlw.)“), dann lag die Straße des
+        #     Buches woanders und der Name wurde später wiederverwendet (R6.3; Stichprobe r6 am
+        #     Stadtplan 1935: 10 von 10 solcher Fälle widerlegt, 0 Fehler ohne anderen Namen).
+        #     Beginnt die Kette nur später, bleibt der Kandidat (zeitlich abweichend).
+        if stufe == (ZEIT_AUSSERHALB,):
+            ohne_widerspruch = [k for k in passend if not self._anderer_name_1936(k.schl_nr, strasse_norm)]
+            if not ohne_widerspruch:
+                return self._mehrdeutig(self._beste_je_schluessel(passend), "name_spaeter")
+            passend = ohne_widerspruch
 
         # 5. Teilstrecken ("(tlw.)") sind Stücke derselben Straße, keine Homonyme:
         #    gibt es daneben Kandidaten mit dem schlichten Namen, entscheiden nur diese.

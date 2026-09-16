@@ -127,3 +127,7 @@ schl_nr,stadium,gueltig_ab,datum_praezision,name,ist_urspruenglich
 00021,1,1900,jahr,Clementinenstraße,wahr
 00022,1,1900,jahr,Mairstraße,wahr
 00023,1,1900,jahr,Maierstraße,wahr
+00024,1,1900,jahr,Frohnhauser Straße (tlw.),falsch
+00024,2,1961-02-22,tag,Berzeliusstraße,falsch
+00025,1,1900,jahr,Brahmkampstraße,falsch
+00025,2,1938-10-21,tag,Bramkampstraße,falsch

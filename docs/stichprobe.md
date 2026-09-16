@@ -1,7 +1,6 @@
 # Manuelle Stichprobe der Geokodierung
 
-**Stand:** Seed 2026 (Zufall), r3, r4 und r5 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_r6.csv`
-(heutige Namen mit Dickhoff-Datierung nach 1937) liegt gezogen bereit, Prüfung offen. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
+**Stand:** Seed 2026 (Zufall), r3 bis r6 (gezielt) sind geprüft, Ergebnisse unten. `stichprobe_2027.csv` (Zufall) wartet. Gezielte Stichproben
 (`stichprobe.py gezielt <name>`) prüfen nur die von einer Regelrunde berührten Adressen, Spalte `gruppe`.
 
 Datei: `docs/stichprobe_2026.csv` (200 × haus, 100 × strasse, Zufall mit Seed 2026).
@@ -148,7 +147,7 @@ Stufe 1 (Leerzeichen/Bindestrich/Punkt) 24 Zeilen, Stufe 2 (ck/th/dt/ph/c/y/ie) 
 ei/ey) 5, Stufe 4 (Endung, Genitiv-s, Doppelbuchstaben) 20; Stufe 0 (ß/ss) nicht in der Stichprobe. Die
 Entscheidungsregel hat nicht ausgelöst, keine Schlüsselstufe wird zurückgenommen.
 
-## Stichprobe r6 — heutige Namen, die Dickhoff erst nach 1937 datiert (gezogen 2026-09-16, Prüfung offen)
+## Stichprobe r6 — heutige Namen, die Dickhoff erst nach 1937 datiert (gezogen und geprüft 2026-09-16)
 
 Grundmenge: die 103 Paare (3.091 Zeilen), bei denen der Buchname heute gilt, Dickhoffs Kette den Namen aber
 erst nach 1937 beginnen lässt (`docs/stichprobe_r6_paare.csv`, Spalten `heutiger_name_ab`, `name_davor`). Die
@@ -165,4 +164,33 @@ an der Stelle des Punktes suchen.
 - Nicht lesbar oder unentscheidbar → `unklar`, Bemerkung.
 Entscheidungsregel vorab: mehr als drei `falsche_strasse` unter den 40 großen Paaren → die Stufe „außerhalb +
 heutig“ wird nicht mehr automatisch, sondern nur kuratiert vergeben.
+
+**Ergebnis.** 14 × `richtig`, 10 × `falsche_strasse`, 22 × `unklar` (46 Zeilen). Die Entscheidungsregel hat
+ausgelöst (9 falsche unter den 40 großen). Der Prüfer hat abweichend von der Anleitung auch dann `falsche_strasse`
+vergeben, wenn der Plan Dickhoffs Vorgängernamen zeigt — zu Recht: bei Umbenennungen von 1955–1977 sagt der
+Vorgängername im Plan 1935 nichts über den Buchnamen von 1936 aus, der Buchname muss woanders gelegen haben.
+Die Anleitung oben (Punkt „anderes Namensstadium derselben Straße → richtig“) gilt nur, wenn die Umbenennung
+zwischen Planstand 1935 und Buch 1936 liegt (r5), nicht für Jahrzehnte spätere.
+
+Nach dem Kriterium „Dickhoff belegt für 1936 einen *anderen* Namen derselben Straße“:
+
+| Kriterium | richtig | falsche_strasse | unklar | Paare / Zeilen gesamt |
+|---|---:|---:|---:|---|
+| anderer Name 1936 belegt (meist „(tlw.)“-Abschnitt, umbenannt 1955–1977) | 7 | 10 | 5 | 49 / 1.994 |
+| kein anderer Name (Kette beginnt nur später, oft 1938-10-21) | 7 | 0 | 17 | 54 / 1.097 |
+
+Die zehn falschen Straßen (Berzeliusstraße, Franz-Arens-Straße, Heilermannstraße, Jenckestraße, Bessemerstraße,
+Pausstraße, Reulsbergweg, Rahmbruchsweg, Steinbrink, Münstermannstraße) liegen alle in der ersten Gruppe. Die
+sieben richtigen dort sind drei Schreibvarianten (Bramkamp-/Brahmkampstraße, Raffael-/Rafaelstraße, I./1.
+Schnieringstraße) und vier Fälle, in denen der Plan den Buchnamen zeigt (Oberdorfstraße, Ruhrtalstraße Werden,
+Am Bocklerbaum, Mechtenbergstraße) — Dickhoffs Datum ist dort zu spät. Die `unklar` der zweiten Gruppe sind
+überwiegend 1935 unbebaute oder unbeschriftete Nebenstraßen (Siedlungen, Benennung 1938-10-21), der Plan
+kann sie weder bestätigen noch widerlegen; das Buch belegt die Namen für 1936.
+
+→ R6.3: die Stufe „außerhalb + heutig“ bleibt automatisch nur ohne anderen 1936er Namen (Schreibvarianten
+ausgenommen); sonst `mehrdeutig=ja`, `grund_mehrdeutig=name_spaeter`, Kandidat als Vorschlag für die Sichtung.
+Die vier am Plan bestätigten Fälle werden nach Rückfrage kuratiert (Beleg „Plan 1935 zeigt den Buchnamen“).
+Offen aus den Bemerkungen: Gelsenkirchener/Mittelstraße Katernberg (Grenze unklar), Sarnsbank/Schiefernberg,
+Asthöwerstraße (Punkt eher auf Bessemerstraße), Stattropstraße (Punkt auf verschwundener Nebenstraße),
+Freistatt-/Jakobstraße (vertauscht?).
 

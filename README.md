@@ -64,8 +64,9 @@ gesetzt, `kuratierung/strassen_1935.csv`; keine heutige Straße, kein Nominatim)
 Reihenfolge der Automatik: Kuratierung (Zuordnung, dann Stadtplan-Punkt), dann Vorort-Filter (Vorort bzw. Kernstadt), dann die
 Zeitstufung nur unter den räumlich passenden Kandidaten — 1936 belegt oder undatiert, sonst
 weites Fenster 1930–1937, sonst außerhalb datiert. Die Stufen verschmelzen nicht zu Homonymen.
-Die Stufe „außerhalb“ greift automatisch nur, wenn der Name heute gilt (Dickhoffs Kette ist dann
-lückenhaft, nicht die Straße falsch); erloschene Namen bleiben `name_erloschen` und werden kuratiert.
+Die Stufe „außerhalb“ greift automatisch nur, wenn der Name heute gilt und Dickhoff für 1936 keinen
+anderen Namen derselben Straße belegt (Dickhoffs Kette ist dann lückenhaft, nicht die Straße falsch);
+erloschene Namen bleiben `name_erloschen`, wiederverwendete `name_spaeter` — beide werden kuratiert.
 Der Vorort-Filter steht vor der Zeitstufung, weil Dickhoffs Ketten einen Namen bei Teil-
 Umbenennungen für die ganze Straße beenden (Altendorfer Straße „bis 1933“); sonst verdrängt
 eine 1936 gültige Namensschwester im falschen Ort den richtigen Kandidaten.
@@ -78,6 +79,7 @@ eine 1936 gültige Namensschwester im falschen Ort den richtigen Kandidaten.
 | `konkordanz_nicht_eindeutig` | alle Kandidaten stammen aus Konkordanzzeilen mit `eindeutig=nein` |
 | `vorort_widerspruch` | Kandidaten vorhanden, aber keiner passt zum Vorort bzw. zur Kernstadt |
 | `name_erloschen` | der Name gehört bei Dickhoff nur Straßen, die ihn schon vor 1930 verloren haben und heute anders heißen — nicht automatisch vergeben, weil Dickhoff keine verschwundenen Straßen führt (Kandidat steht in `kandidaten` als Vorschlag) |
+| `name_spaeter` | der Name gilt heute, Dickhoff datiert ihn aber erst nach 1937 und belegt für 1936 einen *anderen* Namen derselben Straße (meist ein später umbenannter Abschnitt) — die Straße des Buches lag woanders, der Name wurde wiederverwendet; nicht automatisch vergeben (Stichprobe r6). Beginnt Dickhoffs Kette nur später, bleibt die Automatik mit `zeitlich_abweichend=ja` |
 
 `vorort_angenommen=ja` — Teil II/III ohne Vorortangabe: unter sonst gleichwertigen Kandidaten
 hat die Kernstadt entschieden. Ein leerer Vorort bedeutet dort zu 95 % Kernstadt (Kreuztabelle

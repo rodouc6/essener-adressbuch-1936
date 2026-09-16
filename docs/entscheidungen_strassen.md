@@ -182,6 +182,19 @@ beginnt und die die Stufe „außerhalb + heutig“ automatisch auflöst (Oberdo
 Ruhrtalstraße Werden 233, Pieperstraße 197): Liste `docs/stichprobe_r6_paare.csv` mit `heutiger_name_ab` und
 `name_davor`, Ziehung `stichprobe.py paare r6` (46 Zeilen), Prüffrage in stichprobe.md.
 
+**R6.3 Wiederverwendete Namen (nach Stichprobe r6).** Ergebnis r6: 14 richtig, 10 falsche Straße, 22 unklar;
+Regel ausgelöst. Alle zehn Fehler haben dasselbe Muster: der Buchname gilt heute für einen Abschnitt, den
+Dickhoff 1936 unter anderem Namen führt („Frohnhauser Straße (tlw.)“ → Berzeliusstraße 1961, „Kruppstraße
+(tlw.)“ → Jenckestraße 1969, Gartenstraße → Pausstraße 1977); der Plan 1935 zeigt dort den alten Namen, die
+Straße des Buches lag woanders und existiert nicht mehr — der Name wurde wiederverwendet. Ohne solchen
+Gegenbeleg (Kette beginnt nur später, oft Siedlungsstraßen mit Benennung 1938-10-21) gab es keinen Fehler.
+Regel: in Schritt 4b/4c der Auflösung bleibt „außerhalb + heutig“ automatisch nur, wenn Dickhoff für 1936
+kein datiertes Stadium mit anderem Namen belegt; Schreibvarianten (gleiche Schlüsselform oder Ähnlichkeit
+≥ 0,94: Brahmkamp/Bramkamp, Rafael/Raffael, 1./I. Schniering) zählen nicht als anderer Name. Sonst
+`mehrdeutig=ja`, `grund_mehrdeutig=name_spaeter`, Kandidat als Vorschlag in der Sichtungsliste. Kosten im
+Lauf: 55 Paare, 1.666 Zeilen `name_spaeter`; haus 63,4 → 62,9 %, offen 8,6 → 9,2 % (dazu R6.2 Altendorfer Straße). Am Plan bestätigt und zu kuratieren:
+Oberdorfstraße (461 Zeilen), Ruhrtalstraße Werden (319), Am Bocklerbaum (69), Mechtenbergstraße (42).
+
 **Prüfstelle Straßendatensatz.** Dickhoff 01004 Gelsenkirchener Straße: Stadium 1 „1984-08-07 Provinzialstraße“
 neben „1892-03-29 Gelsenkirchener Straße“ (Länge 0) und „1892-03-29 Mittelstraße“ — die Datierung ist
 wahrscheinlich 1894, für essener-strassen v1.0.2 prüfen.
