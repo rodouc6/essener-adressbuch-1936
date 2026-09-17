@@ -192,8 +192,9 @@ Regel: in Schritt 4b/4c der Auflösung bleibt „außerhalb + heutig“ automati
 kein datiertes Stadium mit anderem Namen belegt; Schreibvarianten (gleiche Schlüsselform oder Ähnlichkeit
 ≥ 0,94: Brahmkamp/Bramkamp, Rafael/Raffael, 1./I. Schniering) zählen nicht als anderer Name. Sonst
 `mehrdeutig=ja`, `grund_mehrdeutig=name_spaeter`, Kandidat als Vorschlag in der Sichtungsliste. Kosten im
-Lauf: 55 Paare, 1.666 Zeilen `name_spaeter`; haus 63,4 → 62,9 %, offen 8,6 → 9,2 % (dazu R6.2 Altendorfer Straße). Am Plan bestätigt und zu kuratieren:
-Oberdorfstraße (461 Zeilen), Ruhrtalstraße Werden (319), Am Bocklerbaum (69), Mechtenbergstraße (42).
+Lauf: 55 Paare, 1.666 Zeilen `name_spaeter`; haus 63,4 → 62,9 %, offen 8,6 → 9,2 % (dazu R6.2 Altendorfer Straße). Am Plan bestätigt und am 2026-09-17 kuratiert:
+Oberdorfstraße (461 Zeilen), Ruhrtalstraße Werden (319), Am Bocklerbaum (69), Mechtenbergstraße (42) —
+danach haus 63,2 %, offen (strasse_offen) 8,9 %.
 
 **Prüfstelle Straßendatensatz.** Dickhoff 01004 Gelsenkirchener Straße: Stadium 1 „1984-08-07 Provinzialstraße“
 neben „1892-03-29 Gelsenkirchener Straße“ (Länge 0) und „1892-03-29 Mittelstraße“ — die Datierung ist

@@ -189,7 +189,7 @@ kann sie weder bestätigen noch widerlegen; das Buch belegt die Namen für 1936.
 
 → R6.3: die Stufe „außerhalb + heutig“ bleibt automatisch nur ohne anderen 1936er Namen (Schreibvarianten
 ausgenommen); sonst `mehrdeutig=ja`, `grund_mehrdeutig=name_spaeter`, Kandidat als Vorschlag für die Sichtung.
-Die vier am Plan bestätigten Fälle werden nach Rückfrage kuratiert (Beleg „Plan 1935 zeigt den Buchnamen“).
+Die vier am Plan bestätigten Fälle sind kuratiert (2026-09-17, vom Prüfer bestätigt: Plan 1935 zeigt den Buchnamen).
 Offen aus den Bemerkungen: Gelsenkirchener/Mittelstraße Katernberg (Grenze unklar), Sarnsbank/Schiefernberg,
 Asthöwerstraße (Punkt eher auf Bessemerstraße), Stattropstraße (Punkt auf verschwundener Nebenstraße),
 Freistatt-/Jakobstraße (vertauscht?).
