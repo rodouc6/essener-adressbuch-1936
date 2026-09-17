@@ -62,7 +62,7 @@ textarea{height:48px}
   <label class="f">Stadtteil (Vorschlag aus OSM, prüfen)<input id="stadtteil"></label>
   <label class="f">Bemerkung<textarea id="bemerkung"></textarea></label>
   <p><button id="speichern" class="primaer" disabled>Punkt speichern</button> <button id="nichtGefunden" class="warn">Nicht gefunden</button></p>
-  <p class="hilfe">←/→ blättern, Enter = nächste ungesichtete. „Buchname steht hier“ bei einem Kandidaten schreibt in strassen_zuordnung.csv (Beleg: Stadtplan 1935); ein Punkt schreibt in strassen_1935.csv. Korrekturen: Zeile in der CSV ändern, dann sichtung_liste.py neu laufen lassen.</p>
+  <p class="hilfe">←/→ blättern, Enter = nächste ungesichtete. „Buchname steht hier“ bei einem Kandidaten schreibt in strassen_zuordnung.csv (Beleg: Stadtplan 1935); ein Punkt schreibt in strassen_1935.csv. Der Stand kommt live aus den Tabellen, Neuladen verliert nichts. Korrekturen: erneut speichern überschreibt; löschen nur in der CSV.</p>
 </aside>
 <div id="karten">
   <div><div class="titel">OpenStreetMap heute</div><div id="k1" class="karte"></div></div>
@@ -234,8 +234,40 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Enter') gehe(1, true);
 });
 
+// --- CSV (RFC 4180) ---
+function parseCsv(text) {
+  const rows = []; let row = [], feld = '', q = false;
+  for (let k = 0; k < text.length; k++) {
+    const c = text[k];
+    if (q) { if (c === '"') { if (text[k+1] === '"') { feld += '"'; k++; } else q = false; } else feld += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(feld); feld = ''; }
+    else if (c === '\n') { row.push(feld); rows.push(row); row = []; feld = ''; }
+    else if (c !== '\r') feld += c;
+  }
+  if (feld || row.length) { row.push(feld); rows.push(row); }
+  const kopf = rows.shift() || [];
+  return rows.filter(r => r.length > 1).map(r => Object.fromEntries(kopf.map((f, j) => [f, r[j] ?? ''])));
+}
+// Der Sichtungsstand kommt live aus den Kuratierungstabellen, nicht aus der vorab erzeugten Liste:
+// ein Neuladen zeigt sofort, was gespeichert ist. Zuordnung geht vor Punkt (wie in der Pipeline).
+function uebernehmeStand(punkte, zuordnung) {
+  const st = new Map();
+  for (const z of punkte) st.set(z.strasse_roh_norm + '|' + (z.vorort || 'Kernstadt'),
+    {stand: z.befund, lat: z.lat, lon: z.lon, name_im_plan: z.name_im_plan, stadtteil: z.stadtteil, bemerkung: z.bemerkung});
+  for (const z of zuordnung) if (!z.hausnr_von && !z.hausnr_bis)
+    st.set(z.strasse_roh_norm + '|' + z.vorort, {stand: 'zugeordnet', strasse_heute: z.strasse_heute, schl_nr: z.schl_nr, beleg: z.beleg});
+  for (const g of gruppen) {
+    for (const f of ['stand', 'lat', 'lon', 'name_im_plan', 'stadtteil', 'bemerkung', 'strasse_heute', 'schl_nr', 'beleg']) delete g[f];
+    const e = st.get(g.strasse_norm + '|' + g.vorort_schluessel) || st.get(g.strasse_norm + '|' + g.vorort);
+    if (e) Object.assign(g, e);
+  }
+}
+
 // --- Start ---
-fetch('../build/sichtung_1935.json').then(r => { if (!r.ok) throw new Error('build/sichtung_1935.json fehlt – werkzeuge/sichtung_liste.py ausführen'); return r.json(); })
-  .then(d => { gruppen = d.gruppen; meldung(`Liste vom ${d.erzeugt}`); filtern(); ladePlan(); })
+const csv = pfad => fetch(pfad + '?t=' + Date.now()).then(r => r.ok ? r.text() : '').then(parseCsv);
+Promise.all([fetch('../build/sichtung_1935.json?t=' + Date.now()).then(r => { if (!r.ok) throw new Error('build/sichtung_1935.json fehlt – werkzeuge/sichtung_liste.py ausführen'); return r.json(); }),
+             csv('../kuratierung/strassen_1935.csv'), csv('../kuratierung/strassen_zuordnung.csv')])
+  .then(([d, punkte, zuordnung]) => { gruppen = d.gruppen; uebernehmeStand(punkte, zuordnung); meldung(`Liste vom ${d.erzeugt}, Stand live aus den Tabellen`); filtern(); ladePlan(); })
   .catch(e => meldung('FEHLER: ' + e.message, true));
 </script></body></html>
