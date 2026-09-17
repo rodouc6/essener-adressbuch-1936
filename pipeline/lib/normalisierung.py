@@ -59,8 +59,10 @@ _STADTTEIL_ALIAS = {
     "brenedey": "Bredeney",
     "deltwig": "Dellwig",
     "geschede": "Gerschede",
+    # „Schönnebeck“ (ö + nn) ist ein Lesefehler für Schonnebeck. „Schönebeck“ dagegen ist ein eigener
+    # Stadtteil im Westen (bei Borbeck, 1936 Kernstadt) und darf NICHT auf den Vorort Schonnebeck
+    # im Nordosten abgebildet werden (Fehler bis 2026-09-17: Schönebecker Straße u. a. als Vorort-Widerspruch).
     "schönnebeck": "Schonnebeck",
-    "schönebeck": "Schonnebeck",
     "margarethenhöhe": "Margaretenhöhe",
     "stoppen- berg": "Stoppenberg",
     "stoppen-berg": "Stoppenberg",

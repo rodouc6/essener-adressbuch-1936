@@ -56,7 +56,7 @@ def test_norm_vorort(roh, erwartet, ok):
     ("Deltwig", "Dellwig"),
     ("Geschede", "Gerschede"),
     ("Schönnebeck", "Schonnebeck"),
-    ("Schönebeck", "Schonnebeck"),
+    ("Schönebeck", "Schönebeck"),   # eigener Stadtteil bei Borbeck, nicht der Vorort Schonnebeck
     ("Margarethenhöhe", "Margaretenhöhe"),
     ("Steele", "Steele"),
     ("Überruhr-Hinsel", "Überruhr-Hinsel"),

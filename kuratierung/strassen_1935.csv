@@ -1,2 +1,6 @@
 strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum
 karlstraße,Kray,punkt,51.464146,7.076811,Karlstr.,Kray,"1937 geteilt: Nordteil heute Heinrich-Sense-Weg, Südteil Marienstraße (Verl.); beide heute neu gezählt, daher nur Straßenebene",Christos,2026-09-17
+matthiasstraße,Kernstadt,punkt,51.463087,7.004132,Matthiasstr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; nicht Mathiasstraße Karnap oder Stoppenberg, Buch unterscheidet tt/t und Vorort",Christos,2026-09-17
+turmfeldstraße,Kernstadt,punkt,51.462299,7.006537,Turmfeldstr.,Westviertel,,Christos,2026-09-17
+freistattstraße kruppsche fabrik,Kernstadt,punkt,51.463415,7.000335,Freistattstr. Kruppsche Fabrik,Nordviertel,,Christos,2026-09-17
+kopstadtstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17

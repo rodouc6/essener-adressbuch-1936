@@ -200,3 +200,11 @@ danach haus 63,2 %, offen (strasse_offen) 8,9 %.
 neben „1892-03-29 Gelsenkirchener Straße“ (Länge 0) und „1892-03-29 Mittelstraße“ — die Datierung ist
 wahrscheinlich 1894, für essener-strassen v1.0.2 prüfen.
 
+**R6.4 Fehler in der Stadtteil-Normalisierung (2026-09-17).** `norm_stadtteil` bildete „Schönebeck“ (Stadtteil im
+Westen bei Borbeck, 1936 Kernstadt) auf den Vorort „Schonnebeck“ (Nordosten) ab — seit der ersten Pipeline-Fassung,
+gedacht als Tippfehlerkorrektur. Gefunden bei der Sichtung: Schönebecker Straße (200 Zeilen, Teil I ohne Vorort) stand
+als `vorort_widerspruch` offen, obwohl der Plan 1935 sie am Kandidaten zeigt. Alias entfernt („Schönnebeck“ mit ö+nn
+bleibt Lesefehler für Schonnebeck). Wirkung in Stufe 03: 33 Paare / 1.017 Zeilen neu aufgelöst (Schönebecker Straße 200,
+Ardelhütte 116, Ringstraße → Brausewindhang 130, Am Brauhaus 65, Altstraße 58), 6 Paare / 270 Zeilen jetzt ehrlich
+mehrdeutig (Heißener Straße: zwei Kernstadt-Kandidaten, vorher fiel der Schönebecker fälschlich als Vorort weg).
+
