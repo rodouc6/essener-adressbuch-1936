@@ -76,8 +76,12 @@ const k1 = L.map('k1'), k2 = L.map('k2', {zoomControl: false});
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap', maxZoom: 19}).addTo(k1);
 const plan = L.imageOverlay('', [[0,0],[0,0]], {opacity: 1}).addTo(k2);
 function ladePlan() {
+  // Anfrage in Web-Mercator (EPSG:3857), der Projektion der Leaflet-Karte: nur dann deckt das Bild genau
+  // die Kartengrenzen. Mit Gradkoordinaten (4326) erweitert der Server den Ausschnitt in Nord-Süd-Richtung
+  // um 1/cos(Breite) ≈ 1,6 und der Plan erscheint zum Rand hin gestaucht (Fehler bis 2026-09-17).
   const b = k2.getBounds(), s = k2.getSize();
-  plan.setUrl(`https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export?bbox=${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}&bboxSR=4326&imageSR=4326&size=${s.x},${s.y}&format=png&transparent=true&f=image`);
+  const sw = L.CRS.EPSG3857.project(b.getSouthWest()), ne = L.CRS.EPSG3857.project(b.getNorthEast());
+  plan.setUrl(`https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export?bbox=${sw.x},${sw.y},${ne.x},${ne.y}&bboxSR=3857&imageSR=3857&size=${s.x},${s.y}&format=png&transparent=true&f=image`);
   plan.setBounds(b);
 }
 let sync = false;

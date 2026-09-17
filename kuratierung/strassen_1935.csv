@@ -1,20 +1,20 @@
 strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum
 karlstraße,Kray,punkt,51.464146,7.076811,Karlstr.,Kray,"1937 geteilt: Nordteil heute Heinrich-Sense-Weg, Südteil Marienstraße (Verl.); beide heute neu gezählt, daher nur Straßenebene",Christos,2026-09-17
-matthiasstraße,Kernstadt,punkt,51.463087,7.004132,Matthiasstr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; nicht Mathiasstraße Karnap oder Stoppenberg, Buch unterscheidet tt/t und Vorort",Christos,2026-09-17
-turmfeldstraße,Kernstadt,punkt,51.462299,7.006537,Turmfeldstr.,Westviertel,,Christos,2026-09-17
+matthiasstraße,Kernstadt,punkt,51.463753,7.004830,Matthiasstr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen; nicht Mathiasstraße Karnap/Stoppenberg (Buch unterscheidet tt/t und Vorort); erster Punkt lag wegen Darstellungsfehler des Werkzeugs auf Höhe Gusestraße",Christos/Claude,2026-09-17
+turmfeldstraße,Kernstadt,punkt,51.462765,7.006522,Turmfeldstr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen",Christos/Claude,2026-09-17
 freistattstraße kruppsche fabrik,Kernstadt,punkt,51.463415,7.000335,Freistattstr. Kruppsche Fabrik,Nordviertel,,Christos,2026-09-17
-kopstadtstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
+kopstadtstraße,Kernstadt,punkt,51.460475,7.005332,Kopstadtstr.,Westviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen; liegt NICHT am Kopstadtplatz, sondern beim Großmarkt nördlich der Piekenbrockstraße",Christos/Claude,2026-09-17
 altenhofstraße,Katernberg,punkt,51.488937,7.051044,Altenhofstr.,Katernberg,"Altenhofstr. im Vergleich zur heutigen Straße Schonnebeckhöfe deutlich kürzer, also nur ein Teil davon",Christos,2026-09-17
 kiwittstraße,Kray,punkt,51.460440,7.077432,Kiwittstr.,Kray,ungleich heutiger Kiwittstr.: kürzer,Christos,2026-09-17
 heinrichstraße,Kray,punkt,51.466536,7.070286,Heinrichstr.,Kray,kürzer als heute,Christos,2026-09-17
-rotthausener straße,Kray,punkt,51.488616,7.066237,Rotthausener Straße,Katernberg,Teilstück,Christos,2026-09-17
+rotthausener straße,Kray,punkt,51.488616,7.066237,Rotthausener Straße,Katernberg,"Teilstück; Plan 1935 zeigt dort „Rotthauser Str.“, südlich Zeche Zollverein (Christos). Offen: Buchvorort ist Kray, in Kray besteht seit 1924 eine Rotthauser Straße (Dickhoff 02639, im Plan unbeschriftet)",Christos,2026-09-17
 stadtwiese,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
 josephstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
 friedrichshof,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
-maschinenstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
+maschinenstraße,Kernstadt,punkt,51.463983,7.007843,Maschinenstr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen",Christos/Claude,2026-09-17
 kaiserstraße,Kernstadt,punkt,51.443899,7.013670,Kaiserstr.,Sternviertel,Teilstück der heutigen Hohenzollernstr.,Christos,2026-09-17
-piekenbrockstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
-gusestraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
+piekenbrockstraße,Kernstadt,punkt,51.460130,7.005993,Piekenbrock-Str.,Westviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen",Christos/Claude,2026-09-17
+gusestraße,Kernstadt,punkt,51.463259,7.003720,Gusestr.,Nordviertel,"Segeroth-Viertel, verschwunden, heute Universitätsgelände; Straßenmitte aus korrekt projiziertem Planausschnitt (EPSG:3857) abgelesen",Christos/Claude,2026-09-17
 gabelsbergerstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
 veltenstraße,Kernstadt,nicht_gefunden,,,,,,Christos,2026-09-17
 kindsfeldstraße,Kernstadt,nicht_gefunden,,,,,unleserliche Straße auf Plan 1935,Christos,2026-09-17

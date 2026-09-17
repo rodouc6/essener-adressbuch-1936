@@ -224,3 +224,13 @@ Kernstadtstraßen (Muster Matthiasstraße). Herm.-Göring-Straße (Abkürzung) w
 „Schönnebeck“ (Dickhoff 01370 Hopfenstraße) ist Schönebeck, Alias korrigiert.
 Lauf: haus 64,2 %, offene Straßen (strasse_offen) 6,6 %, herkunft stadtplan_1935 1.621 Zeilen, kuratiert 12.313.
 
+**R6.5 Darstellungsfehler der Werkzeuge (2026-09-17).** `pruefung.html` und `sichtung.html` forderten den Stadtplan 1935 mit
+Gradkoordinaten an (bboxSR/imageSR 4326). Der Server erweitert den Ausschnitt dann in Nord-Süd-Richtung um 1/cos(Breite) ≈ 1,6,
+Leaflet staucht das Bild auf die Mercator-Kartengrenzen: in der Kartenmitte stimmt die Lage, zum Rand wächst der Versatz (gemessen
+~80 m bei der Matthiasstraße). Korrigiert auf EPSG:3857. Folgen: die Stichproben r3–r6 sind nicht betroffen (der geprüfte Punkt
+liegt dort immer in der Kartenmitte); die vor der Korrektur geklickten Sichtungspunkte wurden an korrekt projizierten Ausschnitten
+nachgeprüft: Karlstraße Kray, Altenhofstraße, Kiwittstraße, Heinrichstraße Kray, Rotthausener Straße liegen auf der beschrifteten
+Straße (≤ 15 m), Matthiasstraße und Turmfeldstraße neu gesetzt, Freistattstraße Kruppsche Fabrik zur Nachprüfung offen (Punkt liegt
+auf der Niederstraße). Dabei gefunden und verortet: Maschinen-, Guse-, Piekenbrock- und Kopstadtstraße im Segeroth (Kopstadtstraße
+liegt beim Großmarkt, nicht am Kopstadtplatz).
+
