@@ -55,7 +55,7 @@ def test_norm_vorort(roh, erwartet, ok):
     ("Brenedey", "Bredeney"),
     ("Deltwig", "Dellwig"),
     ("Geschede", "Gerschede"),
-    ("Schönnebeck", "Schonnebeck"),
+    ("Schönnebeck", "Schönebeck"),    # Dickhoff 01370 Hopfenstraße, liegt in Schönebeck
     ("Schönebeck", "Schönebeck"),   # eigener Stadtteil bei Borbeck, nicht der Vorort Schonnebeck
     ("Margarethenhöhe", "Margaretenhöhe"),
     ("Steele", "Steele"),

@@ -208,3 +208,19 @@ bleibt Lesefehler für Schonnebeck). Wirkung in Stufe 03: 33 Paare / 1.017 Zeile
 Ardelhütte 116, Ringstraße → Brausewindhang 130, Am Brauhaus 65, Altstraße 58), 6 Paare / 270 Zeilen jetzt ehrlich
 mehrdeutig (Heißener Straße: zwei Kernstadt-Kandidaten, vorher fiel der Schönebecker fälschlich als Vorort weg).
 
+**Sichtung 2026-09-17 (erster Durchgang, 35 Gruppen).** Punkte vom Plan 1935: Karlstraße Kray (1937 geteilt in
+Heinrich-Sense-Weg/Marienstraße, beide neu gezählt), Matthiasstraße, Turmfeldstraße, Freistattstraße Kruppsche Fabrik
+(Segeroth, verschwunden), Altenhofstraße Katernberg, Kiwittstraße und Heinrichstraße Kray, Kaiserstraße (Teil der
+Hohenzollernstraße), Rotthausener Straße Kray (Lage in Katernberg — Rückfrage offen). Zuordnungen mit Plan-Beleg u. a.
+Provinzialstraße Katernberg/Schonnebeck → Gelsenkirchener Straße (nur Straßenebene), Viehauser Straße → Viehauser Berg,
+Kirchstraße Katernberg → Hanielstraße, Velberter Straße Kupferdreh → Dilldorfer Straße (21 von 33 Buchnummern bestehen),
+Lindemannstraße Steele → Hünninghausenweg, Ruhrtalstraße Heisingen → Wuppertaler Straße (nur Straßenebene).
+Nach Nummern geteilt, weil die alte Zählung über zwei heutige Straßen fortbesteht: Wallstraße Katernberg (≤53 Nienhuser
+Busch, ≥54 Gelsenholz neu gezählt), Bruchweiher Stoppenberg (≤99 Großwesterkamp, ≥100 Josef-Hoeren-Straße), Heißener
+Straße (≤40 Heißener Weg, ≥41 Heißener Straße), Kortstraße Kray (≤39 Korthover Weg, darüber Straßenebene).
+Zurückgenommen: Luisenstraße und Hugostraße ohne Vorort auf Immelmannstraße (Schonnebeck) bzw. Pastor-Fliedner-Weg
+(Karnap) — das Buch führt dieselben Namen zusätzlich MIT diesem Vorort, die Einträge ohne Vorort sind eigene
+Kernstadtstraßen (Muster Matthiasstraße). Herm.-Göring-Straße (Abkürzung) wie Hermann-Göring-Straße kuratiert.
+„Schönnebeck“ (Dickhoff 01370 Hopfenstraße) ist Schönebeck, Alias korrigiert.
+Lauf: haus 64,2 %, offene Straßen (strasse_offen) 6,6 %, herkunft stadtplan_1935 1.621 Zeilen, kuratiert 12.313.
+
