@@ -12,6 +12,8 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
 - POST /kuratierung/strassen_zuordnung.csv — eine Zeile für die Straßenzuordnung; ersetzt eine
   vorhandene Zeile mit gleichem (strasse_roh_norm, vorort, hausnr_von, hausnr_bis). Mit
   {"loesche_stadtplan": true} wird die Stadtplan-Zeile desselben Schlüssels entfernt.
+  Mit {"loeschen": true} entfernt jeder der beiden Endpunkte die Zeile mit dem Schlüssel der
+  übergebenen Zeile (Rücknahme einer Sichtung; Zeilen mit Hausnummernbereich nie).
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 """
@@ -161,12 +163,19 @@ class Handler(SimpleHTTPRequestHandler):
             zeile = koerper["zeile"]
         except (ValueError, KeyError, TypeError):
             return self._antwort(400, "ungültiger Inhalt")
-        fehler = pruefe_zeile(tabelle, zeile)
-        if fehler:
-            return self._antwort(400, fehler)
         pfad = self.wurzel / "kuratierung" / f"{tabelle}.csv"
         if not pfad.exists():
             return self._antwort(404, f"{tabelle}.csv fehlt")
+        if koerper.get("loeschen"):
+            # Rücknahme einer Sichtung: nur Zeilen ohne Hausnummernbereich (die schreibt das Werkzeug nie).
+            if str(zeile.get("hausnr_von", "")).strip() or str(zeile.get("hausnr_bis", "")).strip():
+                return self._antwort(400, "Bereichszeilen werden nur von Hand gelöscht")
+            schl = SCHLUESSEL_1935 if tabelle == "strassen_1935" else SCHLUESSEL_ZUORDNUNG
+            weg = loesche(pfad, {**zeile, "hausnr_von": "", "hausnr_bis": ""}, schl)
+            return self._antwort(200 if weg else 404, f"{tabelle}.csv: {weg} Zeile(n) entfernt")
+        fehler = pruefe_zeile(tabelle, zeile)
+        if fehler:
+            return self._antwort(400, fehler)
         if tabelle == "strassen_1935":
             n = upsert(pfad, zeile, SCHLUESSEL_1935)
             return self._antwort(200, f"{tabelle}.csv: {n} Zeilen")

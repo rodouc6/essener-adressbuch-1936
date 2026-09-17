@@ -140,3 +140,21 @@ def test_reverse_proxy(server, monkeypatch):
     with pytest.raises(urllib.error.HTTPError) as e:
         urllib.request.urlopen(url + "/reverse?lat=1&lon=2")
     assert e.value.code == 400
+
+
+def test_loeschen_nimmt_sichtung_zurueck_aber_keine_bereichszeile(server):
+    url, ziel = server
+    kur = ziel.parent.parent / "kuratierung"
+    z = {"strasse_roh_norm": "kortstraße", "vorort": "Kray", "strasse_heute": "Korthover Weg", "schl_nr": "01792",
+         "beleg": "Versehen", "bearbeiter": "T", "datum": "2026-09-17"}
+    with post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": z}) as r:
+        assert r.status == 200
+    with post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": {"strasse_roh_norm": "kortstraße", "vorort": "Kray"}, "loeschen": True}) as r:
+        assert r.status == 200
+    assert [r["strasse_roh_norm"] for r in lies(kur / "strassen_zuordnung.csv")] == ["x"]
+    with pytest.raises(urllib.error.HTTPError) as e:   # Bereichszeile x/Kray 1–9 bleibt
+        post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": {"strasse_roh_norm": "x", "vorort": "Kray", "hausnr_von": "1", "hausnr_bis": "9"}, "loeschen": True})
+    assert e.value.code == 400
+    with pytest.raises(urllib.error.HTTPError) as e:   # ohne Bereich trifft der Schlüssel die Bereichszeile nicht
+        post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": {"strasse_roh_norm": "x", "vorort": "Kray"}, "loeschen": True})
+    assert e.value.code == 404 and len(lies(kur / "strassen_zuordnung.csv")) == 1

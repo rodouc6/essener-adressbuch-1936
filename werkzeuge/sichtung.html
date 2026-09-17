@@ -62,7 +62,7 @@ textarea{height:48px}
   <label class="f">Stadtteil (Vorschlag aus OSM, prüfen)<input id="stadtteil"></label>
   <label class="f">Bemerkung<textarea id="bemerkung"></textarea></label>
   <p><button id="speichern" class="primaer" disabled>Punkt speichern</button> <button id="nichtGefunden" class="warn">Nicht gefunden</button></p>
-  <p class="hilfe">←/→ blättern, Enter = nächste ungesichtete. „Buchname steht hier“ bei einem Kandidaten schreibt in strassen_zuordnung.csv (Beleg: Stadtplan 1935); ein Punkt schreibt in strassen_1935.csv. Der Stand kommt live aus den Tabellen, Neuladen verliert nichts. Korrekturen: erneut speichern überschreibt; löschen nur in der CSV.</p>
+  <p class="hilfe">←/→ blättern, Enter = nächste ungesichtete. „Zuordnen → …“ bei einem Kandidaten legt ALLE Zeilen des Buchnamens auf diese heutige Straße (strassen_zuordnung.csv, Beleg: Stadtplan 1935) – nur wenn der Plan den Buchnamen genau dort zeigt; ein Punkt schreibt in strassen_1935.csv. Der Stand kommt live aus den Tabellen, Neuladen verliert nichts. Korrekturen: erneut speichern überschreibt; löschen nur in der CSV.</p>
 </aside>
 <div id="karten">
   <div><div class="titel">OpenStreetMap heute</div><div id="k1" class="karte"></div></div>
@@ -151,9 +151,10 @@ function zeige() {
   const st = g.stand ? (g.stand === 'zugeordnet' ? `zugeordnet → <b>${g.strasse_heute}</b> (${g.schl_nr}); ${g.beleg || ''}` :
     g.stand === 'punkt' ? `Punkt gesetzt: ${(+g.lat).toFixed(5)}, ${(+g.lon).toFixed(5)} · „${g.name_im_plan}“ · ${g.stadtteil || ''} ${g.bemerkung ? '· ' + g.bemerkung : ''}` :
     `nicht gefunden ${g.bemerkung ? '· ' + g.bemerkung : ''}`) : '';
-  $('stand').innerHTML = st ? `<div class="stand ${g.stand}">${st}</div>` : '';
+  $('stand').innerHTML = st ? `<div class="stand ${g.stand}">${st} <button id="zurueck_nehmen" title="Entfernt die Zeile aus der Kuratierungstabelle">Eintrag löschen</button></div>` : '';
+  if (st) $('zurueck_nehmen').onclick = ruecknahme;
   $('kandidaten').innerHTML = g.kandidaten.length ? g.kandidaten.map((s, n) => `<div class="kand"><div class="kopf"><b>${s.lemma}</b> <span class="quelle">${s.schl_nr}; ${s.stadtteile} · ${s.quelle}</span>
-    <button data-hin="${n}" ${s.koord.length ? '' : 'disabled title="keine OSM-Koordinate"'}>▶ hin</button> <button data-zu="${n}" class="primaer">Buchname steht hier</button></div>${stadien(s)}</div>`).join('') : '<i>keine Kandidaten (Dickhoff kennt den Namen nicht)</i>';
+    <button data-hin="${n}" ${s.koord.length ? '' : 'disabled title="keine OSM-Koordinate"'}>▶ hin</button> <button data-zu="${n}" class="primaer" title="Schreibt eine Zuordnung: ALLE Zeilen dieses Buchnamens werden auf diese heutige Straße gelegt, mit heutigen Hausnummern. Nur klicken, wenn der Plan 1935 den Buchnamen an genau dieser Straße zeigt und sie nicht geteilt wurde.">Zuordnen → ${s.lemma}</button></div>${stadien(s)}</div>`).join('') : '<i>keine Kandidaten (Dickhoff kennt den Namen nicht)</i>';
   loescheMarker();
   $('name_im_plan').value = buchname(g); $('stadtteil').value = ''; delete $('stadtteil').dataset.hand; $('bemerkung').value = '';
   const erster = g.kandidaten.find(s => s.koord.length);
@@ -187,6 +188,7 @@ async function speicherePunkt(befund) {
 }
 async function zuordnen(n) {
   const g = sichtbar[i], s = g.kandidaten[n];
+  if (!confirm(`Alle ${g.zeilen} Zeilen „${buchname(g)}“${g.vorort ? ' (' + g.vorort + ')' : ''} auf die heutige ${s.lemma} legen?\n\nNur richtig, wenn der Plan 1935 den Buchnamen an genau dieser Straße zeigt. Bei geteilten Straßen (mehrere „tlw.“-Kandidaten) stattdessen einen Punkt setzen.`)) return;
   const bem = $('bemerkung').value.trim();
   const z = {strasse_roh_norm: g.strasse_norm, vorort: g.vorort || 'Kernstadt', strasse_heute: s.lemma, schl_nr: s.schl_nr,
              hausnr_von: '', hausnr_bis: '', nummer_unsicher: '',
@@ -195,6 +197,16 @@ async function zuordnen(n) {
   if (await post('/kuratierung/strassen_zuordnung.csv', {zeile: z, loesche_stadtplan: true})) {
     Object.assign(g, {stand: 'zugeordnet', strasse_heute: s.lemma, schl_nr: s.schl_nr, beleg: z.beleg});
     weiter();
+  }
+}
+async function ruecknahme() {
+  const g = sichtbar[i];
+  if (!confirm(`Eintrag „${buchname(g)}“ (${g.stand}) wirklich löschen?`)) return;
+  const zu = g.stand === 'zugeordnet';
+  const zeile = {strasse_roh_norm: g.strasse_norm, vorort: zu ? (g.vorort || 'Kernstadt') : g.vorort_schluessel};
+  if (await post(`/kuratierung/${zu ? 'strassen_zuordnung' : 'strassen_1935'}.csv`, {zeile, loeschen: true})) {
+    for (const f of ['stand', 'lat', 'lon', 'name_im_plan', 'stadtteil', 'bemerkung', 'strasse_heute', 'schl_nr', 'beleg']) delete g[f];
+    zeigeListe(); zeige();
   }
 }
 function weiter() {

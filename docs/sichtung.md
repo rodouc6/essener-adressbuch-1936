@@ -21,7 +21,7 @@ Kopfzeile: nur ungesichtete, Mindestzeilen (Vorgabe 20), Namensfilter.
 liefert nur Kandidaten. Drei Ausgänge:
 
 1. **Buchname steht am Plan an einer heutigen Straße** (Kandidat oder über die Karte gefunden): beim
-   Kandidaten „Buchname steht hier“ → Zeile in `kuratierung/strassen_zuordnung.csv` (Beleg „Stadtplan 1935:
+   Kandidaten „Zuordnen → …“ → Zeile in `kuratierung/strassen_zuordnung.csv` (Beleg „Stadtplan 1935:
    … liegt an der heutigen …“). Zeigt der Plan ein anderes Namensstadium derselben Straße (Umbenennung
    zwischen Planstand 1935 und Buch 1936, vgl. Stichprobe r5), gilt das ebenfalls — Planname in die Bemerkung.
    Ist die gefundene Straße kein Kandidat, den Namen im Feld „Name filtern“ … nicht nötig: einfach Punkt setzen
