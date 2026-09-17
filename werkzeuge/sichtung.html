@@ -46,6 +46,7 @@ textarea{height:48px}
   <label><input type="checkbox" id="nurOffene" checked> nur ungesichtete</label>
   <label>Zeilen ≥ <input type="number" id="minZeilen" value="20" min="1"></label>
   <input type="text" id="suche" placeholder="Name filtern">
+  <input type="text" id="gehezu" placeholder="lat, lon ⏎ springen" title="Koordinate eingeben, Enter springt dorthin (setzt keinen Punkt)">
   <span class="status" id="status"></span>
 </header>
 <nav id="liste"></nav>
@@ -220,6 +221,12 @@ $('speichern').onclick = () => speicherePunkt('punkt');
 $('nichtGefunden').onclick = () => speicherePunkt('nicht_gefunden');
 $('stadtteil').oninput = () => { $('stadtteil').dataset.hand = '1'; };
 ['nurOffene', 'minZeilen', 'suche'].forEach(id => $(id).oninput = filtern);
+$('gehezu').onkeydown = e => {
+  if (e.key !== 'Enter') return;
+  const m = $('gehezu').value.match(/(-?\d+[.,]\d+)[\s,;]+(-?\d+[.,]\d+)/);
+  if (!m) { meldung('Koordinate nicht lesbar (Format: 51.4637, 7.0046)', true); return; }
+  springe([+m[1].replace(',', '.'), +m[2].replace(',', '.')], 17); $('gehezu').blur();
+};
 document.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) { if (e.key === 'Escape') e.target.blur(); return; }
   if (e.key === 'ArrowLeft') gehe(-1);
