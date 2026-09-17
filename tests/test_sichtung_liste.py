@@ -56,3 +56,9 @@ def test_gruppen_uebernehmen_stand(idx):
     st = {("stadtwiese", "Kernstadt"): {"stand": "punkt", "lat": "51.46", "lon": "7.01"}}
     g = gruppen([paar(strasse_norm="stadtwiese", zeilen="3")], idx, lambda l: [], st)
     assert g[0]["stand"] == "punkt" and g[0]["lat"] == "51.46"
+
+
+def test_gruppen_behalten_am_plan_verortete_paare(idx):
+    g = gruppen([paar(strasse_norm="stadtwiese", zeilen="3", herkunft="stadtplan_1935")], idx, lambda l: [],
+                {("stadtwiese", "Kernstadt"): {"stand": "punkt", "lat": "51.46", "lon": "7.01"}})
+    assert len(g) == 1 and g[0]["stand"] == "punkt"

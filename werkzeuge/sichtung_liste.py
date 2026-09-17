@@ -71,7 +71,9 @@ def gruppen(paare: list[dict], idx: Strassenindex, koord, sichtungsstand: dict) 
     """Fasst offene/mehrdeutige Paare je (strasse_norm, vorort) zusammen, nach Zeilenzahl absteigend."""
     g: dict[tuple[str, str], dict] = {}
     for p in paare:
-        if not p["strasse_norm"] or (p["herkunft"] != "offen" and p["mehrdeutig"] != "ja"):
+        # Offene und mehrdeutige Paare; dazu die bereits am Plan verorteten (herkunft stadtplan_1935),
+        # damit ein gesetzter Punkt nach dem nächsten Pipeline-Lauf im Werkzeug sichtbar und korrigierbar bleibt.
+        if not p["strasse_norm"] or (p["herkunft"] not in ("offen", "stadtplan_1935") and p["mehrdeutig"] != "ja"):
             continue
         k = (p["strasse_norm"], p["vorort"])
         e = g.setdefault(k, {"strasse_norm": k[0], "vorort": k[1], "zeilen": 0, "teile": set(), "beispiele": set(),
