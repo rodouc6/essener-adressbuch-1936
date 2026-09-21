@@ -26,6 +26,7 @@ _LINK = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 _JAHRE = re.compile(r"(\d{4})\s*[–\-]\s*(\d{4})?")  # ein Jahr oder Jahresspanne in einer Zelle ("Betrieb"-Format)
 _JAHR = re.compile(r"\d{4}")  # einzelnes Jahr in einer eigenen Beginn-/Ende-Spalte
 _KOORD = re.compile(r"NS=([\d.]+)\|EW=([\d.]+)")
+PAUSE_S = 0.5  # höflicher Abstand zwischen Anfragen an die Wikipedia-API; Tests setzen 0
 # Wikitabellen-Zellattribute vor dem eigentlichen Inhalt, z. B. "width=200px | Name" oder
 # 'data-sort-value="1875"|nach 1875'; Wikilinks ("[[...]]") beginnen nie so und bleiben unberührt.
 _ATTRIBUT = re.compile(r'^\s*(?:[\w\-]+=(?:"[^"]*"|\S+)\s*\|\s*)+')
@@ -43,6 +44,15 @@ def _text(zelle: str) -> str:
     if m:
         return (m.group(2) or m.group(1)).strip()
     return re.sub(r"'{2,}|<[^>]+>", "", zelle).strip()
+
+
+def _ohne_zeche_praefix(name: str) -> str:
+    """Entfernt ein einmalig führendes "Zeche " aus dem Anzeigenamen.
+
+    Die meisten Wikilink-Alias-Texte lassen "Zeche" bereits weg (z. B. "Zollverein"), manche
+    aber nicht (z. B. "Zeche Isenberg"); für einheitliche Namen wird das Präfix vereinheitlicht.
+    """
+    return name.removeprefix("Zeche ")
 
 
 def _ziel(zelle: str) -> str:
@@ -148,7 +158,7 @@ def parse_zechen(wikitext: str) -> list[dict]:
 
         for zeile in datenzeilen:
             zellen = _zellen(zeile)
-            name = _text(_zelle(zellen, i_name))
+            name = _ohne_zeche_praefix(_text(_zelle(zellen, i_name)))
             if not name:
                 continue
 
@@ -186,31 +196,38 @@ def _artikeltitel(quelle: str) -> str:
     return urllib.parse.unquote(pfad).replace("_", " ")
 
 
-def _anfrage_mit_wartezeit(get, params, versuche: int = 8):
+def _anfrage_mit_wartezeit(get, params, versuche: int = 8, pause: float = PAUSE_S):
     """API-Anfrage mit Wartezeit-Puffer und Neuversuch bei „429 Too Many Requests“.
 
     Nutzt den serverseitigen "Retry-After"-Header, wenn vorhanden, sonst steigende Wartezeit.
+    "Retry-After" kann laut HTTP-Spezifikation auch ein HTTP-Datum statt einer Sekundenzahl
+    sein; in dem Fall greift ebenfalls die steigende Wartezeit.
     """
     for versuch in range(versuche):
         r = get(API, params=params, headers={"User-Agent": "essener-adressbuch-1936 (Zechenliste)"}, timeout=30)
         if r.status_code == 429 and versuch < versuche - 1:
             warten = getattr(r, "headers", {}).get("retry-after")
-            time.sleep(float(warten) if warten else min(60, 2 ** versuch))
+            try:
+                sekunden = float(warten) if warten else None
+            except ValueError:
+                sekunden = None
+            time.sleep(sekunden if sekunden is not None else min(60, 2 ** versuch))
             continue
         r.raise_for_status()
-        time.sleep(0.5)  # höflicher Abstand zwischen Anfragen an die Wikipedia-API
+        time.sleep(pause)
         return r
     r.raise_for_status()
     return r
 
 
-def hole_koordinaten(titel: list[str], get=requests.get) -> dict[str, tuple[str, str]]:
+def hole_koordinaten(titel: list[str], get=requests.get, pause: float = PAUSE_S) -> dict[str, tuple[str, str]]:
     """Fragt Koordinaten zu Artikeltiteln über die MediaWiki-API ab (Stapel von 50 Titeln).
 
     Gibt {ursprünglicher Titel: (lat, lon)} zurück; Titel ohne (primäre) Koordinaten fehlen
     im Ergebnis. Weiterleitungen und Titel-Normalisierungen werden aufgelöst, damit auch der
     ursprünglich übergebene (nicht normalisierte bzw. weitergeleitete) Titel einen Treffer
-    bekommt, sofern der Zielartikel Koordinaten hat.
+    bekommt, sofern der Zielartikel Koordinaten hat. `pause` wird an jede Anfrage durchgereicht
+    (Tests setzen 0, damit die Suite nicht wartet).
     """
     ergebnis: dict[str, tuple[str, str]] = {}
     for start in range(0, len(titel), 50):
@@ -225,7 +242,8 @@ def hole_koordinaten(titel: list[str], get=requests.get) -> dict[str, tuple[str,
         while True:
             r = _anfrage_mit_wartezeit(
                 get, params=dict(action="query", prop="coordinates", titles="|".join(stapel),
-                                  coprimary="primary", format="json", redirects=1, **fortsetzung))
+                                  coprimary="primary", format="json", redirects=1, **fortsetzung),
+                pause=pause)
             antwort = r.json()
             daten = antwort.get("query", {})
 
