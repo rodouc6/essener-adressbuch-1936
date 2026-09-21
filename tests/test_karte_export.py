@@ -161,7 +161,7 @@ import json, pathlib, shutil
 
 import pytest
 
-from pipeline.lib.karte_export import baue_kennzahlen, schreibe_paket, tippecanoe_befehl, zechen_geojson
+from pipeline.lib.karte_export import baue_kennzahlen, gruppiere, schreibe_paket, startseite_beispiele, tippecanoe_befehl, zechen_geojson
 from pipeline.lib.io import lies_csv
 
 FIX = pathlib.Path(__file__).parent / "fixtures"
@@ -233,3 +233,21 @@ def test_faksimile_tabelle_und_export(tmp_path):
     assert faksimile_tabelle(fak) == {"I-333": 355}
     schreibe_paket(tmp_path, [_v(id="1", lastname="Sepeur", teil="I")], [], [], "2026-09-21", kacheln=False, faksimile=fak)
     assert json.loads((tmp_path / "faksimile.json").read_text()) == {"I-333": 355}
+
+
+def test_startseite_beispiele_nur_hausgenau_und_bekannt():
+    e = [_v(id="1", lastname="Sepeur", firstname="Wilh.", teil="I"),
+         _v(id="2", lastname="Jäger", teil="III", Firmenname="M. Jäger, Althandlung"),
+         _v(id="3", lastname="", teil="II", strasse_roh="Grenzstr.", hausnr="9", stufe="strasse")]
+    e[2]["Eigentümer"] = "Eigentümer"; e[2]["Firmenname"] = "Gewerkschaft Graf Beust"
+    adressen = gruppiere(e, [])
+    aid1, aid3 = adress_id(e[0]), adress_id(e[2])
+    zeilen = [dict(adress_id=aid1, eintrag_id="1"), dict(adress_id=aid1, eintrag_id="2"),
+              dict(adress_id=aid3, eintrag_id="3"), dict(adress_id="gibtesnicht", eintrag_id="9"), dict(adress_id=aid1, eintrag_id="99")]
+    b = startseite_beispiele(zeilen, adressen)
+    assert [x["e"] for x in b] == ["1", "2"]  # straßengenau (3) und Unbekanntes fallen weg
+    assert b[0]["titel"] == "Sepeur, Wilh." and b[0]["id"] == aid1 and b[0]["lat"] == 51.49
+    assert b[1]["titel"] == "M. Jäger, Althandlung"
+    b2 = startseite_beispiele([dict(adress_id=aid3, eintrag_id="3")], gruppiere([dict(e[2], stufe="haus")], []))
+    assert b2[0]["titel"] == "Gewerkschaft Graf Beust" and b2[0]["untertitel"].startswith("Eigentümer · Grenzstr. 9")
+    assert b[0]["untertitel"] == "Bergm. · Grenzstr. 25, Katernberg"

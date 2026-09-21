@@ -21,3 +21,6 @@ export const DES_PROJEKT = "https://des.genealogy.net/essen1936/";
 // Faksimile in der DigiBib des CompGen: Bildnummer je Seite kommt aus daten/faksimile.json.
 export const DIGIBIB_WERK = "https://www.digibib.genealogy.net/viewer/image/857439804_1936/";
 export const DATEN = "daten/";
+// Startseite: Ausschnitt des Stadtplans 1935 (einmalig exportiert, EPSG:3857-Box des Bildes) und die
+// Bildgrößen in bilder/startplan-1935-<breite>.{webp,jpg}; die Beispielpunkte kommen aus daten/startseite.json.
+export const STARTPLAN = { bbox3857: [778322.27, 6701033.35, 782822.27, 6704033.35], seitenverhaeltnis: 3 / 2, ankerX: 0.3 };

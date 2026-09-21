@@ -42,6 +42,7 @@ export class Lader {
   berufe() { return this.json("suche/berufe.json"); }
   stadtteile() { return this.json("suche/stadtteile.json"); }
   kennzahlen() { return this.json("kennzahlen.json"); }
+  startseite() { return this.json("startseite.json"); }
   faksimile() { return this.json("faksimile.json"); }
   thema(id) { return this.json(`themen/${id}.json`); }
 }

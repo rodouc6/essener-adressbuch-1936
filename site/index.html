@@ -8,10 +8,17 @@
 <link rel="stylesheet" href="css/stil.css">
 </head>
 <body class="startseite">
-<header class="banner" style="background-image:url('bilder/banner-1935.jpg')">
-  <div class="banner-text"><h1>Essen 1936</h1><p>Das Adressbuch auf der Karte</p></div>
-</header>
+<div class="geteilt">
+<aside class="planseite" id="planseite" aria-label="Stadtplan Essen 1935 mit Beispielen aus dem Adressbuch">
+  <picture>
+    <source type="image/webp" srcset="bilder/startplan-1935-1000.webp 1000w, bilder/startplan-1935-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 50vw">
+    <img class="plan" src="bilder/startplan-1935-1000.jpg" srcset="bilder/startplan-1935-1000.jpg 1000w, bilder/startplan-1935-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 50vw" alt="Ausschnitt des Stadtplans Essen 1935: Stadtmitte mit Hauptbahnhof und Gussstahlfabrik Krupp" decoding="async">
+  </picture>
+  <div id="beispiele" class="beispiele"></div>
+  <div class="planhinweis">Stadtplan 1935 · Beispiele aus dem Adressbuch</div>
+</aside>
 <main>
+  <div class="startkopf"><h1>Essen 1936</h1><p>Das Adressbuch auf der Karte</p></div>
   <div class="suchkasten">
     <div class="suchfeld">
       <input id="suche" type="search" placeholder="Name, Straße, Firma, Beruf …" autocomplete="off" aria-label="Suche" autofocus>
@@ -28,6 +35,7 @@
   </nav>
   <p class="luecke">Die Namen H bis J fehlen in der Vorlage. Wer dort sucht, findet nichts, nicht weil es nichts gab. <a href="ueber.html#luecken">Mehr dazu</a></p>
 </main>
+</div>
 <footer><a href="ueber.html">Über das Projekt</a> · Quelle: Adreßbuch Essen 1936 (Scherl), Erfassung Verein für Computergenealogie · <a href="impressum.html">Impressum</a> · <a href="impressum.html#datenschutz">Datenschutz</a></footer>
 <script type="module" src="js/start.js"></script>
 </body>

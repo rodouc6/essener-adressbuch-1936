@@ -288,12 +288,36 @@ def faksimile_tabelle(zeilen: list[dict]) -> dict[str, int]:
     return {z["seite"]: int(z["bild"]) for z in zeilen if z.get("seite") and z.get("bild")}
 
 
+def startseite_beispiele(zeilen: list[dict], adressen: dict[str, dict]) -> list[dict]:
+    """Beispielpunkte der Startseite aus kuratierung/startseite_beispiele.csv (adress_id, eintrag_id):
+    nur hausgenau verortete Adressen, Reihenfolge wie in der Tabelle; unbekannte IDs fallen weg
+    (Precision first — kein Beispiel ohne belastbaren Punkt)."""
+    beispiele = []
+    for z in zeilen:
+        a = adressen.get(z.get("adress_id", ""))
+        if not a or a["stufe"] != "haus":
+            continue
+        e = next((x for x in a["eintraege"] if x["id"] == z.get("eintrag_id")), None)
+        if e is None:
+            continue
+        k = eintrag_kurz(e, e["_merkmale"])
+        # Teil II: Firmenname trägt den Eigentümer (Körperschaft), eigentuemer die Rolle („Eigentümer“/„Verwalter“)
+        person = ", ".join(x for x in (k["name"], k["vorname"]) if x)
+        titel = (k["firma"] or person) if k["teil"] in ("II", "III") else person
+        rolle = (k["eigentuemer"] or "Eigentümer") if k["teil"] == "II" else ", ".join(x for x in (k["beruf"], k["stand"]) if x)
+        beispiele.append(dict(id=a["id"], e=k["id"], lat=a["lat"], lon=a["lon"], titel=titel,
+                              untertitel=" · ".join(x for x in (rolle, a["historisch"]) if x)))
+    return beispiele
+
+
 def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], zechen: list[dict],
-                   datum: str, kacheln: bool = True, faksimile: list[dict] | None = None) -> dict:
+                   datum: str, kacheln: bool = True, faksimile: list[dict] | None = None,
+                   beispiele: list[dict] | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln)
+    _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
     if kacheln:
