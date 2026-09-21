@@ -1,7 +1,6 @@
 # Quellenrecherche: Essener Steinkohlenzechen und ihr Status 1936
 
 Recherche durch einen Opus-Agenten am 2026-09-21 (Websuche), Stichproben (Fridolin, Carolus Magnus) am selben Tag von Hand nachgeprüft. Bezug: `kuratierung/zechen_pruefung.csv`.
-Seiten; nicht Gefundenes ist ausdrücklich als „nicht gefunden“ markiert.
 
 ---
 
