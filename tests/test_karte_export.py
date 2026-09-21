@@ -1,6 +1,6 @@
-from pipeline.lib.karte_export import (adress_id, anzeige_adresse, baue_berufsindex, baue_firmenindex,
-                                       baue_namensindex, baue_stadtteile, baue_strassenindex, baue_strassenscherben,
-                                       etagen_rang, falte, praefix2, scherbe,
+from pipeline.lib.karte_export import (adress_id, anzeige_adresse, baue_adressscherben, baue_berufsindex,
+                                       baue_firmenindex, baue_namensindex, baue_stadtteile, baue_strassenindex,
+                                       baue_strassenscherben, etagen_rang, falte, praefix2, scherbe,
                                        sortiere_eintraege, baue_scherben, eintrag_kurz, gruppiere, punkt_feature)
 from pipeline.lib.merkmale import Regel
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -100,6 +100,21 @@ def _adressen():
     return gruppiere(e, [])
 
 
+def test_adressscherben_entsprechen_punkt_feature_plus_koordinaten():
+    adressen = _adressen()
+    scherben = baue_adressscherben(adressen)
+    for aid, a in adressen.items():
+        eintrag = scherben[scherbe(aid)][aid]
+        erwartet = dict(punkt_feature(a)["properties"], lat=a["lat"], lon=a["lon"])
+        assert eintrag == erwartet
+    # zwei Adressen in unterschiedlichen Scherben (Lattenkamp/Katernberg vs. Bochumer Straße/Steele)
+    aid_katernberg = adress_id(_v(id="1"))
+    aid_steele = adress_id(_v(id="4", strasse_heute="Bochumer Straße", hausnr="5", stadtteil="Steele",
+                                strasse_roh="Bochumer Str.", Vorort="Steele"))
+    assert scherbe(aid_katernberg) != scherbe(aid_steele)
+    assert scherben[scherbe(aid_steele)][aid_steele]["lat"] == 51.45
+
+
 def test_namens_und_firmenindex():
     n = baue_namensindex(_adressen())
     assert sorted(n) == ["ja", "os", "se"]
@@ -188,6 +203,8 @@ def test_schreibe_paket(tmp_path):
     assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 2
     geo = json.loads((tmp_path / "adressen.geojson").read_text())
     assert geo["features"][0]["properties"]["n_I"] == 1
+    scherbe_inhalt = json.loads((tmp_path / "adressen" / f"{aid[:2]}.json").read_text())
+    assert scherbe_inhalt[aid]["lat"] == 51.49 and scherbe_inhalt[aid]["strasse_heute"] == "Lattenkamp"
 
 
 @pytest.mark.skipif(shutil.which("tippecanoe") is None, reason="tippecanoe nicht installiert")

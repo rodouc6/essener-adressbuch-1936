@@ -119,6 +119,17 @@ def baue_scherben(adressen: dict[str, dict]) -> dict[str, dict[str, list[dict]]]
     return dict(scherben)
 
 
+def baue_adressscherben(adressen: dict[str, dict]) -> dict[str, dict[str, dict]]:
+    """Adressscherben: Scherbe (die ersten zwei Zeichen der Adress-ID) → Adress-ID → Punkteigenschaften
+    (wie punkt_feature(), aber ohne Umweg über GeoJSON) plus lat/lon — als Fallback, wenn eine Adresse
+    nicht in den gerade geladenen Kartenkacheln liegt (Task 13-Review)."""
+    scherben: dict[str, dict[str, dict]] = defaultdict(dict)
+    for aid, a in adressen.items():
+        p = dict(punkt_feature(a)["properties"], lat=a["lat"], lon=a["lon"])
+        scherben[scherbe(aid)][aid] = p
+    return dict(scherben)
+
+
 def anzeige_adresse(a: dict) -> str:
     """Adresse zur Anzeige: heutige Straße, Nummer, Stadtteil; bei Stadtplan die historische Schreibung."""
     if a["stufe"] == "stadtplan" or not a["strasse_heute"]:
@@ -271,6 +282,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         subprocess.run(tippecanoe_befehl(ausgabe / "adressen.geojson", ausgabe / "adressen.pmtiles"), check=True)
     for name, inhalt in baue_scherben(adressen).items():
         _json(ausgabe / "haus" / f"{name}.json", inhalt)
+    for name, inhalt in baue_adressscherben(adressen).items():
+        _json(ausgabe / "adressen" / f"{name}.json", inhalt)
     for name, zeilen in baue_namensindex(adressen).items():
         _json(ausgabe / "suche" / "namen" / f"{name}.json", zeilen)
     for name, zeilen in baue_firmenindex(adressen).items():

@@ -22,7 +22,7 @@ zechen_pfad = W / "kuratierung" / "zechen.csv"
 zechen = lies_csv(zechen_pfad) if zechen_pfad.exists() else []
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
-for unter in ("haus", "suche"):
+for unter in ("haus", "suche", "adressen"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln)

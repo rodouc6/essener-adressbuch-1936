@@ -28,6 +28,12 @@ export class Lader {
     const s = await this.json(`haus/${adressId.slice(0, 2)}.json`);
     return s && s[adressId] ? s[adressId] : null;
   }
+  // Punkteigenschaften einer Adresse — Fallback, wenn die Adresse (noch) nicht in den geladenen
+  // Kartenkacheln liegt (z. B. außerhalb des Viewports); unabhängig vom Kachelstand des Browsers.
+  async adresse(adressId) {
+    const s = await this.json(`adressen/${adressId.slice(0, 2)}.json`);
+    return s && s[adressId] ? s[adressId] : null;
+  }
   namen(praefix) { return this.json(`suche/namen/${praefix}.json`); }
   firmen(praefix) { return this.json(`suche/firmen/${praefix}.json`); }
   berufeScherbe(praefix) { return this.json(`suche/berufe/${praefix}.json`); }

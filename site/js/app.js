@@ -13,7 +13,7 @@ let zustand = liesZustand(location.search);
 let ergebnis = null;              // aktuelle Treffermenge
 let auswahl = null;               // { art, ... } der Suche
 let themaAktiv = null;            // aktives Thema mit farbregel und ebenen
-const eigCache = new Map();       // adressId → Punkteigenschaften aus Kacheln
+const eigCache = new Map();       // adressId → Punkteigenschaften (aus Kacheln oder Adressscherbe)
 const mobil = () => matchMedia("(max-width: 899px)").matches;
 
 // Zeigt einen kurzen Hinweis statt einer hängenden UI, wenn ein Ladepfad scheitert (Task 9-Review).
@@ -36,12 +36,16 @@ const karte = new Karte("karte", zustand, {
   onHover: () => {},
 });
 
-function eigVon(id) {
-  if (!eigCache.has(id)) {
-    const f = karte.map.querySourceFeatures("adressen", { sourceLayer: "adressen", filter: ["==", ["get", "id"], id] });
-    if (f.length) eigCache.set(id, f[0].properties);
-  }
-  return eigCache.get(id) || null;
+// Punkteigenschaften einer Adresse: zuerst der Speicher, dann die geladenen Kartenkacheln (schnell,
+// aber nur im aktuellen Viewport vorhanden), sonst die Adressscherbe (immer vollständig, aber ein
+// Ladevorgang). Die Eigenschaften sind pro Build unveränderlich — der Speicher wird nie geleert.
+async function eigVon(id) {
+  if (eigCache.has(id)) return eigCache.get(id);
+  const f = karte.map.querySourceFeatures("adressen", { sourceLayer: "adressen", filter: ["==", ["get", "id"], id] });
+  if (f.length) { eigCache.set(id, f[0].properties); return f[0].properties; }
+  const e = await lader.adresse(id);
+  eigCache.set(id, e);
+  return e;
 }
 
 function schreibeUrl(push) {
@@ -69,7 +73,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
     karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   }
   if (alt.beruf !== zustand.beruf) { auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : null; await sucheAusfuehren(); }
-  else zeigeInhalt();
+  else await zeigeInhalt();
   zeichneSteuerung(); zeichneLegende();
 }
 
@@ -83,23 +87,28 @@ async function wendeThemaAn() {
   schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden
 }
 
-function zeigeInhalt() {
-  if (ergebnis) sidebar.zeigeTreffer(zustand, ergebnis, eigMap(ergebnis.adressIds), zustand.q);
+async function zeigeInhalt() {
+  if (ergebnis) sidebar.zeigeTreffer(zustand, ergebnis, await eigMap(ergebnis.adressIds), zustand.q);
   else { sidebar.zeigeSuche(zustand); themenListe(lader).then((l) => sidebar.zeigeThemenliste(l)); }
 }
 
-function eigMap(ids) { const m = new Map(); for (const id of ids) { const e = eigVon(id); if (e) m.set(id, e); } return m; }
+async function eigMap(ids) {
+  const m = new Map();
+  const paare = await Promise.all(ids.map(async (id) => [id, await eigVon(id)]));
+  for (const [id, e] of paare) if (e) m.set(id, e);
+  return m;
+}
 
 async function sucheAusfuehren() {
   try {
-    if (!auswahl) { ergebnis = null; karte.setzeTreffer(null); zeigeInhalt(); return; }
+    if (!auswahl) { ergebnis = null; karte.setzeTreffer(null); await zeigeInhalt(); return; }
     ergebnis = await treffer(auswahl, lader);
     karte.setzeTreffer(ergebnis.adressIds);
     if (!karte.passeEin(ergebnis.adressIds) && ergebnis.adressIds.length) {
       // Kacheln der Treffer noch nicht geladen: einmal warten und erneut versuchen
       karte.map.once("idle", () => { karte.passeEin(ergebnis.adressIds); zeigeInhalt(); });
     }
-    zeigeInhalt();
+    await zeigeInhalt();
     sidebar.setzeStufe("halb");
   } catch (fehler) {
     fehlerHinweis(fehler, "Suche fehlgeschlagen");
@@ -126,13 +135,15 @@ async function sucheAusText(q) {
 
 async function oeffneHaus(id, eintragId) {
   try {
-    const [eig, eintraege] = [eigVon(id), await lader.scherbe(id)];
+    const [eig, eintraege] = await Promise.all([eigVon(id), lader.scherbe(id)]);
     if (!eintraege) return;
     const e = eig || { id, stufe: "haus", historisch: "", strasse_heute: "", hausnr: "", stadtteil: "", n_I: 0, n_II: 0, n_III: 0 };
     // id in der URL: Adress-ID, bei hervorgehobenem Eintrag "adressId.eintragId"
     setzeZustand({ id: eintragId ? `${id}.${eintragId}` : id }, true, true);
     karte.setzeAuswahl(id);
-    const pos = karte.position(id);
+    // Kachel-Position bevorzugt (Kachel bereits geladen); außerhalb des Viewports (Kachel nicht
+    // geladen) liefert die Adressscherbe lat/lon als Fallback (Task 13-Review).
+    const pos = karte.position(id) || (eig && eig.lon != null && eig.lat != null ? [eig.lon, eig.lat] : null);
     if (pos) karte.fliegeZu(pos);
     sidebar.zeigeHaus(e, eintraege, eintragId);
   } catch (fehler) {
@@ -142,7 +153,7 @@ async function oeffneHaus(id, eintragId) {
 
 async function klickPunkt(id, lngLat) {
   try {
-    const eig = eigVon(id); const eintraege = await lader.scherbe(id);
+    const [eig, eintraege] = await Promise.all([eigVon(id), lader.scherbe(id)]);
     if (!eig || !eintraege) return;
     karte.setzeAuswahl(id);
     karte.zeigePopup(lngLat, popupHtml(eig, eintraege, mobil()));
@@ -194,7 +205,7 @@ function zeichneLegende() {
 
 async function exportiere() {
   if (!ergebnis) return;
-  const csv = await csvAusTreffern(ergebnis, lader, eigMap(ergebnis.adressIds));
+  const csv = await csvAusTreffern(ergebnis, lader, await eigMap(ergebnis.adressIds));
   herunterladen(csv, `essen1936-${(zustand.q || zustand.beruf || "treffer").replace(/[^\w]+/g, "_")}.csv`);
 }
 
@@ -235,7 +246,8 @@ async function start() {
   }
   sidebar.setzeStufe(mobil() ? (zustand.q ? "halb" : "griff") : "halb");
 }
-karte.map.on("sourcedata", (e) => { if (e.sourceId === "adressen" && e.isSourceLoaded) eigCache.clear(); });
+// Kein Zurücksetzen des eigCache bei "sourcedata" mehr: Punkteigenschaften sind pro Build
+// unveränderlich, egal ob sie aus der Kachel oder der Adressscherbe stammen (Task 13-Review).
 await start();
 window.karte = karte;
 window.app = { zustand: () => zustand };
