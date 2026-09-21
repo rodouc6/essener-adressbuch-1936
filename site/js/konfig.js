@@ -9,6 +9,7 @@ export const PRAEZISION = {
   haus: "hausgenau verortet",
   strasse: "Straße bekannt, Hausnummer nicht verortbar",
   stadtplan: "Punkt vom Stadtplan 1935, Straße heute verschwunden",
+  unbekannt: "Präzision unbekannt (Daten nicht geladen)",
 };
 export const PLAN_FREIGEGEBEN = false;
 export const STADTPLAN_EXPORT = "https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export";

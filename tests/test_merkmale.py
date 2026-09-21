@@ -47,3 +47,13 @@ def test_leeres_muster_wird_abgewiesen(tmp_path):
         assert "muster und merkmal müssen gefüllt sein" in str(e)
     else:
         raise AssertionError("ValueError erwartet")
+
+
+def test_fehlender_beleg_wird_abgewiesen(tmp_path):
+    (tmp_path / "x.csv").write_text("feld,art,muster,merkmal,beleg,bearbeiter,datum\nBeruf o. ä.,exakt,Bergm.,bergbau,,,\n", encoding="utf-8")
+    try:
+        lade_regeln(tmp_path)
+    except ValueError as e:
+        assert "beleg" in str(e) and "bergbau" in str(e) and "x.csv" in str(e)
+    else:
+        raise AssertionError("ValueError erwartet")

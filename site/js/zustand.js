@@ -34,7 +34,7 @@ export function liesZustand(search) {
     karte: KARTEN.includes(p.get("karte")) ? p.get("karte") : STANDARD.karte,
     plan: zahl(p.get("plan"), 0, 1, 0),
     zechen: p.get("zechen") === "1" ? 1 : 0,
-    z: p.get("z") !== null && !Number.isNaN(Number(p.get("z"))) ? Number(p.get("z")) : null,
+    z: p.get("z") ? (!Number.isNaN(Number(p.get("z"))) ? Number(p.get("z")) : null) : null,
     c: c && c.length === 2 && c.every((x) => !Number.isNaN(x)) ? c : null,
   };
 }

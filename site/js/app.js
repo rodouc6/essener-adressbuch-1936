@@ -10,7 +10,30 @@ import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
 
 const lader = new Lader();
-let zustand = liesZustand(location.search);
+// PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart: ein manipulierter ?plan=1-Link darf die
+// Ebene nicht aktivieren, solange die Nutzungsrechte am Dienst geo.essen.de nicht geklärt sind (C1).
+function gateZustand(z) { return PLAN_FREIGEGEBEN ? z : { ...z, plan: 0 }; }
+
+// Grundkartenwahl in localStorage merken (Spec §4); localStorage kann in Privatmodus/mit
+// blockiertem Speicher werfen — nie die Seite deswegen scheitern lassen (I5).
+const KARTE_SPEICHER = "essen1936.karte";
+function liesKarteSpeicher() {
+  try {
+    const v = localStorage.getItem(KARTE_SPEICHER);
+    return v === "positron" || v === "liberty" ? v : null;
+  } catch { return null; }
+}
+function schreibeKarteSpeicher(v) {
+  try { localStorage.setItem(KARTE_SPEICHER, v); } catch { /* ignorieren */ }
+}
+
+let zustand = gateZustand(liesZustand(location.search));
+// Nur ohne karte= in der URL auf den gespeicherten Wert zurückgreifen — ein expliziter Link/Reload
+// mit karte= soll immer Vorrang vor localStorage haben.
+if (!new URLSearchParams(location.search).has("karte")) {
+  const gespeichert = liesKarteSpeicher();
+  if (gespeichert) zustand = { ...zustand, karte: gespeichert };
+}
 let ergebnis = null;              // aktuelle Treffermenge
 let auswahl = null;               // { art, ... } der Suche
 let themaAktiv = null;            // aktives Thema mit farbregel und ebenen
@@ -28,6 +51,7 @@ const sidebar = new Sidebar(document.getElementById("sidebar"), lader, {
   onHausWaehlen: (id) => oeffneHaus(id, null),
   onEintragWaehlen: (eid, id) => oeffneHaus(id, eid),
   onVorschlag: (v) => waehleVorschlag(v),
+  onAlleVorschlaege: (art) => alleVorschlaege(art),
   onZurueck: () => history.back(),
   onExport: () => exportiere(),
 });
@@ -63,7 +87,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
   // setzeStil() kann bei schnell aufeinanderfolgenden Wechseln nie auflösen (Karte meldet den
   // veralteten Warter ab, ohne ihn aufzulösen) — daher nicht awaiten, sonst hängt setzeZustand.
   // Die Karte wendet Filter/Plan/Zechen/Treffer/Auswahl in ebenenAufsetzen() selbst wieder an.
-  if (alt.karte !== zustand.karte) karte.setzeStil(zustand.karte);
+  if (alt.karte !== zustand.karte) { karte.setzeStil(zustand.karte); schreibeKarteSpeicher(zustand.karte); }
   if (alt.thema !== zustand.thema) await wendeThemaAn();
   // Bei einem Stilwechsel legt ebenenAufsetzen() die Ebenen erst neu an (asynchron, nicht
   // awaitet); ein sofortiger setzeFilter/setzePlan/setzeZechen hier würde noch auf die alten,
@@ -129,6 +153,18 @@ async function waehleVorschlag(v) {
   await sucheAusfuehren();
 }
 
+// "alle n anzeigen" unter einer Vorschlagsgruppe (Spec §6): bei Personen die volle Personensuche
+// starten, bei Straßen/Firmen/Berufen stattdessen die Gruppe selbst ungekürzt nachladen.
+async function alleVorschlaege(art) {
+  const q = sidebar.suche.value;
+  if (art === "personen") { sidebar.setzeVorschlaege(null); return sucheAusText(q); }
+  try {
+    sidebar.setzeVorschlaege(await vorschlaege(q, lader, { [art]: true }));
+  } catch (fehler) {
+    fehlerHinweis(fehler, "Vorschläge fehlgeschlagen");
+  }
+}
+
 // q ohne Vorschlagsauswahl (Enter im Suchfeld, oder q= aus der URL — z. B. ein Straßenlink von
 // der Startseite, Task 14 Amendment 1, oder ein Reload/Zurück/Vor auf einer Straßen-URL, Fix-
 // Runde 1): zuerst im Straßenindex nachsehen (strasseAusText(), toleriert auch "Name (Ort)"),
@@ -148,7 +184,7 @@ async function oeffneHaus(id, eintragId) {
   try {
     const [eig, eintraege] = await Promise.all([eigVon(id), lader.scherbe(id)]);
     if (!eintraege) return;
-    const e = eig || { id, stufe: "haus", historisch: "", strasse_heute: "", hausnr: "", stadtteil: "", n_I: 0, n_II: 0, n_III: 0 };
+    const e = eig || { id, stufe: "unbekannt", historisch: "", strasse_heute: "", hausnr: "", stadtteil: "", n_I: 0, n_II: 0, n_III: 0 };
     // id in der URL: Adress-ID, bei hervorgehobenem Eintrag "adressId.eintragId"
     setzeZustand({ id: eintragId ? `${id}.${eintragId}` : id }, true, true);
     karte.setzeAuswahl(id);
@@ -191,8 +227,8 @@ function zeichneSteuerung() {
 function zeichneLegende() {
   let html = "";
 
-  // Themenlegende, falls ein Thema aktiv ist
-  if (themaAktiv) {
+  // Themenlegende, falls ein Thema aktiv ist (und eine Farbregel trägt — ohne Farbe keine Legende)
+  if (themaAktiv && themaAktiv.farbe) {
     const farbe = themaAktiv.farbe;
     if (farbe.art === "einfach") {
       html += `<div class="zeile"><span class="punkt" style="background:${farbe.wert}"></span> ${themaAktiv.legende}</div>`;
@@ -237,7 +273,15 @@ sidebar.suche.addEventListener("input", () => {
 sidebar.suche.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { sidebar.setzeVorschlaege(null); sucheAusText(sidebar.suche.value.trim()); } });
 document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "" }, true, true); sucheAusfuehren(); });
 document.addEventListener("click", (ev) => { if (!ev.target.closest(".suchfeld")) sidebar.setzeVorschlaege(null); });
-window.addEventListener("popstate", async () => { zustand = liesZustand(location.search); sidebar.suche.value = zustand.q; await start(); });
+window.addEventListener("popstate", async () => {
+  zustand = gateZustand(liesZustand(location.search));
+  if (!new URLSearchParams(location.search).has("karte")) {
+    const gespeichert = liesKarteSpeicher();
+    if (gespeichert) zustand = { ...zustand, karte: gespeichert };
+  }
+  sidebar.suche.value = zustand.q;
+  await start();
+});
 
 async function start() {
   await karte.bereit();

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { popupHtml, hausHtml, faksimileUrl, praezisionText, esc } from "../js/popup.js";
+import { popupHtml, hausHtml, faksimileUrl, praezisionText, esc, trefferzeileHtml } from "../js/popup.js";
 
 const EIG = { id: "a1", stufe: "strasse", strasse_heute: "Lattenkamp", hausnr: "25", stadtteil: "Katernberg",
               historisch: "Grenzstr. 25, Katernberg", n_I: 2, n_II: 1, n_III: 0, nummer_unsicher: "nein" };
@@ -44,4 +44,13 @@ test("hausHtml gruppiert nach Teil und verlinkt das Faksimile", () => {
 test("praezisionText und faksimileUrl", () => {
   assert.equal(praezisionText("haus"), "hausgenau verortet");
   assert.match(faksimileUrl("I-551"), /^https:\/\//);
+});
+
+test("praezisionText unbekannt", () => {
+  assert.equal(praezisionText("unbekannt"), "Präzision unbekannt (Daten nicht geladen)");
+});
+
+test("trefferzeileHtml zeigt Kennzeichnung für unbekannte Präzision", () => {
+  const h = trefferzeileHtml({ adressId: "a1", titel: "x", untertitel: "y", stufe: "unbekannt" });
+  assert.match(h, /Präzision unbekannt/);
 });

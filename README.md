@@ -166,10 +166,11 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `haus/<xx>.json` | Einträge je Adress-ID, nach den ersten zwei Hex-Zeichen der ID gehasht (256 Dateien) |
 | `adressen/<xx>.json` | Punkteigenschaften je Adress-ID, gleiches Schema wie `haus/<xx>.json`-Schlüssel; unabhängig vom Kachel-Viewport für Export, Liste und Hausansicht |
 | `suche/namen/<ab>.json`, `suche/firmen/<ab>.json` | Personen bzw. Firmen nach den ersten zwei Schlüsselzeichen (Schlüsselfaltung: Kleinschreibung, ä/ö/ü/ß transkribiert, Satzzeichen entfernt) |
-| `suche/strassen.json` | Heutige und 1936er Straßennamen mit Vorort, Zeilenzahl, Adress-IDs |
+| `suche/strassen.json` | Heutige und 1936er Straßennamen mit Vorort und Zeilenzahl (keine Adress-IDs) |
+| `suche/strassen/<ab>.json` | Je Straße (Name\|Art\|Ort) die sortierten Adress-IDs, Scherbe nach den ersten zwei Schlüsselzeichen |
 | `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
 | `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
-| `zechen.geojson` | Zechen und Krupp-Werke aus `kuratierung/zechen.csv` |
+| `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` |
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
 
@@ -185,7 +186,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `thema` | Aktives Thema (`site/daten/themen/<id>.json`) | keins |
 | `id` | Adress-ID (öffnet die Hausansicht) oder Eintrags-ID (öffnet die Hausansicht und hebt den Eintrag hervor) | keine |
 | `karte` | Grundkartenstil: `positron` oder `liberty` | `positron` |
-| `plan` | Stadtplan-1935-Ebene ein-/ausblenden: `0` oder `1` | `0` |
+| `plan` | Stadtplan-1935-Ebene ein-/ausblenden: `0` oder `1` — nur nach Freigabe wirksam (siehe unten) | `0` |
 | `zechen` | Zechen-Ebene ein-/ausblenden: `0` oder `1` | `0` |
 | `z` | Zoomstufe | 11 |
 | `c` | Kartenmitte `lon,lat` | Essen gesamt |
@@ -201,7 +202,7 @@ Felder: `titel`, `text`, `grundlage` (Quelle, Prüfdatum), `filter` (Merkmale, E
 (eine Farbe | Kategorien | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
 `darstellung` (`punkte`; `strassen` ist für Teilprojekt 4 reserviert), `freigegeben` (nur dann
 erscheint die Kachel auf der Startseite). Merkmale stammen aus `kuratierung/merkmale/<name>.csv`
-(Spalten `feld`, `muster`, `merkmal`, `beleg`, `bearbeiter`, `datum`) und werden in Stufe 06 an
+(Spalten `feld`, `art`, `muster`, `merkmal`, `beleg`, `bearbeiter`, `datum`) und werden in Stufe 06 an
 jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
 `thema=<id>` in der URL, kombinierbar mit Suche und Filtern.
 

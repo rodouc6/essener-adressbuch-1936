@@ -18,9 +18,13 @@ function strasse(s) {
            name: s.name, artName: s.art, ort: s.ort, schluessel: s.schluessel };
 }
 
-export async function vorschlaege(q, lader) {
+// alle: { strassen?, firmen?, berufe? } — für die betroffenen Gruppen die volle Liste statt der
+// Kurzliste liefern (Klick auf "alle n anzeigen", Spec §6). Personen laufen nie ungekürzt über
+// vorschlaege(); dafür startet der Aufrufer die eigentliche Personensuche (sucheAusText).
+export async function vorschlaege(q, lader, alle = {}) {
   const k = falte(q);
-  const leer = { personen: [], strassen: [], firmen: [], berufe: [], gesamt: 0 };
+  const leer = { personen: [], strassen: [], firmen: [], berufe: [], gesamt: 0,
+                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0 };
   if (k.length < 2) return leer;
   const [namen, firmen, strassen, berufe] = await Promise.all([
     lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe()]);
@@ -31,9 +35,13 @@ export async function vorschlaege(q, lader) {
   const alleB = (berufe || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "beruf", text: z[1], untertitel: `${z[2]} Einträge`, beruf: z[1] }));
   return {
-    personen: alleP.slice(0, MAX.personen), strassen: alleS.slice(0, MAX.strassen),
-    firmen: alleF.slice(0, MAX.firmen), berufe: alleB.slice(0, MAX.berufe),
+    personen: alleP.slice(0, MAX.personen),
+    strassen: alle.strassen ? alleS : alleS.slice(0, MAX.strassen),
+    firmen: alle.firmen ? alleF : alleF.slice(0, MAX.firmen),
+    berufe: alle.berufe ? alleB : alleB.slice(0, MAX.berufe),
     gesamt: alleP.length + alleS.length + alleF.length + alleB.length,
+    gesamt_personen: alleP.length, gesamt_strassen: alleS.length,
+    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length,
   };
 }
 

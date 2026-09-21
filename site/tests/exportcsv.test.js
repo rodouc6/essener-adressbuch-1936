@@ -13,6 +13,11 @@ test("csvZeile quotet Komma, Anführungszeichen und Zeilenumbruch", () => {
   assert.equal(csvZeile(["a", "b,c", 'd"e', "f\ng"]), 'a,"b,c","d""e","f\ng"');
 });
 
+test("csvZeile entschärft Formelinjektion (=, +, -, @)", () => {
+  assert.equal(csvZeile(["=SUMME(A1)", "+1", "-1", "@HYPERLINK", "normal"]),
+    "'=SUMME(A1),'+1,'-1,'@HYPERLINK,normal");
+});
+
 test("vollständiger Export bis zur Grenze", async () => {
   const csv = await csvAusTreffern({ adressIds: ["a1"], zaehler: new Map([["a1", 2]]), personen: null }, l, EIG);
   const zeilen = csv.split("\r\n");

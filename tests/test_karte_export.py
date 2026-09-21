@@ -178,10 +178,17 @@ def test_kennzahlen():
 
 def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():
     g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
-    assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt"]
+    assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt", "Zeche Jahre Unbekannt"]
     p = g["features"][0]["properties"]
-    assert p["aktiv_1936"] is True and g["features"][1]["properties"]["aktiv_1936"] is False
+    assert p["aktiv_1936"] is True and p["jahre_unbekannt"] is False
+    assert g["features"][1]["properties"]["aktiv_1936"] is False and g["features"][1]["properties"]["jahre_unbekannt"] is False
     assert g["features"][0]["geometry"]["coordinates"] == [7.0447, 51.4861]
+
+
+def test_zechen_geojson_fehlende_jahre_zaehlen_nicht_als_aktiv():
+    g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
+    p = next(f["properties"] for f in g["features"] if f["properties"]["name"] == "Zeche Jahre Unbekannt")
+    assert p["aktiv_1936"] is False and p["jahre_unbekannt"] is True
 
 
 def test_tippecanoe_befehl():
@@ -200,7 +207,7 @@ def test_schreibe_paket(tmp_path):
     assert json.loads((tmp_path / "suche" / "strassen.json").read_text())[0]["name"] in ("Grenzstr.", "Lattenkamp")
     assert (tmp_path / "suche" / "strassen" / "gr.json").exists()
     assert json.loads((tmp_path / "kennzahlen.json").read_text()) == k
-    assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 2
+    assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 3
     geo = json.loads((tmp_path / "adressen.geojson").read_text())
     assert geo["features"][0]["properties"]["n_I"] == 1
     scherbe_inhalt = json.loads((tmp_path / "adressen" / f"{aid[:2]}.json").read_text())

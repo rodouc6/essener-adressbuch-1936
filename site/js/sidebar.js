@@ -16,7 +16,9 @@ export class Sidebar {
     this.inhalt.addEventListener("click", (ev) => this._klick(ev));
     this.vorschlaegeEl.addEventListener("click", (ev) => {
       const e = ev.target.closest("[data-index]");
-      if (e) this.a.onVorschlag(this._vorschlagListe[+e.dataset.index]);
+      if (e) return this.a.onVorschlag(this._vorschlagListe[+e.dataset.index]);
+      const alle = ev.target.closest("[data-alle]");
+      if (alle) this.a.onAlleVorschlaege(alle.dataset.alle);
     });
   }
 
@@ -34,6 +36,8 @@ export class Sidebar {
         html += `<div class="eintrag" data-index="${liste.length}">${esc(v.text)}<small>${esc(v.untertitel)}</small></div>`;
         liste.push(v);
       }
+      const gesamt = g[`gesamt_${k}`] ?? g[k].length;
+      if (gesamt > g[k].length) html += `<div class="eintrag alle" data-alle="${k}">alle ${gesamt} anzeigen</div>`;
     }
     this._vorschlagListe = liste; this.vorschlaegeEl.innerHTML = html; this.vorschlaegeEl.hidden = false;
   }
@@ -72,8 +76,8 @@ export class Sidebar {
       `<button class="export" data-export="1">CSV</button></div>`;
     if (ergebnis.hinweisHJ) html += `<div class="hinweis warn">Keine Treffer. Die Namen H bis J fehlen in der Vorlage (Seiten 186–258 des Teils I). Straßen und Firmen sind nicht betroffen.</div>`;
     const zeilen = ergebnis.personen
-      ? ergebnis.personen.map((p) => ({ adressId: p.adressId, eintragId: p.eintragId, titel: p.text, untertitel: p.untertitel, stufe: (eig.get(p.adressId) || {}).stufe || "haus" }))
-      : ergebnis.adressIds.map((id) => { const e = eig.get(id) || {}; return { adressId: id, titel: e.historisch ? heutigeAdresse(e) : id, untertitel: `${ergebnis.zaehler.get(id)} Einträge${e.historisch ? " · " + e.historisch : ""}`, stufe: e.stufe || "haus" }; });
+      ? ergebnis.personen.map((p) => ({ adressId: p.adressId, eintragId: p.eintragId, titel: p.text, untertitel: p.untertitel, stufe: (eig.get(p.adressId) || {}).stufe || "unbekannt" }))
+      : ergebnis.adressIds.map((id) => { const e = eig.get(id) || {}; return { adressId: id, titel: e.historisch ? heutigeAdresse(e) : id, untertitel: `${ergebnis.zaehler.get(id)} Einträge${e.historisch ? " · " + e.historisch : ""}`, stufe: e.stufe || "unbekannt" }; });
     this._alleZeilen = zeilen; this._gezeigt = 0;
     html += `<div class="liste" id="liste"></div><button class="mehr" data-mehr="1" hidden>weitere 50</button>`;
     this.inhalt.innerHTML = html;

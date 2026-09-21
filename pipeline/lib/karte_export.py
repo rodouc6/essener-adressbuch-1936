@@ -247,16 +247,21 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
 
 
 def zechen_geojson(zeilen: list[dict]) -> dict:
+    """`aktiv_1936` ist nur True, wenn BEIDE Betriebsjahre bekannt sind und 1936 dazwischen liegt
+    (Precision first) — fehlt eines, `jahre_unbekannt=True` statt einer geratenen Aktivität."""
     features = []
     for z in zeilen:
         if not z.get("lat") or not z.get("lon"):
             continue
-        von, bis = int(z["betrieb_von"] or 0), int(z["betrieb_bis"] or 9999)
+        von_roh, bis_roh = z.get("betrieb_von") or "", z.get("betrieb_bis") or ""
+        jahre_unbekannt = not von_roh or not bis_roh
+        aktiv_1936 = bool(not jahre_unbekannt and int(von_roh) <= 1936 <= int(bis_roh))
         features.append({"type": "Feature",
                          "geometry": {"type": "Point", "coordinates": [float(z["lon"]), float(z["lat"])]},
                          "properties": dict(name=z["name"], stadtteil=z.get("stadtteil", ""),
-                                            betrieb_von=z["betrieb_von"], betrieb_bis=z["betrieb_bis"],
-                                            quelle=z.get("quelle", ""), aktiv_1936=von <= 1936 <= bis)})
+                                            betrieb_von=z.get("betrieb_von", ""), betrieb_bis=z.get("betrieb_bis", ""),
+                                            quelle=z.get("quelle", ""), aktiv_1936=aktiv_1936,
+                                            jahre_unbekannt=jahre_unbekannt)})
     return {"type": "FeatureCollection", "features": features}
 
 

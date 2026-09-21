@@ -20,10 +20,15 @@
 <footer><a href="index.html">Startseite</a> · <a href="karte.html">Karte</a> · <a href="impressum.html">Impressum</a></footer>
 <script type="module">
 import { Lader } from "./js/daten.js";
-const kz = await new Lader().kennzahlen();
-if (kz) document.getElementById("zahlen").innerHTML = [[kz.eintraege_je_teil.I, "Einwohner"], [kz.eintraege_je_teil.II, "Häuser"], [kz.eintraege_je_teil.III, "Firmen"],
-  [kz.stufen.haus + " %", "hausgenau"], [kz.stufen.strasse + " %", "straßengenau"], [kz.stufen.stadtplan + " %", "Stadtplan 1935"], [kz.stufen.offen + " %", "nicht verortet"], [kz.stand, "Datenstand"]]
-  .map(([n, l]) => `<div><b>${typeof n === "number" ? n.toLocaleString("de-DE") : n}</b><small>${l}</small></div>`).join("");
+try {
+  const kz = await new Lader().kennzahlen();
+  if (kz) document.getElementById("zahlen").innerHTML = [[kz.eintraege_je_teil.I, "Einwohner"], [kz.eintraege_je_teil.II, "Eigentümereinträge"], [kz.eintraege_je_teil.III, "Firmen"],
+    [kz.adressen, "verortete Adressen"],
+    [kz.stufen.haus + " %", "hausgenau"], [kz.stufen.strasse + " %", "straßengenau"], [kz.stufen.stadtplan + " %", "Stadtplan 1935"], [kz.stufen.offen + " %", "nicht verortet"], [kz.stand, "Datenstand"]]
+    .map(([n, l]) => `<div><b>${typeof n === "number" ? n.toLocaleString("de-DE") : n}</b><small>${l}</small></div>`).join("");
+} catch (fehler) {
+  console.error("Über-Seite: Kennzahlen konnten nicht geladen werden", fehler);
+}
 </script>
 </body>
 </html>

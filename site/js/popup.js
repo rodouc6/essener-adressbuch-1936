@@ -64,7 +64,8 @@ export function hausHtml(eig, eintraege) {
 
 export function trefferzeileHtml(t) {
   // t = { adressId, titel, untertitel, stufe, n, eintragId? }
-  const kenn = t.stufe === "haus" ? "" : `<span class="kenn">${t.stufe === "stadtplan" ? "Stadtplan 1935" : "nur Straße"}</span>`;
+  const kennText = t.stufe === "stadtplan" ? "Stadtplan 1935" : t.stufe === "unbekannt" ? "Präzision unbekannt" : "nur Straße";
+  const kenn = t.stufe === "haus" ? "" : `<span class="kenn">${kennText}</span>`;
   return `<div class="treffer" data-adresse="${esc(t.adressId)}"${t.eintragId ? ` data-eintrag="${esc(t.eintragId)}"` : ""}>` +
     `<b>${esc(t.titel)}</b>${kenn}<small>${esc(t.untertitel)}</small></div>`;
 }

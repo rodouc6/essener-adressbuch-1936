@@ -1,4 +1,7 @@
-import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN } from "./konfig.js";
+import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN, PLAN_FREIGEGEBEN } from "./konfig.js";
+import { esc } from "./popup.js";
+
+const WIKIPEDIA_QUELLE = /^https:\/\/de\.wikipedia\.org\//;
 
 const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 4, Math.log(100), 10];
 
@@ -52,16 +55,20 @@ export class Karte {
       m.addSource("adressen", { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" });
     }
     if (!m.getSource("zechen")) m.addSource("zechen", { type: "geojson", data: DATEN + "zechen.geojson" });
-    if (!m.getSource("stadtplan-1935")) {
-      m.addSource("stadtplan-1935", {
-        type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
-        tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
-        attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
-      });
+    // Solange PLAN_FREIGEGEBEN false ist (Rechte am Dienst geo.essen.de ungeklärt), weder Quelle
+    // noch Ebene anlegen — kein einziger Request an den Dienst, auch nicht über ?plan=1 (C1).
+    if (PLAN_FREIGEGEBEN) {
+      if (!m.getSource("stadtplan-1935")) {
+        m.addSource("stadtplan-1935", {
+          type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
+          tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
+          attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
+        });
+      }
+      this._ebeneHinzufuegen({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
+                   layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
     }
     const sl = "adressen";
-    this._ebeneHinzufuegen({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
-                 layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
     this._ebeneHinzufuegen({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
                  filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
     this._ebeneHinzufuegen({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
@@ -85,8 +92,12 @@ export class Karte {
       }
       m.on("click", "zechen", (e) => {
         const p = e.features[0].properties;
-        this.zeigePopup(e.lngLat, `<b>${p.name}</b><br>${p.stadtteil || ""}<br>in Betrieb ${p.betrieb_von}–${p.betrieb_bis}` +
-          (p.quelle ? `<br><a href="${p.quelle}" target="_blank" rel="noopener">Wikipedia</a>` : ""));
+        const jahre = p.jahre_unbekannt ? "Betriebsjahre unbekannt" : `in Betrieb ${esc(p.betrieb_von)}–${esc(p.betrieb_bis)}`;
+        // Nur auf de.wikipedia.org verlinken — quelle ist Rohdaten aus der Kuratierung, kein
+        // beliebiges Ziel soll unbeaufsichtigt verlinkt werden (I1).
+        const link = p.quelle && WIKIPEDIA_QUELLE.test(p.quelle)
+          ? `<br><a href="${esc(p.quelle)}" target="_blank" rel="noopener">Wikipedia</a>` : "";
+        this.zeigePopup(e.lngLat, `<b>${esc(p.name)}</b><br>${esc(p.stadtteil || "")}<br>${jahre}${link}`);
       });
     }
     this.setzeFilter(this.zustand);
@@ -125,10 +136,12 @@ export class Karte {
     // `adressen-haus` bleibt auch 2 s nach dem letzten Wechsel bestehen.
     this._bereit = new Promise((ok) => {
       const pruefen = () => {
-        if (gen !== this._stilGen) return;   // von einem späteren setzeStil() überholt
+        // Überholt von einem späteren setzeStil(): trotzdem ok() rufen, sonst löst dieser Warter nie
+        // auf und alles, was auf ihn wartet (z. B. ein awaiteter Aufrufer), hängt dauerhaft (I4).
+        if (gen !== this._stilGen) return ok();
         if (!this.map.isStyleLoaded()) { this._stilRaf = requestAnimationFrame(pruefen); return; }
         this._stilRaf = requestAnimationFrame(() => {
-          if (gen !== this._stilGen) return;
+          if (gen !== this._stilGen) return ok();
           this._stilRaf = null;
           ok();
         });
@@ -190,7 +203,7 @@ export class Karte {
   }
 
   setzePlan(deckkraft) {
-    if (!this.map.getLayer("stadtplan-1935")) return;
+    if (!PLAN_FREIGEGEBEN || !this.map.getLayer("stadtplan-1935")) return;
     this.map.setLayoutProperty("stadtplan-1935", "visibility", deckkraft > 0 ? "visible" : "none");
     this.map.setPaintProperty("stadtplan-1935", "raster-opacity", deckkraft);
   }

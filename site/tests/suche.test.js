@@ -38,6 +38,18 @@ test("vorschlaege gruppiert und begrenzt", async () => {
   assert.equal(v.firmen[0].text, "Sepp & Söhne, Kohlen");
   assert.deepEqual(v.strassen, []);
   assert.equal(v.gesamt, 4);
+  assert.equal(v.gesamt_personen, 3);
+  assert.equal(v.gesamt_firmen, 1);
+  assert.equal(v.gesamt_strassen, 0);
+  assert.equal(v.gesamt_berufe, 0);
+});
+
+test("vorschlaege alle liefert die ungekürzte Gruppe (I6)", async () => {
+  const kurz = await vorschlaege("Grenz", lader());
+  assert.equal(kurz.strassen.length, kurz.gesamt_strassen);   // hier bereits unter dem Limit
+  const voll = await vorschlaege("Grenz", lader(), { strassen: true });
+  assert.equal(voll.strassen.length, voll.gesamt_strassen);
+  assert.deepEqual(voll.strassen.map((s) => s.text), kurz.strassen.map((s) => s.text));
 });
 
 test("vorschlaege Nachname Vorname und Straße 1936", async () => {

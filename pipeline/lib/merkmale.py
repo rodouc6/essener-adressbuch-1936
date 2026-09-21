@@ -37,6 +37,8 @@ def lade_regeln(ordner: Path) -> list[Regel]:
                     re.compile(z["muster"])
                 except re.error as e:
                     raise ValueError(f"{pfad.name}: ungültiger regulärer Ausdruck {z['muster']!r}: {e}")
+            if not z.get("beleg"):
+                raise ValueError(f"{pfad.name}: beleg fehlt für Merkmal {z['merkmal']!r} (Precision first — jedes Merkmal braucht einen Beleg)")
             regeln.append(Regel(z["feld"], z["art"], z["muster"], z["merkmal"]))
     return regeln
 

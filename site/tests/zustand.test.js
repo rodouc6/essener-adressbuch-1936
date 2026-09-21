@@ -29,6 +29,10 @@ test("ungültige Werte fallen auf Standard zurück", () => {
   assert.equal(z.z, null);
 });
 
+test("leeres z ergibt null statt 0", () => {
+  assert.equal(liesZustand("?z=").z, null);
+});
+
 test("schreibeZustand lässt Standardwerte weg und sortiert", () => {
   assert.equal(schreibeZustand(STANDARD), "");
   const s = schreibeZustand({ ...STANDARD, q: "Grenzstr. Katernberg", ebene: ["I"], c: [7.06, 51.49], z: 15 });
