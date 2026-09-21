@@ -58,6 +58,7 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .eintrag.hervor { background: #eef2ff; border-left: 3px solid var(--blau); }
 .eintrag .k { color: var(--grau); }
 .quelle { font-size: 12px; color: var(--grau); margin-top: 4px; }
+.kein-bild { color: #92400e; }
 .etage { font-size: 11px; background: #eee; border-radius: 3px; padding: 0 4px; }
 .pname { padding: 3px 0; cursor: pointer; } .pname:hover { text-decoration: underline; }
 .pmehr { color: var(--blau); cursor: pointer; padding-top: 4px; }

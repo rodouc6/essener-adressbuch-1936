@@ -239,7 +239,8 @@ geo.essen.de (Stadtplan, nur wenn freigegeben). Keine Analytik, keine Cookies.
 ## 11. Offene Punkte außerhalb des Teilprojekts
 
 - Rechteanfrage Stadtplan 1935 an Stadt Essen / Historischer Verein.
-- Spike DES-Faksimile: lässt sich aus `seite` (z. B. `I-551`) eine URL beim CompGen
-  bilden? Bis dahin zeigt die Sidebar die Seite und einen Link zur DES-Projektseite.
+- Faksimile: erledigt am 2026-09-21 — die METS-Datei der DigiBib liefert je Bild das Etikett der
+  gedruckten Seite (`werkzeuge/faksimile_mets.py` → `kuratierung/faksimile_seiten.csv`); Link
+  `https://www.digibib.genealogy.net/viewer/image/857439804_1936/<Bild>/`.
 - Lizenz der Quelldaten, Kontakt CompGen wegen der Lücke H–J.
 - Digitalisat des Stadtplans für das Banner.

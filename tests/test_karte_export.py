@@ -219,3 +219,11 @@ def test_schreibe_paket_mit_kacheln(tmp_path):
     e = [_v(id="1", lastname="Sepeur", teil="I")]
     schreibe_paket(tmp_path, e, [], [], "2026-09-21", kacheln=True)
     assert (tmp_path / "adressen.pmtiles").stat().st_size > 100
+
+
+def test_faksimile_tabelle_und_export(tmp_path):
+    from pipeline.lib.karte_export import faksimile_tabelle
+    fak = [dict(seite="I-333", bild="355", etikett="I. Teil:  333"), dict(seite="", bild="", etikett="")]
+    assert faksimile_tabelle(fak) == {"I-333": 355}
+    schreibe_paket(tmp_path, [_v(id="1", lastname="Sepeur", teil="I")], [], [], "2026-09-21", kacheln=False, faksimile=fak)
+    assert json.loads((tmp_path / "faksimile.json").read_text()) == {"I-333": 355}

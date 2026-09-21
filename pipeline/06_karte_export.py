@@ -20,10 +20,12 @@ if kacheln and shutil.which("tippecanoe") is None:
     sys.exit("tippecanoe nicht gefunden (oder --ohne-kacheln verwenden)")
 zechen_pfad = W / "kuratierung" / "zechen.csv"
 zechen = lies_csv(zechen_pfad) if zechen_pfad.exists() else []
+faksimile_pfad = W / "kuratierung" / "faksimile_seiten.csv"
+faksimile = lies_csv(faksimile_pfad) if faksimile_pfad.exists() else []
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
 for unter in ("haus", "suche", "adressen"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
-                   zechen, datetime.date.today().isoformat(), kacheln=kacheln)
+                   zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile)
 print(json.dumps(k, ensure_ascii=False, indent=1))

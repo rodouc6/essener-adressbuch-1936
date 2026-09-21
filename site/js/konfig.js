@@ -1,4 +1,7 @@
-// Konstanten der Karte. PLAN_FREIGEGEBEN erst auf true setzen, wenn die Rechte am Stadtplan 1935 geklärt sind.
+// Konstanten der Karte. PLAN_FREIGEGEBEN: Stadtplan 1935 (geo.essen.de) als Overlay anbieten.
+// Die Rechte sind noch nicht geklärt (Stand 2026-09-21); für die interne Arbeit am nicht
+// veröffentlichten Stand ist der Regler aktiv. VOR DER VERÖFFENTLICHUNG auf false setzen, falls
+// die Freigabe der Stadt Essen / des Historischen Vereins bis dahin nicht vorliegt.
 export const STILE = {
   positron: "https://tiles.openfreemap.org/styles/positron",
   liberty: "https://tiles.openfreemap.org/styles/liberty",
@@ -11,8 +14,10 @@ export const PRAEZISION = {
   stadtplan: "Punkt vom Stadtplan 1935, Straße heute verschwunden",
   unbekannt: "Präzision unbekannt (Daten nicht geladen)",
 };
-export const PLAN_FREIGEGEBEN = false;
+export const PLAN_FREIGEGEBEN = true;
 export const STADTPLAN_EXPORT = "https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export";
 export const ESSEN_MITTE = [7.0131, 51.4556];
 export const DES_PROJEKT = "https://des.genealogy.net/essen1936/";
+// Faksimile in der DigiBib des CompGen: Bildnummer je Seite kommt aus daten/faksimile.json.
+export const DIGIBIB_WERK = "https://www.digibib.genealogy.net/viewer/image/857439804_1936/";
 export const DATEN = "daten/";

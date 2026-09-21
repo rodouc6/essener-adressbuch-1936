@@ -101,8 +101,8 @@ export class Sidebar {
     this.inhalt.querySelector(".kopf").insertAdjacentHTML("afterend", `<div class="verteilung">Nach Stadtteil: ${top}</div>`);
   }
 
-  zeigeHaus(eig, eintraege, hervorgehoben) {
-    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege);
+  zeigeHaus(eig, eintraege, hervorgehoben, faksimile = null) {
+    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege, faksimile);
     if (hervorgehoben) {
       const e = this.inhalt.querySelector(`#e-${CSS.escape(hervorgehoben)}`);
       if (e) { e.classList.add("hervor"); e.scrollIntoView({ block: "center" }); }

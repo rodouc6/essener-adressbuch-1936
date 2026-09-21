@@ -16,6 +16,9 @@ async function ladeIcon(map, name, url, sdf) {
   if (!map.hasImage(name)) map.addImage(name, img, { sdf, pixelRatio: 2 });
 }
 
+const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", false] };
+const LEERER_STIL = { version: 8, sources: {}, layers: [] };
+
 export class Karte {
   constructor(container, zustand, ereignisse) {
     this.ereignisse = ereignisse;
@@ -23,66 +26,99 @@ export class Karte {
     this.farbe = null;          // Themenfarbregel (Task 13) oder null
     this.treffer = new Set();
     this.auswahl = null;
+    this._stilCache = new Map();
+    this._stilGen = 0;
     this.protokoll = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", this.protokoll.tile);
+    // Die Karte startet mit einem leeren Stil; der eigentliche Stil kommt über setzeStil(), das die
+    // Grundkarte als JSON lädt und unsere Quellen und Ebenen hineinmischt. So sind unsere Ebenen von
+    // Anfang an Teil des Stils, und ein Stilwechsel kann sie nicht mehr wegräumen.
     this.map = new maplibregl.Map({
-      container, style: STILE[zustand.karte], center: zustand.c || ESSEN_MITTE, zoom: zustand.z ?? 11,
+      container, style: LEERER_STIL, center: zustand.c || ESSEN_MITTE, zoom: zustand.z ?? 11,
       minZoom: 9, maxZoom: 18, attributionControl: { compact: true },
     });
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     this.map.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), "top-right");
     this.map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
     this.popup = new maplibregl.Popup({ closeButton: true, maxWidth: "320px", offset: 10 });
-    this._bereit = new Promise((ok) => this.map.once("load", ok)).then(() => this.ebenenAufsetzen());
+    // Icons gehen bei jedem Stilwechsel verloren; MapLibre meldet fehlende Bilder, wir laden sie nach.
+    this.map.on("styleimagemissing", (e) => { const d = ICONS[e.id]; if (d) ladeIcon(this.map, e.id, d[0], d[1]); });
     this.map.on("moveend", () => {
       const c = this.map.getCenter();
       ereignisse.onBewegt(Math.round(this.map.getZoom() * 100) / 100, [+c.lng.toFixed(5), +c.lat.toFixed(5)]);
     });
+    this._bereit = new Promise((ok) => this.map.once("load", ok)).then(() => this.setzeStil(zustand.karte));
   }
 
   bereit() { return this._bereit; }
 
-  // Layer nur anlegen, wenn er (etwa durch einen zweiten, gleichzeitig gestarteten Stilwechsel) noch nicht existiert.
-  _ebeneHinzufuegen(def) {
-    if (!this.map.getLayer(def.id)) this.map.addLayer(def);
-  }
-
-  async ebenenAufsetzen() {
-    const m = this.map;
-    await ladeIcon(m, "kreis-gestrichelt", "bilder/kreis-gestrichelt.svg", true);
-    await ladeIcon(m, "zeche", "bilder/zeche.svg", false);
-    if (!m.getSource("adressen")) {
-      m.addSource("adressen", { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" });
-    }
-    if (!m.getSource("zechen")) m.addSource("zechen", { type: "geojson", data: DATEN + "zechen.geojson" });
+  _eigeneQuellen() {
+    const q = {
+      adressen: { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" },
+      zechen: { type: "geojson", data: new URL(DATEN + "zechen.geojson", location.href).href },
+    };
     // Solange PLAN_FREIGEGEBEN false ist (Rechte am Dienst geo.essen.de ungeklärt), weder Quelle
     // noch Ebene anlegen — kein einziger Request an den Dienst, auch nicht über ?plan=1 (C1).
     if (PLAN_FREIGEGEBEN) {
-      if (!m.getSource("stadtplan-1935")) {
-        m.addSource("stadtplan-1935", {
-          type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
-          tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
-          attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
-        });
-      }
-      this._ebeneHinzufuegen({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
-                   layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
+      q["stadtplan-1935"] = {
+        type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
+        tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
+        attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
+      };
     }
+    return q;
+  }
+
+  _eigeneEbenen() {
     const sl = "adressen";
-    this._ebeneHinzufuegen({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
-                 filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
-    this._ebeneHinzufuegen({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
-                 filter: ["!=", ["get", "stufe"], "haus"],
-                 layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true } });
-    this._ebeneHinzufuegen({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
-                 filter: ["==", ["get", "id"], ""],
-                 paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
-    this._ebeneHinzufuegen({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
-                 layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.6, "text-field": ["get", "name"],
-                           "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
-                 paint: { "text-halo-color": "#fff", "text-halo-width": 1.5 } });
-    // Klick-/Hover-Handler sind an die Karte gebunden, nicht an den Stil — bei jedem Stilwechsel
-    // neu anzuhängen würde sie stapeln (mehrfache Popups/Klicks). Daher nur einmal registrieren.
+    const e = [];
+    if (PLAN_FREIGEGEBEN) e.push({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
+                                  layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
+    e.push({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
+             filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
+    e.push({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
+             filter: ["!=", ["get", "stufe"], "haus"],
+             layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true } });
+    e.push({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
+             filter: ["==", ["get", "id"], ""],
+             paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
+    e.push({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
+             layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.6, "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
+                       "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
+             paint: { "text-halo-color": "#fff", "text-halo-width": 1.5 } });
+    return e;
+  }
+
+  // Grundkarte als JSON laden (einmal je Stil) und unsere Quellen und Ebenen hineinmischen.
+  async _stilMitEbenen(name) {
+    if (!this._stilCache.has(name)) {
+      this._stilCache.set(name, fetch(STILE[name]).then((r) => { if (!r.ok) throw new Error(`Stil ${name}: ${r.status}`); return r.json(); }));
+    }
+    const basis = await this._stilCache.get(name);
+    return { ...basis, sources: { ...basis.sources, ...this._eigeneQuellen() }, layers: [...basis.layers, ...this._eigeneEbenen()] };
+  }
+
+  // Stil setzen; ein späterer Aufruf überholt einen noch laufenden (Generationszähler), und der
+  // überholte Aufruf löst trotzdem auf, damit niemand auf ihn hängen bleibt.
+  async setzeStil(name) {
+    const gen = ++this._stilGen;
+    let stil;
+    try { stil = await this._stilMitEbenen(name); }
+    catch (e) { console.error(e); return; }
+    if (gen !== this._stilGen) return;
+    // Nach setStyle(objekt) liegen Quellen und Ebenen sofort im neuen Stil; "styledata" bestätigt,
+    // dass MapLibre ihn übernommen hat, danach Filter/Zustand anlegen.
+    const uebernommen = new Promise((ok) => this.map.once("styledata", ok));
+    this.map.setStyle(stil, { diff: false });
+    await uebernommen;
+    if (gen !== this._stilGen) return;
+    this.ebenenAufsetzen();
+  }
+
+  // Zustand (Filter, Plan, Zechen, Treffer, Auswahl) auf die im Stil vorhandenen Ebenen legen.
+  ebenenAufsetzen() {
+    const m = this.map;
+    // Klick-/Hover-Handler sind an die Karte gebunden, nicht an den Stil — nur einmal registrieren.
     if (!this._handlerAngehaengt) {
       this._handlerAngehaengt = true;
       for (const id of ["adressen-haus", "adressen-ungenau"]) {
@@ -107,60 +143,11 @@ export class Karte {
     this.setzeAuswahl(this.auswahl);
   }
 
-  setzeStil(name) {
-    // Einen noch laufenden Warter eines vorigen Stilwechsels abbrechen, sonst setzen zwei sich
-    // überlappende Wechsel beide ebenenAufsetzen() auf demselben Stil auf ("Layer already exists"),
-    // und eine veraltete, noch laufende ebenenAufsetzen()-Ausführung darf ihre (inzwischen wieder
-    // ersetzten) Ebenen nicht mehr anlegen (_stilGen-Generationszähler, vor dem Aufruf von
-    // ebenenAufsetzen() geprüft).
-    if (this._stilRaf) { cancelAnimationFrame(this._stilRaf); this._stilRaf = null; }
-    const gen = (this._stilGen = (this._stilGen || 0) + 1);
-    this.map.setStyle(STILE[name]);
-    // MapLibre 4.7.1 feuert nach setStyle() kein "style.load" auf der Map (nur auf dem internen
-    // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() warten statt auf das Ereignis.
-    // isStyleLoaded() wird beim Laden eines entfernten Stils (URL) kurz true, bevor MapLibre seine
-    // interne Rekonziliation (Sprite/Glyphen/Quellen des neuen Stils) abgeschlossen hat; währenddessen
-    // von ebenenAufsetzen() hinzugefügte Ebenen verschwinden binnen ~100 ms spurlos wieder (beobachtet
-    // beim Grundkartenwechsel, Task 15).
-    // Erst mit dem "styledata"-Ereignis auf isStyleLoaded() zu prüfen (die ursprüngliche Fassung) oder
-    // auf das nächste "idle"-Ereignis zu warten, erwies sich unter schnell aufeinanderfolgenden
-    // Stilwechseln als unzuverlässig: ruft man setzeStil() innerhalb weniger Millisekunden mehrfach auf
-    // (z. B. drei rasche Klicks), bleibt für einen der dazwischenliegenden Aufrufe manchmal jedes
-    // weitere "styledata"/"idle"-Ereignis aus — vermutlich, weil MapLibres interner Ladezyklus für den
-    // inzwischen überholten Zwischenstand keine weitere Arbeit mehr anstößt und daher auch keine
-    // weiteren Ereignisse mehr feuert; die Wartepromise hing dann dauerhaft. Ein reines
-    // rAF-Polling auf isStyleLoaded() hängt nicht von einem bestimmten Ereignis ab und läuft daher
-    // auch dann weiter, wenn "styledata"/"idle" ausbleiben; nach dem ersten true wird zusätzlich ein
-    // zweiter Animationsframe abgewartet (Puffer für den Rekonziliationsabschluss). Geprüft mit drei
-    // raschen Wechseln plus einem vierten nach dem Beruhigen: keine Fehler, alle Ebenen vorhanden,
-    // `adressen-haus` bleibt auch 2 s nach dem letzten Wechsel bestehen.
-    this._bereit = new Promise((ok) => {
-      const pruefen = () => {
-        // Überholt von einem späteren setzeStil(): trotzdem ok() rufen, sonst löst dieser Warter nie
-        // auf und alles, was auf ihn wartet (z. B. ein awaiteter Aufrufer), hängt dauerhaft (I4).
-        if (gen !== this._stilGen) return ok();
-        if (!this.map.isStyleLoaded()) { this._stilRaf = requestAnimationFrame(pruefen); return; }
-        this._stilRaf = requestAnimationFrame(() => {
-          if (gen !== this._stilGen) return ok();
-          this._stilRaf = null;
-          ok();
-        });
-      };
-      // Erst Loading überhaupt beobachten, nicht sofort synchron prüfen: unmittelbar nach setStyle()
-      // liest isStyleLoaded() noch den Wert des alten Stils (kurzzeitig „true“), bevor der Browser die
-      // anstehende Stiländerung überhaupt verarbeitet hat — ein rAF Abstand genügt, um das zu vermeiden.
-      this._stilRaf = requestAnimationFrame(pruefen);
-    }).then(() => {
-      if (gen !== this._stilGen) return;     // überholt: die aktuelle Generation setzt die Ebenen selbst auf
-      return this.ebenenAufsetzen();
-    });
-    return this._bereit;
-  }
-
   // Farbe und Größe aus Zustand + Themenregel ableiten und auf beide Adressebenen legen.
   setzeFilter(z) {
     this.zustand = z;
     const m = this.map;
+    if (!m.getLayer("adressen-haus")) return;   // vor dem ersten Stil: Zustand wird beim Aufsetzen angewendet
     const n = summeAktiv(z.ebene);
     const bedingungen = [[">", n, 0], ["in", ["get", "stufe"], ["literal", z.praez]]];
     if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
@@ -180,6 +167,7 @@ export class Karte {
 
   // Ohne Treffermenge sind alle Punkte voll sichtbar; mit Treffermenge nur die Treffer, der Rest gedimmt.
   _deckkraftSetzen() {
+    if (!this.map.getLayer("adressen-haus")) return;
     const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], 0.9, 0.25] : 0.9;
     this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
     this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);

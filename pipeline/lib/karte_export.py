@@ -276,10 +276,16 @@ def _json(pfad: Path, daten) -> None:
     pfad.write_text(json.dumps(daten, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
+def faksimile_tabelle(zeilen: list[dict]) -> dict[str, int]:
+    """Seite (I-333) → Bildnummer im DigiBib-Viewer, aus kuratierung/faksimile_seiten.csv."""
+    return {z["seite"]: int(z["bild"]) for z in zeilen if z.get("seite") and z.get("bild")}
+
+
 def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], zechen: list[dict],
-                   datum: str, kacheln: bool = True) -> dict:
+                   datum: str, kacheln: bool = True, faksimile: list[dict] | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
+    _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln)
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)

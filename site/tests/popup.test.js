@@ -31,19 +31,24 @@ test("popupHtml kompakt zeigt höchstens drei Namen", () => {
   assert.equal((h.match(/data-eintrag=/g) || []).length, 3);
 });
 
-test("hausHtml gruppiert nach Teil und verlinkt das Faksimile", () => {
-  const h = hausHtml(EIG, E);
+test("hausHtml gruppiert nach Teil und verlinkt das Faksimile über die Bildnummer", () => {
+  const h = hausHtml(EIG, E, { "I-551": 573 });
   assert.match(h, /Einwohner \(2\)/);
   assert.match(h, /Eigentümer \(1\)/);
   assert.match(h, /id="e-1"/);
   assert.match(h, /Seite I-551/);
-  assert.match(h, new RegExp(faksimileUrl("I-551").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(h, /digibib\.genealogy\.net\/viewer\/image\/857439804_1936\/573\//);
+  assert.match(h, /Seite I-402 · <span class="kein-bild">im Digitalisat nicht vorhanden/);
   assert.match(h, /Hausnummer unsicher/);
+  // Namenszeile der Hausansicht ohne Beruf/Stand (stehen als Felder darunter)
+  assert.match(h, /<div class="ename"><b>Kowalski, Jos\.<\/b><\/div>/);
+  assert.match(h, /<span class="k">Stand<\/span> Wwe\./);
 });
 
 test("praezisionText und faksimileUrl", () => {
   assert.equal(praezisionText("haus"), "hausgenau verortet");
-  assert.match(faksimileUrl("I-551"), /^https:\/\//);
+  assert.equal(faksimileUrl(355), "https://www.digibib.genealogy.net/viewer/image/857439804_1936/355/");
+  assert.equal(faksimileUrl(undefined), null);
 });
 
 test("praezisionText unbekannt", () => {

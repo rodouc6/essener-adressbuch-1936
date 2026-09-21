@@ -173,6 +173,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
 | `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
 | `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` |
+| `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
 

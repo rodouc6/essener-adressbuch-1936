@@ -192,7 +192,7 @@ async function oeffneHaus(id, eintragId) {
     // geladen) liefert die Adressscherbe lat/lon als Fallback (Task 13-Review).
     const pos = karte.position(id) || (eig && eig.lon != null && eig.lat != null ? [eig.lon, eig.lat] : null);
     if (pos) karte.fliegeZu(pos);
-    sidebar.zeigeHaus(e, eintraege, eintragId);
+    sidebar.zeigeHaus(e, eintraege, eintragId, await lader.faksimile());
   } catch (fehler) {
     fehlerHinweis(fehler, "Hausansicht fehlgeschlagen");
   }

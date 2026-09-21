@@ -1,4 +1,4 @@
-import { EBENEN, PRAEZISION, DES_PROJEKT } from "./konfig.js";
+import { EBENEN, PRAEZISION, DIGIBIB_WERK } from "./konfig.js";
 
 export function esc(t) {
   return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -6,9 +6,16 @@ export function esc(t) {
 
 export function praezisionText(stufe) { return PRAEZISION[stufe] || stufe; }
 
-// Bis der DES-Spike eine seitengenaue URL liefert, führt der Link zur Projektseite; die Seite
-// steht daneben, damit man sie dort aufschlagen kann.
-export function faksimileUrl(seite) { return DES_PROJEKT + "#" + encodeURIComponent(seite || ""); }
+// Link auf das Seitenbild in der DigiBib; `bild` ist die Bildnummer aus daten/faksimile.json.
+// Ohne Bildnummer (Seite im Digitalisat nicht vorhanden) gibt es keinen Link.
+export function faksimileUrl(bild) { return bild ? `${DIGIBIB_WERK}${bild}/` : null; }
+
+function quelleHtml(seite, bild) {
+  const url = faksimileUrl(bild);
+  const link = url ? `<a href="${url}" target="_blank" rel="noopener">Faksimile in der DigiBib</a>`
+                   : `<span class="kein-bild">im Digitalisat nicht vorhanden</span>`;
+  return `<div class="quelle">Seite ${esc(seite)} · ${link}</div>`;
+}
 
 const FLAGTEXT = { nummer_unsicher: "Hausnummer unsicher (Straße neu gezählt)", zeitlich_abweichend: "Straßenname zeitlich abweichend belegt", mehrdeutig: "Zuordnung mehrdeutig" };
 
@@ -21,9 +28,9 @@ function zaehlerText(eig) {
   return ["I", "II", "III"].filter((t) => eig[`n_${t}`] > 0).map((t) => `${eig[`n_${t}`]} ${EBENEN[t]}`).join(" · ");
 }
 
-function nameZeile(e) {
+function nameZeile(e, mitBeruf = true) {
   const name = e.firma && e.teil === "III" ? e.firma : [e.name, e.vorname].filter(Boolean).join(", ");
-  const rest = [e.beruf, e.stand].filter(Boolean).join(", ");
+  const rest = mitBeruf ? [e.beruf, e.stand].filter(Boolean).join(", ") : "";
   return `<b>${esc(name)}</b>${rest ? ` · ${esc(rest)}` : ""}${e.etage ? ` <span class="etage">${esc(e.etage)}</span>` : ""}`;
 }
 
@@ -40,20 +47,22 @@ export function popupHtml(eig, eintraege, kompakt) {
     `<div class="popup-namen">${zeilen.join("")}</div>`;
 }
 
-function eintragHtml(e) {
+// Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
+function eintragHtml(e, faksimile) {
   const felder = [["Beruf", e.beruf], ["Etage laut Buch", e.etage], ["Stand", e.stand],
     ["Bezugsperson", [e.bezug_vorname, e.bezug_beruf].filter(Boolean).join(", ")], ["Firma", e.firma],
     ["Eigentümer", e.eigentuemer], ["Verwalter", e.verwalter], ["Wohnort", e.wohnort]]
     .filter(([, w]) => w).map(([k, w]) => `<div><span class="k">${k}</span> ${esc(w)}</div>`).join("");
   const flags = (e.flags || []).map((f) => `<div class="flag">${esc(FLAGTEXT[f] || f)}</div>`).join("");
-  return `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e)}</div>${felder}${flags}` +
-    `<div class="quelle">Seite ${esc(e.seite)} · <a href="${faksimileUrl(e.seite)}" target="_blank" rel="noopener">Faksimile beim CompGen</a></div></div>`;
+  return `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e, false)}</div>${felder}${flags}` +
+    quelleHtml(e.seite, faksimile ? faksimile[e.seite] : null) + `</div>`;
 }
 
-export function hausHtml(eig, eintraege) {
+// faksimile: Seite → Bildnummer (daten/faksimile.json); ohne Tabelle keine Links.
+export function hausHtml(eig, eintraege, faksimile = null) {
   const gruppen = ["I", "II", "III"].map((t) => {
     const l = eintraege.filter((e) => e.teil === t);
-    return l.length ? `<h3>${EBENEN[t]} (${l.length})</h3>${l.map(eintragHtml).join("")}` : "";
+    return l.length ? `<h3>${EBENEN[t]} (${l.length})</h3>${l.map((e) => eintragHtml(e, faksimile)).join("")}` : "";
   }).join("");
   return `<div class="haus-kopf"><h2>${esc(heutigeAdresse(eig))}</h2>` +
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
