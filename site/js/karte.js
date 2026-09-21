@@ -39,13 +39,20 @@ export class Karte {
 
   bereit() { return this._bereit; }
 
+  // Layer nur anlegen, wenn er (etwa durch einen zweiten, gleichzeitig gestarteten Stilwechsel) noch nicht existiert.
+  _ebeneHinzufuegen(def) {
+    if (!this.map.getLayer(def.id)) this.map.addLayer(def);
+  }
+
   async ebenenAufsetzen() {
     const m = this.map;
     await ladeIcon(m, "kreis-gestrichelt", "bilder/kreis-gestrichelt.svg", true);
     await ladeIcon(m, "zeche", "bilder/zeche.svg", false);
     if (!m.getSource("adressen")) {
       m.addSource("adressen", { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" });
-      m.addSource("zechen", { type: "geojson", data: DATEN + "zechen.geojson" });
+    }
+    if (!m.getSource("zechen")) m.addSource("zechen", { type: "geojson", data: DATEN + "zechen.geojson" });
+    if (!m.getSource("stadtplan-1935")) {
       m.addSource("stadtplan-1935", {
         type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
         tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
@@ -53,30 +60,35 @@ export class Karte {
       });
     }
     const sl = "adressen";
-    m.addLayer({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
+    this._ebeneHinzufuegen({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
                  layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
-    m.addLayer({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
+    this._ebeneHinzufuegen({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
                  filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
-    m.addLayer({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
+    this._ebeneHinzufuegen({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
                  filter: ["!=", ["get", "stufe"], "haus"],
                  layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true } });
-    m.addLayer({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
+    this._ebeneHinzufuegen({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
                  filter: ["==", ["get", "id"], ""],
                  paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
-    m.addLayer({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
+    this._ebeneHinzufuegen({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
                  layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.6, "text-field": ["get", "name"],
                            "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
                  paint: { "text-halo-color": "#fff", "text-halo-width": 1.5 } });
-    for (const id of ["adressen-haus", "adressen-ungenau"]) {
-      m.on("click", id, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
-      m.on("mouseenter", id, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
-      m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+    // Klick-/Hover-Handler sind an die Karte gebunden, nicht an den Stil — bei jedem Stilwechsel
+    // neu anzuhängen würde sie stapeln (mehrfache Popups/Klicks). Daher nur einmal registrieren.
+    if (!this._handlerAngehaengt) {
+      this._handlerAngehaengt = true;
+      for (const id of ["adressen-haus", "adressen-ungenau"]) {
+        m.on("click", id, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+        m.on("mouseenter", id, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+        m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+      }
+      m.on("click", "zechen", (e) => {
+        const p = e.features[0].properties;
+        this.zeigePopup(e.lngLat, `<b>${p.name}</b><br>${p.stadtteil || ""}<br>in Betrieb ${p.betrieb_von}–${p.betrieb_bis}` +
+          (p.quelle ? `<br><a href="${p.quelle}" target="_blank" rel="noopener">Wikipedia</a>` : ""));
+      });
     }
-    m.on("click", "zechen", (e) => {
-      const p = e.features[0].properties;
-      this.zeigePopup(e.lngLat, `<b>${p.name}</b><br>${p.stadtteil || ""}<br>in Betrieb ${p.betrieb_von}–${p.betrieb_bis}` +
-        (p.quelle ? `<br><a href="${p.quelle}" target="_blank" rel="noopener">Wikipedia</a>` : ""));
-    });
     this.setzeFilter(this.zustand);
     this.setzePlan(this.zustand.plan);
     this.setzeZechen(this.zustand.zechen);
@@ -85,13 +97,17 @@ export class Karte {
   }
 
   setzeStil(name) {
+    // Einen noch laufenden Warter eines vorigen Stilwechsels abmelden, sonst setzen zwei sich
+    // überlappende Wechsel beide ebenenAufsetzen() auf demselben Stil auf ("Layer already exists").
+    if (this._stilWarter) { this.map.off("styledata", this._stilWarter); this._stilWarter = null; }
     this.map.setStyle(STILE[name]);
     // MapLibre 4.7.1 feuert nach setStyle() kein "style.load" auf der Map (nur auf dem internen
     // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() pollen statt auf das Ereignis zu warten.
     this._bereit = new Promise((ok) => {
       const pruefen = () => {
-        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); ok(); }
+        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); this._stilWarter = null; ok(); }
       };
+      this._stilWarter = pruefen;
       this.map.on("styledata", pruefen);
       pruefen();
     }).then(() => this.ebenenAufsetzen());
