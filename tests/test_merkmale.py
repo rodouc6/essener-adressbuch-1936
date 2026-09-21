@@ -27,3 +27,23 @@ def test_unbekannte_art_wird_abgewiesen(tmp_path):
         assert "fuzzy" in str(e)
     else:
         raise AssertionError("ValueError erwartet")
+
+
+def test_ungültiger_regex_wird_abgewiesen(tmp_path):
+    (tmp_path / "x.csv").write_text("feld,art,muster,merkmal,beleg,bearbeiter,datum\nBeruf o. ä.,regex,(,akademiker,,,\n", encoding="utf-8")
+    try:
+        lade_regeln(tmp_path)
+    except ValueError as e:
+        assert "ungültiger regulärer Ausdruck" in str(e)
+    else:
+        raise AssertionError("ValueError erwartet")
+
+
+def test_leeres_muster_wird_abgewiesen(tmp_path):
+    (tmp_path / "x.csv").write_text("feld,art,muster,merkmal,beleg,bearbeiter,datum\nBeruf o. ä.,exakt,,akademiker,,,\n", encoding="utf-8")
+    try:
+        lade_regeln(tmp_path)
+    except ValueError as e:
+        assert "muster und merkmal müssen gefüllt sein" in str(e)
+    else:
+        raise AssertionError("ValueError erwartet")

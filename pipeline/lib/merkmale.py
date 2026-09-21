@@ -31,6 +31,12 @@ def lade_regeln(ordner: Path) -> list[Regel]:
                 raise ValueError(f"{pfad.name}: unbekannte Art {z['art']!r} (erlaubt: {sorted(ARTEN)})")
             if not z["muster"] or not z["merkmal"]:
                 raise ValueError(f"{pfad.name}: muster und merkmal müssen gefüllt sein")
+            # Validiere Regex-Muster beim Laden
+            if z["art"] == "regex":
+                try:
+                    re.compile(z["muster"])
+                except re.error as e:
+                    raise ValueError(f"{pfad.name}: ungültiger regulärer Ausdruck {z['muster']!r}: {e}")
             regeln.append(Regel(z["feld"], z["art"], z["muster"], z["merkmal"]))
     return regeln
 
