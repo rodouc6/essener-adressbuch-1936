@@ -130,3 +130,57 @@ def test_anzeige_adresse_stadtplan():
     a = next(iter(gruppiere([_v(id="1", herkunft="stadtplan_1935", stufe="strasse", strasse_heute="",
                                 strasse_roh="Matthiasstr.", Vorort="")], []).values()))
     assert anzeige_adresse(a) == "Matthiasstr. 25 (Stadtplan 1935)"
+
+
+import json, pathlib, shutil
+
+import pytest
+
+from pipeline.lib.karte_export import baue_kennzahlen, schreibe_paket, tippecanoe_befehl, zechen_geojson
+from pipeline.lib.io import lies_csv
+
+FIX = pathlib.Path(__file__).parent / "fixtures"
+
+
+def test_kennzahlen():
+    e = [_v(id="1", teil="I"), _v(id="2", teil="II"), _v(id="3", teil="I", stufe="strasse", hausnr="27"),
+         _v(id="4", teil="III", stufe="offen", lat="", lon="")]
+    k = baue_kennzahlen(e, gruppiere(e, []), "2026-09-21")
+    assert k["eintraege_je_teil"] == {"I": 2, "II": 1, "III": 1}
+    assert k["stufen"] == {"haus": 50.0, "strasse": 25.0, "stadtplan": 0.0, "offen": 25.0}
+    assert k["verortet"] == 3 and k["offen"] == 1 and k["adressen"] == 2 and k["stand"] == "2026-09-21"
+
+
+def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():
+    g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
+    assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt"]
+    p = g["features"][0]["properties"]
+    assert p["aktiv_1936"] is True and g["features"][1]["properties"]["aktiv_1936"] is False
+    assert g["features"][0]["geometry"]["coordinates"] == [7.0447, 51.4861]
+
+
+def test_tippecanoe_befehl():
+    b = tippecanoe_befehl(pathlib.Path("a.geojson"), pathlib.Path("a.pmtiles"))
+    assert b[0] == "tippecanoe" and "-o" in b and "a.pmtiles" in b and "--maximum-zoom=15" in b
+
+
+def test_schreibe_paket(tmp_path):
+    e = [_v(id="1", lastname="Sepeur", firstname="Wilh.", teil="I"), _v(id="2", lastname="Jäger", teil="III",
+         Firmenname="M. Jäger, Althandlung")]
+    k = schreibe_paket(tmp_path, e, [], lies_csv(FIX / "zechen.csv"), "2026-09-21", kacheln=False)
+    aid = adress_id(e[0])
+    assert json.loads((tmp_path / "haus" / f"{aid[:2]}.json").read_text())[aid][0]["name"] == "Jäger"
+    assert (tmp_path / "suche" / "namen" / "se.json").exists()
+    assert (tmp_path / "suche" / "firmen" / "mj.json").exists()
+    assert json.loads((tmp_path / "suche" / "strassen.json").read_text())[0]["name"] in ("Grenzstr.", "Lattenkamp")
+    assert json.loads((tmp_path / "kennzahlen.json").read_text()) == k
+    assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 2
+    geo = json.loads((tmp_path / "adressen.geojson").read_text())
+    assert geo["features"][0]["properties"]["n_I"] == 1
+
+
+@pytest.mark.skipif(shutil.which("tippecanoe") is None, reason="tippecanoe nicht installiert")
+def test_schreibe_paket_mit_kacheln(tmp_path):
+    e = [_v(id="1", lastname="Sepeur", teil="I")]
+    schreibe_paket(tmp_path, e, [], [], "2026-09-21", kacheln=True)
+    assert (tmp_path / "adressen.pmtiles").stat().st_size > 100

@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
+import subprocess
 import unicodedata
 from collections import defaultdict
+from pathlib import Path
 
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -196,3 +199,72 @@ def baue_stadtteile(adressen: dict[str, dict]) -> list[dict]:
         s[0] += a["lat"]; s[1] += a["lon"]; s[2] += 1; s[3] += len(a["eintraege"])
     return [dict(name=n, lat=round(s[0] / s[2], 5), lon=round(s[1] / s[2], 5), zeilen=s[3])
             for n, s in sorted(summen.items())]
+
+
+STUFEN = ["haus", "strasse", "stadtplan", "offen"]
+
+
+def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str) -> dict:
+    je_teil: dict[str, int] = defaultdict(int)
+    je_stufe: dict[str, int] = defaultdict(int)
+    for e in eintraege:
+        je_teil[e["teil"]] += 1
+        s = _stufe(e) if e.get("stufe") in VERORTET else "offen"
+        je_stufe[s] += 1
+    n = len(eintraege) or 1
+    return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
+                stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
+                verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
+                adressen=len(adressen), stand=datum)
+
+
+def zechen_geojson(zeilen: list[dict]) -> dict:
+    features = []
+    for z in zeilen:
+        if not z.get("lat") or not z.get("lon"):
+            continue
+        von, bis = int(z["betrieb_von"] or 0), int(z["betrieb_bis"] or 9999)
+        features.append({"type": "Feature",
+                         "geometry": {"type": "Point", "coordinates": [float(z["lon"]), float(z["lat"])]},
+                         "properties": dict(name=z["name"], stadtteil=z.get("stadtteil", ""),
+                                            betrieb_von=z["betrieb_von"], betrieb_bis=z["betrieb_bis"],
+                                            quelle=z.get("quelle", ""), aktiv_1936=von <= 1936 <= bis)})
+    return {"type": "FeatureCollection", "features": features}
+
+
+def tippecanoe_befehl(geojson: Path, pmtiles: Path) -> list[str]:
+    return ["tippecanoe", "-o", str(pmtiles), "--force", "--layer=adressen", "--minimum-zoom=9",
+            "--maximum-zoom=15", "--drop-densest-as-needed", "--extend-zooms-if-still-dropping",
+            "--no-feature-limit", "--no-tile-size-limit", "--quiet", str(geojson)]
+
+
+def _json(pfad: Path, daten) -> None:
+    pfad.parent.mkdir(parents=True, exist_ok=True)
+    pfad.write_text(json.dumps(daten, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], zechen: list[dict],
+                   datum: str, kacheln: bool = True) -> dict:
+    """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
+    ausgabe = Path(ausgabe)
+    adressen = gruppiere(eintraege, regeln)
+    geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
+    _json(ausgabe / "adressen.geojson", geo)
+    if kacheln:
+        subprocess.run(tippecanoe_befehl(ausgabe / "adressen.geojson", ausgabe / "adressen.pmtiles"), check=True)
+    for name, inhalt in baue_scherben(adressen).items():
+        _json(ausgabe / "haus" / f"{name}.json", inhalt)
+    for name, zeilen in baue_namensindex(adressen).items():
+        _json(ausgabe / "suche" / "namen" / f"{name}.json", zeilen)
+    for name, zeilen in baue_firmenindex(adressen).items():
+        _json(ausgabe / "suche" / "firmen" / f"{name}.json", zeilen)
+    _json(ausgabe / "suche" / "strassen.json", baue_strassenindex(adressen))
+    liste, scherben = baue_berufsindex(adressen)
+    _json(ausgabe / "suche" / "berufe.json", liste)
+    for name, inhalt in scherben.items():
+        _json(ausgabe / "suche" / "berufe" / f"{name}.json", inhalt)
+    _json(ausgabe / "suche" / "stadtteile.json", baue_stadtteile(adressen))
+    _json(ausgabe / "zechen.geojson", zechen_geojson(zechen))
+    kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
+    _json(ausgabe / "kennzahlen.json", kennzahlen)
+    return kennzahlen
