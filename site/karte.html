@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essen 1936 – Karte</title>
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="css/stil.css">
+</head>
+<body class="kartenseite">
+<a class="logo" href="index.html">Essen 1936</a>
+<aside id="sidebar" class="sidebar" data-stufe="halb" aria-label="Suche und Ergebnisse">
+  <div class="griff" id="griff" role="button" aria-label="Ergebnisse ein- oder ausklappen"></div>
+  <div id="themenkopf" hidden></div>
+  <div class="suchfeld">
+    <input id="suche" type="search" placeholder="Name, Straße, Firma, Beruf …" autocomplete="off" aria-label="Suche">
+    <button id="suche-leeren" type="button" aria-label="Suche leeren" hidden>✕</button>
+    <div id="vorschlaege" class="vorschlaege" hidden></div>
+  </div>
+  <div class="pills" id="pills"></div>
+  <div id="inhalt" class="inhalt"></div>
+</aside>
+<div id="karte" class="karte"></div>
+<div id="steuerung" class="steuerung"></div>
+<div id="legende" class="legende"></div>
+<div class="vermerk" id="vermerk"></div>
+<script src="vendor/maplibre-gl.js"></script>
+<script src="vendor/pmtiles.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

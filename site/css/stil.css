@@ -1,0 +1,47 @@
+:root { --blau: #1d4ed8; --gold: #ca8a04; --rot: #c2410c; --neutral: #1f2937; --rand: #d8d4cc; --papier: #faf8f3; --text: #1f2328; --grau: #6b7280; --breite-sidebar: 360px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); background: var(--papier); }
+a { color: var(--blau); }
+.kartenseite { overflow: hidden; }
+.karte { position: fixed; inset: 0; }
+.logo { position: fixed; top: 10px; left: 10px; z-index: 5; background: #fff; padding: 6px 10px; border-radius: 8px; text-decoration: none; font-weight: 700; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.sidebar { position: fixed; z-index: 4; background: #fff; display: flex; flex-direction: column; box-shadow: 0 0 12px rgba(0,0,0,.2); }
+.griff { display: none; }
+.suchfeld { position: relative; padding: 10px 12px 6px; }
+.suchfeld input { width: 100%; padding: 10px 36px 10px 12px; border: 1px solid var(--rand); border-radius: 8px; font-size: 16px; }
+.suchfeld button { position: absolute; right: 18px; top: 16px; border: 0; background: none; font-size: 16px; cursor: pointer; }
+.vorschlaege { position: absolute; left: 12px; right: 12px; top: 52px; background: #fff; border: 1px solid var(--rand); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.15); z-index: 6; max-height: 60vh; overflow: auto; }
+.vorschlaege .gruppe { padding: 6px 10px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
+.vorschlaege .eintrag { padding: 6px 10px; cursor: pointer; border-top: 1px solid #f1f1f1; min-height: 44px; }
+.vorschlaege .eintrag:hover, .vorschlaege .eintrag.aktiv { background: #eef2ff; }
+.vorschlaege small { display: block; color: var(--grau); }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 12px 8px; }
+.pill { border: 1px solid #999; background: #fff; border-radius: 16px; padding: 6px 12px; font-size: 13px; cursor: pointer; min-height: 32px; }
+.pill[aria-pressed="true"] { color: #fff; border-color: transparent; }
+.pill.I[aria-pressed="true"] { background: var(--blau); } .pill.II[aria-pressed="true"] { background: var(--gold); } .pill.III[aria-pressed="true"] { background: var(--rot); }
+.inhalt { flex: 1; overflow: auto; padding: 0 12px 12px; }
+.steuerung { position: fixed; z-index: 4; right: 10px; top: 110px; display: flex; flex-direction: column; gap: 6px; }
+.steuerung button, .steuerung label { background: #fff; border: 1px solid var(--rand); border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer; min-height: 32px; }
+.legende { position: fixed; z-index: 4; right: 10px; bottom: 28px; background: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.2); max-width: 220px; }
+.legende .zeile { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.legende .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.legende .punkt.ungenau { background: none !important; border: 2px dashed currentColor; }
+.vermerk { position: fixed; z-index: 4; left: 10px; bottom: 6px; font-size: 11px; color: var(--grau); background: rgba(255,255,255,.8); padding: 2px 6px; border-radius: 4px; }
+.maplibregl-popup-content { font-size: 13px; line-height: 1.35; padding: 10px 12px; }
+
+@media (min-width: 900px) {
+  .sidebar { top: 0; bottom: 0; left: 0; width: var(--breite-sidebar); }
+  .logo { left: calc(var(--breite-sidebar) + 10px); }
+  .suchfeld { padding-top: 14px; }
+}
+@media (max-width: 899px) {
+  .sidebar { left: 0; right: 0; bottom: 0; border-radius: 14px 14px 0 0; transition: height .2s; }
+  .sidebar[data-stufe="griff"] { height: 120px; }
+  .sidebar[data-stufe="halb"] { height: 45vh; }
+  .sidebar[data-stufe="voll"] { height: 92vh; }
+  .griff { display: block; width: 40px; height: 5px; border-radius: 3px; background: #bbb; margin: 8px auto 0; cursor: grab; }
+  .steuerung { top: 60px; }
+  .legende { display: none; }
+  .legende.offen { display: block; bottom: auto; top: 60px; right: 56px; }
+  .vermerk { display: none; }
+}

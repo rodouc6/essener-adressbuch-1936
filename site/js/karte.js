@@ -1,0 +1,177 @@
+import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN } from "./konfig.js";
+
+const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 4, Math.log(100), 10];
+
+function summeAktiv(ebenen) {
+  // Summe der Einträge über die aktiven Ebenen als Ausdruck
+  return ["+", ...ebenen.map((e) => ["coalesce", ["get", `n_${e}`], 0])];
+}
+
+async function ladeIcon(map, name, url, sdf) {
+  const img = new Image(64, 64);
+  await new Promise((ok, nein) => { img.onload = ok; img.onerror = nein; img.src = url; });
+  if (!map.hasImage(name)) map.addImage(name, img, { sdf, pixelRatio: 2 });
+}
+
+export class Karte {
+  constructor(container, zustand, ereignisse) {
+    this.ereignisse = ereignisse;
+    this.zustand = zustand;
+    this.farbe = null;          // Themenfarbregel (Task 13) oder null
+    this.treffer = new Set();
+    this.auswahl = null;
+    this.protokoll = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", this.protokoll.tile);
+    this.map = new maplibregl.Map({
+      container, style: STILE[zustand.karte], center: zustand.c || ESSEN_MITTE, zoom: zustand.z ?? 11,
+      minZoom: 9, maxZoom: 18, attributionControl: { compact: true },
+    });
+    this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    this.map.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), "top-right");
+    this.map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+    this.popup = new maplibregl.Popup({ closeButton: true, maxWidth: "320px", offset: 10 });
+    this._bereit = new Promise((ok) => this.map.once("load", ok)).then(() => this.ebenenAufsetzen());
+    this.map.on("moveend", () => {
+      const c = this.map.getCenter();
+      ereignisse.onBewegt(Math.round(this.map.getZoom() * 100) / 100, [+c.lng.toFixed(5), +c.lat.toFixed(5)]);
+    });
+  }
+
+  bereit() { return this._bereit; }
+
+  async ebenenAufsetzen() {
+    const m = this.map;
+    await ladeIcon(m, "kreis-gestrichelt", "bilder/kreis-gestrichelt.svg", true);
+    await ladeIcon(m, "zeche", "bilder/zeche.svg", false);
+    if (!m.getSource("adressen")) {
+      m.addSource("adressen", { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" });
+      m.addSource("zechen", { type: "geojson", data: DATEN + "zechen.geojson" });
+      m.addSource("stadtplan-1935", {
+        type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
+        tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
+        attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
+      });
+    }
+    const sl = "adressen";
+    m.addLayer({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
+                 layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
+    m.addLayer({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
+                 filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
+    m.addLayer({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
+                 filter: ["!=", ["get", "stufe"], "haus"],
+                 layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true } });
+    m.addLayer({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
+                 filter: ["==", ["get", "id"], ""],
+                 paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
+    m.addLayer({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
+                 layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.6, "text-field": ["get", "name"],
+                           "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
+                 paint: { "text-halo-color": "#fff", "text-halo-width": 1.5 } });
+    for (const id of ["adressen-haus", "adressen-ungenau"]) {
+      m.on("click", id, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+      m.on("mouseenter", id, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+      m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+    }
+    m.on("click", "zechen", (e) => {
+      const p = e.features[0].properties;
+      this.zeigePopup(e.lngLat, `<b>${p.name}</b><br>${p.stadtteil || ""}<br>in Betrieb ${p.betrieb_von}–${p.betrieb_bis}` +
+        (p.quelle ? `<br><a href="${p.quelle}" target="_blank" rel="noopener">Wikipedia</a>` : ""));
+    });
+    this.setzeFilter(this.zustand);
+    this.setzePlan(this.zustand.plan);
+    this.setzeZechen(this.zustand.zechen);
+    this.setzeTreffer(this.treffer.size ? [...this.treffer] : null);
+    this.setzeAuswahl(this.auswahl);
+  }
+
+  setzeStil(name) {
+    this.map.setStyle(STILE[name]);
+    // MapLibre 4.7.1 feuert nach setStyle() kein "style.load" auf der Map (nur auf dem internen
+    // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() pollen statt auf das Ereignis zu warten.
+    this._bereit = new Promise((ok) => {
+      const pruefen = () => {
+        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); ok(); }
+      };
+      this.map.on("styledata", pruefen);
+      pruefen();
+    }).then(() => this.ebenenAufsetzen());
+    return this._bereit;
+  }
+
+  // Farbe und Größe aus Zustand + Themenregel ableiten und auf beide Adressebenen legen.
+  setzeFilter(z) {
+    this.zustand = z;
+    const m = this.map;
+    const n = summeAktiv(z.ebene);
+    const bedingungen = [[">", n, 0], ["in", ["get", "stufe"], ["literal", z.praez]]];
+    if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
+    if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
+    bedingungen.push(["any", [">=", ["zoom"], 12], [">=", n, 5]]);   // Stadtansicht nicht zulaufen lassen
+    const grund = this.farbe ? this.farbe.ausdruck : (z.ebene.length === 1 ? FARBEN[z.ebene[0]] : FARBEN.neutral);
+    const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], FARBEN.treffer, grund];
+    const radius = ["let", "n", n, RADIUS];
+    m.setFilter("adressen-haus", ["all", ["==", ["get", "stufe"], "haus"], ...bedingungen]);
+    m.setFilter("adressen-ungenau", ["all", ["!=", ["get", "stufe"], "haus"], ...bedingungen]);
+    m.setPaintProperty("adressen-haus", "circle-color", farbe);
+    m.setPaintProperty("adressen-haus", "circle-radius", radius);
+    m.setPaintProperty("adressen-ungenau", "icon-color", farbe);
+    m.setLayoutProperty("adressen-ungenau", "icon-size", ["/", ["let", "n", n, RADIUS], 16]);
+    this._deckkraftSetzen();
+  }
+
+  // Ohne Treffermenge sind alle Punkte voll sichtbar; mit Treffermenge nur die Treffer, der Rest gedimmt.
+  _deckkraftSetzen() {
+    const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], 0.9, 0.25] : 0.9;
+    this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
+    this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);
+  }
+
+  setzeFarbe(regel) { this.farbe = regel; this.setzeFilter(this.zustand); }
+
+  // Treffer per Feature-State: alle bisherigen zurücksetzen, neue setzen, Rest dimmen.
+  setzeTreffer(adressIds) {
+    const m = this.map;
+    if (!m.getSource("adressen")) return;
+    m.removeFeatureState({ source: "adressen", sourceLayer: "adressen" });
+    this.treffer = new Set(adressIds || []);
+    for (const id of this.treffer) m.setFeatureState({ source: "adressen", sourceLayer: "adressen", id }, { treffer: true });
+    this._deckkraftSetzen();
+  }
+
+  setzeAuswahl(adressId) {
+    this.auswahl = adressId;
+    if (this.map.getLayer("adressen-auswahl")) this.map.setFilter("adressen-auswahl", ["==", ["get", "id"], adressId || ""]);
+  }
+
+  setzePlan(deckkraft) {
+    if (!this.map.getLayer("stadtplan-1935")) return;
+    this.map.setLayoutProperty("stadtplan-1935", "visibility", deckkraft > 0 ? "visible" : "none");
+    this.map.setPaintProperty("stadtplan-1935", "raster-opacity", deckkraft);
+  }
+
+  setzeZechen(an) {
+    if (this.map.getLayer("zechen")) this.map.setLayoutProperty("zechen", "visibility", an ? "visible" : "none");
+  }
+
+  fliegeZu(lngLat, zoom = 16) { this.map.flyTo({ center: lngLat, zoom: Math.max(this.map.getZoom(), zoom), duration: 600 }); }
+
+  // Auf die geladenen Treffer einpassen; nicht geladene Kacheln kennen wir nicht → dann kein Zoom.
+  passeEin(adressIds) {
+    const ids = new Set(adressIds);
+    const f = this.map.querySourceFeatures("adressen", { sourceLayer: "adressen" }).filter((x) => ids.has(x.properties.id));
+    if (!f.length) return false;
+    const b = new maplibregl.LngLatBounds();
+    for (const x of f) b.extend(x.geometry.coordinates);
+    this.map.fitBounds(b, { padding: 60, maxZoom: 16, duration: 600 });
+    return true;
+  }
+
+  // Koordinate eines Punktes aus den geladenen Kacheln (für die Liste → Karte-Kopplung).
+  position(adressId) {
+    const f = this.map.querySourceFeatures("adressen", { sourceLayer: "adressen", filter: ["==", ["get", "id"], adressId] });
+    return f.length ? f[0].geometry.coordinates : null;
+  }
+
+  zeigePopup(lngLat, html) { this.popup.setLngLat(lngLat).setHTML(html).addTo(this.map); }
+  schliessePopup() { this.popup.remove(); }
+}
