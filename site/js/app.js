@@ -7,7 +7,7 @@ import { popupHtml } from "./popup.js";
 import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
-import { falte } from "./schluessel.js";
+import { strasseAusText } from "./strassenwahl.js";
 
 const lader = new Lader();
 let zustand = liesZustand(location.search);
@@ -122,27 +122,24 @@ async function waehleVorschlag(v) {
   if (v.art === "person" || v.art === "firma") { setzeZustand({ q: v.text, id: v.adressId }, true, true); return oeffneHaus(v.adressId, v.eintragId); }
   if (v.art === "beruf") return setzeZustand({ q: "", beruf: v.beruf }, true);
   // v.art === "strasse": v trägt bereits name/artName/ort/schluessel, treffer() lädt die IDs selbst.
+  // q wird als reiner Name geschrieben (nicht v.text mit "(Ort)") — sonst kann strasseAusZustand()
+  // die URL bei Reload/Zurück/Vor nicht mehr auflösen (Fix-Runde 1).
   auswahl = v;
-  setzeZustand({ q: v.text, id: "" }, true, true);
+  setzeZustand({ q: v.name, id: "" }, true, true);
   await sucheAusfuehren();
 }
 
 // q ohne Vorschlagsauswahl (Enter im Suchfeld, oder q= aus der URL — z. B. ein Straßenlink von
-// der Startseite, Task 14 Amendment 1): zuerst im Straßenindex nach einem exakten gefalteten
-// Treffer suchen (bevorzugt der heutige Name, sonst die 1936er Zeile mit den meisten Einträgen),
+// der Startseite, Task 14 Amendment 1, oder ein Reload/Zurück/Vor auf einer Straßen-URL, Fix-
+// Runde 1): zuerst im Straßenindex nachsehen (strasseAusText(), toleriert auch "Name (Ort)"),
 // sonst Personensuche über den Text.
-async function strasseAusText(q) {
-  const k = falte(q);
-  if (!k) return null;
-  const alle = (await lader.strassen()) || [];
-  const treffer = alle.filter((s) => s.schluessel === k);
-  if (!treffer.length) return null;
-  return treffer.find((s) => s.art === "heute") || treffer.slice().sort((a, b) => b.zeilen - a.zeilen)[0];
+async function strasseAusZustand(q) {
+  return strasseAusText(q, await lader.strassen());
 }
 
 async function sucheAusText(q) {
-  const s = await strasseAusText(q);
-  auswahl = s ? { art: "strasse", name: s.name, artName: s.art, ort: s.ort } : { art: "person", q };
+  const s = await strasseAusZustand(q);
+  auswahl = s || { art: "person", q };
   setzeZustand({ q, id: "" }, true, true);
   await sucheAusfuehren();
 }
@@ -252,8 +249,8 @@ async function start() {
   zeichneSteuerung(); zeichneLegende();
   if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
   else if (zustand.q) {
-    const s = await strasseAusText(zustand.q);
-    auswahl = s ? { art: "strasse", name: s.name, artName: s.art, ort: s.ort } : { art: "person", q: zustand.q };
+    const s = await strasseAusZustand(zustand.q);
+    auswahl = s || { art: "person", q: zustand.q };
   }
   else auswahl = null;
   await sucheAusfuehren();
