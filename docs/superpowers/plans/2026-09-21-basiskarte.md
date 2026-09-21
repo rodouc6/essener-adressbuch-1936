@@ -386,7 +386,7 @@ def test_adress_id_haengt_nur_am_schluessel():
 
 def test_falte_und_praefix():
     assert falte("Grenzstraße") == "grenzstrasse"
-    assert falte("Müller-Lüdenscheidt, Ä.") == "muellerluedenscheidt ae"
+    assert falte("Müller-Lüdenscheidt, Ä.") == "mueller luedenscheidt ae"
     assert falte("  St.  Ännchen ") == "st aennchen"
     assert praefix2("Sepeur") == "se" and praefix2("Ö") == "oe" and praefix2("") == "_"
 
@@ -702,7 +702,7 @@ def test_strassenindex_heute_und_1936():
 def test_berufsindex_und_stadtteile():
     liste, scherben = baue_berufsindex(_adressen())
     assert liste[0] == ["bergm", "Bergm.", 2] and ["hauer", "Hauer", 1] in liste
-    assert scherben["be"]["Bergm."] == [[adress_id(_v(id="1")), 1], [adress_id(_v(id="2", hausnr="27")), 1]]
+    assert sorted(scherben["be"]["Bergm."]) == sorted([[adress_id(_v(id="1")), 1], [adress_id(_v(id="2", hausnr="27")), 1]])
     st = baue_stadtteile(_adressen())
     assert [x["name"] for x in st] == ["Katernberg", "Steele"] and st[0]["zeilen"] == 3
     assert st[0]["lat"] == 51.49 and st[1]["lon"] == 7.08
@@ -915,8 +915,6 @@ Anhängen an `pipeline/lib/karte_export.py`:
 import json
 import subprocess
 from pathlib import Path
-
-from pipeline.lib.io import schreib_csv  # noqa: F401  (Signaturgleichheit mit anderen Stufen)
 
 STUFEN = ["haus", "strasse", "stadtplan", "offen"]
 
@@ -1232,7 +1230,7 @@ import { falte, praefix2 } from "../js/schluessel.js";
 
 test("falte spiegelt die Python-Funktion", () => {
   assert.equal(falte("Grenzstraße"), "grenzstrasse");
-  assert.equal(falte("Müller-Lüdenscheidt, Ä."), "muellerluedenscheidt ae");
+  assert.equal(falte("Müller-Lüdenscheidt, Ä."), "mueller luedenscheidt ae");
   assert.equal(falte("  St.  Ännchen "), "st aennchen");
   assert.equal(falte(""), "");
 });
@@ -1396,7 +1394,8 @@ export function schreibeZustand(z) {
     if (gleich(w, STANDARD[k]) || w === null || w === "") continue;
     p.set(k, Array.isArray(w) ? w.join(",") : String(w));
   }
-  return p.toString();
+  // URLSearchParams kodiert Kommas als %2C; für lesbare Links (c=7.06,51.49) zurücknehmen.
+  return p.toString().replace(/%2C/g, ",");
 }
 
 export function zustandGleich(a, b) {
@@ -1414,7 +1413,7 @@ python3 -c "from pipeline.lib.karte_export import falte; print(falte('Müller-L�
 node -e "import('./site/js/schluessel.js').then(m => console.log(m.falte('Müller-Lüdenscheidt, Ä.'), '|', m.falte('Straße 1a/2')))"
 ```
 
-Expected: beide Zeilen identisch (`muellerluedenscheidt ae | strasse 1a 2`).
+Expected: beide Zeilen identisch (`mueller luedenscheidt ae | strasse 1a 2`).
 
 - [ ] **Step 6: Commit**
 
