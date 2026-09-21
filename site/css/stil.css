@@ -74,3 +74,20 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
   .legende.offen { display: block; bottom: auto; top: 60px; right: 56px; }
   .vermerk { display: none; }
 }
+
+.startseite main { max-width: 760px; margin: 0 auto; padding: 0 16px 24px; }
+.banner { height: 240px; background-size: cover; background-position: center; position: relative; }
+.banner-text { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px; background: linear-gradient(transparent, rgba(250,248,243,.95)); }
+.banner-text h1 { margin: 0; font-size: 34px; } .banner-text p { margin: 0; color: #444; }
+.suchkasten { margin-top: -22px; background: #fff; border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,.18); padding: 8px 8px 4px; position: relative; z-index: 2; }
+.suchkasten .suchfeld { padding: 4px; }
+.suchkasten .vorschlaege .eintrag { display: block; text-decoration: none; color: var(--text); }
+.zahlen { display: flex; gap: 20px; justify-content: center; margin: 22px 0 14px; flex-wrap: wrap; }
+.zahlen div { text-align: center; } .zahlen b { font-size: 22px; display: block; } .zahlen small { color: var(--grau); }
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kachel { display: block; background: #fff; border: 1px solid var(--rand); border-radius: 10px; padding: 12px 14px; text-decoration: none; color: var(--text); min-height: 64px; }
+.kachel b { display: block; } .kachel small { color: var(--grau); }
+.kachel select { width: 100%; margin-top: 4px; font-size: 14px; }
+.luecke { background: #fff7e0; border-left: 3px solid #d4a017; padding: 8px 12px; font-size: 14px; margin-top: 18px; }
+footer { text-align: center; font-size: 12px; color: var(--grau); padding: 16px; }
+@media (max-width: 520px) { .kacheln { grid-template-columns: 1fr; } .banner { height: 160px; } .banner-text h1 { font-size: 26px; } }

@@ -7,6 +7,7 @@ import { popupHtml } from "./popup.js";
 import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
+import { falte } from "./schluessel.js";
 
 const lader = new Lader();
 let zustand = liesZustand(location.search);
@@ -126,9 +127,22 @@ async function waehleVorschlag(v) {
   await sucheAusfuehren();
 }
 
+// q ohne Vorschlagsauswahl (Enter im Suchfeld, oder q= aus der URL — z. B. ein Straßenlink von
+// der Startseite, Task 14 Amendment 1): zuerst im Straßenindex nach einem exakten gefalteten
+// Treffer suchen (bevorzugt der heutige Name, sonst die 1936er Zeile mit den meisten Einträgen),
+// sonst Personensuche über den Text.
+async function strasseAusText(q) {
+  const k = falte(q);
+  if (!k) return null;
+  const alle = (await lader.strassen()) || [];
+  const treffer = alle.filter((s) => s.schluessel === k);
+  if (!treffer.length) return null;
+  return treffer.find((s) => s.art === "heute") || treffer.slice().sort((a, b) => b.zeilen - a.zeilen)[0];
+}
+
 async function sucheAusText(q) {
-  // Enter ohne Vorschlagsauswahl: Personensuche über den Text, Straßen über exakten Namen.
-  auswahl = { art: "person", q };
+  const s = await strasseAusText(q);
+  auswahl = s ? { art: "strasse", name: s.name, artName: s.art, ort: s.ort } : { art: "person", q };
   setzeZustand({ q, id: "" }, true, true);
   await sucheAusfuehren();
 }
@@ -237,7 +251,10 @@ async function start() {
   karte.setzeFilter(zustand); karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   zeichneSteuerung(); zeichneLegende();
   if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
-  else if (zustand.q) auswahl = { art: "person", q: zustand.q };
+  else if (zustand.q) {
+    const s = await strasseAusText(zustand.q);
+    auswahl = s ? { art: "strasse", name: s.name, artName: s.art, ort: s.ort } : { art: "person", q: zustand.q };
+  }
   else auswahl = null;
   await sucheAusfuehren();
   if (zustand.id) {
