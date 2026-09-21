@@ -133,20 +133,25 @@ mehrdeutigen Paare mit unscharfen Kandidaten, nach Zeilenzahl sortiert.
 Ausgangsbasis ist die Wikipedia-„Liste von Bergwerken in Essen“ (`werkzeuge/zechen_wikipedia.py`, Koordinaten
 aus den Artikeln). Die Betriebsjahre der Liste sind **nicht belastbar** (Beispiel Fridolin: Liste 1836–1960,
 tatsächlich 1899 zu Eiberg konsolidiert; 1960 ist das Jahr der Straßenbenennung; 105 von 212 Artikeln weichen
-von der Liste ab). Deshalb leitet `werkzeuge/zechen_abgleich.py` den Status 1936 aus drei Quellen ab:
+von der Liste ab). Deshalb leitet `werkzeuge/zechen_abgleich.py` den Status 1936 aus mehreren Quellen ab; an
+erster Stelle steht die Huske-Chronologie aus dem Historischen Portal Essen (`werkzeuge/zechen_portal.py` →
+`kuratierung/zechen_huske.csv`: je Zeche Portalseite, abgeleiteter `huske_status`, Grund, Chronik 1930–1940 als
+Belegzitat), danach Wikipedia-Liste, Artikel-Infobox und Stadtplan 1935:
 
 | Spalte | Bedeutung |
 |---|---|
 | `betrieb_von`, `betrieb_bis` | Jahre laut Wikipedia-Liste |
 | `artikel_von`, `artikel_bis` | Jahre laut Infobox des Wikipedia-Artikels (Cache `kuratierung/zechen_artikel.csv`, `--neu` lädt neu) |
 | `plan_1935` | passende Beschriftung im Stadtplan Essen 1935 im Umkreis von 1,5 km (aus `kuratierung/stadtplan_1935_zechen.csv`), leer = nicht beschriftet |
-| `status_1936` | `aktiv` nur, wenn Liste und Artikel beide Betrieb 1936 sagen und der Plan nicht „ehem.“ vermerkt; `stillgelegt`, wenn beide ein Ende vor 1936 nennen; sonst `unklar` |
+| `huske_status`, `huske_url` | Ergebnis aus der Portal-Chronologie (`aktiv` = Betriebs-/Förderbeleg und kein Zechenende bis 1936; `stillgelegt` = Ende vor 1936 bzw. erst später entstanden; `unklar` = Text abgeschnitten, Widerspruch, kein Beleg, nicht gefunden) und die Portalseite |
+| `status_1936` | = `huske_status`, wenn dieser eindeutig ist; sonst `aktiv` nur, wenn Liste und Artikel beide Betrieb 1936 sagen und der Plan nicht „ehem.“ vermerkt, `stillgelegt`, wenn beide ein Ende vor 1936 nennen, sonst `unklar` |
 | `status_geprueft` | `ja` = von Hand entschieden, wird vom Werkzeug nicht mehr überschrieben (Beleg in `hinweis`) |
-| `hinweis` | Grund für `unklar` (Widerspruch, fehlende Jahre) bzw. Beleg der Handprüfung |
+| `hinweis` | Beleg (Huske-Zitat mit Jahr) bzw. Grund für `unklar` (Widerspruch, fehlende Jahre, Portaltext abgeschnitten) bzw. Beleg der Handprüfung |
 | `bearbeiter` | `wikipedia` oder `stadtplan-1935` (Koordinaten aus der Planbeschriftung, ±100 m) |
 
-`kuratierung/zechen_pruefung.csv` ist die Arbeitsliste aller `unklar`-Fälle mit den drei Quellenangaben
-nebeneinander (Zechen mit Koordinaten zuerst). Die Karte zeigt nur `status_1936 = aktiv`; das Popup nennt
+`kuratierung/zechen_pruefung.csv` ist die Arbeitsliste aller `unklar`-Fälle mit allen Quellenangaben
+nebeneinander (Zechen mit Koordinaten zuerst; dort vor allem Zechen, deren Portaltext abgeschnitten ist:
+Graf Beust, Pörtingssiepen, Helene Amalie, Wolfsbank, Altendorf Tiefbau — hier hilft nur der gedruckte Huske). Die Karte zeigt nur `status_1936 = aktiv`; das Popup nennt
 die Artikeljahre und weist auf eine abweichende Liste hin. Der Plan beschriftet auch stillgelegte
 Anlagen (teils mit „ehem.“, teils ohne, z. B. Graf Beust, stillgelegt 1929); eine Planbeschriftung
 allein belegt daher keinen Betrieb, eine fehlende Beschriftung spricht aber gegen ihn.

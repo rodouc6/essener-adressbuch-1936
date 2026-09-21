@@ -80,3 +80,22 @@ def test_zechen_abgleichen_respektiert_handpruefung():
     neu, pruefung = zechen_abgleichen(z, PLAN, {"https://de.wikipedia.org/wiki/Zeche_Fridolin": ("", "1899")})
     assert neu[0]["status_1936"] == "stillgelegt" and neu[0]["hinweis"] == "Huske 2006: 1899 zu Eiberg"
     assert neu[0]["artikel_bis"] == "1899" and pruefung == []
+
+
+def test_zechen_abgleichen_huske_entscheidet():
+    zechen = [
+        dict(name="Fridolin", stadtteil="Steele", lat="51.4389", lon="7.1105", betrieb_von="1836", betrieb_bis="1960",
+             quelle="https://de.wikipedia.org/wiki/Zeche_Fridolin"),
+        dict(name="Heinrich", stadtteil="Überruhr", lat="51.4183", lon="7.0747", betrieb_von="1809", betrieb_bis="1968",
+             quelle="https://de.wikipedia.org/wiki/Zeche_Heinrich"),
+    ]
+    artikel = {"https://de.wikipedia.org/wiki/Zeche_Fridolin": ("", "1899"), "https://de.wikipedia.org/wiki/Zeche_Heinrich": ("1852", "1968")}
+    huske = {("Fridolin", "Steele"): dict(huske_status="stillgelegt", grund="1882 zu Eiberg", url="https://p/1213126"),
+             ("Heinrich", "Überruhr"): dict(huske_status="unklar", grund="Portaltext abgeschnitten (endet 1885)", url="https://p/1213325")}
+    neu, pruefung = zechen_abgleichen(zechen, PLAN, artikel, huske)
+    # Huske eindeutig → entscheidet, Wikipedia-Widerspruch wird nur vermerkt
+    assert neu[0]["status_1936"] == "stillgelegt" and neu[0]["hinweis"].startswith("Huske (Portal): 1882 zu Eiberg")
+    assert neu[0]["huske_url"] == "https://p/1213126"
+    # Huske unklar → Wikipedia/Plan-Regel (Liste und Artikel aktiv, Plan fehlt in PLAN) mit Portal-Vermerk
+    assert neu[1]["status_1936"] == "aktiv" and "Portal: Portaltext abgeschnitten" in neu[1]["hinweis"]
+    assert pruefung == []

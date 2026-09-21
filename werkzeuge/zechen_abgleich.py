@@ -2,11 +2,13 @@
 
     python3 werkzeuge/zechen_abgleich.py [--neu]
 
-Quellen: (1) die Betriebsjahre der Wikipedia-Liste (betrieb_von/betrieb_bis in kuratierung/zechen.csv),
-(2) die Infobox des jeweiligen Wikipedia-Artikels (BETRIEBSJAHRE_VON/BIS, zwischengespeichert in
-kuratierung/zechen_artikel.csv; --neu lädt neu), (3) die Beschriftungen des Stadtplans Essen 1935
-(kuratierung/stadtplan_1935_zechen.csv). Die Liste allein ist unzuverlässig (Beispiel Fridolin:
-Liste „1836–1960“, Artikel „stillgelegt 1899“, 1960 ist das Jahr der Straßenbenennung).
+Quellen: (0) die Huske-Chronologie aus dem Historischen Portal Essen (kuratierung/zechen_huske.csv aus
+werkzeuge/zechen_portal.py) — sie entscheidet, wo sie eindeutig ist; sonst (1) die Betriebsjahre der
+Wikipedia-Liste (betrieb_von/betrieb_bis in kuratierung/zechen.csv), (2) die Infobox des jeweiligen
+Wikipedia-Artikels (BETRIEBSJAHRE_VON/BIS, zwischengespeichert in kuratierung/zechen_artikel.csv; --neu lädt
+neu), (3) die Beschriftungen des Stadtplans Essen 1935 (kuratierung/stadtplan_1935_zechen.csv). Die Liste
+allein ist unzuverlässig (Beispiel Fridolin: Liste „1836–1960“, Artikel „stillgelegt 1899“, Huske „1882 zu
+Eiberg“; 1960 ist das Jahr der Straßenbenennung).
 
 Ergebnis: kuratierung/zechen.csv erhält die Spalten artikel_von, artikel_bis, plan_1935, status_1936
 (aktiv | stillgelegt | unklar), status_geprueft (ja | nein) und hinweis; kuratierung/zechen_pruefung.csv
@@ -30,8 +32,8 @@ from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 API = "https://de.wikipedia.org/w/api.php"
 FELDER = ["name", "stadtteil", "lat", "lon", "betrieb_von", "betrieb_bis", "quelle", "bearbeiter", "datum",
-          "artikel_von", "artikel_bis", "plan_1935", "status_1936", "status_geprueft", "hinweis"]
-PRUEF_FELDER = ["name", "stadtteil", "lat", "lon", "liste", "artikel", "plan_1935", "hinweis", "quelle"]
+          "artikel_von", "artikel_bis", "plan_1935", "huske_status", "huske_url", "status_1936", "status_geprueft", "hinweis"]
+PRUEF_FELDER = ["name", "stadtteil", "lat", "lon", "liste", "artikel", "plan_1935", "huske", "hinweis", "quelle", "huske_url"]
 ARTIKEL_FELDER = ["quelle", "artikel_von", "artikel_bis"]
 PLAN_RADIUS_M = 1500
 _JAHR = re.compile(r"\d{4}")
@@ -115,8 +117,10 @@ def status_ableiten(liste_von: str, liste_bis: str, art_von: str, art_bis: str, 
     return "stillgelegt", ""
 
 
-def zechen_abgleichen(zechen: list[dict], plan: list[dict], artikel: dict[str, tuple[str, str]]) -> tuple[list[dict], list[dict]]:
-    """Ergänzt jede Zeile um artikel_von/bis, plan_1935, status_1936, hinweis; gibt (Zeilen, Prüfliste) zurück.
+def zechen_abgleichen(zechen: list[dict], plan: list[dict], artikel: dict[str, tuple[str, str]],
+                      huske: dict[tuple[str, str], dict] | None = None) -> tuple[list[dict], list[dict]]:
+    """Ergänzt jede Zeile um artikel_von/bis, plan_1935, huske_status/url, status_1936, hinweis; gibt (Zeilen,
+    Prüfliste) zurück. Huske (Portal) entscheidet, wo er eindeutig ist; sonst gilt die Wikipedia/Plan-Regel.
     Handgeprüfte Zeilen (status_geprueft=ja) behalten status_1936 und hinweis."""
     neu, pruefung = [], []
     for z in zechen:
@@ -124,19 +128,31 @@ def zechen_abgleichen(zechen: list[dict], plan: list[dict], artikel: dict[str, t
         art_von, art_bis = artikel.get(z.get("quelle", ""), ("", ""))
         treffer = plan_treffer(z, plan)
         plan_text = treffer["text"] if treffer else ""
+        h = (huske or {}).get((z["name"], z.get("stadtteil", "")), {})
         z["artikel_von"], z["artikel_bis"], z["plan_1935"] = art_von, art_bis, plan_text
+        z["huske_status"], z["huske_url"] = h.get("huske_status", ""), h.get("url", "")
         if z.get("status_geprueft") == "ja" and z.get("status_1936"):
             neu.append(z)
             continue
         z["status_geprueft"] = "nein"
-        z["status_1936"], z["hinweis"] = status_ableiten(z.get("betrieb_von", ""), z.get("betrieb_bis", ""),
-                                                          art_von, art_bis, plan_text)
+        wiki_status, wiki_hinweis = status_ableiten(z.get("betrieb_von", ""), z.get("betrieb_bis", ""),
+                                                    art_von, art_bis, plan_text)
+        if h.get("huske_status") in ("aktiv", "stillgelegt"):
+            z["status_1936"] = h["huske_status"]
+            z["hinweis"] = f"Huske (Portal): {h.get('grund', '')}"
+            if wiki_status not in (h["huske_status"], "unklar"):
+                z["hinweis"] += f" — Wikipedia abweichend ({wiki_status})"
+        else:
+            z["status_1936"], z["hinweis"] = wiki_status, wiki_hinweis
+            if h.get("grund"):
+                z["hinweis"] += f"; Portal: {h['grund']}"
         neu.append(z)
         if z["status_1936"] == "unklar":
             pruefung.append(dict(name=z["name"], stadtteil=z.get("stadtteil", ""), lat=z.get("lat", ""), lon=z.get("lon", ""),
                                  liste=f'{z.get("betrieb_von", "")}–{z.get("betrieb_bis", "")}',
-                                 artikel=f"{art_von}–{art_bis}", plan_1935=plan_text, hinweis=z["hinweis"],
-                                 quelle=z.get("quelle", "")))
+                                 artikel=f"{art_von}–{art_bis}", plan_1935=plan_text,
+                                 huske=h.get("chronik_1930_1940", "") or h.get("grund", ""), hinweis=z["hinweis"],
+                                 quelle=z.get("quelle", ""), huske_url=h.get("url", "")))
     pruefung.sort(key=lambda p: (not p["lat"], p["name"]))
     return neu, pruefung
 
@@ -180,7 +196,9 @@ def main() -> None:
             print(f"{z['name']}: Artikel {cache[q][0]}–{cache[q][1]}")
     schreib_csv(cache_pfad, [dict(quelle=q, artikel_von=v, artikel_bis=b) for q, (v, b) in sorted(cache.items())],
                 ARTIKEL_FELDER)
-    neu, pruefung = zechen_abgleichen(zechen, plan, cache)
+    huske_pfad = k / "zechen_huske.csv"
+    huske = {(h["name"], h["stadtteil"]): h for h in lies_csv(huske_pfad)} if huske_pfad.exists() else None
+    neu, pruefung = zechen_abgleichen(zechen, plan, cache, huske)
     schreib_csv(k / "zechen.csv", neu, FELDER)
     schreib_csv(k / "zechen_pruefung.csv", pruefung, PRUEF_FELDER)
     zaehl = {s: sum(1 for z in neu if z["status_1936"] == s) for s in ("aktiv", "stillgelegt", "unklar")}
