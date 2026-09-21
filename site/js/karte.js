@@ -103,9 +103,13 @@ export class Karte {
     this.map.setStyle(STILE[name]);
     // MapLibre 4.7.1 feuert nach setStyle() kein "style.load" auf der Map (nur auf dem internen
     // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() pollen statt auf das Ereignis zu warten.
+    // isStyleLoaded() wird beim Laden eines entfernten Stils (URL) kurz true, bevor MapLibre seine
+    // interne Rekonziliation abschließt; währenddessen hinzugefügte Ebenen verschwinden sofort
+    // wieder. Der kurze Puffer lässt diese Rekonziliation abschließen, bevor ebenenAufsetzen()
+    // die Ebenen anlegt (beobachtet beim Grundkartenwechsel, Task 15).
     this._bereit = new Promise((ok) => {
       const pruefen = () => {
-        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); this._stilWarter = null; ok(); }
+        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); this._stilWarter = null; setTimeout(ok, 300); }
       };
       this._stilWarter = pruefen;
       this.map.on("styledata", pruefen);

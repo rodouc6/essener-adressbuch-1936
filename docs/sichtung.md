@@ -10,6 +10,10 @@ direkt in die Kuratierungstabellen. Regel: `docs/entscheidungen_strassen.md`, Ru
     python3 werkzeuge/sichtung_liste.py        # → build/sichtung_1935.json (braucht Stufe 03, lokales Nominatim)
     python3 werkzeuge/serve.py                 # → http://localhost:8765/werkzeuge/sichtung.html
 
+`werkzeuge/serve.py` statt `python3 -m http.server`, weil das Werkzeug PMTiles-Kacheln per
+Range-Header nachlädt (Teilstücke aus `site/daten/adressen.pmtiles`); ein einfacher HTTP-Server
+ohne Range-Unterstützung liefert dafür 200 statt 206 und die Kacheln laden nicht.
+
 Die Liste fasst alle offenen oder mehrdeutigen Paare je (Buchname, Vorort) zusammen: Zeilenzahl, Buchteile,
 Beispieladressen, Pipeline-Gründe, Dickhoff-Kandidaten mit Namensstadien (1936 gültiges Stadium
 hervorgehoben, „im Plan 1935“ markiert) und Sprungkoordinate, dazu ähnliche Dickhoff-Namen als Vorschlag.

@@ -68,7 +68,7 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
   .sidebar[data-stufe="griff"] { height: 120px; }
   .sidebar[data-stufe="halb"] { height: 45vh; }
   .sidebar[data-stufe="voll"] { height: 92vh; }
-  .griff { display: block; width: 40px; height: 5px; border-radius: 3px; background: #bbb; margin: 8px auto 0; cursor: grab; }
+  .griff { display: block; flex-shrink: 0; width: 40px; height: 5px; border-radius: 3px; background: #bbb; margin: 8px auto 0; cursor: grab; }
   .steuerung { top: 60px; }
   .legende { display: none; }
   .legende.offen { display: block; bottom: auto; top: 60px; right: 56px; }
@@ -91,3 +91,6 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .luecke { background: #fff7e0; border-left: 3px solid #d4a017; padding: 8px 12px; font-size: 14px; margin-top: 18px; }
 footer { text-align: center; font-size: 12px; color: var(--grau); padding: 16px; }
 @media (max-width: 520px) { .kacheln { grid-template-columns: 1fr; } .banner { height: 160px; } .banner-text h1 { font-size: 26px; } }
+
+.textseite main { max-width: 720px; margin: 0 auto; padding: 16px; line-height: 1.5; }
+.textseite h1 { font-size: 28px; } .textseite h2 { font-size: 18px; margin-top: 24px; }

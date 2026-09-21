@@ -39,6 +39,11 @@ Stadtplan 1935: `werkzeuge/sichtung.html` nach `python3 werkzeuge/sichtung_liste
 | `landmarke` | kuratierter Punkt aus `kuratierung/landmarken.csv` |
 | `offen` | keine Verortung; `grund` sagt, warum |
 
+Auf der Karte (`site/daten/adressen.pmtiles`) heißt die Präzisionsstufe ebenfalls `stufe`, mit
+`haus`, `strasse` und zusätzlich `stadtplan` für Punkte vom Stadtplan 1935 — auf Pipeline-Ebene
+bleibt das weiterhin `stufe=strasse` mit `herkunft=stadtplan_1935` (kein eigener Pipeline-Wert,
+nur zur Anzeige in der Karte aufgespalten).
+
 `grund` — bei `stufe=offen`: `strasse_offen` (Straße nicht aufgelöst),
 `ohne_nummer`, `kein_treffer`, `mehrdeutig_strasse` (mehrere gleichnamige Straßen ohne
 unterscheidenden Stadtteil), `stadtteil_widerspruch`, `fehler` (Nominatim-Anfrage
@@ -122,6 +127,77 @@ Entscheidungen zu einzelnen Straßen: [`docs/entscheidungen_strassen.md`](docs/e
 
 `build/strassen_vorschlaege.csv` ist die Arbeitsliste für die Kuratierung: alle offenen und
 mehrdeutigen Paare mit unscharfen Kandidaten, nach Zeilenzahl sortiert.
+
+## Karte (Teilprojekt 2)
+
+Datenpaket erzeugen (braucht `build/04_geokodiert.csv`, `build/eintraege.csv` und tippecanoe):
+```
+python3 pipeline/06_karte_export.py
+```
+Schreibt nach `site/daten/` (Adresspunkte, Sucheindex, Kennzahlen, Themen). Ergebnis wird
+committet, nicht neu gebaut beim Deploy (Pages baut nicht).
+
+Lokale Ansicht:
+```
+python3 werkzeuge/serve.py 8765   # → http://localhost:8765/site/
+```
+`serve.py` statt `python3 -m http.server`, weil PMTiles Range-Requests braucht (siehe oben).
+
+Tests:
+```
+node --test site/tests/                  # Frontend-Module (Resolver, Zustand, Suche …)
+python3 -m pytest tests/e2e -q -m e2e    # Playwright-Rauchtests (Server + Chromium, braucht site/daten)
+```
+`python3 -m pytest -q` lässt die Rauchtests aus (`addopts = "-m 'not e2e'"` in `pyproject.toml`);
+`-m e2e` auf der Kommandozeile überschreibt das und schaltet sie gezielt ein. Playwright-Browser
+einmalig installieren: `python3 -m playwright install chromium` (Paket über `pip install -e .[e2e]`).
+
+### `site/daten/` — Struktur
+
+| Pfad | Inhalt |
+|---|---|
+| `adressen.pmtiles` | Ein Punkt je verorteter Adresse (Stufe `haus`/`strasse`, inkl. `stadtplan`), gekachelt mit tippecanoe |
+| `haus/<xx>.json` | Einträge je Adress-ID, nach den ersten zwei Hex-Zeichen der ID gehasht (256 Dateien) |
+| `adressen/<xx>.json` | Punkteigenschaften je Adress-ID, gleiches Schema wie `haus/<xx>.json`-Schlüssel; unabhängig vom Kachel-Viewport für Export, Liste und Hausansicht |
+| `suche/namen/<ab>.json`, `suche/firmen/<ab>.json` | Personen bzw. Firmen nach den ersten zwei Schlüsselzeichen (Schlüsselfaltung: Kleinschreibung, ä/ö/ü/ß transkribiert, Satzzeichen entfernt) |
+| `suche/strassen.json` | Heutige und 1936er Straßennamen mit Vorort, Zeilenzahl, Adress-IDs |
+| `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
+| `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
+| `zechen.geojson` | Zechen und Krupp-Werke aus `kuratierung/zechen.csv` |
+| `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
+| `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
+
+### URL-Parameter (`karte.html?…`)
+
+| Parameter | Bedeutung | Standard |
+|---|---|---|
+| `q` | Suchtext | leer |
+| `ebene` | Aktive Teile, kommagetrennt: `I,II,III` | alle |
+| `stadtteil` | Filter auf einen heutigen Stadtteil | keiner |
+| `praez` | Aktive Präzisionsstufen, kommagetrennt: `haus,strasse,stadtplan` | alle |
+| `beruf` | Berufsfilter | keiner |
+| `thema` | Aktives Thema (`site/daten/themen/<id>.json`) | keins |
+| `id` | Adress-ID (öffnet die Hausansicht) oder Eintrags-ID (öffnet die Hausansicht und hebt den Eintrag hervor) | keine |
+| `karte` | Grundkartenstil: `positron` oder `liberty` | `positron` |
+| `plan` | Stadtplan-1935-Ebene ein-/ausblenden: `0` oder `1` | `0` |
+| `zechen` | Zechen-Ebene ein-/ausblenden: `0` oder `1` | `0` |
+| `z` | Zoomstufe | 11 |
+| `c` | Kartenmitte `lon,lat` | Essen gesamt |
+
+Fehlende Parameter fallen auf den Standardwert zurück. Änderungen an Filtern/Ansicht schreiben
+`history.replaceState`; Navigationsschritte (Suche, Haus öffnen) `pushState`. Die Grundkartenwahl
+steht zusätzlich in `localStorage`. `PLAN_FREIGEGEBEN` (`site/js/konfig.js`) sperrt die
+Stadtplan-1935-Ebene, bis die Stadt Essen bzw. der Historische Verein die Nutzung freigibt.
+
+### Themenformat (`site/daten/themen/<id>.json`)
+
+Felder: `titel`, `text`, `grundlage` (Quelle, Prüfdatum), `filter` (Merkmale, Ebenen), `farbe`
+(eine Farbe | Kategorien | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
+`darstellung` (`punkte`; `strassen` ist für Teilprojekt 4 reserviert), `freigegeben` (nur dann
+erscheint die Kachel auf der Startseite). Merkmale stammen aus `kuratierung/merkmale/<name>.csv`
+(Spalten `feld`, `muster`, `merkmal`, `beleg`, `bearbeiter`, `datum`) und werden in Stufe 06 an
+jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
+`thema=<id>` in der URL, kombinierbar mit Suche und Filtern.
 
 ## Dokumentation
 

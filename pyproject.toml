@@ -7,7 +7,10 @@ dependencies = ["requests>=2.31"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+e2e = ["playwright>=1.45"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = ["e2e: Rauchtests im Browser (Server + Playwright)"]
+addopts = "-m 'not e2e'"
