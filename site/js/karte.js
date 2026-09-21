@@ -48,7 +48,9 @@ export class Karte {
     // Anfang an Teil des Stils, und ein Stilwechsel kann sie nicht mehr wegräumen.
     this.map = new maplibregl.Map({
       container, style: LEERER_STIL, center: zustand.c || ESSEN_MITTE, zoom: zustand.z ?? 11,
-      minZoom: 9, maxZoom: 18, attributionControl: { compact: true },
+      minZoom: 9, maxZoom: 18,
+      // Impressum/Datenschutz müssen von jeder Seite erreichbar sein — auf der Kartenseite über die Attribution.
+      attributionControl: { compact: true, customAttribution: '<a href="impressum.html">Impressum</a> · <a href="impressum.html#datenschutz">Datenschutz</a>' },
     });
     this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     this.map.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), "top-right");
