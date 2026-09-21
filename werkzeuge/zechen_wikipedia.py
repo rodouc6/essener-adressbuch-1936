@@ -11,6 +11,8 @@ import datetime
 import pathlib
 import re
 import sys
+import time
+import urllib.parse
 
 import requests
 
@@ -178,16 +180,102 @@ def parse_zechen(wikitext: str) -> list[dict]:
     return zechen
 
 
+def _artikeltitel(quelle: str) -> str:
+    """Wikipedia-Artikeltitel aus einer quelle-URL (".../wiki/<Titel>"), ohne Abschnittsanker."""
+    pfad = quelle.split("/wiki/", 1)[1].split("#", 1)[0]
+    return urllib.parse.unquote(pfad).replace("_", " ")
+
+
+def _anfrage_mit_wartezeit(get, params, versuche: int = 8):
+    """API-Anfrage mit Wartezeit-Puffer und Neuversuch bei „429 Too Many Requests“.
+
+    Nutzt den serverseitigen "Retry-After"-Header, wenn vorhanden, sonst steigende Wartezeit.
+    """
+    for versuch in range(versuche):
+        r = get(API, params=params, headers={"User-Agent": "essener-adressbuch-1936 (Zechenliste)"}, timeout=30)
+        if r.status_code == 429 and versuch < versuche - 1:
+            warten = getattr(r, "headers", {}).get("retry-after")
+            time.sleep(float(warten) if warten else min(60, 2 ** versuch))
+            continue
+        r.raise_for_status()
+        time.sleep(0.5)  # höflicher Abstand zwischen Anfragen an die Wikipedia-API
+        return r
+    r.raise_for_status()
+    return r
+
+
+def hole_koordinaten(titel: list[str], get=requests.get) -> dict[str, tuple[str, str]]:
+    """Fragt Koordinaten zu Artikeltiteln über die MediaWiki-API ab (Stapel von 50 Titeln).
+
+    Gibt {ursprünglicher Titel: (lat, lon)} zurück; Titel ohne (primäre) Koordinaten fehlen
+    im Ergebnis. Weiterleitungen und Titel-Normalisierungen werden aufgelöst, damit auch der
+    ursprünglich übergebene (nicht normalisierte bzw. weitergeleitete) Titel einen Treffer
+    bekommt, sofern der Zielartikel Koordinaten hat.
+    """
+    ergebnis: dict[str, tuple[str, str]] = {}
+    for start in range(0, len(titel), 50):
+        stapel = titel[start:start + 50]
+        ziel_je_titel = {t: t for t in stapel}
+        koord_je_seitentitel: dict[str, tuple[str, str]] = {}
+
+        # prop=coordinates liefert pro Anfrage nur eine begrenzte Zahl Koordinaten zurück und
+        # setzt dafür ein "continue"-Token, auch innerhalb eines einzigen 50er-Titel-Stapels;
+        # ohne diese Schleife blieben viele Artikel im Stapel ohne Koordinaten.
+        fortsetzung: dict[str, str] = {}
+        while True:
+            r = _anfrage_mit_wartezeit(
+                get, params=dict(action="query", prop="coordinates", titles="|".join(stapel),
+                                  coprimary="primary", format="json", redirects=1, **fortsetzung))
+            antwort = r.json()
+            daten = antwort.get("query", {})
+
+            # abgefragter Titel → tatsächlich zurückgegebener Seitentitel (nach Normalisierung/Redirect)
+            for eintrag in daten.get("normalized", []):
+                for t, ziel in ziel_je_titel.items():
+                    if ziel == eintrag["from"]:
+                        ziel_je_titel[t] = eintrag["to"]
+            for eintrag in daten.get("redirects", []):
+                for t, ziel in ziel_je_titel.items():
+                    if ziel == eintrag["from"]:
+                        ziel_je_titel[t] = eintrag["to"]
+
+            for seite in daten.get("pages", {}).values():
+                koordinaten = seite.get("coordinates")
+                if koordinaten:
+                    koord_je_seitentitel[seite["title"]] = (str(koordinaten[0]["lat"]), str(koordinaten[0]["lon"]))
+
+            fortsetzung = antwort.get("continue")
+            if not fortsetzung:
+                break
+
+        for t in stapel:
+            treffer = koord_je_seitentitel.get(ziel_je_titel[t])
+            if treffer:
+                ergebnis[t] = treffer
+    return ergebnis
+
+
 def main() -> None:
     ziel = projektwurzel() / "kuratierung" / "zechen.csv"
     if ziel.exists() and "--neu" not in sys.argv:
         sys.exit(f"{ziel} existiert, --neu zum Überschreiben")
-    r = requests.get(API, params=dict(action="parse", page=SEITE, prop="wikitext", format="json"),
-                     headers={"User-Agent": "essener-adressbuch-1936 (Zechenliste)"}, timeout=30)
-    r.raise_for_status()
+    r = _anfrage_mit_wartezeit(requests.get, dict(action="parse", page=SEITE, prop="wikitext", format="json"))
     zechen = parse_zechen(r.json()["parse"]["wikitext"]["*"])
+
+    # Koordinaten aus den verlinkten Artikeln nachladen, für Zeilen, die noch keine haben.
+    titel_je_zeche = {z["quelle"]: _artikeltitel(z["quelle"]) for z in zechen if z["quelle"] and not z["lat"]}
+    koordinaten = hole_koordinaten(sorted(set(titel_je_zeche.values())))
+    ergaenzt = 0
+    for z in zechen:
+        if not z["lat"] and z["quelle"] in titel_je_zeche:
+            treffer = koordinaten.get(titel_je_zeche[z["quelle"]])
+            if treffer:
+                z["lat"], z["lon"] = treffer
+                ergaenzt += 1
+
     schreib_csv(ziel, zechen, FELDER)
-    print(f"{len(zechen)} Zechen, {sum(1 for z in zechen if z['lat'])} mit Koordinaten → {ziel}")
+    print(f"{len(zechen)} Zechen, {sum(1 for z in zechen if z['lat'])} mit Koordinaten "
+          f"({ergaenzt} aus Artikeln ergänzt) → {ziel}")
 
 
 if __name__ == "__main__":
