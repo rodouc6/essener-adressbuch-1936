@@ -137,6 +137,12 @@ python3 pipeline/06_karte_export.py
 Schreibt nach `site/daten/` (Adresspunkte, Sucheindex, Kennzahlen, Themen). Ergebnis wird
 committet, nicht neu gebaut beim Deploy (Pages baut nicht).
 
+`site/daten/` wiegt insgesamt ≈110 MB (`adressen.pmtiles` 3,5 MB, `haus/` 55 MB, `suche/` 37 MB,
+`adressen/` 18 MB) und wird bei jeder Regenerierung komplett neu committet, damit Pages ohne
+Build-Schritt auskommt — jede Regenerierung legt dieses Volumen erneut in der Git-Historie ab.
+Bekannter Trade-off; Alternativen für später: Build in CI statt Commit, Auslieferung über
+Release-Assets, oder kompaktere Array- statt Objekt-Scherben.
+
 Lokale Ansicht:
 ```
 python3 werkzeuge/serve.py 8765   # → http://localhost:8765/site/

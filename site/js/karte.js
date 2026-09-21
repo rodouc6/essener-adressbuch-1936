@@ -97,24 +97,50 @@ export class Karte {
   }
 
   setzeStil(name) {
-    // Einen noch laufenden Warter eines vorigen Stilwechsels abmelden, sonst setzen zwei sich
-    // überlappende Wechsel beide ebenenAufsetzen() auf demselben Stil auf ("Layer already exists").
-    if (this._stilWarter) { this.map.off("styledata", this._stilWarter); this._stilWarter = null; }
+    // Einen noch laufenden Warter eines vorigen Stilwechsels abbrechen, sonst setzen zwei sich
+    // überlappende Wechsel beide ebenenAufsetzen() auf demselben Stil auf ("Layer already exists"),
+    // und eine veraltete, noch laufende ebenenAufsetzen()-Ausführung darf ihre (inzwischen wieder
+    // ersetzten) Ebenen nicht mehr anlegen (_stilGen-Generationszähler, vor dem Aufruf von
+    // ebenenAufsetzen() geprüft).
+    if (this._stilRaf) { cancelAnimationFrame(this._stilRaf); this._stilRaf = null; }
+    const gen = (this._stilGen = (this._stilGen || 0) + 1);
     this.map.setStyle(STILE[name]);
     // MapLibre 4.7.1 feuert nach setStyle() kein "style.load" auf der Map (nur auf dem internen
-    // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() pollen statt auf das Ereignis zu warten.
+    // Style-Objekt, ohne Weiterleitung) — daher auf isStyleLoaded() warten statt auf das Ereignis.
     // isStyleLoaded() wird beim Laden eines entfernten Stils (URL) kurz true, bevor MapLibre seine
-    // interne Rekonziliation abschließt; währenddessen hinzugefügte Ebenen verschwinden sofort
-    // wieder. Der kurze Puffer lässt diese Rekonziliation abschließen, bevor ebenenAufsetzen()
-    // die Ebenen anlegt (beobachtet beim Grundkartenwechsel, Task 15).
+    // interne Rekonziliation (Sprite/Glyphen/Quellen des neuen Stils) abgeschlossen hat; währenddessen
+    // von ebenenAufsetzen() hinzugefügte Ebenen verschwinden binnen ~100 ms spurlos wieder (beobachtet
+    // beim Grundkartenwechsel, Task 15).
+    // Erst mit dem "styledata"-Ereignis auf isStyleLoaded() zu prüfen (die ursprüngliche Fassung) oder
+    // auf das nächste "idle"-Ereignis zu warten, erwies sich unter schnell aufeinanderfolgenden
+    // Stilwechseln als unzuverlässig: ruft man setzeStil() innerhalb weniger Millisekunden mehrfach auf
+    // (z. B. drei rasche Klicks), bleibt für einen der dazwischenliegenden Aufrufe manchmal jedes
+    // weitere "styledata"/"idle"-Ereignis aus — vermutlich, weil MapLibres interner Ladezyklus für den
+    // inzwischen überholten Zwischenstand keine weitere Arbeit mehr anstößt und daher auch keine
+    // weiteren Ereignisse mehr feuert; die Wartepromise hing dann dauerhaft. Ein reines
+    // rAF-Polling auf isStyleLoaded() hängt nicht von einem bestimmten Ereignis ab und läuft daher
+    // auch dann weiter, wenn "styledata"/"idle" ausbleiben; nach dem ersten true wird zusätzlich ein
+    // zweiter Animationsframe abgewartet (Puffer für den Rekonziliationsabschluss). Geprüft mit drei
+    // raschen Wechseln plus einem vierten nach dem Beruhigen: keine Fehler, alle Ebenen vorhanden,
+    // `adressen-haus` bleibt auch 2 s nach dem letzten Wechsel bestehen.
     this._bereit = new Promise((ok) => {
       const pruefen = () => {
-        if (this.map.isStyleLoaded()) { this.map.off("styledata", pruefen); this._stilWarter = null; setTimeout(ok, 300); }
+        if (gen !== this._stilGen) return;   // von einem späteren setzeStil() überholt
+        if (!this.map.isStyleLoaded()) { this._stilRaf = requestAnimationFrame(pruefen); return; }
+        this._stilRaf = requestAnimationFrame(() => {
+          if (gen !== this._stilGen) return;
+          this._stilRaf = null;
+          ok();
+        });
       };
-      this._stilWarter = pruefen;
-      this.map.on("styledata", pruefen);
-      pruefen();
-    }).then(() => this.ebenenAufsetzen());
+      // Erst Loading überhaupt beobachten, nicht sofort synchron prüfen: unmittelbar nach setStyle()
+      // liest isStyleLoaded() noch den Wert des alten Stils (kurzzeitig „true“), bevor der Browser die
+      // anstehende Stiländerung überhaupt verarbeitet hat — ein rAF Abstand genügt, um das zu vermeiden.
+      this._stilRaf = requestAnimationFrame(pruefen);
+    }).then(() => {
+      if (gen !== this._stilGen) return;     // überholt: die aktuelle Generation setzt die Ebenen selbst auf
+      return this.ebenenAufsetzen();
+    });
     return this._bereit;
   }
 
