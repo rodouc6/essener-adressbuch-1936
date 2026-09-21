@@ -1,0 +1,40 @@
+import { DATEN } from "./konfig.js";
+
+// Lädt Dateien des Datenpakets und hält sie im Speicher. Ein 404 (Scherbe existiert nicht) ist
+// kein Fehler, sondern "keine Daten" → null.
+export class Lader {
+  constructor(basis = DATEN, fetchFn = (u) => fetch(u)) {
+    this.basis = basis;
+    this.fetchFn = fetchFn;
+    this.cache = new Map();
+  }
+
+  async json(pfad) {
+    const url = this.basis + pfad;
+    if (!this.cache.has(url)) {
+      this.cache.set(url, (async () => {
+        const r = await this.fetchFn(url);
+        if (!r.ok) {
+          if (r.status === 404) return null;
+          throw new Error(`Laden fehlgeschlagen: ${url} (${r.status})`);
+        }
+        return r.json();
+      })());
+    }
+    return this.cache.get(url);
+  }
+
+  async scherbe(adressId) {
+    const s = await this.json(`haus/${adressId.slice(0, 2)}.json`);
+    return s && s[adressId] ? s[adressId] : null;
+  }
+  namen(praefix) { return this.json(`suche/namen/${praefix}.json`); }
+  firmen(praefix) { return this.json(`suche/firmen/${praefix}.json`); }
+  berufeScherbe(praefix) { return this.json(`suche/berufe/${praefix}.json`); }
+  strassen() { return this.json("suche/strassen.json"); }
+  strassenScherbe(praefix) { return this.json(`suche/strassen/${praefix}.json`); }
+  berufe() { return this.json("suche/berufe.json"); }
+  stadtteile() { return this.json("suche/stadtteile.json"); }
+  kennzahlen() { return this.json("kennzahlen.json"); }
+  thema(id) { return this.json(`themen/${id}.json`); }
+}
