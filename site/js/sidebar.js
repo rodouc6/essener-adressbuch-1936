@@ -111,6 +111,7 @@ export class Sidebar {
     this.themenkopf.innerHTML = `<div class="thema"><b>${esc(thema.titel)}</b><p>${esc(thema.text)}</p><small>${esc(thema.grundlage)}</small>` +
       `<button data-thema-aus="1">Thema verlassen</button></div>`;
     this.themenkopf.hidden = false;
+    this.themenkopf.querySelector("[data-thema-aus]").addEventListener("click", () => this.a.onZustand({ thema: "" }));
   }
 
   zeigeThemenliste(themen) {
