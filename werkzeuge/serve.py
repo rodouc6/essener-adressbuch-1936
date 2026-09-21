@@ -16,6 +16,7 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
   übergebenen Zeile (Rücknahme einer Sichtung; Zeilen mit Hausnummernbereich nie).
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
+- GET mit Range-Header — Teilstücke für PMTiles (site/daten/adressen.pmtiles).
 """
 from __future__ import annotations
 
@@ -122,8 +123,38 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(roh)
 
+    _RANGE = re.compile(r"^(\d*)-(\d*)$")
+
+    def _range(self, pfad: str, spez: str) -> None:
+        """Beantwortet einen Range-Request (pmtiles.js liest Kacheln stückweise)."""
+        datei = pathlib.Path(self.translate_path(pfad))
+        m = self._RANGE.match(spez)
+        if not datei.is_file() or not m or (m.group(1) == "" and m.group(2) == ""):
+            return self._antwort(416, "ungültiger Range")
+        groesse = datei.stat().st_size
+        if m.group(1) == "":                       # bytes=-N → letzte N Bytes
+            start, ende = max(groesse - int(m.group(2)), 0), groesse - 1
+        else:
+            start = int(m.group(1))
+            ende = int(m.group(2)) if m.group(2) else groesse - 1
+        ende = min(ende, groesse - 1)
+        if start > ende:
+            return self._antwort(416, "Range außerhalb der Datei")
+        self.send_response(206)
+        self.send_header("Content-Type", self.guess_type(str(datei)))
+        self.send_header("Content-Range", f"bytes {start}-{ende}/{groesse}")
+        self.send_header("Content-Length", str(ende - start + 1))
+        self.send_header("Accept-Ranges", "bytes")
+        self.end_headers()
+        with open(datei, "rb") as f:
+            f.seek(start)
+            self.wfile.write(f.read(ende - start + 1))
+
     def do_GET(self) -> None:
         url = urllib.parse.urlparse(self.path)
+        rng = self.headers.get("Range")
+        if rng and rng.startswith("bytes=") and url.path != "/reverse":
+            return self._range(url.path, rng[6:])
         if url.path != "/reverse":
             return super().do_GET()
         q = urllib.parse.parse_qs(url.query)
