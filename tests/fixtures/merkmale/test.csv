@@ -1,0 +1,5 @@
+feld,art,muster,merkmal,beleg,bearbeiter,datum
+Beruf o. ä.,praefix,Dr.,akademiker,Titel im Berufsfeld,Test,2026-09-21
+firstname,praefix,Dr.,akademiker,Titel im Vornamensfeld,Test,2026-09-21
+Beruf o. ä.,exakt,Bergm.,bergbau,Abkürzung Bergmann,Test,2026-09-21
+Beruf o. ä.,regex,^Hauer\b,bergbau,Hauer,Test,2026-09-21
