@@ -77,7 +77,7 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 }
 
 /* Startseite: der Stadtplan 1935 liegt abgedunkelt und entsättigt als feststehender Hintergrund über der
-   ganzen Seite (eigenes Element hinter dem Inhalt, damit der Filter nur das Bild trifft); Text weiß, Kacheln weiß. */
+   ganzen Seite (eigenes Element hinter dem Inhalt, damit der Filter nur das Bild trifft); Text weiß. */
 .startseite { background: #2b2620; color: #fff; min-height: 100vh; }
 .startseite .hintergrund { position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background: url(../bilder/startplan-1935-1600.jpg) 30% center / cover no-repeat;
@@ -87,12 +87,29 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .startseite main { max-width: 760px; margin: 0 auto; padding: 12vh 16px 24px; }
 .startkopf h1 { margin: 0; font-size: 48px; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
 .startkopf p { margin: 4px 0 18px; color: #e8e2d4; font-size: 18px; }
+/* Schwebende Elemente: Kennzahlen, Kacheln und Hinweis als Glas (halbtransparent, Hintergrund weichgezeichnet,
+   helle Kante, weicher Schatten); die Suche bleibt opak weiß als einziger Akzent. Einheitlich: Radius 14 px,
+   eine Schattenstufe. Beim Laden blenden die Blöcke gestaffelt ein (bei „Bewegung reduzieren“ aus). */
+.startseite .suchkasten .suchfeld input { border: 1px solid rgba(255,255,255,.6); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.startseite .zahlen { margin: 18px 0 12px; padding: 12px 18px; border-radius: 14px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 .startseite .zahlen small { color: #d9d3c5; }
-.startseite .kachel { color: var(--text); } .kachel[hidden] { display: none; }
-.startseite .luecke { color: #6b5b2e; background: rgba(251,243,220,.95); }
-.startseite .luecke a { color: #4a3d14; }
+.startseite .kachel { color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); border-radius: 14px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,.25); transition: transform .2s, background .2s; }
+.startseite .kachel small { color: #e0dacc; }
+.startseite .kachel:hover, .startseite .kachel:focus-visible { transform: translateY(-2px); background: rgba(255,255,255,.22); }
+.startseite .kachel select { color: var(--text); }
+.kachel[hidden] { display: none; }
+.startseite .luecke { color: #fbe9b8; background: rgba(212,160,23,.18); border: 1px solid rgba(212,160,23,.45); border-left-width: 3px; border-radius: 10px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.startseite .luecke a { color: #fff; }
 .startseite footer { color: #cfc9bb; } .startseite footer a { color: #fff; }
 .startseite .vorschlaege { color: var(--text); }
+.startseite main > * { animation: aufblenden .6s ease-out both; }
+.startseite main > :nth-child(2) { animation-delay: .08s; } .startseite main > :nth-child(3) { animation-delay: .16s; }
+.startseite main > :nth-child(4) { animation-delay: .24s; } .startseite main > :nth-child(5) { animation-delay: .32s; }
+@keyframes aufblenden { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .startseite main > * { animation: none; } .startseite .kachel { transition: none; } }
 @media (max-width: 900px) {
   .startseite .hintergrund { background-image: image-set(url(../bilder/startplan-1935-1000.webp) type("image/webp"), url(../bilder/startplan-1935-1000.jpg) type("image/jpeg")); }
   .startseite main { padding-top: 7vh; }
