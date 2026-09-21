@@ -3,8 +3,6 @@ import { vorschlaege, hinweisHJ } from "./suche.js";
 import { themenListe } from "./themen.js";
 import { esc } from "./popup.js";
 import { schreibeZustand, STANDARD } from "./zustand.js";
-import { STARTPLAN } from "./konfig.js";
-import { punktLage } from "./startplan.js";
 
 const lader = new Lader();
 const suche = document.getElementById("suche");
@@ -101,45 +99,3 @@ try {
 }
 
 
-// Beispielpunkte auf dem Stadtplan links: erscheinen nacheinander (alle 3,5 s), die letzten drei bleiben,
-// der neueste trägt das Schild; ein Klick öffnet die Hausansicht. Bei „Bewegung reduzieren“ stehen alle
-// Punkte mit Schild. Positionen werden bei Größenänderung neu gerechnet (object-fit: cover, ankerX).
-async function beispieleStarten() {
-  const seite = document.getElementById("planseite"), box = document.getElementById("beispiele");
-  const liste = await lader.startseite();
-  if (!liste || !liste.length) return;
-  const els = liste.map((b) => {
-    const p = document.createElement("div"); p.className = "punkt";
-    const s = document.createElement("a"); s.className = "schild";
-    s.href = "karte.html?" + schreibeZustand({ ...STANDARD, id: `${b.id}.${b.e}`, z: 17, c: [b.lon, b.lat] });
-    s.innerHTML = `<b>${esc(b.titel)}</b><small>${esc(b.untertitel)}</small>`;
-    box.append(p, s);
-    return { b, p, s };
-  });
-  const lege = () => {
-    const w = seite.clientWidth, h = seite.clientHeight;
-    for (const { b, p, s } of els) {
-      const l = punktLage(b.lon, b.lat, STARTPLAN, w, h);
-      p.hidden = s.hidden = !l;
-      if (!l) continue;
-      p.style.left = s.style.left = l.x + "%"; p.style.top = s.style.top = l.y + "%";
-      s.classList.toggle("links", l.x > 60);   // Schild nach links klappen, wenn rechts kein Platz ist
-    }
-  };
-  lege();
-  new ResizeObserver(lege).observe(seite);
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (still) { els.forEach(({ p, s }) => { p.classList.add("an"); s.classList.add("an"); }); return; }
-  let i = 0;
-  const schritt = () => {
-    els.forEach(({ p, s }) => { p.classList.remove("an"); s.classList.remove("an"); });
-    for (let k = 0; k < 3; k++) {
-      const { p, s } = els[(i - k + els.length) % els.length];
-      p.classList.add("an"); if (k === 0) s.classList.add("an");
-    }
-    i = (i + 1) % els.length;
-  };
-  schritt();
-  setInterval(schritt, 3500);
-}
-beispieleStarten().catch((fehler) => console.error("Startseite: Beispielpunkte", fehler));

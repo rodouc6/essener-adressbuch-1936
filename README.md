@@ -209,7 +209,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
 | `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
 | `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` mit `status_1936`, `aktiv_1936`, Artikel-/Listenjahren, `jahre_widerspruch`, `plan_1935` |
-| `startseite.json` | Beispielpunkte der Startseite aus `kuratierung/startseite_beispiele.csv` (adress_id, eintrag_id; nur hausgenau) mit Titel, Zeile und Koordinaten; die Startseite legt sie über den festen Planausschnitt `site/bilder/startplan-1935-*.{webp,jpg}` (Box in `STARTPLAN`, `site/js/konfig.js`) |
+| `startseite.json` | Beispielpunkte aus `kuratierung/startseite_beispiele.csv` (adress_id, eintrag_id; nur hausgenau) mit Titel, Zeile und Koordinaten — derzeit von der Startseite nicht genutzt (Entscheidung 2026-09-21: ruhiger, abgedunkelter Planhintergrund `site/bilder/startplan-1935-*.{webp,jpg}` ohne Punkte) |
 | `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
