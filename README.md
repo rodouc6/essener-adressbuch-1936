@@ -128,6 +128,34 @@ Entscheidungen zu einzelnen Straßen: [`docs/entscheidungen_strassen.md`](docs/e
 `build/strassen_vorschlaege.csv` ist die Arbeitsliste für die Kuratierung: alle offenen und
 mehrdeutigen Paare mit unscharfen Kandidaten, nach Zeilenzahl sortiert.
 
+#### Zechen (`kuratierung/zechen.csv`)
+
+Ausgangsbasis ist die Wikipedia-„Liste von Bergwerken in Essen“ (`werkzeuge/zechen_wikipedia.py`, Koordinaten
+aus den Artikeln). Die Betriebsjahre der Liste sind **nicht belastbar** (Beispiel Fridolin: Liste 1836–1960,
+tatsächlich 1899 zu Eiberg konsolidiert; 1960 ist das Jahr der Straßenbenennung; 105 von 212 Artikeln weichen
+von der Liste ab). Deshalb leitet `werkzeuge/zechen_abgleich.py` den Status 1936 aus drei Quellen ab:
+
+| Spalte | Bedeutung |
+|---|---|
+| `betrieb_von`, `betrieb_bis` | Jahre laut Wikipedia-Liste |
+| `artikel_von`, `artikel_bis` | Jahre laut Infobox des Wikipedia-Artikels (Cache `kuratierung/zechen_artikel.csv`, `--neu` lädt neu) |
+| `plan_1935` | passende Beschriftung im Stadtplan Essen 1935 im Umkreis von 1,5 km (aus `kuratierung/stadtplan_1935_zechen.csv`), leer = nicht beschriftet |
+| `status_1936` | `aktiv` nur, wenn Liste und Artikel beide Betrieb 1936 sagen und der Plan nicht „ehem.“ vermerkt; `stillgelegt`, wenn beide ein Ende vor 1936 nennen; sonst `unklar` |
+| `status_geprueft` | `ja` = von Hand entschieden, wird vom Werkzeug nicht mehr überschrieben (Beleg in `hinweis`) |
+| `hinweis` | Grund für `unklar` (Widerspruch, fehlende Jahre) bzw. Beleg der Handprüfung |
+| `bearbeiter` | `wikipedia` oder `stadtplan-1935` (Koordinaten aus der Planbeschriftung, ±100 m) |
+
+`kuratierung/zechen_pruefung.csv` ist die Arbeitsliste aller `unklar`-Fälle mit den drei Quellenangaben
+nebeneinander (Zechen mit Koordinaten zuerst). Die Karte zeigt nur `status_1936 = aktiv`; das Popup nennt
+die Artikeljahre und weist auf eine abweichende Liste hin. Der Plan beschriftet auch stillgelegte
+Anlagen (teils mit „ehem.“, teils ohne, z. B. Graf Beust, stillgelegt 1929); eine Planbeschriftung
+allein belegt daher keinen Betrieb, eine fehlende Beschriftung spricht aber gegen ihn.
+
+`kuratierung/stadtplan_1935_zechen.csv` — alle Bergbau-Beschriftungen des Plans (125, davon 92 Zechen;
+der Plan reicht bis Gelsenkirchen, Bottrop, Mülheim, Bochum), gelesen von sechs Opus-Agenten auf
+218 Kacheln à 1,5 km (`werkzeuge/stadtplan_kacheln.py`, 1 m/px), mit Kachel-Box (UTM32) und Pixelposition,
+daraus `lat`/`lon`; `geprueft` = Handprüfung der Lesung (noch `nein`).
+
 ## Karte (Teilprojekt 2)
 
 Datenpaket erzeugen (braucht `build/04_geokodiert.csv`, `build/eintraege.csv` und tippecanoe):
@@ -172,7 +200,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `suche/strassen/<ab>.json` | Je Straße (Name\|Art\|Ort) die sortierten Adress-IDs, Scherbe nach den ersten zwei Schlüsselzeichen |
 | `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
 | `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
-| `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` |
+| `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` mit `status_1936`, `aktiv_1936`, Artikel-/Listenjahren, `jahre_widerspruch`, `plan_1935` |
 | `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |

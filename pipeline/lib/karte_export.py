@@ -247,21 +247,28 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
 
 
 def zechen_geojson(zeilen: list[dict]) -> dict:
-    """`aktiv_1936` ist nur True, wenn BEIDE Betriebsjahre bekannt sind und 1936 dazwischen liegt
-    (Precision first) — fehlt eines, `jahre_unbekannt=True` statt einer geratenen Aktivität."""
+    """`aktiv_1936` kommt aus dem kuratierten `status_1936` (werkzeuge/zechen_abgleich.py: Wikipedia-Liste,
+    Artikel-Infobox und Stadtplan 1935 müssen übereinstimmen); „unklar“ und „stillgelegt“ sind nicht aktiv.
+    Betriebsjahre: die des Artikels, ersatzweise die der Liste; `jahre_widerspruch`, wenn beide bekannt
+    sind und abweichen; `jahre_unbekannt`, wenn keine Quelle beide Jahre nennt (Precision first)."""
     features = []
     for z in zeilen:
         if not z.get("lat") or not z.get("lon"):
             continue
-        von_roh, bis_roh = z.get("betrieb_von") or "", z.get("betrieb_bis") or ""
-        jahre_unbekannt = not von_roh or not bis_roh
-        aktiv_1936 = bool(not jahre_unbekannt and int(von_roh) <= 1936 <= int(bis_roh))
+        liste = (z.get("betrieb_von") or "", z.get("betrieb_bis") or "")
+        artikel = (z.get("artikel_von") or "", z.get("artikel_bis") or "")
+        von, bis = artikel if all(artikel) else liste
+        jahre_unbekannt = not von or not bis
+        jahre_widerspruch = all(artikel) and all(liste) and artikel != liste
         features.append({"type": "Feature",
                          "geometry": {"type": "Point", "coordinates": [float(z["lon"]), float(z["lat"])]},
                          "properties": dict(name=z["name"], stadtteil=z.get("stadtteil", ""),
-                                            betrieb_von=z.get("betrieb_von", ""), betrieb_bis=z.get("betrieb_bis", ""),
-                                            quelle=z.get("quelle", ""), aktiv_1936=aktiv_1936,
-                                            jahre_unbekannt=jahre_unbekannt)})
+                                            betrieb_von=von, betrieb_bis=bis,
+                                            liste_von=liste[0], liste_bis=liste[1],
+                                            plan_1935=z.get("plan_1935", ""),
+                                            quelle=z.get("quelle", ""), status_1936=z.get("status_1936", "unklar"),
+                                            aktiv_1936=z.get("status_1936") == "aktiv",
+                                            jahre_unbekannt=jahre_unbekannt, jahre_widerspruch=jahre_widerspruch)})
     return {"type": "FeatureCollection", "features": features}
 
 

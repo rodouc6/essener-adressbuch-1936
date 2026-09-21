@@ -180,15 +180,21 @@ def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():
     g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
     assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt", "Zeche Jahre Unbekannt"]
     p = g["features"][0]["properties"]
-    assert p["aktiv_1936"] is True and p["jahre_unbekannt"] is False
-    assert g["features"][1]["properties"]["aktiv_1936"] is False and g["features"][1]["properties"]["jahre_unbekannt"] is False
+    assert p["aktiv_1936"] is True and p["status_1936"] == "aktiv" and p["jahre_unbekannt"] is False
+    # Betriebsjahre aus dem Artikel; die abweichende Liste bleibt als Widerspruch sichtbar
+    assert (p["betrieb_von"], p["betrieb_bis"]) == ("1851", "1986") and p["jahre_widerspruch"] is True
+    assert p["liste_von"] == "1847" and p["plan_1935"] == "Zeche Zollverein"
+    assert g["features"][1]["properties"]["aktiv_1936"] is False and g["features"][1]["properties"]["jahre_widerspruch"] is False
     assert g["features"][0]["geometry"]["coordinates"] == [7.0447, 51.4861]
 
 
-def test_zechen_geojson_fehlende_jahre_zaehlen_nicht_als_aktiv():
+def test_zechen_geojson_status_unklar_zaehlt_nicht_als_aktiv():
     g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
     p = next(f["properties"] for f in g["features"] if f["properties"]["name"] == "Zeche Jahre Unbekannt")
-    assert p["aktiv_1936"] is False and p["jahre_unbekannt"] is True
+    assert p["aktiv_1936"] is False and p["status_1936"] == "unklar" and p["jahre_unbekannt"] is True
+    # ohne status_1936-Spalte (alte Tabelle) ist nichts aktiv — kein Rückfall auf die Listenjahre
+    g2 = zechen_geojson([dict(name="X", lat="51.4", lon="7.0", betrieb_von="1900", betrieb_bis="1950")])
+    assert g2["features"][0]["properties"]["aktiv_1936"] is False
 
 
 def test_tippecanoe_befehl():

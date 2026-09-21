@@ -1,0 +1,126 @@
+text,art,sicher,lat,lon,kachel_bbox_utm32,px_x,px_y,lesung,geprueft
+Bergfiskalischer Hafen,hinweis,nein,51.50395,6.96981,"358678,5706368,360178,5707868",420,45,Claude Opus (Agent) 2026-09-21,nein
+Dampfsägewerk der Zeche Graf Beust,hinweis,ja,51.4674,7.02795,"361678,5703368,363178,5704868",1345,1220,Claude Opus (Agent) 2026-09-21,nein
+Hafen Christian Levin,hinweis,ja,51.49827,6.94291,"357178,5706368,358678,5707868",35,625,Claude Opus (Agent) 2026-09-21,nein
+Hafen Köln Neuessener Bergwerksverein,hinweis,ja,51.50564,6.98047,"358678,5707868,360178,5709368",1165,1378,Claude Opus (Agent) 2026-09-21,nein
+Hafen der Gelsenk. Bergwerks-Aktien-Gesellschaft,hinweis,ja,51.54403,7.12148,"369178,5710868,370678,5712368",560,370,Claude Opus (Agent) 2026-09-21,nein
+Hafen der Gewerkschaft Graf Bismarck,hinweis,ja,51.54442,7.09544,"367678,5710868,369178,5712368",255,280,Claude Opus (Agent) 2026-09-21,nein
+Hafen der Zeche Mathias Stinnes,hinweis,ja,51.51177,6.99663,"360178,5707868,361678,5709368",805,727,Claude Opus (Agent) 2026-09-21,nein
+Hafen der Zeche Wilh. Vikto[ria],hinweis,ja,51.52287,7.03788,"363178,5709368,364678,5710868",700,1070,Claude Opus (Agent) 2026-09-21,nein
+Hugo Hafen,hinweis,ja,51.54147,7.07905,"366178,5710868,367678,5712368",610,578,Claude Opus (Agent) 2026-09-21,nein
+Seilbahn der Zeche Gottfr. Wilh.,hinweis,ja,51.42071,7.04283,"363178,5697368,364678,5698868",740,440,Claude Opus (Agent) 2026-09-21,nein
+Wilhelmine,hinweis,nein,51.51873,7.04815,"363178,5707868,364678,5709368",1400,50,Claude Opus (Agent) 2026-09-21,nein
+[Haf]en der Ze[che],hinweis,nein,51.5191,7.02723,"361678,5709368,363178,5710868",1450,1470,Claude Opus (Agent) 2026-09-21,nein
+Kokerei,kokerei,nein,51.48727,7.00364,"360178,5704868,361678,5706368",1217,465,Claude Opus (Agent) 2026-09-21,nein
+Kokerei,kokerei,ja,51.48823,7.04329,"363178,5704868,364678,5706368",972,432,Claude Opus (Agent) 2026-09-21,nein
+Kokerei,kokerei,ja,51.5217,7.0295,"363178,5709368,364678,5710868",115,1185,Claude Opus (Agent) 2026-09-21,nein
+Zentralkokerei,kokerei,ja,51.5196,6.97078,"358678,5709368,360178,5710868",535,1307,Claude Opus (Agent) 2026-09-21,nein
+Altes Schachtgeb.,schacht,ja,51.39807,7.02945,"361678,5695868,363178,5697368",1242,1432,Claude Opus (Agent) 2026-09-21,nein
+Bismarck Sch.,schacht,ja,51.49109,7.07339,"366178,5704868,367678,5706368",70,170,Claude Opus (Agent) 2026-09-21,nein
+Jakobi-Schächte,schacht,ja,51.52657,6.8916,"352678,5709368,354178,5710868",1065,377,Claude Opus (Agent) 2026-09-21,nein
+Luftsch.,schacht,ja,51.48398,7.10814,"367678,5704868,369178,5706368",962,1023,Claude Opus (Agent) 2026-09-21,nein
+Luftschacht,schacht,ja,51.37892,7.08645,"366178,5692868,367678,5694368",651,667,Claude Opus (Agent) 2026-09-21,nein
+Luftschacht,schacht,ja,51.41086,7.06296,"364678,5695868,366178,5697368",610,72,Claude Opus (Agent) 2026-09-21,nein
+Luftschacht,schacht,ja,51.47463,6.9066,"354178,5703368,355678,5704868",440,182,Claude Opus (Agent) 2026-09-21,nein
+Luftschacht,schacht,ja,51.49091,6.94642,"357178,5706368,358678,5707868",256,1450,Claude Opus (Agent) 2026-09-21,nein
+Sch. 12,schacht,nein,51.48667,7.04466,"363178,5704868,364678,5706368",1063,608,Claude Opus (Agent) 2026-09-21,nein
+Schacht Barbara,schacht,ja,51.47912,6.99497,"360178,5704868,361678,5706368",590,1355,Claude Opus (Agent) 2026-09-21,nein
+Schacht Carnal,schacht,ja,51.45347,6.8998,"352678,5701868,354178,5703368",1400,1022,Claude Opus (Agent) 2026-09-21,nein
+Schacht Katharina,schacht,ja,51.45775,7.05565,"364678,5701868,366178,5703368",240,845,Claude Opus (Agent) 2026-09-21,nein
+Schacht VI u. VII,schacht,ja,51.53375,6.93518,"355678,5710868,357178,5712368",1110,1165,Claude Opus (Agent) 2026-09-21,nein
+Spülschacht IV,schacht,ja,51.46115,7.06817,"364678,5701868,366178,5703368",1120,490,Claude Opus (Agent) 2026-09-21,nein
+Wetterschacht,schacht,ja,51.47971,7.09777,"367678,5704868,369178,5706368",230,1480,Claude Opus (Agent) 2026-09-21,nein
+...che ...in-Elisabeth (am linken Rand abgeschnitten),zeche,nein,51.47145,7.07407,"366178,5703368,367678,5704868",60,855,Claude Opus (Agent) 2026-09-21,nein
+Z.Altendorf-N,zeche,ja,51.4219,7.1305,"369178,5697368,370678,5698868",838,466,Claude Opus (Agent) 2026-09-21,nein
+Z.Catharine,zeche,ja,51.41359,7.10778,"367678,5697368,369178,5698868",735,1350,Claude Opus (Agent) 2026-09-21,nein
+Z.Charlotte,zeche,ja,51.42253,7.0969,"367678,5697368,369178,5698868",4,336,Claude Opus (Agent) 2026-09-21,nein
+Z.Mühlh.Glück,zeche,ja,51.42194,7.11369,"367678,5697368,369178,5698868",1170,432,Claude Opus (Agent) 2026-09-21,nein
+Z.Neuglück,zeche,ja,51.4123,7.14553,"370678,5695868,372178,5697368",356,60,Claude Opus (Agent) 2026-09-21,nein
+Z.Steingatt,zeche,ja,51.41035,7.10183,"367678,5695868,369178,5697368",312,200,Claude Opus (Agent) 2026-09-21,nein
+Ze... König... (am rechten Rand abgeschnitten),zeche,nein,51.47134,7.07292,"364678,5703368,366178,5704868",1480,865,Claude Opus (Agent) 2026-09-21,nein
+Zeche (Name am rechten Rand abgeschnitten; Fortsetzung in k_09_02),zeche,ja,51.45884,6.92186,"354178,5701868,355678,5703368",1450,468,Claude Opus (Agent) 2026-09-21,nein
+Zeche Adler,zeche,ja,51.38069,7.08845,"366178,5692868,367678,5694368",795,474,Claude Opus (Agent) 2026-09-21,nein
+Zeche Alma,zeche,ja,51.50744,7.11939,"369178,5707868,370678,5709368",310,1435,Claude Opus (Agent) 2026-09-21,nein
+Zeche Altendorf,zeche,ja,51.41615,7.13555,"369178,5697368,370678,5698868",1173,1115,Claude Opus (Agent) 2026-09-21,nein
+Zeche Anna,zeche,ja,51.48737,6.99619,"360178,5704868,361678,5706368",700,440,Claude Opus (Agent) 2026-09-21,nein
+Zeche Arenberg Fortsetzung,zeche,ja,51.53295,6.95908,"357178,5710868,358678,5712368",1265,1300,Claude Opus (Agent) 2026-09-21,nein
+Zeche Bonifacius,zeche,ja,51.47484,7.08329,"366178,5703368,367678,5704868",710,495,Claude Opus (Agent) 2026-09-21,nein
+Zeche Bonifacius,zeche,ja,51.4677,7.08927,"366178,5703368,367678,5704868",1105,1300,Claude Opus (Agent) 2026-09-21,nein
+Zeche Carolus Magnus,zeche,ja,51.48324,6.97318,"358678,5704868,360178,5706368",590,855,Claude Opus (Agent) 2026-09-21,nein
+Zeche Centrum,zeche,ja,51.4649,7.10278,"367678,5701868,369178,5703368",535,135,Claude Opus (Agent) 2026-09-21,nein
+Zeche Christ. Levin,zeche,ja,51.49702,6.94347,"357178,5706368,358678,5707868",70,765,Claude Opus (Agent) 2026-09-21,nein
+Zeche Consolidation,zeche,ja,51.5115,7.07966,"366178,5707868,367678,5709368",565,912,Claude Opus (Agent) 2026-09-21,nein
+Zeche Consolidation,zeche,ja,51.52248,7.08143,"366178,5709368,367678,5710868",720,1194,Claude Opus (Agent) 2026-09-21,nein
+Zeche Consolidation,zeche,ja,51.52965,7.11126,"367678,5709368,369178,5710868",1310,450,Claude Opus (Agent) 2026-09-21,nein
+Zeche Dahlbusch,zeche,ja,51.48949,7.08591,"366178,5704868,367678,5706368",935,370,Claude Opus (Agent) 2026-09-21,nein
+Zeche Dahlbusch,zeche,ja,51.50031,7.08481,"366178,5706368,367678,5707868",890,665,Claude Opus (Agent) 2026-09-21,nein
+Zeche Dahlbusch,zeche,ja,51.49425,7.08521,"366178,5706368,367678,5707868",900,1340,Claude Opus (Agent) 2026-09-21,nein
+Zeche Eintracht,zeche,ja,51.44982,7.10736,"367678,5700368,369178,5701868",810,320,Claude Opus (Agent) 2026-09-21,nein
+Zeche Emscher,zeche,ja,51.49765,6.97979,"358678,5706368,360178,5707868",1093,765,Claude Opus (Agent) 2026-09-21,nein
+Zeche Emscher,zeche,ja,51.49562,6.99496,"360178,5706368,361678,5707868",640,1020,Claude Opus (Agent) 2026-09-21,nein
+Zeche Friedrich Ernes[tine] (rechts abgeschnitten),zeche,ja,51.47285,7.04996,"363178,5703368,364678,5704868",1390,655,Claude Opus (Agent) 2026-09-21,nein
+Zeche Fröhliche Morgens[onne] (rechts abgeschnitten),zeche,ja,51.46858,7.13553,"369178,5703368,370678,5704868",1320,1285,Claude Opus (Agent) 2026-09-21,nein
+Zeche Gottfr. Wilh.,zeche,ja,51.42815,7.04967,"363178,5698868,364678,5700368",1237,1125,Claude Opus (Agent) 2026-09-21,nein
+Zeche Gottfried Wilhelm,zeche,ja,51.4156,7.03859,"363178,5697368,364678,5698868",430,1000,Claude Opus (Agent) 2026-09-21,nein
+Zeche Graf Beust,zeche,ja,51.45994,7.02575,"361678,5701868,363178,5703368",1170,545,Claude Opus (Agent) 2026-09-21,nein
+Zeche Graf Bismarck,zeche,ja,51.54015,7.08761,"366178,5710868,367678,5712368",1200,740,Claude Opus (Agent) 2026-09-21,nein
+Zeche Hagenbeck,zeche,ja,51.45809,6.96969,"358678,5701868,360178,5703368",270,645,Claude Opus (Agent) 2026-09-21,nein
+Zeche Hagenbeck (kursive Beschriftung an der Bahnanlage),zeche,ja,51.45697,6.96873,"358678,5701868,360178,5703368",200,767,Claude Opus (Agent) 2026-09-21,nein
+Zeche Heinrich,zeche,ja,51.41738,7.07659,"366178,5697368,367678,5698868",77,872,Claude Opus (Agent) 2026-09-21,nein
+Zeche Helene,zeche,ja,51.48226,7.01852,"361678,5704868,363178,5706368",735,1050,Claude Opus (Agent) 2026-09-21,nein
+Zeche Helene u. Amalie,zeche,ja,51.4674,6.98533,"358678,5703368,360178,5704868",1385,1140,Claude Opus (Agent) 2026-09-21,nein
+Zeche Herkules,zeche,ja,51.45758,7.02413,"361678,5701868,363178,5703368",1050,805,Claude Opus (Agent) 2026-09-21,nein
+Zeche Herkules,zeche,ja,51.45638,7.06024,"364678,5701868,366178,5703368",555,1005,Claude Opus (Agent) 2026-09-21,nein
+Zeche Hibernia,zeche,ja,51.50523,7.09563,"367678,5706368,369178,5707868",155,138,Claude Opus (Agent) 2026-09-21,nein
+Zeche Holland,zeche,ja,51.49109,7.12571,"369178,5704868,370678,5706368",702,264,Claude Opus (Agent) 2026-09-21,nein
+Zeche Holland,zeche,ja,51.48458,7.12584,"369178,5704868,370678,5706368",693,988,Claude Opus (Agent) 2026-09-21,nein
+Zeche Hugo,zeche,ja,51.54495,7.05308,"364678,5710868,366178,5712368",320,143,Claude Opus (Agent) 2026-09-21,nein
+Zeche Humboldt,zeche,ja,51.43877,6.95332,"357178,5700368,358678,5701868",573,1261,Claude Opus (Agent) 2026-09-21,nein
+Zeche Karl,zeche,ja,51.49563,7.01283,"361678,5706368,363178,5707868",380,1053,Claude Opus (Agent) 2026-09-21,nein
+Zeche Karl Funke,zeche,ja,51.40514,7.04896,"363178,5695868,364678,5697368",1120,682,Claude Opus (Agent) 2026-09-21,nein
+Zeche Königin Elisabeth,zeche,ja,51.4633,7.0354,"363178,5701868,364678,5703368",350,190,Claude Opus (Agent) 2026-09-21,nein
+Zeche Königin-Elisabeth,zeche,ja,51.46609,7.05745,"364678,5703368,366178,5704868",390,1420,Claude Opus (Agent) 2026-09-21,nein
+Zeche Langenbrahm,zeche,ja,51.42112,7.0045,"360178,5697368,361678,5698868",1076,322,Claude Opus (Agent) 2026-09-21,nein
+Zeche Langenbrahm II,zeche,ja,51.429,7.04459,"363178,5698868,364678,5700368",887,1021,Claude Opus (Agent) 2026-09-21,nein
+Zeche Ludwig,zeche,ja,51.43338,7.03678,"363178,5698868,364678,5700368",357,520,Claude Opus (Agent) 2026-09-21,nein
+Zeche Math. Stinnes,zeche,ja,51.52703,7.00721,"361678,5709368,363178,5710868",85,550,Claude Opus (Agent) 2026-09-21,nein
+Zeche Math. Stinnes,zeche,ja,51.54117,7.00277,"360178,5710868,361678,5712368",1320,470,Claude Opus (Agent) 2026-09-21,nein
+Zeche Neuessen,zeche,ja,51.50332,7.00896,"361678,5706368,363178,5707868",135,190,Claude Opus (Agent) 2026-09-21,nein
+Zeche Neuessen,zeche,ja,51.51046,7.01081,"361678,5707868,363178,5709368",285,900,Claude Opus (Agent) 2026-09-21,nein
+Zeche Neuköln,zeche,ja,51.48277,6.9565,"357178,5704868,358678,5706368",930,875,Claude Opus (Agent) 2026-09-21,nein
+Zeche Neuwesel,zeche,ja,51.47034,6.93668,"355678,5703368,357178,5704868",1015,718,Claude Opus (Agent) 2026-09-21,nein
+Zeche Nordstern,zeche,ja,51.52787,7.03031,"363178,5709368,364678,5710868",190,500,Claude Opus (Agent) 2026-09-21,nein
+Zeche Nordstern,zeche,ja,51.53841,7.03952,"363178,5710868,364678,5712368",860,845,Claude Opus (Agent) 2026-09-21,nein
+Zeche Pluto,zeche,ja,51.53211,7.14,"370678,5709368,372178,5710868",310,228,Claude Opus (Agent) 2026-09-21,nein
+Zeche Prinz Friedr.,zeche,nein,51.39042,7.0769,"366178,5694368,367678,5695868",20,870,Claude Opus (Agent) 2026-09-21,nein
+Zeche Prinz Wilhelm,zeche,ja,51.40395,7.08727,"366178,5695868,367678,5697368",781,885,Claude Opus (Agent) 2026-09-21,nein
+Zeche Prosper,zeche,ja,51.50008,6.93836,"355678,5706368,357178,5707868",1225,415,Claude Opus (Agent) 2026-09-21,nein
+Zeche Prosper,zeche,ja,51.51898,6.96237,"357178,5709368,358678,5710868",1450,1360,Claude Opus (Agent) 2026-09-21,nein
+Zeche Prosper,zeche,ja,51.53419,6.93501,"355678,5710868,357178,5712368",1100,1115,Claude Opus (Agent) 2026-09-21,nein
+Zeche Pörtingssiepen,zeche,ja,51.39604,7.04216,"363178,5694368,364678,5695868",620,182,Claude Opus (Agent) 2026-09-21,nein
+Zeche Rhein-Elbe,zeche,ja,51.49507,7.10794,"367678,5706368,369178,5707868",980,1290,Claude Opus (Agent) 2026-09-21,nein
+Zeche Rhein-Elbe,zeche,ja,51.50371,7.13232,"369178,5706368,370678,5707868",1197,372,Claude Opus (Agent) 2026-09-21,nein
+Zeche Rosenblumendelle,zeche,ja,51.44251,6.94445,"355678,5700368,357178,5701868",1468,828,Claude Opus (Agent) 2026-09-21,nein
+Zeche Sälzer u. Neuack,zeche,ja,51.45865,6.99111,"360178,5701868,361678,5703368",260,623,Claude Opus (Agent) 2026-09-21,nein
+Zeche Unser Fritz,zeche,ja,51.53952,7.13227,"369178,5710868,370678,5712368",1295,890,Claude Opus (Agent) 2026-09-21,nein
+Zeche Vereinigte Welheim,zeche,ja,51.53481,6.98099,"358678,5710868,360178,5712368",1290,1135,Claude Opus (Agent) 2026-09-21,nein
+Zeche Victoria,zeche,ja,51.38326,7.11323,"367678,5692868,369178,5694368",1027,232,Claude Opus (Agent) 2026-09-21,nein
+Zeche Victoria Mathias,zeche,ja,51.46577,7.01118,"361678,5703368,363178,5704868",175,1370,Claude Opus (Agent) 2026-09-21,nein
+Zeche Viktoria,zeche,ja,51.5189,7.05037,"364678,5707868,366178,5709368",55,35,Claude Opus (Agent) 2026-09-21,nein
+Zeche Vondern,zeche,ja,51.49774,6.91066,"354178,5706368,355678,5707868",795,620,Claude Opus (Agent) 2026-09-21,nein
+Zeche Wiesche,zeche,ja,51.43745,6.92007,"354178,5700368,355678,5701868",1258,1343,Claude Opus (Agent) 2026-09-21,nein
+Zeche Wilhelmine Vi,zeche,nein,51.51833,7.07,"364678,5707868,366178,5709368",1415,135,Claude Opus (Agent) 2026-09-21,nein
+Zeche Wolfsbank,zeche,ja,51.47249,6.95732,"357178,5703368,358678,5704868",955,520,Claude Opus (Agent) 2026-09-21,nein
+Zeche Zollverein,zeche,ja,51.49125,7.04269,"363178,5704868,364678,5706368",940,95,Claude Opus (Agent) 2026-09-21,nein
+Zeche Zollverein,zeche,ja,51.47923,7.04129,"363178,5704868,364678,5706368",807,1430,Claude Opus (Agent) 2026-09-21,nein
+Zeche Zollverein,zeche,ja,51.49141,7.06293,"364678,5704868,366178,5706368",845,115,Claude Opus (Agent) 2026-09-21,nein
+Zeche Zollverein,zeche,ja,51.50449,7.05178,"364678,5706368,366178,5707868",110,140,Claude Opus (Agent) 2026-09-21,nein
+[Z]eche Nordstern,zeche,ja,51.52012,7.02935,"363178,5709368,364678,5710868",100,1360,Claude Opus (Agent) 2026-09-21,nein
+"e Kronprinz (Fortsetzung von ""Zeche"" aus k_09_01)",zeche,ja,51.45888,6.92416,"355678,5701868,357178,5703368",110,468,Claude Opus (Agent) 2026-09-21,nein
+ehem. Zeche Kaiserin Augusta,zeche,ja,51.38405,7.06409,"364678,5692868,366178,5694368",610,55,Claude Opus (Agent) 2026-09-21,nein
+ehem. Zeche Paul u. Aline,zeche,ja,51.38599,7.03188,"361678,5694368,363178,5695868",1375,1280,Claude Opus (Agent) 2026-09-21,nein
+ehem. Zeche Pauline,zeche,ja,51.37487,6.9979,"360178,5692868,361678,5694368",477,952,Claude Opus (Agent) 2026-09-21,nein
+ehem. Zeche Prinz Wilhelm,zeche,ja,51.34524,7.07042,"364678,5689868,366178,5691368",937,1382,Claude Opus (Agent) 2026-09-21,nein
+ehem. Zeche Richrath,zeche,ja,51.38887,7.04125,"363178,5694368,364678,5695868",535,977,Claude Opus (Agent) 2026-09-21,nein
+onne (Fortsetzung von Zeche Fröhliche Morgensonne aus k_10_11),zeche,nein,51.46845,7.13863,"370678,5703368,372178,5704868",35,1305,Claude Opus (Agent) 2026-09-21,nein
+tine (Fortsetzung von Zeche Friedrich Ernestine aus k_10_07),zeche,nein,51.47261,7.05192,"364678,5703368,366178,5704868",25,685,Claude Opus (Agent) 2026-09-21,nein

@@ -195,6 +195,11 @@ Ergebnis wird als geprüfte Tabelle `kuratierung/zechen.csv` (Name, Stadtteil, l
 lon, betrieb_von, betrieb_bis, quelle, bearbeiter, datum) versioniert; standardmäßig
 nur Zechen, die 1936 in Betrieb waren.
 
+Nachtrag 2026-09-21: Die Betriebsjahre der Wikipedia-Liste erwiesen sich als unzuverlässig
+(Fridolin). „In Betrieb 1936“ wird deshalb als kuratierter `status_1936` aus drei Quellen
+abgeleitet (Liste, Artikel-Infobox, Beschriftung im Stadtplan 1935; `werkzeuge/zechen_abgleich.py`,
+Details im README); nur bei Übereinstimmung `aktiv`, sonst Prüfliste `kuratierung/zechen_pruefung.csv`.
+
 ## 8. Themen und Merkmale
 
 Merkmale: `pipeline/lib/merkmale.py`, aufgerufen in Stufe 06. Quelle sind Tabellen

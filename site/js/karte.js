@@ -16,6 +16,19 @@ async function ladeIcon(map, name, url, sdf) {
   if (!map.hasImage(name)) map.addImage(name, img, { sdf, pixelRatio: 2 });
 }
 
+// Popup einer Zeche. Betriebsjahre stammen aus dem Wikipedia-Artikel (ersatzweise der Liste); weicht die
+// Liste ab, wird das gesagt statt eine Angabe als sicher zu zeigen. Nur auf de.wikipedia.org verlinken —
+// quelle ist Rohdaten aus der Kuratierung, kein beliebiges Ziel soll unbeaufsichtigt verlinkt werden (I1).
+export function zechePopupHtml(p) {
+  const jahre = p.jahre_unbekannt ? "Betriebsjahre unbekannt" : `in Betrieb ${esc(p.betrieb_von)}–${esc(p.betrieb_bis)}`;
+  const widerspruch = p.jahre_widerspruch
+    ? `<br><small>Wikipedia-Liste abweichend: ${esc(p.liste_von)}–${esc(p.liste_bis)}</small>` : "";
+  const plan = p.plan_1935 ? `<br><small>Stadtplan 1935: „${esc(p.plan_1935)}“</small>` : "";
+  const link = p.quelle && WIKIPEDIA_QUELLE.test(p.quelle)
+    ? `<br><a href="${esc(p.quelle)}" target="_blank" rel="noopener">Wikipedia</a>` : "";
+  return `<b>${esc(p.name)}</b><br>${esc(p.stadtteil || "")}<br>${jahre}${widerspruch}${plan}${link}`;
+}
+
 const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", false] };
 const LEERER_STIL = { version: 8, sources: {}, layers: [] };
 
@@ -128,12 +141,7 @@ export class Karte {
       }
       m.on("click", "zechen", (e) => {
         const p = e.features[0].properties;
-        const jahre = p.jahre_unbekannt ? "Betriebsjahre unbekannt" : `in Betrieb ${esc(p.betrieb_von)}–${esc(p.betrieb_bis)}`;
-        // Nur auf de.wikipedia.org verlinken — quelle ist Rohdaten aus der Kuratierung, kein
-        // beliebiges Ziel soll unbeaufsichtigt verlinkt werden (I1).
-        const link = p.quelle && WIKIPEDIA_QUELLE.test(p.quelle)
-          ? `<br><a href="${esc(p.quelle)}" target="_blank" rel="noopener">Wikipedia</a>` : "";
-        this.zeigePopup(e.lngLat, `<b>${esc(p.name)}</b><br>${esc(p.stadtteil || "")}<br>${jahre}${link}`);
+        this.zeigePopup(e.lngLat, zechePopupHtml(p));
       });
     }
     this.setzeFilter(this.zustand);
