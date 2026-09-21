@@ -151,6 +151,9 @@ die Artikeljahre und weist auf eine abweichende Liste hin. Der Plan beschriftet 
 Anlagen (teils mit „ehem.“, teils ohne, z. B. Graf Beust, stillgelegt 1929); eine Planbeschriftung
 allein belegt daher keinen Betrieb, eine fehlende Beschriftung spricht aber gegen ihn.
 
+Referenzquelle für die Handprüfung: das Historische Portal Essen (Huske-Auszüge je Zeche) und der
+ArcGIS-Dienst `historischerverein/Bergbau`, siehe [`docs/zechen_quellen.md`](docs/zechen_quellen.md).
+
 `kuratierung/stadtplan_1935_zechen.csv` — alle Bergbau-Beschriftungen des Plans (125, davon 92 Zechen;
 der Plan reicht bis Gelsenkirchen, Bottrop, Mülheim, Bochum), gelesen von sechs Opus-Agenten auf
 218 Kacheln à 1,5 km (`werkzeuge/stadtplan_kacheln.py`, 1 m/px), mit Kachel-Box (UTM32) und Pixelposition,
