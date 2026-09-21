@@ -1,4 +1,5 @@
-from pipeline.lib.karte_export import (adress_id, etagen_rang, falte, praefix2, scherbe,
+from pipeline.lib.karte_export import (adress_id, anzeige_adresse, baue_berufsindex, baue_firmenindex,
+                                       baue_namensindex, baue_stadtteile, baue_strassenindex, etagen_rang, falte, praefix2, scherbe,
                                        sortiere_eintraege, baue_scherben, eintrag_kurz, gruppiere, punkt_feature)
 from pipeline.lib.merkmale import Regel
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -86,3 +87,46 @@ def test_eintrag_kurz_und_scherben():
     sch = baue_scherben(adressen)
     aid = adress_id(e)
     assert list(sch) == [aid[:2]] and sch[aid[:2]][aid][0]["name"] == "Sepeur"
+
+
+def _adressen():
+    e = [_v(id="1", lastname="Sepeur", firstname="Wilh.", teil="I"),
+         _v(id="2", lastname="Sepeur", firstname="Anna", teil="I", hausnr="27"),
+         _v(id="3", lastname="Jäger", firstname="M.", teil="III", Firmenname="M. Jäger, Althandlung",
+            **{"Beruf o. ä.": ""}),
+         _v(id="4", lastname="Ost", teil="I", strasse_heute="Bochumer Straße", hausnr="5", stadtteil="Steele",
+            strasse_roh="Bochumer Str.", Vorort="Steele", lat="51.45", lon="7.08", **{"Beruf o. ä.": "Hauer"})]
+    return gruppiere(e, [])
+
+
+def test_namens_und_firmenindex():
+    n = baue_namensindex(_adressen())
+    assert sorted(n) == ["ja", "os", "se"]
+    assert n["se"][0][:5] == ["sepeur anna", "Sepeur", "Anna", "Bergm.", "Lattenkamp 27, Katernberg"]
+    assert n["se"][1][5:] == ["1", adress_id(_v(id="1")), "I"]
+    f = baue_firmenindex(_adressen())
+    assert list(f) == ["mj"] and f["mj"][0][:2] == ["m jaeger althandlung", "M. Jäger, Althandlung"]
+
+
+def test_strassenindex_heute_und_1936():
+    s = baue_strassenindex(_adressen())
+    namen = {(x["name"], x["art"], x["ort"]): x for x in s}
+    assert namen[("Lattenkamp", "heute", "Katernberg")]["zeilen"] == 3
+    assert len(namen[("Lattenkamp", "heute", "Katernberg")]["adressen"]) == 2
+    assert namen[("Grenzstr.", "1936", "Katernberg")]["zeilen"] == 3
+    assert namen[("Bochumer Str.", "1936", "Steele")]["schluessel"] == "bochumer str"
+
+
+def test_berufsindex_und_stadtteile():
+    liste, scherben = baue_berufsindex(_adressen())
+    assert liste[0] == ["bergm", "Bergm.", 2] and ["hauer", "Hauer", 1] in liste
+    assert sorted(scherben["be"]["Bergm."]) == sorted([[adress_id(_v(id="1")), 1], [adress_id(_v(id="2", hausnr="27")), 1]])
+    st = baue_stadtteile(_adressen())
+    assert [x["name"] for x in st] == ["Katernberg", "Steele"] and st[0]["zeilen"] == 3
+    assert st[0]["lat"] == 51.49 and st[1]["lon"] == 7.08
+
+
+def test_anzeige_adresse_stadtplan():
+    a = next(iter(gruppiere([_v(id="1", herkunft="stadtplan_1935", stufe="strasse", strasse_heute="",
+                                strasse_roh="Matthiasstr.", Vorort="")], []).values()))
+    assert anzeige_adresse(a) == "Matthiasstr. 25 (Stadtplan 1935)"

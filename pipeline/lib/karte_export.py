@@ -114,3 +114,85 @@ def baue_scherben(adressen: dict[str, dict]) -> dict[str, dict[str, list[dict]]]
     for aid, a in adressen.items():
         scherben[scherbe(aid)][aid] = [eintrag_kurz(e, e["_merkmale"]) for e in a["eintraege"]]
     return dict(scherben)
+
+
+def anzeige_adresse(a: dict) -> str:
+    """Adresse zur Anzeige: heutige Straße, Nummer, Stadtteil; bei Stadtplan die historische Schreibung."""
+    if a["stufe"] == "stadtplan" or not a["strasse_heute"]:
+        return f"{a['historisch']} (Stadtplan 1935)"
+    nr = a["hausnr"] + (a["hausnr_zusatz"] or "")
+    kopf = f"{a['strasse_heute']} {nr}".strip()
+    return f"{kopf}, {a['stadtteil']}" if a["stadtteil"] else kopf
+
+
+def baue_namensindex(adressen: dict[str, dict]) -> dict[str, list[list]]:
+    """Namenindex: Scherbe (praefix2(Nachname)) → Zeilen mit Schlüssel, Name, Vorname, Beruf, Adresse, IDs."""
+    idx: dict[str, list[list]] = defaultdict(list)
+    for a in adressen.values():
+        anz = anzeige_adresse(a)
+        for e in a["eintraege"]:
+            nach = e.get("lastname", "")
+            if not nach:
+                continue
+            k = falte(f"{nach} {e.get('firstname', '')}")
+            idx[praefix2(nach)].append([k, nach, e.get("firstname", ""), e.get("Beruf o. ä.", ""), anz,
+                                        e["id"], a["id"], e["teil"]])
+    return {s: sorted(z) for s, z in idx.items()}
+
+
+def baue_firmenindex(adressen: dict[str, dict]) -> dict[str, list[list]]:
+    """Firmenindex: Scherbe (praefix2(Firmenname)) → Zeilen mit Schlüssel, Name, Adresse, IDs."""
+    idx: dict[str, list[list]] = defaultdict(list)
+    for a in adressen.values():
+        anz = anzeige_adresse(a)
+        for e in a["eintraege"]:
+            firma = e.get("Firmenname", "")
+            if firma:
+                idx[praefix2(firma)].append([falte(firma), firma, anz, e["id"], a["id"]])
+    return {s: sorted(z) for s, z in idx.items()}
+
+
+def baue_strassenindex(adressen: dict[str, dict]) -> list[dict]:
+    """Straßenindex: je (Name, Art, Ort) ein dict mit Schlüssel, Name, Art, Ort, Zeilenanzahl, Adressen."""
+    gruppen: dict[tuple, dict] = {}
+    for a in adressen.values():
+        n = len(a["eintraege"])
+        ort = a["stadtteil"]
+        paare = [(a["strasse_heute"], "heute", ort)] if a["strasse_heute"] else []
+        roh = a["eintraege"][0].get("strasse_roh", "")
+        vorort = a["eintraege"][0].get("Vorort", "") or ort
+        if roh:
+            paare.append((roh, "1936", vorort))
+        for name, art, o in paare:
+            g = gruppen.setdefault((name, art, o), dict(schluessel=falte(name), name=name, art=art, ort=o,
+                                                        zeilen=0, adressen=[]))
+            g["zeilen"] += n
+            g["adressen"].append(a["id"])
+    return sorted(gruppen.values(), key=lambda g: (g["schluessel"], g["art"], g["ort"]))
+
+
+def baue_berufsindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
+    """Berufsindex: (Liste [Schlüssel, Schreibung, Zeilen], Scherbe → Schreibung → [[Adress-ID, Zähler]])."""
+    zaehler: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            b = e.get("Beruf o. ä.", "")
+            if b:
+                zaehler[b][a["id"]] += 1
+    liste = sorted([[falte(b), b, sum(z.values())] for b, z in zaehler.items()])
+    scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
+    for b, z in zaehler.items():
+        scherben[praefix2(b)][b] = sorted([[aid, n] for aid, n in z.items()])
+    return liste, dict(scherben)
+
+
+def baue_stadtteile(adressen: dict[str, dict]) -> list[dict]:
+    """Stadtteilindex: je Stadtteil ein dict mit Name, Breitengrad (Mittel), Längengrad (Mittel), Zeilenanzahl."""
+    summen: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0, 0])  # lat, lon, adressen, zeilen
+    for a in adressen.values():
+        if not a["stadtteil"]:
+            continue
+        s = summen[a["stadtteil"]]
+        s[0] += a["lat"]; s[1] += a["lon"]; s[2] += 1; s[3] += len(a["eintraege"])
+    return [dict(name=n, lat=round(s[0] / s[2], 5), lon=round(s[1] / s[2], 5), zeilen=s[3])
+            for n, s in sorted(summen.items())]
