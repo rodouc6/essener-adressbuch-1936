@@ -52,7 +52,7 @@ export class Sidebar {
       <label>Stadtteil <select data-filter="stadtteil">${st}</select></label>
       <div class="praez-filter">Präzision ${pr}</div>
       <label>Beruf / Zweig <input type="text" data-filter="beruf" list="berufsliste" value="${esc(z.beruf)}" placeholder="z. B. Bergm."></label>
-      <datalist id="berufsliste">${this.berufe.slice(0, 2000).map((b) => `<option value="${esc(b[1])}">${b[2]}</option>`).join("")}</datalist>
+      <datalist id="berufsliste">${this.berufe.slice(0, 2000).map((b) => `<option value="${esc(b[1])}">${esc(b[2])}</option>`).join("")}</datalist>
       </details>`;
   }
 
@@ -128,7 +128,9 @@ export class Sidebar {
     if (sel) sel.addEventListener("change", () => this.a.onZustand({ stadtteil: sel.value }));
     this.inhalt.querySelectorAll("[data-praez]").forEach((c) => c.addEventListener("change", () => {
       const praez = [...this.inhalt.querySelectorAll("[data-praez]:checked")].map((x) => x.dataset.praez);
-      if (praez.length) this.a.onZustand({ praez });
+      // Mindestens eine Präzisionsstufe muss aktiv bleiben, sonst gäbe es keine Punkte mehr zu
+      // zeigen — das Abwählen der letzten wird zurückgenommen, statt den Zustand kaputtzuschreiben.
+      if (praez.length) this.a.onZustand({ praez }); else c.checked = true;
     }));
     const beruf = this.inhalt.querySelector('[data-filter="beruf"]');
     if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim() }));

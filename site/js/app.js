@@ -59,8 +59,14 @@ async function setzeZustand(patch, push, nurKarte = false) {
   // Die Karte wendet Filter/Plan/Zechen/Treffer/Auswahl in ebenenAufsetzen() selbst wieder an.
   if (alt.karte !== zustand.karte) karte.setzeStil(zustand.karte);
   if (alt.thema !== zustand.thema) await wendeThemaAn();
-  karte.setzeFilter(zustand);
-  karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
+  // Bei einem Stilwechsel legt ebenenAufsetzen() die Ebenen erst neu an (asynchron, nicht
+  // awaitet); ein sofortiger setzeFilter/setzePlan/setzeZechen hier würde noch auf die alten,
+  // gerade abgebauten Layer zielen ("Cannot filter non-existing layer"). Nur anwenden, wenn sich
+  // der Kartenstil in diesem Aufruf nicht geändert hat.
+  if (alt.karte === zustand.karte) {
+    karte.setzeFilter(zustand);
+    karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
+  }
   if (alt.beruf !== zustand.beruf) { auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : null; await sucheAusfuehren(); }
   else zeigeInhalt();
   zeichneSteuerung(); zeichneLegende();
@@ -72,6 +78,7 @@ async function wendeThemaAn() {
   karte.setzeFarbe(t ? t.farbregel : null);
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
+  schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden
 }
 
 function zeigeInhalt() {

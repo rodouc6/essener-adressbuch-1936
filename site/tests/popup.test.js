@@ -28,6 +28,7 @@ test("popupHtml: heutige und historische Adresse, Präzision, Namen ohne Seiten"
 test("popupHtml kompakt zeigt höchstens drei Namen", () => {
   const h = popupHtml(EIG, E, true);
   assert.match(h, /alle 3 im Detail/);
+  assert.equal((h.match(/data-eintrag=/g) || []).length, 3);
 });
 
 test("hausHtml gruppiert nach Teil und verlinkt das Faksimile", () => {

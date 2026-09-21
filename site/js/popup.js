@@ -28,11 +28,11 @@ function nameZeile(e) {
 }
 
 export function popupHtml(eig, eintraege, kompakt) {
-  // Kompakt (Popup) zeigt höchstens drei Zeilen insgesamt: bei mehr als zwei Namen ersetzt der
-  // "alle N im Detail"-Verweis die dritte Zeile, damit die Aufzählung "höchstens drei Namen" hält.
-  const max = kompakt ? 2 : 12;
+  const max = kompakt ? 3 : 12;
   const zeilen = eintraege.slice(0, max).map((e) => `<div class="pname" data-eintrag="${esc(e.id)}">${nameZeile(e)}</div>`);
-  if (eintraege.length > max) zeilen.push(`<div class="pmehr" data-mehr="1">alle ${eintraege.length} im Detail ›</div>`);
+  // Kompakt (Popup) verweist immer auf die Hausansicht — auch bei genau drei Namen, damit „alle
+  // im Detail“ dort landet, wo die vollen Angaben (Beruf, Etage, Quelle) stehen.
+  if (kompakt || eintraege.length > max) zeilen.push(`<div class="pmehr" data-mehr="1">alle ${eintraege.length} im Detail ›</div>`);
   return `<div class="popup-kopf"><b>${esc(heutigeAdresse(eig))}</b>` +
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
