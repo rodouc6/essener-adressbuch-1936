@@ -1,5 +1,6 @@
 from pipeline.lib.karte_export import (adress_id, anzeige_adresse, baue_berufsindex, baue_firmenindex,
-                                       baue_namensindex, baue_stadtteile, baue_strassenindex, etagen_rang, falte, praefix2, scherbe,
+                                       baue_namensindex, baue_stadtteile, baue_strassenindex, baue_strassenscherben,
+                                       etagen_rang, falte, praefix2, scherbe,
                                        sortiere_eintraege, baue_scherben, eintrag_kurz, gruppiere, punkt_feature)
 from pipeline.lib.merkmale import Regel
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -112,9 +113,18 @@ def test_strassenindex_heute_und_1936():
     s = baue_strassenindex(_adressen())
     namen = {(x["name"], x["art"], x["ort"]): x for x in s}
     assert namen[("Lattenkamp", "heute", "Katernberg")]["zeilen"] == 3
-    assert len(namen[("Lattenkamp", "heute", "Katernberg")]["adressen"]) == 2
+    assert namen[("Lattenkamp", "heute", "Katernberg")]["adressen_n"] == 2
     assert namen[("Grenzstr.", "1936", "Katernberg")]["zeilen"] == 3
     assert namen[("Bochumer Str.", "1936", "Steele")]["schluessel"] == "bochumer str"
+    assert all("adressen" not in x for x in s)
+
+
+def test_strassenscherben():
+    sch = baue_strassenscherben(_adressen())
+    lattenkamp = sorted([adress_id(_v(id="1")), adress_id(_v(id="2", hausnr="27"))])
+    grenzstr = sorted([adress_id(_v(id="1")), adress_id(_v(id="2", hausnr="27"))])
+    assert sch["la"]["Lattenkamp|heute|Katernberg"] == lattenkamp
+    assert sch["gr"]["Grenzstr.|1936|Katernberg"] == grenzstr
 
 
 def test_berufsindex_und_stadtteile():
@@ -173,6 +183,7 @@ def test_schreibe_paket(tmp_path):
     assert (tmp_path / "suche" / "namen" / "se.json").exists()
     assert (tmp_path / "suche" / "firmen" / "mj.json").exists()
     assert json.loads((tmp_path / "suche" / "strassen.json").read_text())[0]["name"] in ("Grenzstr.", "Lattenkamp")
+    assert (tmp_path / "suche" / "strassen" / "gr.json").exists()
     assert json.loads((tmp_path / "kennzahlen.json").read_text()) == k
     assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 2
     geo = json.loads((tmp_path / "adressen.geojson").read_text())

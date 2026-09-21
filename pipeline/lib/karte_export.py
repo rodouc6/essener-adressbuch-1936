@@ -155,8 +155,8 @@ def baue_firmenindex(adressen: dict[str, dict]) -> dict[str, list[list]]:
     return {s: sorted(z) for s, z in idx.items()}
 
 
-def baue_strassenindex(adressen: dict[str, dict]) -> list[dict]:
-    """Straßenindex: je (Name, Art, Ort) ein dict mit Schlüssel, Name, Art, Ort, Zeilenanzahl, Adressen."""
+def _strassengruppen(adressen: dict[str, dict]) -> dict[tuple, dict]:
+    """Adressen je (Name, Art, Ort) bündeln (heute + 1936); gemeinsame Grundlage für Index und Scherben."""
     gruppen: dict[tuple, dict] = {}
     for a in adressen.values():
         n = len(a["eintraege"])
@@ -171,7 +171,24 @@ def baue_strassenindex(adressen: dict[str, dict]) -> list[dict]:
                                                         zeilen=0, adressen=[]))
             g["zeilen"] += n
             g["adressen"].append(a["id"])
-    return sorted(gruppen.values(), key=lambda g: (g["schluessel"], g["art"], g["ort"]))
+    return gruppen
+
+
+def baue_strassenindex(adressen: dict[str, dict]) -> list[dict]:
+    """Straßenindex: je (Name, Art, Ort) ein dict mit Schlüssel, Name, Art, Ort, Zeilenanzahl, Adressanzahl."""
+    gruppen = _strassengruppen(adressen)
+    return sorted(({"schluessel": g["schluessel"], "name": g["name"], "art": g["art"], "ort": g["ort"],
+                   "zeilen": g["zeilen"], "adressen_n": len(g["adressen"])} for g in gruppen.values()),
+                 key=lambda g: (g["schluessel"], g["art"], g["ort"]))
+
+
+def baue_strassenscherben(adressen: dict[str, dict]) -> dict[str, dict[str, list[str]]]:
+    """Straßenscherben: Scherbe (praefix2(Name)) → "Name|Art|Ort" → sortierte Liste der Adress-IDs."""
+    gruppen = _strassengruppen(adressen)
+    scherben: dict[str, dict[str, list[str]]] = defaultdict(dict)
+    for g in gruppen.values():
+        scherben[praefix2(g["name"])][f"{g['name']}|{g['art']}|{g['ort']}"] = sorted(g["adressen"])
+    return dict(scherben)
 
 
 def baue_berufsindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
@@ -259,6 +276,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     for name, zeilen in baue_firmenindex(adressen).items():
         _json(ausgabe / "suche" / "firmen" / f"{name}.json", zeilen)
     _json(ausgabe / "suche" / "strassen.json", baue_strassenindex(adressen))
+    for name, inhalt in baue_strassenscherben(adressen).items():
+        _json(ausgabe / "suche" / "strassen" / f"{name}.json", inhalt)
     liste, scherben = baue_berufsindex(adressen)
     _json(ausgabe / "suche" / "berufe.json", liste)
     for name, inhalt in scherben.items():
