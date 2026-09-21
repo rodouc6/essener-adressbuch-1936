@@ -135,7 +135,9 @@ Datenpaket erzeugen (braucht `build/04_geokodiert.csv`, `build/eintraege.csv` un
 python3 pipeline/06_karte_export.py
 ```
 Schreibt nach `site/daten/` (Adresspunkte, Sucheindex, Kennzahlen, Themen). Ergebnis wird
-committet, nicht neu gebaut beim Deploy (Pages baut nicht).
+committet, nicht neu gebaut beim Deploy (Pages baut nicht). Der Workflow für GitHub Pages liegt als
+`docs/pages.yml.beispiel` bereit und wird erst bei der Veröffentlichung nach `.github/workflows/` kopiert
+(Push von Workflow-Dateien braucht ein `gh`-Token mit `workflow`-Scope).
 
 `site/daten/` wiegt insgesamt ≈110 MB (`adressen.pmtiles` 3,5 MB, `haus/` 55 MB, `suche/` 37 MB,
 `adressen/` 18 MB) und wird bei jeder Regenerierung komplett neu committet, damit Pages ohne
