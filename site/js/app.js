@@ -12,6 +12,7 @@ const lader = new Lader();
 let zustand = liesZustand(location.search);
 let ergebnis = null;              // aktuelle Treffermenge
 let auswahl = null;               // { art, ... } der Suche
+let themaAktiv = null;            // aktives Thema mit farbregel und ebenen
 const eigCache = new Map();       // adressId → Punkteigenschaften aus Kacheln
 const mobil = () => matchMedia("(max-width: 899px)").matches;
 
@@ -74,6 +75,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
 
 async function wendeThemaAn() {
   const t = zustand.thema ? await ladeThema(lader, zustand.thema) : null;
+  themaAktiv = t;
   sidebar.zeigeThema(t);
   karte.setzeFarbe(t ? t.farbregel : null);
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
@@ -165,12 +167,29 @@ function zeichneSteuerung() {
 }
 
 function zeichneLegende() {
+  let html = "";
+
+  // Themenlegende, falls ein Thema aktiv ist
+  if (themaAktiv) {
+    const farbe = themaAktiv.farbe;
+    if (farbe.art === "einfach") {
+      html += `<div class="zeile"><span class="punkt" style="background:${farbe.wert}"></span> ${themaAktiv.legende}</div>`;
+    } else if (farbe.art === "skala") {
+      // Kleine Farbgradiente aus den Stufen
+      const farbeStufen = farbe.stufen.map(([_, c]) => c);
+      const gradient = farbeStufen.map((c, i) => `${c} ${(i / (farbeStufen.length - 1)) * 100}%`).join(", ");
+      html += `<div class="zeile"><span class="punkt" style="background:linear-gradient(90deg, ${gradient})"></span> ${themaAktiv.legende}</div>`;
+    }
+  }
+
   const f = zustand.ebene.length === 1 ? FARBEN[zustand.ebene[0]] : FARBEN.neutral;
-  document.getElementById("legende").innerHTML =
+  html +=
     `<div class="zeile"><span class="punkt" style="background:${f}"></span> hausgenau</div>` +
     `<div class="zeile"><span class="punkt ungenau" style="color:${f}"></span> nur straßengenau / Stadtplan 1935</div>` +
     `<div class="zeile"><span class="punkt" style="background:${FARBEN.treffer}"></span> Suchtreffer</div>` +
     `<div class="zeile">Größe = Zahl der Einträge</div>`;
+
+  document.getElementById("legende").innerHTML = html;
 }
 
 async function exportiere() {
