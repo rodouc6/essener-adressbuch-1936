@@ -1,5 +1,5 @@
 """Rauchtests der Seite: python3 -m pytest tests/e2e -q -m e2e (braucht playwright + chromium und site/daten)."""
-import pathlib, socket, subprocess, sys, time, urllib.request, urllib.error
+import pathlib, socket, subprocess, sys, time, urllib.request, urllib.error, urllib.parse
 
 import pytest
 
@@ -119,7 +119,7 @@ def test_thema_besitz_legende_und_hausansicht(basis, browser):
     if not liste:
         pytest.skip("noch kein geprüfter Eigentümer im Datenpaket")
     name = liste[0][1]
-    s.goto(basis + "karte.html?thema=besitz&eigentuemer=" + name)
+    s.goto(basis + "karte.html?thema=besitz&eigentuemer=" + urllib.parse.quote(name, safe=""))
     s.wait_for_selector(".treffer")
     s.locator(".treffer").first.click()
     s.wait_for_selector(".eintrag")
