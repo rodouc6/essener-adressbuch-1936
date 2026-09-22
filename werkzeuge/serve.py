@@ -16,7 +16,8 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
   übergebenen Zeile (Rücknahme einer Sichtung; Zeilen mit Hausnummernbereich nie).
 - POST /kuratierung/eigentuemer.csv — mehrere Zeilen ({"zeilen": [...]}) der Eigentümer-Kuratierung;
   ersetzt nach Schlüssel `schreibweise`, setzt bearbeiter=christos und datum. 400 bei unbekannter
-  Kategorie, leerem eigentuemer, geprueft ∉ {ja, leer} oder unbekannter Schreibweise.
+  Kategorie, leerem eigentuemer, geprueft ∉ {ja, leer}, unbekannter Schreibweise oder geprueft=ja
+  ohne Kategorie.
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 - GET mit Range-Header — Teilstücke für PMTiles (site/daten/adressen.pmtiles).
@@ -119,6 +120,8 @@ def pruefe_eigentuemer(z: dict, bekannt: set[str]) -> str:
         return f"unbekannte Kategorie: {kat}"
     if str(z.get("geprueft", "")).strip() not in ("", "ja"):
         return "geprueft muss ja oder leer sein"
+    if str(z.get("geprueft", "")).strip() == "ja" and not kat:
+        return "geprueft=ja verlangt eine Kategorie"
     return ""
 
 

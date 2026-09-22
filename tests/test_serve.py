@@ -189,6 +189,7 @@ def test_eigentuemer_post_validiert(server):
     assert fehler({**basis, "eigentuemer": " "}) == (400, "eigentuemer ist Pflicht")
     assert fehler({**basis, "geprueft": "vielleicht"}) == (400, "geprueft muss ja oder leer sein")
     assert fehler({**basis, "schreibweise": "Gibt es nicht"}) == (400, "unbekannte Schreibweise: Gibt es nicht")
+    assert fehler({**basis, "kategorie": "", "geprueft": "ja"}) == (400, "geprueft=ja verlangt eine Kategorie")
     with pytest.raises(urllib.error.HTTPError) as e:
         post(url + "/kuratierung/eigentuemer.csv", {"zeile": basis})
     assert e.value.code == 400

@@ -88,11 +88,18 @@ function csvLesen(text) {
   return zeilen.filter((z) => z.length > 1 || z[0]).map((z) => Object.fromEntries(kopf.map((k, i) => [k, z[i] ?? ""])));
 }
 
-const [vText, kText, belege] = await Promise.all([
+const [vText, kText, belege, faksimile] = await Promise.all([
   fetch("../build/eigentuemer_vorschlag.csv").then((r) => { if (!r.ok) throw new Error("build/eigentuemer_vorschlag.csv fehlt — zuerst werkzeuge/eigentuemer_cluster.py ausführen"); return r.text(); }),
   fetch("../kuratierung/eigentuemer.csv").then((r) => { if (!r.ok) throw new Error("kuratierung/eigentuemer.csv fehlt"); return r.text(); }),
   fetch("../build/eigentuemer_belege.json").then((r) => r.ok ? r.json() : {}),
+  fetch("../site/daten/faksimile.json").then((r) => r.ok ? r.json() : {}).catch(() => ({})),
 ]).catch((e) => { zeigeBanner(e.message); throw e; });
+// Wie faksimileUrl() in site/js/popup.js: Seite → Bildnummer (site/daten/faksimile.json); fehlt die
+// Seite (Datei unvollständig oder nicht gebaut), verlinkt der Knopf auf die Werkstartseite der DigiBib.
+function digibibUrl(seite) {
+  const bild = faksimile[seite];
+  return bild ? `${DIGIBIB}${bild}/` : DIGIBIB;
+}
 const m = baueModell(csvLesen(vText), csvLesen(kText));
 let aktiv = null;   // Name des aktiven Eigentümers
 const karte = L.map("karte").setView([51.455, 7.01], 11);
@@ -158,7 +165,7 @@ function zeichneListe(liste) {
   const l = gefiltert(liste);
   document.getElementById("liste").innerHTML = l.map((e) => `<div class="ez${e.name === aktiv ? " aktiv" : ""}${e.geprueft ? " geprueft" : ""}" data-name="${esc(e.name)}">` +
     `<span class="punkt" style="background:${FARBEN[e.kategorie] || "#d1d5db"}"></span><b>${esc(e.name)}</b><small>${e.haeuser} H · ${e.schreibweisen.length} S</small></div>`).join("");
-  const f = fortschritt(m);
+  const f = fortschritt(m, liste);
   document.getElementById("fortschritt").textContent = `${f.geprueft} von ${f.gesamt} geprüft · ${f.haeuserGeprueft.toLocaleString("de-DE")} von ${f.haeuserGesamt.toLocaleString("de-DE")} Häusern`;
 }
 
@@ -170,6 +177,10 @@ function zeichneAktiv(liste) {
   document.getElementById("haeuser").textContent = `${e.haeuser} Häuser · ${e.art === "person" ? "Person" : "Körperschaft"}${e.geprueft ? " · geprüft" : ""}`;
   document.getElementById("hinweis").value = e.schreibweisen[0].hinweis;
   document.getElementById("kats").innerHTML = Object.entries(KATEGORIEN).map(([k, t], i) => `<button data-kat="${k}" aria-pressed="${e.kategorie === k}">${i + 1} ${esc(t)}</button>`).join("");
+  // geprueft=ja ohne Kategorie lehnt der Server ab (F2) — der Knopf ist dann gar nicht erst klickbar.
+  const geprBtn = document.getElementById("geprueft");
+  geprBtn.disabled = !e.geprueft && !e.kategorie;
+  geprBtn.title = geprBtn.disabled ? "Erst eine Kategorie wählen (Taste 1–8)" : "Taste G";
   document.getElementById("schreibweisen").innerHTML = e.art === "person" ? `<small>${esc(e.name)} · ${e.haeuser} Häuser</small>` :
     e.schreibweisen.map((z) => `<div class="sw"><span>${esc(z.schreibweise)}${z.verwaist ? " <small>(verwaist)</small>" : ""}</span><small>${z.anzahl}</small>` +
       (e.schreibweisen.length > 1 ? `<button data-ab="${esc(z.schreibweise)}" title="abspalten">×</button>` : "") + `</div>`).join("");
@@ -178,7 +189,7 @@ function zeichneAktiv(liste) {
   // Belege
   const b = e.schreibweisen.flatMap((z) => (belege[z.schreibweise] || []).map((h) => ({ ...h, sw: z.schreibweise })));
   document.getElementById("belege").innerHTML = `<table><tr><th>Adresse</th><th>Stadtteil</th><th>Verwalter</th><th>Schreibweise</th><th>Seite</th></tr>` +
-    b.slice(0, 400).map((h) => `<tr><td>${esc(h.adresse)}</td><td>${esc(h.stadtteil)}</td><td>${esc(h.verwalter)}</td><td>${esc(h.sw)}</td><td><a href="${DIGIBIB}" target="_blank" rel="noopener">${esc(h.seite)}</a></td></tr>`).join("") +
+    b.slice(0, 400).map((h) => `<tr><td>${esc(h.adresse)}</td><td>${esc(h.stadtteil)}</td><td>${esc(h.verwalter)}</td><td>${esc(h.sw)}</td><td><a href="${digibibUrl(h.seite)}" target="_blank" rel="noopener">${esc(h.seite)}</a></td></tr>`).join("") +
     (b.length > 400 ? `<tr><td colspan="5">… ${b.length - 400} weitere</td></tr>` : "") + `</table>`;
   marker.clearLayers();
   const punkte = b.filter((h) => h.lat != null && h.lon != null);
@@ -195,13 +206,13 @@ function zeichneZusammen(liste) {
   el.innerHTML = l.map((e) => `<div data-ziel="${esc(e.name)}">${esc(e.name)} <small>${e.haeuser} H · ${esc(KATEGORIEN[e.kategorie] || "ohne Kategorie")}</small></div>`).join("");
 }
 
-// eigentuemerListe(m) ist O(Zeilen × Eigentümer) wegen des Vorschlags-Scans — pro Neuzeichnen nur einmal aufrufen.
+// eigentuemerListe(m) einmal pro Interaktion aufrufen und die Liste weiterreichen, statt sie je
+// Aufrufer neu zu berechnen (F1: war vorher ein zweiter/dritter Durchlauf pro Klick).
 function zeichne() { const liste = eigentuemerListe(m); zeichneListe(liste); zeichneAktiv(liste); }
 
 function waehle(name) { aktiv = name; document.getElementById("zusammen").value = ""; zeichne(); }
 
-function naechsterOffener() {
-  const liste = eigentuemerListe(m);
+function naechsterOffener(liste = eigentuemerListe(m)) {
   const l = gefiltert(liste);
   const i = l.findIndex((e) => e.name === aktiv);
   const n = l.slice(i + 1).find((e) => !e.geprueft) || l.find((e) => !e.geprueft);
@@ -215,18 +226,19 @@ document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListene
 document.getElementById("kats").addEventListener("click", (ev) => { const b = ev.target.closest("[data-kat]"); if (b) { speichere(setzeKategorie(m, aktiv, b.dataset.kat)); zeichne(); } });
 document.getElementById("name").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const neu = ev.target.value; const g = benenne(m, aktiv, neu); if (g.length) { aktiv = neu.trim(); speichere(g); zeichne(); } } });
 document.getElementById("hinweis").addEventListener("change", (ev) => speichere(setzeHinweis(m, aktiv, ev.target.value)));
-document.getElementById("geprueft").addEventListener("click", () => { const e = eigentuemerListe(m).find((x) => x.name === aktiv); speichere(setzeGeprueft(m, aktiv, !e.geprueft)); if (!e.geprueft) naechsterOffener(); else zeichne(); });
+document.getElementById("geprueft").addEventListener("click", () => { const liste = eigentuemerListe(m); const e = liste.find((x) => x.name === aktiv); speichere(setzeGeprueft(m, aktiv, !e.geprueft)); if (!e.geprueft) naechsterOffener(liste); else zeichne(); });
 document.getElementById("rueck").addEventListener("click", () => { const z = rueckgaengig(m); if (z) { speichere(z); if (!eigentuemerListe(m).some((e) => e.name === aktiv)) aktiv = z[0]?.eigentuemer || null; zeichne(); } });
 document.getElementById("schreibweisen").addEventListener("click", (ev) => { const b = ev.target.closest("[data-ab]"); if (b) { speichere(abspalten(m, b.dataset.ab)); zeichne(); } });
 document.getElementById("vorschlaege").addEventListener("click", (ev) => { const b = ev.target.closest("[data-plus]"); if (b) { speichere(uebernehmeVorschlag(m, b.dataset.plus, aktiv)); zeichne(); } });
 document.getElementById("zusammen").addEventListener("input", () => zeichneZusammen(eigentuemerListe(m)));
 document.getElementById("zusammen-liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-ziel]"); if (z) { const ziel = z.dataset.ziel; speichere(zusammenfuehren(m, aktiv, ziel)); waehle(ziel); } });
 document.addEventListener("keydown", (ev) => {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;   // Browser-/System-Kürzel (Strg+F, Cmd+R …) unberührt lassen
   if (gestoert) return;
   if (ev.target.matches("input, select, textarea")) return;
   const k = Object.keys(KATEGORIEN)[Number(ev.key) - 1];
   if (k && aktiv) { speichere(setzeKategorie(m, aktiv, k)); zeichne(); }
-  else if (ev.key.toLowerCase() === "g" && aktiv) document.getElementById("geprueft").click();
+  else if (ev.key.toLowerCase() === "g" && aktiv && !document.getElementById("geprueft").disabled) document.getElementById("geprueft").click();
   else if (ev.key.toLowerCase() === "z") document.getElementById("rueck").click();
 });
 

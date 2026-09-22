@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { abspalten, baueModell, benenne, eigentuemerListe, fortschritt, rueckgaengig, setzeGeprueft,
-         setzeKategorie, uebernehmeVorschlag, zumSpeichern, zusammenfuehren } from "../js/eigentuemer_modell.js";
+         setzeHinweis, setzeKategorie, uebernehmeVorschlag, zumSpeichern, zusammenfuehren } from "../js/eigentuemer_modell.js";
 
 const V = [
   { schreibweise: "Fried. Krupp A.G.", art: "koerperschaft", anzahl: "6", cluster_id: "k1", cluster_name: "Fried. Krupp AG", aehnlichkeit: "1.0", vorschlag_fuer: "", pruefpflichtig: "ja" },
@@ -70,6 +70,39 @@ test("rückgängig stellt den vorigen Stand her und liefert die geänderten Zeil
   r = rueckgaengig(m);
   assert.deepEqual(r.map((z) => z.kategorie), ["", ""]);
   assert.equal(rueckgaengig(m), null);
+});
+
+test("eigentuemerListe dedupliziert Vorschläge, wenn eine Gruppe mehrere Schreibweisen mit derselben cluster_id hat (F1)", () => {
+  const m = frisch();
+  // Zweite Schreibweise der Krupp-Gruppe mit derselben cluster_id "k1" wie die vorhandenen —
+  // der Vorschlag "Krupp Stiftung" darf trotzdem nur einmal erscheinen, nicht einmal je Schreibweise.
+  m.zeilen.set("Krupp AG Essen", { schreibweise: "Krupp AG Essen", art: "koerperschaft", eigentuemer: "Fried. Krupp AG", kategorie: "", geprueft: "", hinweis: "", anzahl: 1, cluster_id: "k1", pruefpflichtig: false, verwaist: false });
+  const krupp = eigentuemerListe(m).find((e) => e.name === "Fried. Krupp AG");
+  assert.deepEqual(krupp.vorschlaege.map((v) => v.zeile.schreibweise), ["Krupp Stiftung"]);
+});
+
+test("setzeKategorie/setzeHinweis/setzeGeprueft liefern [] ohne Verlaufseintrag, wenn sich nichts ändert (F9)", () => {
+  const m = frisch();
+  assert.deepEqual(setzeKategorie(m, "Stadt Essen", "stadt_staat"), []);
+  assert.deepEqual(setzeGeprueft(m, "Stadt Essen", true), []);
+  assert.deepEqual(setzeHinweis(m, "Stadt Essen", ""), []);
+  assert.equal(m.verlauf.length, 0);
+  assert.equal(rueckgaengig(m), null);
+});
+
+test("benenne in einen bestehenden Eigentümer führt zusammen statt still umzubenennen (F4)", () => {
+  const m = frisch();
+  setzeGeprueft(m, "Stadt Essen", false);   // damit ein Bestandswechsel sichtbar entprüft
+  setzeKategorie(m, "Stadt Essen", "stadt_staat");
+  setzeGeprueft(m, "Stadt Essen", true);
+  const g = benenne(m, "Krupp Stiftung", "Stadt Essen");
+  assert.deepEqual(g.map((z) => [z.schreibweise, z.eigentuemer, z.kategorie, z.geprueft]).sort(),
+    [["Krupp Stiftung", "Stadt Essen", "stadt_staat", ""], ["Stadt Essen", "Stadt Essen", "stadt_staat", ""]]);
+  const liste = eigentuemerListe(m);
+  assert.equal(liste.find((e) => e.name === "Krupp Stiftung"), undefined);
+  const stadt = liste.find((e) => e.name === "Stadt Essen");
+  assert.equal(stadt.haeuser, 11);
+  assert.equal(stadt.geprueft, false);   // Ziel wurde durch den neuen Bestand entprüft
 });
 
 test("Vorschlag übernehmen bewegt nur die eine Schreibweise", () => {

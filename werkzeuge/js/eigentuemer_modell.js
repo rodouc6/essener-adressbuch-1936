@@ -25,16 +25,29 @@ function gruppen(m) {
   return g;
 }
 
+// War O(Zeilen × Eigentümer): je Eigentümer wurde noch einmal über alle Zeilen gescannt, um dessen
+// Vorschläge zu finden (411 ms auf den echten Daten, 2.714 Zeilen × ~2.100 Eigentümer). Jetzt ein
+// einziger Durchlauf über m.zeilen, der die Vorschläge nach dem cluster_id ihres Ziels bündelt
+// (cluster_id → wartende Zeilen); jeder Eigentümer holt sich anschließend nur die Einträge seiner
+// eigenen cluster_ids (O(Zeilen + Eigentümer)).
 export function eigentuemerListe(m) {
   const g = gruppen(m);
-  const idsVon = new Map([...g].map(([name, zs]) => [name, new Set(zs.map((z) => z.cluster_id))]));
+  const wartendJeZiel = new Map();
+  for (const z of m.zeilen.values()) {
+    const v = m.vorschlag.get(z.schreibweise);
+    if (v && v.vorschlag_fuer) {
+      if (!wartendJeZiel.has(v.vorschlag_fuer)) wartendJeZiel.set(v.vorschlag_fuer, []);
+      wartendJeZiel.get(v.vorschlag_fuer).push({ zeile: z, aehnlichkeit: Number(v.aehnlichkeit) });
+    }
+  }
   const liste = [...g].map(([name, zs]) => {
     zs.sort((a, b) => b.anzahl - a.anzahl || a.schreibweise.localeCompare(b.schreibweise, "de"));
-    const ids = idsVon.get(name);
+    // Mehrere Schreibweisen derselben Gruppe teilen sich oft dieselbe cluster_id (ungetrennter
+    // Automatik-Cluster) — je Ziel-ID nur einmal nachsehen, sonst tauchen Vorschläge doppelt auf.
+    const idsInGruppe = new Set(zs.map((z) => z.cluster_id));
     const vorschlaege = [];
-    for (const z of m.zeilen.values()) {
-      const v = m.vorschlag.get(z.schreibweise);
-      if (z.eigentuemer !== name && v && v.vorschlag_fuer && ids.has(v.vorschlag_fuer)) vorschlaege.push({ zeile: z, aehnlichkeit: Number(v.aehnlichkeit) });
+    for (const id of idsInGruppe) {
+      for (const w of wartendJeZiel.get(id) || []) if (w.zeile.eigentuemer !== name) vorschlaege.push(w);
     }
     vorschlaege.sort((a, b) => b.aehnlichkeit - a.aehnlichkeit || b.zeile.anzahl - a.zeile.anzahl);
     return { name, art: zs[0].art, kategorie: zs[0].kategorie, haeuser: zs.reduce((s, z) => s + z.anzahl, 0), schreibweisen: zs,
@@ -60,15 +73,20 @@ function entpruefe(zs) {
 }
 
 export function setzeKategorie(m, name, kategorie) {
-  merke(m);
   const zs = zeilenVon(m, name);
+  if (zs.every((z) => z.kategorie === kategorie)) return [];
+  merke(m);
   for (const z of zs) z.kategorie = kategorie;
   return zs;
 }
 
+// Zielt der neue Name schon auf einen bestehenden Eigentümer, ist das inhaltlich ein Zusammenführen
+// (mit dessen Kategorie, beide Gruppen entprüft) — nicht ein stilles Umbenennen, das den Bestand des
+// Ziels unverändert „geprüft“ lässt, obwohl er gerade neue Schreibweisen bekommen hat.
 export function benenne(m, alt, neu) {
   neu = neu.trim();
   if (!neu || neu === alt) return [];
+  if (zeilenVon(m, neu).length) return zusammenfuehren(m, alt, neu);
   merke(m);
   const zs = zeilenVon(m, alt);
   for (const z of zs) z.eigentuemer = neu;
@@ -76,15 +94,18 @@ export function benenne(m, alt, neu) {
 }
 
 export function setzeGeprueft(m, name, ja) {
-  merke(m);
+  const wert = ja ? "ja" : "";
   const zs = zeilenVon(m, name);
-  for (const z of zs) z.geprueft = ja ? "ja" : "";
+  if (zs.every((z) => z.geprueft === wert)) return [];
+  merke(m);
+  for (const z of zs) z.geprueft = wert;
   return zs;
 }
 
 export function setzeHinweis(m, name, text) {
-  merke(m);
   const zs = zeilenVon(m, name);
+  if (zs.every((z) => z.hinweis === text)) return [];
+  merke(m);
   for (const z of zs) z.hinweis = text;
   return zs;
 }
@@ -133,8 +154,9 @@ export function rueckgaengig(m) {
   return geaendert;
 }
 
-export function fortschritt(m) {
-  const l = eigentuemerListe(m).filter((e) => e.pruefpflichtig);
+// liste: von eigentuemerListe(m) wiederverwendbar, damit ein Neuzeichnen sie nicht ein zweites Mal berechnet.
+export function fortschritt(m, liste = null) {
+  const l = (liste || eigentuemerListe(m)).filter((e) => e.pruefpflichtig);
   return { geprueft: l.filter((e) => e.geprueft).length, gesamt: l.length,
     haeuserGeprueft: l.filter((e) => e.geprueft).reduce((s, e) => s + e.haeuser, 0), haeuserGesamt: l.reduce((s, e) => s + e.haeuser, 0) };
 }
