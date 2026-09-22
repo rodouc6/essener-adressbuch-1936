@@ -100,6 +100,9 @@ async function setzeZustand(patch, push, nurKarte = false) {
   }
   if (alt.beruf !== zustand.beruf || alt.eigentuemer !== zustand.eigentuemer) {
     auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : zustand.eigentuemer ? { art: "eigentuemer", name: zustand.eigentuemer } : null;
+    // Aus „Größte Eigentümer“ gewählt (sidebar.js) setzt nur den Zustand, nicht das Suchfeld — ohne das
+    // hier nachzuholen bliebe der aktive Filter unsichtbar und „Suche leeren“ hätte nichts zum Leeren.
+    if (zustand.eigentuemer) sidebar.suche.value = zustand.eigentuemer;
     await sucheAusfuehren();
   }
   else await zeigeInhalt();
@@ -267,7 +270,7 @@ async function exportiere() {
 
 // Suchfeld
 let timer = null;
-sidebar.suche.value = zustand.q;
+sidebar.suche.value = zustand.q || zustand.eigentuemer || "";
 sidebar.suche.addEventListener("input", () => {
   clearTimeout(timer);
   document.getElementById("suche-leeren").hidden = !sidebar.suche.value;
@@ -288,7 +291,7 @@ window.addEventListener("popstate", async () => {
     const gespeichert = liesKarteSpeicher();
     if (gespeichert) zustand = { ...zustand, karte: gespeichert };
   }
-  sidebar.suche.value = zustand.q;
+  sidebar.suche.value = zustand.q || zustand.eigentuemer || "";
   await start();
 });
 
