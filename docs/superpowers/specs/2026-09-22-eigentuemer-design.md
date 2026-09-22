@@ -74,7 +74,10 @@ Schreibweise zeigt auf einen anderen Eigentümer). Spalten:
   `status_geprueft` bei `zechen.csv`). Alle anderen Zeilen dürfen bei jedem Lauf neu
   vorgeschlagen werden.
 - `bearbeiter`/`datum` setzt der Server beim Speichern (`christos`, ISO-Datum); die Automatik
-  schreibt `eigentuemer_cluster`.
+  schreibt `eigentuemer_cluster`. **Nachtrag 2026-09-22:** Körperschaften bekommen bei jedem
+  Lauf eine Zeile, auch unterhalb von `--min-haeuser` — nur Personen legt die Automatik erst
+  ab der Prüfpflicht-Untergrenze an; kleinere Personen-Schreibweisen erscheinen also gar nicht
+  in der Datei, statt als „nicht prüfpflichtig“ mitgeführt zu werden.
 
 ### 3.4 `kuratierung/eigentuemer_abkuerzungen.csv` (versioniert)
 
@@ -88,8 +91,11 @@ Aufruf: `python3 werkzeuge/eigentuemer_cluster.py [--min-haeuser 5]`. Liest
 `build/eintraege.csv` (Teil II), schreibt §3.1 und §3.2 und legt in §3.3 fehlende
 Schreibweisen an (Vorschlagswerte, `geprueft` leer); vorhandene Zeilen mit `geprueft=ja`
 bleiben unverändert, ungeprüfte werden auf den neuen Vorschlag gesetzt, wenn sich dieser
-geändert hat. Schreibweisen, die in der Quelle nicht mehr vorkommen, bleiben stehen und
-werden im Werkzeug als „verwaist“ markiert.
+geändert hat. **Nachtrag 2026-09-22:** die Sperre gilt ebenso für Zeilen mit
+`bearbeiter ≠ eigentuemer_cluster` (vom Menschen angefasst, aber noch nicht `geprueft=ja`) —
+nur Zeilen, die zuletzt von der Automatik selbst stammen, dürfen erneut automatisch
+vorgeschlagen werden (`pipeline/lib/eigentuemer.gesperrt()`). Schreibweisen, die in der Quelle
+nicht mehr vorkommen, bleiben stehen und werden im Werkzeug als „verwaist“ markiert.
 
 ### 4.1 Trennung Körperschaft/Person
 
@@ -114,7 +120,14 @@ Klassifikator (die Teil-II-Spalte ist sauber). Personen werden nicht geclustert,
 - Exakt gleicher Schlüssel → ein Cluster (Ähnlichkeit 1,0).
 - Blocking nach erstem signifikantem Token (nicht Rechtsform, nicht Stoppwort); innerhalb
   eines Blocks paarweise Token-Set-Ratio (rapidfuzz `token_set_ratio`, 0–1; rapidfuzz wird Abhängigkeit in `pyproject.toml`).
-- Complete-Linkage: zwei Cluster verschmelzen nur, wenn **alle** Paare ≥ 0,92.
+  **Nachtrag 2026-09-22:** tatsächlich `token_sort_ratio`, nicht `token_set_ratio` — bei Teilmengen
+  („… Schacht 3“ vs. der Zeche selbst) liefert `token_set_ratio` 1,0 und würde Teilanlagen in die
+  Zeche mergen.
+- Complete-Linkage: zwei Cluster verschmelzen nur, wenn **alle** Paare ≥ 0,92 **und** dieselben
+  Zahl-Token tragen (Nachtrag 2026-09-22, Fund F3: Zahl-Token = Ziffernfolgen und römisch
+  ii/iii/iv; unterscheiden sie sich, z. B. „Adolf-Hitler-Straße 19“ vs. „… 81“ mit Ähnlichkeit
+  0,95, oder „Ev. Schule“ vs. „Ev. Schule II“, blockiert das den Merge und das Paar wird
+  stattdessen zum Vorschlag, auch oberhalb von 0,92).
 - Paare mit 0,75 ≤ Ähnlichkeit < 0,92, deren Cluster nicht verschmelzen: das kleinere
   Mitglied erhält `vorschlag_fuer` = größerer Cluster (höchster Wert, falls mehrere).
 - Kein transitives Zusammenziehen (v1-Befund: Single-Linkage zog Pfarreien zusammen).
@@ -147,7 +160,9 @@ Körperschaften/Personen, Textsuche; Farbpunkt der Kategorie; Fortschritt
 1. Kopf: Name (editierbar), Kategorie als Knopfreihe mit Tasten `1`–`8`, Häuserzahl, Status.
 2. Schreibweisen mit Anzahl; `×` spaltet die Schreibweise als eigenen Eigentümer (offen) ab.
    Darunter Vorschläge „gehört vielleicht dazu“ (aus `vorschlag_fuer`, mit Ähnlichkeit);
-   `+` übernimmt.
+   `+` übernimmt. **Nachtrag 2026-09-22:** ein Vorschlag gilt je Schreibweise, nicht je
+   Gruppe — `+` bewegt nur diese eine Schreibweise zum aktiven Eigentümer, der Rest ihrer
+   bisherigen Gruppe bleibt unverändert stehen.
 3. „Zusammenführen mit …“: Suchfeld über alle Eigentümer, Vorschläge nach Ähnlichkeit;
    Auswahl hängt den aktiven Cluster an das Ziel (Ziel behält Name und Kategorie).
 4. Belege: Tabelle der Häuser (Adresse, Stadtteil, Verwalter, Seite mit DigiBib-Link) und
@@ -164,8 +179,14 @@ Jede Aktion sendet die betroffenen Zeilen (alle Schreibweisen der beteiligten Ei
 als `POST /kuratierung/eigentuemer.csv` `{"zeilen": [...]}`; `serve.py` ersetzt nach
 Schlüssel `schreibweise`, setzt `bearbeiter` und `datum`, schreibt die Datei mit
 `schreib_csv`. Validierung (400 bei Verstoß): Kategorie aus dem Vokabular, `eigentuemer`
-nicht leer, `geprueft` ∈ {`ja`, leer}, `schreibweise` bekannt (in §3.3 vorhanden).
-Kein Speichern-Knopf; Fehler erscheinen als Banner, die Aktion wird lokal zurückgenommen.
+nicht leer, `geprueft` ∈ {`ja`, leer}, `schreibweise` bekannt (in §3.3 vorhanden),
+`geprueft=ja` verlangt eine gesetzte Kategorie (Nachtrag 2026-09-22, Fund F2). Kein
+Speichern-Knopf; ein Fehler erscheint als Banner. **Nachtrag 2026-09-22:** anders als
+ursprünglich vorgesehen macht das Werkzeug die Aktion dabei *nicht* lokal rückgängig — die
+POSTs laufen sequenziell über eine Promise-Kette, und ein rückwirkendes `rueckgaengig()`
+könnte bei zwei schon wartenden Aktionen den Schnappschuss einer zweiten, noch gar nicht
+gescheiterten Aktion zurücknehmen. Stattdessen sperrt ein Fehler das Werkzeug bis zum Neuladen
+der Seite; der zuletzt gespeicherte Serverstand bleibt so die einzige Quelle der Wahrheit.
 
 ## 6. Export und Karte (Stufe 06)
 
@@ -184,7 +205,9 @@ Teil-II-Zeilen mit verschiedenen Kategorien → `gemischt`; keine geprüfte → 
 `themen.js` erzeugt einen MapLibre-`match`-Ausdruck, `app.js` zeichnet eine Legendenzeile
 je Kategorie (Anzeigenamen aus §3.3), `ungeprueft` grau. Ebene II vorausgewählt;
 `freigegeben` erst nach Abnahme. Sidebar-Block „Größte Eigentümer“ (Top 30 aus
-`suche/eigentuemer.json`, Klick = Suche) nur bei aktivem Thema.
+`suche/eigentuemer.json`, Klick = Suche) nur bei aktivem Thema. **Nachtrag 2026-09-22:** das
+Thema setzt in `zusatz` außerdem `zechen: true` — ohne die aktiven Zechen 1936 mitzuzeichnen
+fehlte bei den Bergbau-Kategorien der Bezug zur zugehörigen Zeche auf der Karte.
 
 ### 6.3 Hausansicht und Popup
 
