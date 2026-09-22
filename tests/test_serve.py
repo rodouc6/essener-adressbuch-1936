@@ -15,6 +15,7 @@ KOPF = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse
 
 KOPF_1935 = "strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum"
 KOPF_ZUORDNUNG = "strasse_roh_norm,vorort,strasse_heute,schl_nr,hausnr_von,hausnr_bis,nummer_unsicher,beleg,bearbeiter,datum"
+KOPF_EIGENTUEMER = "schreibweise,art,eigentuemer,kategorie,geprueft,bearbeiter,datum,hinweis"
 
 
 @pytest.fixture
@@ -24,6 +25,10 @@ def server(tmp_path):
     (tmp_path / "kuratierung" / "strassen_1935.csv").write_text(KOPF_1935 + "\n", encoding="utf-8")
     (tmp_path / "kuratierung" / "strassen_zuordnung.csv").write_text(
         KOPF_ZUORDNUNG + "\n" + 'x,Kray,Y,00001,1,9,nein,"Bereich, bleibt",T,2026-09-15\n', encoding="utf-8")
+    (tmp_path / "kuratierung" / "eigentuemer.csv").write_text(
+        KOPF_EIGENTUEMER + "\nStadt Essen,koerperschaft,Stadt Essen,stadt_staat,,eigentuemer_cluster,2026-09-22,\n"
+        "Fried. Krupp A.G.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,\n"
+        "Fried. Krupp AG.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,\n", encoding="utf-8")
     ziel = tmp_path / "docs" / "stichprobe_7.csv"
     with open(ziel, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=KOPF, lineterminator="\n")
@@ -158,3 +163,32 @@ def test_loeschen_nimmt_sichtung_zurueck_aber_keine_bereichszeile(server):
     with pytest.raises(urllib.error.HTTPError) as e:   # ohne Bereich trifft der Schlüssel die Bereichszeile nicht
         post(url + "/kuratierung/strassen_zuordnung.csv", {"zeile": {"strasse_roh_norm": "x", "vorort": "Kray"}, "loeschen": True})
     assert e.value.code == 404 and len(lies(kur / "strassen_zuordnung.csv")) == 1
+
+
+def test_eigentuemer_post_ersetzt_nach_schluessel(server):
+    url, _ = server
+    wurzel = Handler.wurzel
+    zeilen = [dict(schreibweise="Fried. Krupp A.G.", art="koerperschaft", eigentuemer="Fried. Krupp AG", kategorie="industrie", geprueft="ja", hinweis=""),
+              dict(schreibweise="Fried. Krupp AG.", art="koerperschaft", eigentuemer="Fried. Krupp AG", kategorie="industrie", geprueft="", hinweis="Punkt")]
+    with post(url + "/kuratierung/eigentuemer.csv", {"zeilen": zeilen}) as r:
+        assert r.status == 200 and r.read().decode() == "eigentuemer.csv: 3 Zeilen"
+    rows = {z["schreibweise"]: z for z in csv.DictReader(open(wurzel / "kuratierung" / "eigentuemer.csv", encoding="utf-8", newline=""))}
+    assert rows["Fried. Krupp A.G."]["bearbeiter"] == "christos" and len(rows["Fried. Krupp A.G."]["datum"]) == 10
+    assert rows["Fried. Krupp A.G."]["geprueft"] == "ja" and rows["Stadt Essen"]["eigentuemer"] == "Stadt Essen"
+    assert rows["Fried. Krupp AG."]["hinweis"] == "Punkt"
+
+
+def test_eigentuemer_post_validiert(server):
+    url, _ = server
+    def fehler(zeile):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(url + "/kuratierung/eigentuemer.csv", {"zeilen": [zeile]})
+        return e.value.code, e.value.read().decode()
+    basis = dict(schreibweise="Stadt Essen", art="koerperschaft", eigentuemer="Stadt Essen", kategorie="stadt_staat", geprueft="", hinweis="")
+    assert fehler({**basis, "kategorie": "adel"}) == (400, "unbekannte Kategorie: adel")
+    assert fehler({**basis, "eigentuemer": " "}) == (400, "eigentuemer ist Pflicht")
+    assert fehler({**basis, "geprueft": "vielleicht"}) == (400, "geprueft muss ja oder leer sein")
+    assert fehler({**basis, "schreibweise": "Gibt es nicht"}) == (400, "unbekannte Schreibweise: Gibt es nicht")
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/eigentuemer.csv", {"zeile": basis})
+    assert e.value.code == 400

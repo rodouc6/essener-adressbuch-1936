@@ -14,12 +14,16 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
   {"loesche_stadtplan": true} wird die Stadtplan-Zeile desselben Schlüssels entfernt.
   Mit {"loeschen": true} entfernt jeder der beiden Endpunkte die Zeile mit dem Schlüssel der
   übergebenen Zeile (Rücknahme einer Sichtung; Zeilen mit Hausnummernbereich nie).
+- POST /kuratierung/eigentuemer.csv — mehrere Zeilen ({"zeilen": [...]}) der Eigentümer-Kuratierung;
+  ersetzt nach Schlüssel `schreibweise`, setzt bearbeiter=christos und datum. 400 bei unbekannter
+  Kategorie, leerem eigentuemer, geprueft ∉ {ja, leer} oder unbekannter Schreibweise.
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 - GET mit Range-Header — Teilstücke für PMTiles (site/daten/adressen.pmtiles).
 """
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import pathlib
@@ -32,6 +36,7 @@ import requests
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
+from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, KATEGORIEN, lade_kuratierung
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
@@ -99,6 +104,37 @@ def loesche(pfad: pathlib.Path, zeile: dict, schluessel: tuple[str, ...]) -> int
     if len(rest) != len(zeilen):
         schreib_csv(pfad, rest, felder)
     return len(zeilen) - len(rest)
+
+
+def pruefe_eigentuemer(z: dict, bekannt: set[str]) -> str:
+    if not isinstance(z, dict):
+        return "Zeile fehlt"
+    s = str(z.get("schreibweise", "")).strip()
+    if s not in bekannt:
+        return f"unbekannte Schreibweise: {s}"
+    if not str(z.get("eigentuemer", "")).strip():
+        return "eigentuemer ist Pflicht"
+    kat = str(z.get("kategorie", "")).strip()
+    if kat and kat not in KATEGORIEN:
+        return f"unbekannte Kategorie: {kat}"
+    if str(z.get("geprueft", "")).strip() not in ("", "ja"):
+        return "geprueft muss ja oder leer sein"
+    return ""
+
+
+def upsert_viele(pfad: pathlib.Path, zeilen: list[dict], schluessel: str, felder: list[str]) -> int:
+    """Ersetzt je Schlüsselwert die vorhandene Zeile an Ort und Stelle (Reihenfolge bleibt), hängt Neues an."""
+    alt = lies_csv(pfad)
+    index = {z[schluessel].strip(): i for i, z in enumerate(alt)}
+    for z in zeilen:
+        neu = {f: str(z.get(f, "")).strip() for f in felder}
+        k = neu[schluessel]
+        if k in index:
+            alt[index[k]] = neu
+        else:
+            index[k] = len(alt); alt.append(neu)
+    schreib_csv(pfad, alt, felder)
+    return len(alt)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -171,6 +207,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._antwort(502, f"Nominatim nicht erreichbar: {e}")
 
     def do_POST(self) -> None:
+        if self.path == "/kuratierung/eigentuemer.csv":
+            return self._eigentuemer()
         k = _KURATIERUNG.match(self.path)
         if k:
             return self._kuratierung(k.group(1))
@@ -216,6 +254,25 @@ class Handler(SimpleHTTPRequestHandler):
             weg = loesche(self.wurzel / "kuratierung" / "strassen_1935.csv", zeile, SCHLUESSEL_1935)
         return self._antwort(200, f"{tabelle}.csv: {n} Zeilen" + (f", {weg} Stadtplan-Zeile(n) entfernt" if weg else ""))
 
+    def _eigentuemer(self) -> None:
+        try:
+            koerper = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+            zeilen = koerper["zeilen"]
+            assert isinstance(zeilen, list)
+        except (ValueError, KeyError, TypeError, AssertionError):
+            return self._antwort(400, "ungültiger Inhalt")
+        pfad = self.wurzel / "kuratierung" / "eigentuemer.csv"
+        if not pfad.exists():
+            return self._antwort(404, "eigentuemer.csv fehlt")
+        bekannt = set(lade_kuratierung(lies_csv(pfad)))
+        for z in zeilen:
+            fehler = pruefe_eigentuemer(z, bekannt)
+            if fehler:
+                return self._antwort(400, fehler)
+        heute = datetime.date.today().isoformat()
+        n = upsert_viele(pfad, [{**z, "bearbeiter": "christos", "datum": heute} for z in zeilen], "schreibweise", FELDER_KURATIERUNG)
+        self._antwort(200, f"eigentuemer.csv: {n} Zeilen")
+
     def log_message(self, fmt, *args):  # nur Speichervorgänge und Fehler ins Terminal
         if self.command == "POST" or (len(args) > 1 and not str(args[1]).startswith(("2", "3"))):
             super().log_message(fmt, *args)
@@ -223,7 +280,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main(port: int) -> None:
     srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  (Strg+C beendet)")
+    print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  ·  /werkzeuge/eigentuemer.html  (Strg+C beendet)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
