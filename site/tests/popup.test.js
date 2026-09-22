@@ -59,3 +59,13 @@ test("trefferzeileHtml zeigt Kennzeichnung für unbekannte Präzision", () => {
   const h = trefferzeileHtml({ adressId: "a1", titel: "x", untertitel: "y", stufe: "unbekannt" });
   assert.match(h, /Präzision unbekannt/);
 });
+
+test("Hausansicht zeigt geprüften Eigentümer mit Kategorie, sonst nur Buchschreibung", () => {
+  const eig = { id: "a1", stufe: "haus", strasse_heute: "Lattenkamp", hausnr: "25", stadtteil: "Katernberg", historisch: "Grenzstr. 25", n_I: 0, n_II: 2, n_III: 0 };
+  const e = [{ id: "1", teil: "II", seite: "II-1", name: "", vorname: "", firma: "Fried. Krupp A.G.", eigentuemer: "Eigentümer", eigentuemer_kanon: "Fried. Krupp AG", kategorie: "industrie", flags: [], merkmale: [] },
+             { id: "2", teil: "II", seite: "II-1", name: "", vorname: "", firma: "Bauverein GmbH", eigentuemer: "Eigentümer", eigentuemer_kanon: "", kategorie: "", flags: [], merkmale: [] }];
+  const h = hausHtml(eig, e);
+  assert.match(h, /Zugeordnet<\/span> Fried\. Krupp AG · Industrie/);
+  assert.match(h, /Firma<\/span> Fried\. Krupp A\.G\./);
+  assert.equal((h.match(/Zugeordnet/g) || []).length, 1);
+});

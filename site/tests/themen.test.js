@@ -27,3 +27,10 @@ test("ladeThema hängt farbregel und ebenen an, unbekannt → null", async () =>
 test("themenListe nur freigegebene", async () => {
   assert.deepEqual(await themenListe(new Lader("daten/", fetchFake)), [{ id: "akademiker", titel: "Akademiker" }]);
 });
+
+test("farbregel kategorien → match-Ausdruck", () => {
+  const r = farbregel({ filter: {}, farbe: { art: "kategorien", feld: "besitz", werte: { industrie: "#b91c1c", stadt_staat: "#1d4ed8" }, sonst: "#ccc" } });
+  assert.equal(r.merkmal, null);
+  assert.deepEqual(r.ausdruck, ["match", ["get", "besitz"], "industrie", "#b91c1c", "stadt_staat", "#1d4ed8", "#ccc"]);
+  assert.deepEqual(r.kategorien, { industrie: "#b91c1c", stadt_staat: "#1d4ed8" });
+});

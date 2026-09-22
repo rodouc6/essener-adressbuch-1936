@@ -8,6 +8,7 @@ import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
+import { KATEGORIEN } from "./kategorien.js";
 
 const lader = new Lader();
 // PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart: ein manipulierter ?plan=1-Link darf die
@@ -237,6 +238,10 @@ function zeichneLegende() {
       const farbeStufen = farbe.stufen.map(([_, c]) => c);
       const gradient = farbeStufen.map((c, i) => `${c} ${(i / (farbeStufen.length - 1)) * 100}%`).join(", ");
       html += `<div class="zeile"><span class="punkt" style="background:linear-gradient(90deg, ${gradient})"></span> ${themaAktiv.legende}</div>`;
+    } else if (farbe.art === "kategorien") {
+      html += `<div class="zeile"><b>${themaAktiv.legende}</b></div>`;
+      for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${KATEGORIEN[k] || k}</div>`;
+      html += `<div class="zeile"><span class="punkt" style="background:${farbe.sonst || "#c8c8c8"}"></span> ${KATEGORIEN.ungeprueft}</div>`;
     }
   }
 

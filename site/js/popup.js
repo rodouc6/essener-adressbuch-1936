@@ -1,4 +1,5 @@
 import { EBENEN, PRAEZISION, DIGIBIB_WERK } from "./konfig.js";
+import { KATEGORIEN } from "./kategorien.js";
 
 export function esc(t) {
   return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -51,7 +52,9 @@ export function popupHtml(eig, eintraege, kompakt) {
 function eintragHtml(e, faksimile) {
   const felder = [["Beruf", e.beruf], ["Etage laut Buch", e.etage], ["Stand", e.stand],
     ["Bezugsperson", [e.bezug_vorname, e.bezug_beruf].filter(Boolean).join(", ")], ["Firma", e.firma],
-    ["Eigentümer", e.eigentuemer], ["Verwalter", e.verwalter], ["Wohnort", e.wohnort]]
+    ["Eigentümer", e.eigentuemer],
+    ["Zugeordnet", e.eigentuemer_kanon ? `${e.eigentuemer_kanon} · ${KATEGORIEN[e.kategorie] || e.kategorie}` : ""],
+    ["Verwalter", e.verwalter], ["Wohnort", e.wohnort]]
     .filter(([, w]) => w).map(([k, w]) => `<div><span class="k">${k}</span> ${esc(w)}</div>`).join("");
   const flags = (e.flags || []).map((f) => `<div class="flag">${esc(FLAGTEXT[f] || f)}</div>`).join("");
   return `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e, false)}</div>${felder}${flags}` +

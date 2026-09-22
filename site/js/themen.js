@@ -7,6 +7,10 @@ export function farbregel(thema) {
     const stufen = f.stufen.flatMap(([w, farbe]) => [w, farbe]);
     return { merkmal: f.merkmal, ausdruck: ["interpolate", ["linear"], ["coalesce", ["get", `m_${f.merkmal}`], 0], ...stufen] };
   }
+  if (f.art === "kategorien") {
+    const paare = Object.entries(f.werte || {}).flatMap(([k, farbe]) => [k, farbe]);
+    return { merkmal: null, ausdruck: ["match", ["get", f.feld], ...paare, f.sonst || "#c8c8c8"], kategorien: f.werte || {}, sonst: f.sonst || "#c8c8c8" };
+  }
   return null;
 }
 
