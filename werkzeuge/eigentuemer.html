@@ -194,6 +194,7 @@ function zeichneAktiv(liste) {
   marker.clearLayers();
   const punkte = b.filter((h) => h.lat != null && h.lon != null);
   for (const h of punkte) L.circleMarker([h.lat, h.lon], { radius: 4, color: FARBEN[e.kategorie] || "#1d4ed8", fillOpacity: .7, weight: 1 }).bindTooltip(h.adresse).addTo(marker);
+  karte.invalidateSize();   // Containergröße kann sich mit der Belegtabelle ändern
   if (punkte.length) karte.fitBounds(L.latLngBounds(punkte.map((h) => [h.lat, h.lon])).pad(0.2), { maxZoom: 15 });
   zeichneZusammen(liste);
 }
