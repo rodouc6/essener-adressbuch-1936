@@ -310,11 +310,25 @@ def startseite_beispiele(zeilen: list[dict], adressen: dict[str, dict]) -> list[
     return beispiele
 
 
+def schreibe_themen(quelle: Path, ausgabe: Path) -> list[dict]:
+    """Kopiert die Thema-Definitionen aus kuratierung/themen/*.json nach ausgabe/themen/ und schreibt
+    dort index.json (id, titel, freigegeben); gibt den Index zurück."""
+    index = []
+    for pfad in sorted(Path(quelle).glob("*.json")):
+        t = json.loads(pfad.read_text(encoding="utf-8"))
+        _json(ausgabe / "themen" / pfad.name, t)
+        index.append(dict(id=t["id"], titel=t["titel"], freigegeben=bool(t.get("freigegeben"))))
+    _json(ausgabe / "themen" / "index.json", index)
+    return index
+
+
 def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], zechen: list[dict],
                    datum: str, kacheln: bool = True, faksimile: list[dict] | None = None,
-                   beispiele: list[dict] | None = None) -> dict:
+                   beispiele: list[dict] | None = None, themen: Path | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
+    if themen is not None:
+        schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln)
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))

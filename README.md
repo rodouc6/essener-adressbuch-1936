@@ -241,12 +241,13 @@ Fehlende Parameter fallen auf den Standardwert zurück. Änderungen an Filtern/A
 steht zusätzlich in `localStorage`. `PLAN_FREIGEGEBEN` (`site/js/konfig.js`) sperrt die
 Stadtplan-1935-Ebene, bis die Stadt Essen bzw. der Historische Verein die Nutzung freigibt.
 
-### Themenformat (`site/daten/themen/<id>.json`)
+### Themenformat (`kuratierung/themen/<id>.json` → `site/daten/themen/`)
 
 Felder: `titel`, `text`, `grundlage` (Quelle, Prüfdatum), `filter` (Merkmale, Ebenen), `farbe`
 (eine Farbe | Kategorien | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
 `darstellung` (`punkte`; `strassen` ist für Teilprojekt 4 reserviert), `freigegeben` (nur dann
-erscheint die Kachel auf der Startseite). Merkmale stammen aus `kuratierung/merkmale/<name>.csv`
+erscheint die Kachel auf der Startseite). Die Definitionen liegen versioniert in `kuratierung/themen/`;
+Stufe 06 kopiert sie nach `site/daten/themen/` und erzeugt dort `index.json`. Merkmale stammen aus `kuratierung/merkmale/<name>.csv`
 (Spalten `feld`, `art`, `muster`, `merkmal`, `beleg`, `bearbeiter`, `datum`) und werden in Stufe 06 an
 jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
 `thema=<id>` in der URL, kombinierbar mit Suche und Filtern.

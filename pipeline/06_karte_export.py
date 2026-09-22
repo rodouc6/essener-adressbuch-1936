@@ -26,8 +26,9 @@ beispiele_pfad = W / "kuratierung" / "startseite_beispiele.csv"
 beispiele = lies_csv(beispiele_pfad) if beispiele_pfad.exists() else []
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
-for unter in ("haus", "suche", "adressen"):
+for unter in ("haus", "suche", "adressen", "themen"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
-                   zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele)
+                   zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
+                   themen=W / "kuratierung" / "themen")
 print(json.dumps(k, ensure_ascii=False, indent=1))

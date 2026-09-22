@@ -251,3 +251,14 @@ def test_startseite_beispiele_nur_hausgenau_und_bekannt():
     b2 = startseite_beispiele([dict(adress_id=aid3, eintrag_id="3")], gruppiere([dict(e[2], stufe="haus")], []))
     assert b2[0]["titel"] == "Gewerkschaft Graf Beust" and b2[0]["untertitel"].startswith("Eigentümer · Grenzstr. 9")
     assert b[0]["untertitel"] == "Bergm. · Grenzstr. 25, Katernberg"
+
+
+def test_schreibe_themen(tmp_path):
+    from pipeline.lib.karte_export import schreibe_themen
+    q = tmp_path / "q"; q.mkdir()
+    (q / "b.json").write_text('{"id": "b", "titel": "B", "freigegeben": true}', encoding="utf-8")
+    (q / "a.json").write_text('{"id": "a", "titel": "A"}', encoding="utf-8")
+    idx = schreibe_themen(q, tmp_path / "out")
+    assert idx == [dict(id="a", titel="A", freigegeben=False), dict(id="b", titel="B", freigegeben=True)]
+    assert json.loads((tmp_path / "out" / "themen" / "index.json").read_text(encoding="utf-8")) == idx
+    assert json.loads((tmp_path / "out" / "themen" / "b.json").read_text(encoding="utf-8"))["titel"] == "B"
