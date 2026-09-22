@@ -23,6 +23,7 @@ fi
 #    Roh-GeoJSON, das nur tippecanoe braucht). --force, weil site/daten/ in .gitignore steht.
 export GIT_INDEX_FILE
 GIT_INDEX_FILE="$(mktemp)"
+rm -f "$GIT_INDEX_FILE"   # git will eine leere Datei nicht als Index lesen; der Pfad genügt
 trap 'rm -f "$GIT_INDEX_FILE"' EXIT
 git add --force -- site ':!site/tests' ':!site/package.json' ':!site/daten/adressen.geojson'
 baum="$(git write-tree --prefix=site/)"
