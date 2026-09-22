@@ -130,7 +130,8 @@ def test_aktualisiere_kuratierung_sperre():
     vorschlag = [dict(schreibweise="Stadt Essen", art="koerperschaft", cluster_name="Stadt Essen (neu)"),
                  dict(schreibweise="Fried. Krupp A.G.", art="koerperschaft", cluster_name="Fried. Krupp AG"),
                  dict(schreibweise="Fried. Krupp AG.", art="koerperschaft", cluster_name="Fried. Krupp AG"),
-                 dict(schreibweise="Schmidt, Wilh.", art="person", cluster_name="Schmidt, Wilh.")]
+                 dict(schreibweise="Schmidt, Wilh.", art="person", cluster_name="Schmidt, Wilh.", pruefpflichtig="ja"),
+                 dict(schreibweise="Meier, Karl", art="person", cluster_name="Meier, Karl", pruefpflichtig="nein")]
     neu = {z["schreibweise"]: z for z in aktualisiere_kuratierung(alt, vorschlag, "2026-09-22")}
     assert neu["Stadt Essen"]["eigentuemer"] == "Stadt Essen"                       # geprüft: unverändert
     assert neu["Fried. Krupp A.G."]["eigentuemer"] == "Fried. Krupp AG"             # Automatik-Zeile: neuer Vorschlag
@@ -139,6 +140,7 @@ def test_aktualisiere_kuratierung_sperre():
     assert neu["Fried. Krupp AG."]["eigentuemer"] == "Krupp"                        # vom Menschen angefasst: bleibt
     assert neu["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", eigentuemer="Schmidt, Wilh.", kategorie="privatperson", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-22", hinweis="")
     assert neu["Weg GmbH"]["eigentuemer"] == "Weg GmbH"                              # verwaist: bleibt stehen
+    assert "Meier, Karl" not in neu                                                  # Person unter Untergrenze: keine neue Zeile
     assert list(neu) == ["Stadt Essen", "Fried. Krupp A.G.", "Fried. Krupp AG.", "Weg GmbH", "Schmidt, Wilh."]  # alte Reihenfolge, Neues hinten
 
 

@@ -250,6 +250,9 @@ def aktualisiere_kuratierung(alt: list[dict], vorschlag: list[dict], datum: str)
             if z.get("eigentuemer", "").strip() != v["cluster_name"]:
                 z.update(eigentuemer=v["cluster_name"], datum=datum)
         else:
+            # Spec §3.3: neue Personen-Zeilen nur ab der Prüfpflicht-Untergrenze; Körperschaften immer.
+            if v["art"] == "person" and v.get("pruefpflichtig", "ja") != "ja":
+                continue
             out.append(dict(schreibweise=s, art=v["art"], eigentuemer=v["cluster_name"],
                             kategorie="privatperson" if v["art"] == "person" else "", geprueft="",
                             bearbeiter=AUTOMATIK, datum=datum, hinweis=""))
