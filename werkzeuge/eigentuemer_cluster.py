@@ -135,6 +135,21 @@ def _sim(a: str, b: str) -> float:
     return fuzz.token_sort_ratio(a, b) / 100.0
 
 
+# Zahlen-Wächter (Spec §4.3/Fund F3): reine Zahl-Token und römische Ziffern ii–iv, wie sie
+# Hausnummern („Adolf-Hitler-Straße 19“ vs. „… 81“, Ähnlichkeit 0,95) oder Zählungen
+# („Ev. Schule“ vs. „Ev. Schule II“) unterscheiden. token_sort_ratio allein hält solche Paare
+# nicht auseinander; ein Merge mit unterschiedlichen Zahl-Token bliebe unbelegt (precision first).
+_ZAHL_TOKEN = re.compile(r"^(\d+|ii|iii|iv)$")
+
+
+def _zahlentoken(schluessel: str) -> frozenset[str]:
+    return frozenset(t for t in schluessel.split() if _ZAHL_TOKEN.fullmatch(t))
+
+
+def _numerisch_vertraeglich(a: str, b: str) -> bool:
+    return _zahlentoken(a) == _zahlentoken(b)
+
+
 def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, vorschlag_ab: float = 0.75) -> list[dict]:
     """Schreibweise → Anzahl zu Clustern (Spec §4.3): exakt gleicher Schlüssel, dann Complete-Linkage
     innerhalb eines Blocks (erstes signifikantes Token); Grenzfälle als vorschlag_fuer."""
@@ -156,7 +171,8 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
             for i in range(len(aktiv)):
                 for j in range(i + 1, len(aktiv)):
                     mn = min(_sim(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
-                    if mn >= schwelle and (bestes is None or mn > bestes[0]):
+                    vertraeglich = all(_numerisch_vertraeglich(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
+                    if mn >= schwelle and vertraeglich and (bestes is None or mn > bestes[0]):
                         bestes = (mn, i, j)
             if bestes is None:
                 break
@@ -180,7 +196,11 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
                 if (gross["haeuser"], gross["name"]) <= (klein["haeuser"], klein["name"]):
                     continue
                 mx = max(_sim(a, b) for a in klein["schluessel"] for b in gross["schluessel"])
-                if vorschlag_ab <= mx < schwelle and mx > klein.get("_vorschlag_sim", 0.0):
+                # Zahlen-Wächter: unterscheiden sich alle Paare in ihren Zahl-Token, war die Fusion oben
+                # blockiert, egal wie hoch die Ähnlichkeit — der Deckel `schwelle` entfällt dann.
+                vertraeglich = all(_numerisch_vertraeglich(a, b) for a in klein["schluessel"] for b in gross["schluessel"])
+                obergrenze = schwelle if vertraeglich else 1.0 + 1e-9
+                if vorschlag_ab <= mx < obergrenze and mx > klein.get("_vorschlag_sim", 0.0):
                     klein["vorschlag_fuer"], klein["_vorschlag_sim"] = gross["id"], mx
         fertig.extend(aktiv)
     for c in fertig:

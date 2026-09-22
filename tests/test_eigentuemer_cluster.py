@@ -1,8 +1,14 @@
+import json
 import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from werkzeuge.eigentuemer_cluster import lade_katalog, normalisiere, rechtsform_anzeige
+from pipeline.lib.eigentuemer import AUTOMATIK
+from pipeline.lib.io import lies_csv
+from werkzeuge.eigentuemer_cluster import (
+    aktualisiere_kuratierung, auto_name, cluster_id, clustere, lade_katalog,
+    main, normalisiere, rechtsform_anzeige, sammle, vorschlagszeilen,
+)
 
 W = pathlib.Path(__file__).resolve().parents[1]
 KAT = lade_katalog(W / "kuratierung" / "eigentuemer_abkuerzungen.csv")
@@ -47,9 +53,6 @@ def test_rechtsform_nicht_bei_initialen():
     assert rechtsform_anzeige("Fried. Krupp, A. G.") == "Fried. Krupp AG"
 
 
-from werkzeuge.eigentuemer_cluster import auto_name, cluster_id, clustere
-
-
 def test_clustere_krupp_zusammen_pfarreien_getrennt():
     z = {"Fried. Krupp A.G.": 257, "Fried. Krupp A. G.": 181, "Fried. Krupp A.-G.": 79, "Friedr. Krupp A.G.": 40,
          "Fried. Krupp AG": 9, "Frau-Margarete-Krupp-Stiftung": 31,
@@ -76,6 +79,29 @@ def test_clustere_grenzfall_wird_vorschlag():
     assert klein["vorschlag_fuer"] == gross["id"]
 
 
+def test_clustere_zahlen_waechter_blockiert_merge():
+    # F3: unterschiedliche Hausnummern/Zählungen dürfen trotz hoher Ähnlichkeit nicht verschmelzen —
+    # echte Funde: „Adolf-Hitler-Straße 19“ vs. „… 81“ (0,95) und „Ev. Schule“ vs. „Ev. Schule II“.
+    z1 = {"Adolf-Hitler-Straße 19": 6, "Adolf-Hitler-Straße 81": 5}
+    c1 = clustere(z1, KAT)
+    assert len(c1) == 2
+    gross1, klein1 = (c1[0], c1[1]) if c1[0]["haeuser"] >= c1[1]["haeuser"] else (c1[1], c1[0])
+    assert klein1["vorschlag_fuer"] == gross1["id"]     # als Vorschlag markiert statt gemergt
+
+    z2 = {"Ev. Schule, Stadt Essen": 9, "Ev. Schule II, Stadt Essen": 6}
+    c2 = clustere(z2, KAT)
+    assert len(c2) == 2
+    gross2, klein2 = (c2[0], c2[1]) if c2[0]["haeuser"] >= c2[1]["haeuser"] else (c2[1], c2[0])
+    assert klein2["vorschlag_fuer"] == gross2["id"]
+
+
+def test_clustere_gleiche_zahlentoken_mergt_weiter():
+    # Gegenprobe: identische Zahl-Token (hier keine) stehen einer normalen Fusion nicht im Weg
+    z = {"Fried. Krupp A.G. Schacht 3": 6, "Fried. Krupp AG Schacht 3": 4}
+    c = clustere(z, KAT)
+    assert len(c) == 1 and c[0]["haeuser"] == 10
+
+
 def test_clustere_complete_linkage_keine_kette():
     # a~b und b~c ähnlich, a~c nicht → höchstens zwei zusammen, nie alle drei
     z = {"Bauverein Essen Nord": 5, "Bauverein Essen Nord West": 5, "Bauverein Essen West Süd": 5}
@@ -86,11 +112,6 @@ def test_clustere_complete_linkage_keine_kette():
 def test_auto_name():
     assert auto_name([("Fried. Krupp A.G.", 257), ("Fried. Krupp A. G.", 181)]) == "Fried. Krupp AG"
     assert auto_name([("Stadt Essen", 3)]) == "Stadt Essen"
-
-
-import json
-from pipeline.lib.eigentuemer import AUTOMATIK
-from werkzeuge.eigentuemer_cluster import aktualisiere_kuratierung, main, sammle, vorschlagszeilen
 
 
 def _z(**k):
@@ -155,11 +176,6 @@ def test_main_schreibt_dateien(tmp_path):
     assert (tmp_path / "build" / "eigentuemer_vorschlag.csv").exists()
     belege = json.loads((tmp_path / "build" / "eigentuemer_belege.json").read_text(encoding="utf-8"))
     assert belege["Stadt Essen"][0]["id"] == "1"
-    kur = lies_csv_test(tmp_path / "kuratierung" / "eigentuemer.csv")
+    kur = lies_csv(tmp_path / "kuratierung" / "eigentuemer.csv")
     assert [z["schreibweise"] for z in kur] == ["Stadt Essen", "Schmidt, Wilh."]
     assert kur[1]["kategorie"] == "privatperson"
-
-
-def lies_csv_test(p):
-    from pipeline.lib.io import lies_csv
-    return lies_csv(p)
