@@ -24,11 +24,13 @@ faksimile_pfad = W / "kuratierung" / "faksimile_seiten.csv"
 faksimile = lies_csv(faksimile_pfad) if faksimile_pfad.exists() else []
 beispiele_pfad = W / "kuratierung" / "startseite_beispiele.csv"
 beispiele = lies_csv(beispiele_pfad) if beispiele_pfad.exists() else []
+eigentuemer_pfad = W / "kuratierung" / "eigentuemer.csv"
+eigentuemer = lies_csv(eigentuemer_pfad) if eigentuemer_pfad.exists() else []
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
 for unter in ("haus", "suche", "adressen", "themen"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
-                   themen=W / "kuratierung" / "themen")
+                   themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer)
 print(json.dumps(k, ensure_ascii=False, indent=1))

@@ -1,0 +1,15 @@
+{
+  "id": "besitz",
+  "titel": "Besitz",
+  "text": "Häuser nach Art des Eigentümers laut Teil II. Farbig nur Adressen, deren Eigentümer von Hand geprüft wurde; alle anderen grau.",
+  "grundlage": "Eigentümer-Kuratierung kuratierung/eigentuemer.csv (Automatik + Handprüfung), Stand: in Arbeit",
+  "freigegeben": false,
+  "filter": {"ebenen": ["II"]},
+  "farbe": {"art": "kategorien", "feld": "besitz", "werte": {
+    "stadt_staat": "#1d4ed8", "bergbau": "#111827", "industrie": "#b91c1c", "genossenschaft_siedlung": "#15803d",
+    "kirche_stiftung": "#7c3aed", "bank_versicherung": "#0e7490", "privatperson": "#d97706", "sonstige": "#6b7280", "gemischt": "#9a3412"},
+    "sonst": "#c8c8c8"},
+  "zusatz": {"zechen": true, "eigentuemerliste": true},
+  "legende": "Farbe = Kategorie des geprüften Eigentümers",
+  "darstellung": "punkte"
+}

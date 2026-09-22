@@ -82,8 +82,8 @@ def test_eintrag_kurz_und_scherben():
     k = eintrag_kurz(e, ["akademiker"])
     assert k == {"id": "7", "teil": "I", "seite": "I-551", "name": "Sepeur", "vorname": "Wilh.",
                  "beruf": "Dr. Bergm.", "etage": "II", "stand": "Wwe.", "bezug_vorname": "", "bezug_beruf": "",
-                 "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "flags": ["nummer_unsicher"],
-                 "merkmale": ["akademiker"]}
+                 "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "eigentuemer_kanon": "",
+                 "kategorie": "", "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
     adressen = gruppiere([e], REGELN)
     sch = baue_scherben(adressen)
     aid = adress_id(e)
@@ -262,3 +262,63 @@ def test_schreibe_themen(tmp_path):
     assert idx == [dict(id="a", titel="A", freigegeben=False), dict(id="b", titel="B", freigegeben=True)]
     assert json.loads((tmp_path / "out" / "themen" / "index.json").read_text(encoding="utf-8")) == idx
     assert json.loads((tmp_path / "out" / "themen" / "b.json").read_text(encoding="utf-8"))["titel"] == "B"
+
+
+from pipeline.lib.karte_export import baue_eigentuemerindex
+
+
+def _kur(**k):
+    z = dict(schreibweise="", art="koerperschaft", eigentuemer="", kategorie="", geprueft="", bearbeiter="christos", datum="", hinweis="")
+    z.update(k); return z
+
+
+EIG = [_kur(schreibweise="Fried. Krupp A.G.", eigentuemer="Fried. Krupp AG", kategorie="industrie", geprueft="ja"),
+       _kur(schreibweise="Fried. Krupp AG.", eigentuemer="Fried. Krupp AG", kategorie="industrie", geprueft="ja"),
+       _kur(schreibweise="Stadt Essen", eigentuemer="Stadt Essen", kategorie="stadt_staat", geprueft="ja"),
+       _kur(schreibweise="Bauverein GmbH", eigentuemer="Bauverein GmbH", kategorie="genossenschaft_siedlung", geprueft="")]  # ungeprüft
+
+
+def test_gruppiere_besitz():
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="2", teil="II", hausnr="1", **{"Firmenname": "Fried. Krupp AG."}),            # gleiche Adresse, gleicher Eigentümer
+         _v(id="3", teil="II", hausnr="2", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="4", teil="II", hausnr="2", **{"Firmenname": "Stadt Essen"}),                 # zwei Kategorien → gemischt
+         _v(id="5", teil="II", hausnr="3", **{"Firmenname": "Bauverein GmbH"}),              # ungeprüft
+         _v(id="6", teil="II", hausnr="4", lastname="Schmidt", firstname="Wilh."),            # nicht in der Tabelle
+         _v(id="7", teil="I", hausnr="4")]
+    a = gruppiere(e, [], lade_kuratierung(EIG))
+    by = {x["hausnr"]: x for x in a.values()}
+    assert by["1"]["besitz"] == "industrie" and by["2"]["besitz"] == "gemischt"
+    assert by["3"]["besitz"] == "ungeprueft" and by["4"]["besitz"] == "ungeprueft"
+    k = eintrag_kurz(by["1"]["eintraege"][0], [])
+    assert k["eigentuemer_kanon"] == "Fried. Krupp AG" and k["kategorie"] == "industrie"
+    assert eintrag_kurz(by["3"]["eintraege"][0], [])["eigentuemer_kanon"] == ""
+    assert eintrag_kurz(by["4"]["eintraege"][1], [])["kategorie"] == ""           # Teil I: nie
+    assert punkt_feature(by["2"])["properties"]["besitz"] == "gemischt"
+    # ohne Tabelle: alles ungeprüft
+    assert all(x["besitz"] == "ungeprueft" for x in gruppiere(e, []).values())
+
+
+def test_eigentuemerindex_und_kennzahlen():
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="2", teil="II", hausnr="2", **{"Firmenname": "Fried. Krupp AG."}),
+         _v(id="3", teil="II", hausnr="2", **{"Firmenname": "Fried. Krupp AG."}),
+         _v(id="4", teil="II", hausnr="3", **{"Firmenname": "Stadt Essen"}),
+         _v(id="5", teil="II", hausnr="4", **{"Firmenname": "Bauverein GmbH"})]
+    a = gruppiere(e, [], lade_kuratierung(EIG))
+    liste, scherben = baue_eigentuemerindex(a)
+    assert liste == [["fried krupp ag", "Fried. Krupp AG", 2, "industrie"], ["stadt essen", "Stadt Essen", 1, "stadt_staat"]]
+    ids = {x["hausnr"]: x["id"] for x in a.values()}
+    assert scherben["fr"]["Fried. Krupp AG"] == sorted([[ids["1"], 1], [ids["2"], 2]])
+    assert "Bauverein GmbH" not in str(scherben)
+    kz = baue_kennzahlen(e, a, "2026-09-22")
+    assert kz["besitz_geprueft"] == 3 and kz["eigentuemer_geprueft"] == 2
+
+
+def test_schreibe_paket_mit_eigentuemer(tmp_path):
+    e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Stadt Essen"})]
+    schreibe_paket(tmp_path, e, [], [], "2026-09-22", kacheln=False, eigentuemer=EIG)
+    assert json.loads((tmp_path / "suche" / "eigentuemer.json").read_text(encoding="utf-8")) == [["stadt essen", "Stadt Essen", 1, "stadt_staat"]]
+    assert (tmp_path / "suche" / "eigentuemer" / "st.json").exists()

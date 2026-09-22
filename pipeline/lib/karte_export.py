@@ -9,6 +9,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
+from pipeline.lib.eigentuemer import lade_kuratierung, schreibweise_von
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
 
@@ -67,9 +68,18 @@ def _stufe(e: dict) -> str:
     return "stadtplan" if e.get("herkunft") == "stadtplan_1935" else e["stufe"]
 
 
-def gruppiere(eintraege: list[dict], regeln: list[Regel]) -> dict[str, dict]:
-    """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale angehängt."""
+def _besitz(eintraege: list[dict]) -> str:
+    kats = {e["_kategorie"] for e in eintraege if e.get("teil") == "II" and e.get("_kategorie")}
+    if not kats:
+        return "ungeprueft"
+    return kats.pop() if len(kats) == 1 else "gemischt"
+
+
+def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None) -> dict[str, dict]:
+    """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale und (Teil II) geprüfter
+    Eigentümer angehängt; `besitz` je Adresse = Kategorie | gemischt | ungeprueft (Spec §6.1)."""
     gruppen: dict[str, dict] = {}
+    eigentuemer = eigentuemer or {}
     for e in eintraege:
         if e.get("stufe") not in VERORTET or not e.get("lat") or not e.get("lon"):
             continue
@@ -81,17 +91,24 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel]) -> dict[str, dict]:
                                     strasse_heute=e.get("strasse_heute", ""), hausnr=e.get("hausnr", ""),
                                     hausnr_zusatz=e.get("hausnr_zusatz", ""), historisch=_historisch(e),
                                     nummer_unsicher=e.get("nummer_unsicher", "nein"), eintraege=[])
-        e = dict(e, _merkmale=merkmale_fuer(e, regeln))
+        kanon, kat = "", ""
+        if e.get("teil") == "II":
+            s, _ = schreibweise_von(e)
+            z = eigentuemer.get(s)
+            if z and z.get("geprueft") == "ja" and z.get("kategorie"):
+                kanon, kat = z["eigentuemer"], z["kategorie"]
+        e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat)
         a["eintraege"].append(e)
     for a in gruppen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
+        a["besitz"] = _besitz(a["eintraege"])
     return gruppen
 
 
 def punkt_feature(a: dict) -> dict:
     p = dict(id=a["id"], stufe=a["stufe"], stadtteil=a["stadtteil"], strasse_heute=a["strasse_heute"],
              hausnr=a["hausnr"] + (a["hausnr_zusatz"] or ""), historisch=a["historisch"],
-             nummer_unsicher=a["nummer_unsicher"], n_I=0, n_II=0, n_III=0)
+             nummer_unsicher=a["nummer_unsicher"], besitz=a.get("besitz", "ungeprueft"), n_I=0, n_II=0, n_III=0)
     merkmale: dict[str, int] = defaultdict(int)
     for e in a["eintraege"]:
         p["n_" + e["teil"]] += 1
@@ -108,7 +125,8 @@ def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
                 stand=e.get("Familienstand", ""), bezug_vorname=e.get("Vorname Bezugsperson", ""),
                 bezug_beruf=e.get("Beruf Bezugsperson", ""), firma=e.get("Firmenname", ""),
                 eigentuemer=e.get("Eigentümer", ""), verwalter=e.get("Verwalter", ""),
-                wohnort=e.get("abweichender Wohnort", ""),
+                wohnort=e.get("abweichender Wohnort", ""), eigentuemer_kanon=e.get("_eigentuemer", ""),
+                kategorie=e.get("_kategorie", ""),
                 flags=[f for f in FLAGS if e.get(f) == "ja"], merkmale=list(merkmale))
 
 
@@ -217,6 +235,23 @@ def baue_berufsindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, d
     return liste, dict(scherben)
 
 
+def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
+    """Eigentümerindex (nur geprüfte, Spec §6.4): (Liste [Schlüssel, Name, Häuser, Kategorie] nach Häusern
+    absteigend, Scherbe praefix2(Name) → Name → [[Adress-ID, Zähler]])."""
+    zaehler: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    kategorie: dict[str, str] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            if e.get("_eigentuemer"):
+                zaehler[e["_eigentuemer"]][a["id"]] += 1
+                kategorie[e["_eigentuemer"]] = e["_kategorie"]
+    liste = sorted([[falte(n), n, len(z), kategorie[n]] for n, z in zaehler.items()], key=lambda x: (-x[2], x[0]))
+    scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
+    for n, z in zaehler.items():
+        scherben[praefix2(n)][n] = sorted([[aid, k] for aid, k in z.items()])
+    return liste, dict(scherben)
+
+
 def baue_stadtteile(adressen: dict[str, dict]) -> list[dict]:
     """Stadtteilindex: je Stadtteil ein dict mit Name, Breitengrad (Mittel), Längengrad (Mittel), Zeilenanzahl."""
     summen: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0, 0])  # lat, lon, adressen, zeilen
@@ -243,7 +278,9 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
     return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
                 stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
-                adressen=len(adressen), stand=datum)
+                adressen=len(adressen), stand=datum,
+                besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
+                eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}))
 
 
 def zechen_geojson(zeilen: list[dict]) -> dict:
@@ -324,13 +361,14 @@ def schreibe_themen(quelle: Path, ausgabe: Path) -> list[dict]:
 
 def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], zechen: list[dict],
                    datum: str, kacheln: bool = True, faksimile: list[dict] | None = None,
-                   beispiele: list[dict] | None = None, themen: Path | None = None) -> dict:
+                   beispiele: list[dict] | None = None, themen: Path | None = None,
+                   eigentuemer: list[dict] | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     if themen is not None:
         schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
-    adressen = gruppiere(eintraege, regeln)
+    adressen = gruppiere(eintraege, regeln, lade_kuratierung(eigentuemer or []))
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
@@ -351,6 +389,10 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     _json(ausgabe / "suche" / "berufe.json", liste)
     for name, inhalt in scherben.items():
         _json(ausgabe / "suche" / "berufe" / f"{name}.json", inhalt)
+    liste, scherben = baue_eigentuemerindex(adressen)
+    _json(ausgabe / "suche" / "eigentuemer.json", liste)
+    for name, inhalt in scherben.items():
+        _json(ausgabe / "suche" / "eigentuemer" / f"{name}.json", inhalt)
     _json(ausgabe / "suche" / "stadtteile.json", baue_stadtteile(adressen))
     _json(ausgabe / "zechen.geojson", zechen_geojson(zechen))
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
