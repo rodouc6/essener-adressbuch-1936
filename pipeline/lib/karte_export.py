@@ -237,14 +237,17 @@ def baue_berufsindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, d
 
 def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
     """Eigentümerindex (nur geprüfte, Spec §6.4): (Liste [Schlüssel, Name, Häuser, Kategorie] nach Häusern
-    absteigend, Scherbe praefix2(Name) → Name → [[Adress-ID, Zähler]])."""
+    absteigend, Scherbe praefix2(Name) → Name → [[Adress-ID, Zähler]]). Trägt derselbe kanonische Name in
+    verschiedenen Teil-II-Zeilen verschiedene Kategorien (Kuratierungsstand uneinheitlich), zeigt der
+    Index „gemischt“ statt der zuletzt gesehenen Kategorie (F5 — „last wins“ hätte das verschluckt)."""
     zaehler: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
-    kategorie: dict[str, str] = {}
+    kategorien: dict[str, set[str]] = defaultdict(set)
     for a in adressen.values():
         for e in a["eintraege"]:
             if e.get("_eigentuemer"):
                 zaehler[e["_eigentuemer"]][a["id"]] += 1
-                kategorie[e["_eigentuemer"]] = e["_kategorie"]
+                kategorien[e["_eigentuemer"]].add(e["_kategorie"])
+    kategorie = {n: (k.pop() if len(k) == 1 else "gemischt") for n, k in kategorien.items()}
     liste = sorted([[falte(n), n, len(z), kategorie[n]] for n, z in zaehler.items()], key=lambda x: (-x[2], x[0]))
     scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
     for n, z in zaehler.items():

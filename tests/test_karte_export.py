@@ -317,6 +317,20 @@ def test_eigentuemerindex_und_kennzahlen():
     assert kz["besitz_geprueft"] == 3 and kz["eigentuemer_geprueft"] == 2
 
 
+def test_eigentuemerindex_uneinheitliche_kategorie_wird_gemischt():
+    # F5: zwei Schreibweisen desselben kanonischen Namens mit unterschiedlicher Kategorie (Kuratierungsstand
+    # uneinheitlich, z. B. mitten in einer Zusammenführung) — der Index darf nicht einfach die zuletzt
+    # gesehene Kategorie übernehmen ("last wins"), sondern muss das als "gemischt" kennzeichnen.
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    eig = [_kur(schreibweise="Fried. Krupp A.G.", eigentuemer="Fried. Krupp AG", kategorie="industrie", geprueft="ja"),
+           _kur(schreibweise="Fried. Krupp AG.", eigentuemer="Fried. Krupp AG", kategorie="bergbau", geprueft="ja")]
+    e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="2", teil="II", hausnr="2", **{"Firmenname": "Fried. Krupp AG."})]
+    a = gruppiere(e, [], lade_kuratierung(eig))
+    liste, _ = baue_eigentuemerindex(a)
+    assert liste == [["fried krupp ag", "Fried. Krupp AG", 2, "gemischt"]]
+
+
 def test_schreibe_paket_mit_eigentuemer(tmp_path):
     e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Stadt Essen"})]
     schreibe_paket(tmp_path, e, [], [], "2026-09-22", kacheln=False, eigentuemer=EIG)
