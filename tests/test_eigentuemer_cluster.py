@@ -86,3 +86,78 @@ def test_clustere_complete_linkage_keine_kette():
 def test_auto_name():
     assert auto_name([("Fried. Krupp A.G.", 257), ("Fried. Krupp A. G.", 181)]) == "Fried. Krupp AG"
     assert auto_name([("Stadt Essen", 3)]) == "Stadt Essen"
+
+
+import json
+from pipeline.lib.eigentuemer import AUTOMATIK
+from werkzeuge.eigentuemer_cluster import aktualisiere_kuratierung, main, sammle, vorschlagszeilen
+
+
+def _z(**k):
+    z = dict(teil="II", id="1", Firmenname="", lastname="", firstname="", Adresse="", strasse_roh="Grenzstr.", hausnr="1",
+             hausnr_zusatz="", stadtteil="Katernberg", Verwalter="", page="II-001", lat="51.49", lon="7.06", stufe="haus")
+    z.update(k); return z
+
+
+def test_sammle_trennt_und_belegt():
+    e = [_z(id="1", Firmenname="Stadt Essen"), _z(id="2", Firmenname="Stadt Essen", hausnr="2"),
+         _z(id="3", lastname="Schmidt", firstname="Wilh."), _z(id="4", teil="I", lastname="Nicht", firstname="Teil II"),
+         _z(id="5", lat="", lon="", stufe="offen", Firmenname="Stadt Essen")]
+    k, p, belege = sammle(e)
+    assert k == {"Stadt Essen": 3} and p == {"Schmidt, Wilh.": 1}
+    assert [b["id"] for b in belege["Stadt Essen"]] == ["1", "2", "5"]
+    assert belege["Stadt Essen"][0] == dict(id="1", adresse="Grenzstr. 1", stadtteil="Katernberg", verwalter="", seite="II-001", lat=51.49, lon=7.06, stufe="haus")
+    assert belege["Stadt Essen"][2]["lat"] is None
+
+
+def test_vorschlagszeilen_und_pruefpflicht():
+    c = clustere({"Fried. Krupp A.G.": 6, "Fried. Krupp AG": 1, "Klein GmbH": 2}, KAT)
+    z = vorschlagszeilen(c, {"Schmidt, Wilh.": 7, "Meier, Karl": 2}, min_haeuser=5)
+    by = {x["schreibweise"]: x for x in z}
+    assert by["Fried. Krupp A.G."]["pruefpflichtig"] == "ja" and by["Fried. Krupp AG"]["pruefpflichtig"] == "ja"
+    assert by["Klein GmbH"]["pruefpflichtig"] == "nein"
+    assert by["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", anzahl="7", cluster_id=cluster_id("Schmidt, Wilh."),
+                                        cluster_name="Schmidt, Wilh.", aehnlichkeit="1.0", vorschlag_fuer="", pruefpflichtig="ja")
+    assert by["Meier, Karl"]["pruefpflichtig"] == "nein"
+    assert [x["schreibweise"] for x in z][:3] == ["Fried. Krupp A.G.", "Fried. Krupp AG", "Schmidt, Wilh."]   # nach Häusern absteigend, bei Gleichstand nach Name
+
+
+def test_aktualisiere_kuratierung_sperre():
+    alt = [dict(schreibweise="Stadt Essen", art="koerperschaft", eigentuemer="Stadt Essen", kategorie="stadt_staat", geprueft="ja", bearbeiter="christos", datum="2026-09-20", hinweis=""),
+           dict(schreibweise="Fried. Krupp A.G.", art="koerperschaft", eigentuemer="Altname", kategorie="industrie", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-20", hinweis="x"),
+           dict(schreibweise="Fried. Krupp AG.", art="koerperschaft", eigentuemer="Krupp", kategorie="", geprueft="", bearbeiter="christos", datum="2026-09-21", hinweis=""),
+           dict(schreibweise="Weg GmbH", art="koerperschaft", eigentuemer="Weg GmbH", kategorie="", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-20", hinweis="")]
+    vorschlag = [dict(schreibweise="Stadt Essen", art="koerperschaft", cluster_name="Stadt Essen (neu)"),
+                 dict(schreibweise="Fried. Krupp A.G.", art="koerperschaft", cluster_name="Fried. Krupp AG"),
+                 dict(schreibweise="Fried. Krupp AG.", art="koerperschaft", cluster_name="Fried. Krupp AG"),
+                 dict(schreibweise="Schmidt, Wilh.", art="person", cluster_name="Schmidt, Wilh.")]
+    neu = {z["schreibweise"]: z for z in aktualisiere_kuratierung(alt, vorschlag, "2026-09-22")}
+    assert neu["Stadt Essen"]["eigentuemer"] == "Stadt Essen"                       # geprüft: unverändert
+    assert neu["Fried. Krupp A.G."]["eigentuemer"] == "Fried. Krupp AG"             # Automatik-Zeile: neuer Vorschlag
+    assert neu["Fried. Krupp A.G."]["kategorie"] == "industrie" and neu["Fried. Krupp A.G."]["hinweis"] == "x"  # Kategorie/Hinweis bleiben
+    assert neu["Fried. Krupp A.G."]["datum"] == "2026-09-22"
+    assert neu["Fried. Krupp AG."]["eigentuemer"] == "Krupp"                        # vom Menschen angefasst: bleibt
+    assert neu["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", eigentuemer="Schmidt, Wilh.", kategorie="privatperson", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-22", hinweis="")
+    assert neu["Weg GmbH"]["eigentuemer"] == "Weg GmbH"                              # verwaist: bleibt stehen
+    assert list(neu) == ["Stadt Essen", "Fried. Krupp A.G.", "Fried. Krupp AG.", "Weg GmbH", "Schmidt, Wilh."]  # alte Reihenfolge, Neues hinten
+
+
+def test_main_schreibt_dateien(tmp_path):
+    (tmp_path / "build").mkdir(); (tmp_path / "kuratierung").mkdir()
+    import shutil; shutil.copy(W / "kuratierung" / "eigentuemer_abkuerzungen.csv", tmp_path / "kuratierung")
+    from pipeline.lib.io import schreib_csv
+    e = [_z(id="1", Firmenname="Stadt Essen"), _z(id="2", lastname="Schmidt", firstname="Wilh.")]
+    schreib_csv(tmp_path / "build" / "eintraege.csv", e, list(e[0]))
+    k = main(["--min-haeuser", "1", "--wurzel", str(tmp_path)])
+    assert k["koerperschaften"] == 1 and k["personen"] == 1 and k["pruefpflichtig"] == 2
+    assert (tmp_path / "build" / "eigentuemer_vorschlag.csv").exists()
+    belege = json.loads((tmp_path / "build" / "eigentuemer_belege.json").read_text(encoding="utf-8"))
+    assert belege["Stadt Essen"][0]["id"] == "1"
+    kur = lies_csv_test(tmp_path / "kuratierung" / "eigentuemer.csv")
+    assert [z["schreibweise"] for z in kur] == ["Stadt Essen", "Schmidt, Wilh."]
+    assert kur[1]["kategorie"] == "privatperson"
+
+
+def lies_csv_test(p):
+    from pipeline.lib.io import lies_csv
+    return lies_csv(p)

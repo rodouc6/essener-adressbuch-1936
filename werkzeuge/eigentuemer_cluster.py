@@ -6,7 +6,10 @@ und legt fehlende Zeilen in kuratierung/eigentuemer.csv an (gesperrte Zeilen ble
 """
 from __future__ import annotations
 
+import argparse
+import datetime
 import hashlib
+import json
 import re
 import sys
 import unicodedata
@@ -15,7 +18,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.lib.io import lies_csv
+from pipeline.lib.eigentuemer import AUTOMATIK, FELDER_KURATIERUNG, gesperrt, lade_kuratierung, schreibweise_von
+from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 # Rechtsformen: Buchschreibungen wie „A.G.“, „A. G.“, „A.-G.“, „AG.“, „A. -G.“ → ein Token.
 # Case-insensitiv nur in den eigenen Buchstaben (Scoped-Group `(?i:...)`), damit die nachfolgende
@@ -184,3 +188,99 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
         c["schluessel"] = c["schluessel"][0]
         c["aehnlichkeit"] = round(c["aehnlichkeit"], 3)
     return sorted(fertig, key=lambda c: (-c["haeuser"], c["name"]))
+
+
+VORSCHLAG_FELDER = ["schreibweise", "art", "anzahl", "cluster_id", "cluster_name", "aehnlichkeit", "vorschlag_fuer", "pruefpflichtig"]
+
+
+def _zahl(v: str):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def sammle(eintraege: list[dict]) -> tuple[dict[str, int], dict[str, int], dict[str, list[dict]]]:
+    """Teil-II-Zeilen → (Zähler Körperschaften, Zähler Personen, Belege je Schreibweise, Spec §3.2)."""
+    koerper: dict[str, int] = defaultdict(int)
+    personen: dict[str, int] = defaultdict(int)
+    belege: dict[str, list[dict]] = defaultdict(list)
+    for e in eintraege:
+        if e.get("teil") != "II":
+            continue
+        s, art = schreibweise_von(e)
+        if not s:
+            continue
+        (koerper if art == "koerperschaft" else personen)[s] += 1
+        nr = ((e.get("hausnr") or "") + (e.get("hausnr_zusatz") or "")).strip()
+        belege[s].append(dict(id=e.get("id", ""), adresse=" ".join(x for x in (e.get("strasse_roh", ""), nr) if x),
+                              stadtteil=e.get("stadtteil", "") or e.get("Vorort", ""), verwalter=e.get("Verwalter", ""),
+                              seite=e.get("page", ""), lat=_zahl(e.get("lat")), lon=_zahl(e.get("lon")), stufe=e.get("stufe", "")))
+    return dict(koerper), dict(personen), dict(belege)
+
+
+def vorschlagszeilen(cluster: list[dict], personen: dict[str, int], min_haeuser: int) -> list[dict]:
+    zeilen: list[dict] = []
+    for c in cluster:
+        for s, n in c["mitglieder"]:
+            zeilen.append(dict(schreibweise=s, art="koerperschaft", anzahl=str(n), cluster_id=c["id"], cluster_name=c["name"],
+                               aehnlichkeit=str(c["aehnlichkeit"]), vorschlag_fuer=c["vorschlag_fuer"],
+                               pruefpflichtig="ja" if c["haeuser"] >= min_haeuser else "nein", _haeuser=c["haeuser"]))
+    for s, n in personen.items():
+        zeilen.append(dict(schreibweise=s, art="person", anzahl=str(n), cluster_id=cluster_id(s), cluster_name=s,
+                           aehnlichkeit="1.0", vorschlag_fuer="", pruefpflichtig="ja" if n >= min_haeuser else "nein", _haeuser=n))
+    zeilen.sort(key=lambda z: (-z["_haeuser"], z["art"], z["cluster_name"], -int(z["anzahl"]), z["schreibweise"]))
+    for z in zeilen:
+        z.pop("_haeuser")
+    return zeilen
+
+
+def aktualisiere_kuratierung(alt: list[dict], vorschlag: list[dict], datum: str) -> list[dict]:
+    """Gesperrte Zeilen (geprüft oder vom Menschen angefasst) bleiben; Automatik-Zeilen bekommen den neuen
+    Vorschlag (Kategorie und Hinweis bleiben); Fehlendes wird angehängt; Verwaistes bleibt stehen."""
+    bekannt = lade_kuratierung(alt)
+    out: list[dict] = [dict(z) for z in alt]
+    index = {z["schreibweise"].strip(): i for i, z in enumerate(out)}
+    for v in vorschlag:
+        s = v["schreibweise"]
+        if s in bekannt:
+            if gesperrt(bekannt[s]):
+                continue
+            z = out[index[s]]
+            if z.get("eigentuemer", "").strip() != v["cluster_name"]:
+                z.update(eigentuemer=v["cluster_name"], datum=datum)
+        else:
+            out.append(dict(schreibweise=s, art=v["art"], eigentuemer=v["cluster_name"],
+                            kategorie="privatperson" if v["art"] == "person" else "", geprueft="",
+                            bearbeiter=AUTOMATIK, datum=datum, hinweis=""))
+    return out
+
+
+def main(argv: list[str] | None = None) -> dict:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--min-haeuser", type=int, default=5)
+    ap.add_argument("--wurzel", default=None, help="Projektwurzel (Tests)")
+    a = ap.parse_args(argv)
+    W = Path(a.wurzel) if a.wurzel else projektwurzel()
+    katalog = lade_katalog(W / "kuratierung" / "eigentuemer_abkuerzungen.csv")
+    koerper, personen, belege = sammle(lies_csv(W / "build" / "eintraege.csv"))
+    cluster = clustere(koerper, katalog)
+    vorschlag = vorschlagszeilen(cluster, personen, a.min_haeuser)
+    schreib_csv(W / "build" / "eigentuemer_vorschlag.csv", vorschlag, VORSCHLAG_FELDER)
+    (W / "build" / "eigentuemer_belege.json").write_text(json.dumps(belege, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    pfad = W / "kuratierung" / "eigentuemer.csv"
+    alt = lies_csv(pfad) if pfad.exists() else []
+    neu = aktualisiere_kuratierung(alt, vorschlag, datetime.date.today().isoformat())
+    schreib_csv(pfad, neu, FELDER_KURATIERUNG)
+    k = dict(koerperschaften=len(cluster), schreibweisen=len(koerper), personen=len(personen),
+             pruefpflichtig=sum(1 for c in cluster if c["haeuser"] >= a.min_haeuser) + sum(1 for n in personen.values() if n >= a.min_haeuser),
+             pruefpflichtig_koerperschaften=sum(1 for c in cluster if c["haeuser"] >= a.min_haeuser),
+             haeuser_pruefpflichtig=sum(c["haeuser"] for c in cluster if c["haeuser"] >= a.min_haeuser),
+             haeuser_koerperschaften=sum(koerper.values()), vorschlaege=sum(1 for c in cluster if c["vorschlag_fuer"]),
+             kuratierung_zeilen=len(neu))
+    print(json.dumps(k, ensure_ascii=False, indent=1))
+    return k
+
+
+if __name__ == "__main__":
+    main()
