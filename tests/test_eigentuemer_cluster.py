@@ -45,3 +45,44 @@ def test_rechtsform_nicht_bei_initialen():
     assert normalisiere("Gelsenk. Bergw. A.G., Abt. II", KAT).startswith("gelsenk bergwerks ag")
     assert rechtsform_anzeige("A. G. Müller") == "A. G. Müller"
     assert rechtsform_anzeige("Fried. Krupp, A. G.") == "Fried. Krupp AG"
+
+
+from werkzeuge.eigentuemer_cluster import auto_name, cluster_id, clustere
+
+
+def test_clustere_krupp_zusammen_pfarreien_getrennt():
+    z = {"Fried. Krupp A.G.": 257, "Fried. Krupp A. G.": 181, "Fried. Krupp A.-G.": 79, "Friedr. Krupp A.G.": 40,
+         "Fried. Krupp AG": 9, "Frau-Margarete-Krupp-Stiftung": 31,
+         "Kath. Kirchengemeinde St. Josef": 12, "Kath. Kirchengemeinde St. Andreas": 8,
+         "Stadt Essen": 1027}
+    c = clustere(z, KAT)
+    namen = {x["name"]: x for x in c}
+    krupp = namen["Fried. Krupp AG"]
+    assert [m[0] for m in krupp["mitglieder"]] == ["Fried. Krupp A.G.", "Fried. Krupp A. G.", "Fried. Krupp A.-G.", "Friedr. Krupp A.G.", "Fried. Krupp AG"]
+    assert krupp["haeuser"] == 566 and krupp["aehnlichkeit"] == 1.0
+    assert "Frau-Margarete-Krupp-Stiftung" in namen                     # nicht mit Krupp AG verschmolzen
+    assert "Kath. Kirchengemeinde St. Josef" in namen and "Kath. Kirchengemeinde St. Andreas" in namen
+    assert c[0]["name"] == "Stadt Essen"                                 # nach Häusern sortiert
+    assert krupp["id"] == cluster_id("friedrich krupp ag") and len(krupp["id"]) == 10
+
+
+def test_clustere_grenzfall_wird_vorschlag():
+    # Gleicher Block „gewerkschaft“; Token-Set-Ähnlichkeit zwischen 0,75 und 0,92 → kein Merge, aber Vorschlag
+    z = {"Gewerkschaft Viktoria Mathias": 79, "Gewerksch. Viktoria Mathias": 67, "Gewerkschaft Viktoria Mathias Schacht 3": 4}
+    c = clustere(z, KAT)
+    gross = next(x for x in c if x["haeuser"] == 146)
+    klein = next(x for x in c if x["haeuser"] == 4)
+    assert len(gross["mitglieder"]) == 2 and gross["vorschlag_fuer"] == ""
+    assert klein["vorschlag_fuer"] == gross["id"]
+
+
+def test_clustere_complete_linkage_keine_kette():
+    # a~b und b~c ähnlich, a~c nicht → höchstens zwei zusammen, nie alle drei
+    z = {"Bauverein Essen Nord": 5, "Bauverein Essen Nord West": 5, "Bauverein Essen West Süd": 5}
+    c = clustere(z, KAT, schwelle=0.8, vorschlag_ab=0.5)
+    assert max(len(x["mitglieder"]) for x in c) <= 2
+
+
+def test_auto_name():
+    assert auto_name([("Fried. Krupp A.G.", 257), ("Fried. Krupp A. G.", 181)]) == "Fried. Krupp AG"
+    assert auto_name([("Stadt Essen", 3)]) == "Stadt Essen"

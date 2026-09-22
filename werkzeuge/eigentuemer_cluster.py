@@ -104,3 +104,83 @@ def rechtsform_anzeige(name: str) -> str:
         t = muster.sub(" " + ANZEIGE[ersatz] + " ", t)
     t = re.sub(r"\s*,\s*(AG|GmbH|eGmbH|KG|e\. V\.)\b", r" \1", t)
     return re.sub(r"\s+", " ", t).strip()
+
+
+from rapidfuzz import fuzz
+
+
+def cluster_id(schluessel: str) -> str:
+    return hashlib.sha1(schluessel.encode("utf-8")).hexdigest()[:10]
+
+
+def auto_name(mitglieder: list[tuple[str, int]]) -> str:
+    """Häufigste Schreibweise mit vereinheitlichter Rechtsform (Spec §4.4)."""
+    return rechtsform_anzeige(max(mitglieder, key=lambda m: (m[1], -len(m[0])))[0])
+
+
+def _block(schluessel: str) -> str:
+    for tok in schluessel.split():
+        if tok not in RECHTSFORM_TOKENS and tok not in STOPP:
+            return tok
+    return schluessel
+
+
+def _sim(a: str, b: str) -> float:
+    # token_sort_ratio statt token_set_ratio: bei Teilmengen („… Schacht 3“) liefert token_set_ratio 1,0
+    # und würde Teilanlagen in die Zeche mergen; precision first (Ruling Vorprüfung).
+    return fuzz.token_sort_ratio(a, b) / 100.0
+
+
+def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, vorschlag_ab: float = 0.75) -> list[dict]:
+    """Schreibweise → Anzahl zu Clustern (Spec §4.3): exakt gleicher Schlüssel, dann Complete-Linkage
+    innerhalb eines Blocks (erstes signifikantes Token); Grenzfälle als vorschlag_fuer."""
+    # 1. exakte Gruppen
+    gruppen: dict[str, list[tuple[str, int]]] = defaultdict(list)
+    for s, n in zaehler.items():
+        gruppen[normalisiere(s, katalog)].append((s, n))
+    cluster: list[dict] = [dict(schluessel=[k], mitglieder=sorted(m, key=lambda x: (-x[1], x[0])), aehnlichkeit=1.0)
+                           for k, m in gruppen.items()]
+    # 2. Complete-Linkage je Block
+    bloecke: dict[str, list[dict]] = defaultdict(list)
+    for c in cluster:
+        bloecke[_block(c["schluessel"][0])].append(c)
+    fertig: list[dict] = []
+    for block in bloecke.values():
+        aktiv = list(block)
+        while True:
+            bestes = None
+            for i in range(len(aktiv)):
+                for j in range(i + 1, len(aktiv)):
+                    mn = min(_sim(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
+                    if mn >= schwelle and (bestes is None or mn > bestes[0]):
+                        bestes = (mn, i, j)
+            if bestes is None:
+                break
+            mn, i, j = bestes
+            a, b = aktiv[i], aktiv[j]
+            neu = dict(schluessel=a["schluessel"] + b["schluessel"],
+                       mitglieder=sorted(a["mitglieder"] + b["mitglieder"], key=lambda x: (-x[1], x[0])),
+                       aehnlichkeit=min(a["aehnlichkeit"], b["aehnlichkeit"], mn))
+            aktiv = [c for k, c in enumerate(aktiv) if k not in (i, j)] + [neu]
+        for c in aktiv:
+            c["haeuser"] = sum(n for _, n in c["mitglieder"])
+            c["name"] = auto_name(c["mitglieder"])
+            c["id"] = cluster_id(normalisiere(c["mitglieder"][0][0], katalog))
+            c["vorschlag_fuer"] = ""
+        # 3. Grenzfälle: kleinerer Cluster → Vorschlag auf den größeren mit der höchsten Ähnlichkeit
+        for i in range(len(aktiv)):
+            for j in range(len(aktiv)):
+                if i == j:
+                    continue
+                klein, gross = aktiv[i], aktiv[j]
+                if (gross["haeuser"], gross["name"]) <= (klein["haeuser"], klein["name"]):
+                    continue
+                mx = max(_sim(a, b) for a in klein["schluessel"] for b in gross["schluessel"])
+                if vorschlag_ab <= mx < schwelle and mx > klein.get("_vorschlag_sim", 0.0):
+                    klein["vorschlag_fuer"], klein["_vorschlag_sim"] = gross["id"], mx
+        fertig.extend(aktiv)
+    for c in fertig:
+        c.pop("_vorschlag_sim", None)
+        c["schluessel"] = c["schluessel"][0]
+        c["aehnlichkeit"] = round(c["aehnlichkeit"], 3)
+    return sorted(fertig, key=lambda c: (-c["haeuser"], c["name"]))
