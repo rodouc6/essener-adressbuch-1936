@@ -29,7 +29,7 @@ export class Sidebar {
   setzeVorschlaege(g) {
     if (!g || g.gesamt === 0) { this.vorschlaegeEl.hidden = true; this._vorschlagListe = []; return; }
     const liste = []; let html = "";
-    for (const [k, titel] of [["personen", "Personen"], ["strassen", "Straßen"], ["firmen", "Firmen"], ["berufe", "Berufe"]]) {
+    for (const [k, titel] of [["personen", "Personen"], ["strassen", "Straßen"], ["firmen", "Firmen"], ["berufe", "Berufe"], ["eigentuemer", "Eigentümer"]]) {
       if (!g[k].length) continue;
       html += `<div class="gruppe">${titel}</div>`;
       for (const v of g[k]) {
@@ -110,12 +110,17 @@ export class Sidebar {
     this.setzeStufe("voll");
   }
 
-  zeigeThema(thema) {
+  zeigeThema(thema, groesste = null) {
     if (!thema) { this.themenkopf.hidden = true; this.themenkopf.innerHTML = ""; return; }
     this.themenkopf.innerHTML = `<div class="thema"><b>${esc(thema.titel)}</b><p>${esc(thema.text)}</p><small>${esc(thema.grundlage)}</small>` +
       `<button data-thema-aus="1">Thema verlassen</button></div>`;
     this.themenkopf.hidden = false;
     this.themenkopf.querySelector("[data-thema-aus]").addEventListener("click", () => this.a.onZustand({ thema: "" }));
+    if (groesste && groesste.length) {
+      this.themenkopf.insertAdjacentHTML("beforeend", `<div class="gruppe">Größte Eigentümer</div><div class="eigentuemerliste">` +
+        groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
+      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onZustand({ q: "", beruf: "", eigentuemer: b.dataset.eigentuemer, id: "" })));
+    }
   }
 
   zeigeThemenliste(themen) {

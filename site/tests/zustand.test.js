@@ -44,3 +44,9 @@ test("zustandGleich vergleicht tief", () => {
   assert.ok(zustandGleich(liesZustand("?ebene=I,II"), { ...STANDARD, ebene: ["I", "II"] }));
   assert.ok(!zustandGleich(STANDARD, { ...STANDARD, q: "x" }));
 });
+
+test("eigentuemer im Zustand", () => {
+  const z = liesZustand("?eigentuemer=Fried.+Krupp+AG");
+  assert.equal(z.eigentuemer, "Fried. Krupp AG");
+  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: "Stadt Essen" }), "eigentuemer=Stadt+Essen");
+});

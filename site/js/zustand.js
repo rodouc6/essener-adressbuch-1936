@@ -1,6 +1,6 @@
 // Der gesamte Zustand der Kartenseite liegt in der URL (Spec §4): reproduzierbare Links.
 export const STANDARD = Object.freeze({
-  q: "", ebene: ["I", "II", "III"], stadtteil: "", praez: ["haus", "strasse", "stadtplan"], beruf: "",
+  q: "", ebene: ["I", "II", "III"], stadtteil: "", praez: ["haus", "strasse", "stadtplan"], beruf: "", eigentuemer: "",
   thema: "", id: "", karte: "positron", plan: 0, zechen: 0, z: null, c: null,
 });
 const EBENEN = ["I", "II", "III"];
@@ -29,6 +29,7 @@ export function liesZustand(search) {
     stadtteil: p.get("stadtteil") || "",
     praez: liste(p.get("praez"), PRAEZ, STANDARD.praez),
     beruf: p.get("beruf") || "",
+    eigentuemer: p.get("eigentuemer") || "",
     thema: p.get("thema") || "",
     id: p.get("id") || "",
     karte: KARTEN.includes(p.get("karte")) ? p.get("karte") : STANDARD.karte,

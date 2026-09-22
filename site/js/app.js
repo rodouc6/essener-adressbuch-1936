@@ -98,7 +98,10 @@ async function setzeZustand(patch, push, nurKarte = false) {
     karte.setzeFilter(zustand);
     karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   }
-  if (alt.beruf !== zustand.beruf) { auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : null; await sucheAusfuehren(); }
+  if (alt.beruf !== zustand.beruf || alt.eigentuemer !== zustand.eigentuemer) {
+    auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : zustand.eigentuemer ? { art: "eigentuemer", name: zustand.eigentuemer } : null;
+    await sucheAusfuehren();
+  }
   else await zeigeInhalt();
   zeichneSteuerung(); zeichneLegende();
 }
@@ -106,7 +109,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
 async function wendeThemaAn() {
   const t = zustand.thema ? await ladeThema(lader, zustand.thema) : null;
   themaAktiv = t;
-  sidebar.zeigeThema(t);
+  sidebar.zeigeThema(t, t && t.zusatz && t.zusatz.eigentuemerliste ? await lader.eigentuemer() : null);
   karte.setzeFarbe(t ? t.farbregel : null);
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
@@ -145,7 +148,8 @@ async function waehleVorschlag(v) {
   sidebar.setzeVorschlaege(null);
   sidebar.suche.value = v.text;
   if (v.art === "person" || v.art === "firma") { setzeZustand({ q: v.text, id: v.adressId }, true, true); return oeffneHaus(v.adressId, v.eintragId); }
-  if (v.art === "beruf") return setzeZustand({ q: "", beruf: v.beruf }, true);
+  if (v.art === "beruf") return setzeZustand({ q: "", eigentuemer: "", beruf: v.beruf }, true);
+  if (v.art === "eigentuemer") return setzeZustand({ q: "", beruf: "", eigentuemer: v.name }, true);
   // v.art === "strasse": v trägt bereits name/artName/ort/schluessel, treffer() lädt die IDs selbst.
   // q wird als reiner Name geschrieben (nicht v.text mit "(Ort)") — sonst kann strasseAusZustand()
   // die URL bei Reload/Zurück/Vor nicht mehr auflösen (Fix-Runde 1).
@@ -177,7 +181,7 @@ async function strasseAusZustand(q) {
 async function sucheAusText(q) {
   const s = await strasseAusZustand(q);
   auswahl = s || { art: "person", q };
-  setzeZustand({ q, id: "" }, true, true);
+  setzeZustand({ q, id: "", beruf: "", eigentuemer: "" }, true, true);
   await sucheAusfuehren();
 }
 
@@ -258,7 +262,7 @@ function zeichneLegende() {
 async function exportiere() {
   if (!ergebnis) return;
   const csv = await csvAusTreffern(ergebnis, lader, await eigMap(ergebnis.adressIds));
-  herunterladen(csv, `essen1936-${(zustand.q || zustand.beruf || "treffer").replace(/[^\w]+/g, "_")}.csv`);
+  herunterladen(csv, `essen1936-${(zustand.q || zustand.beruf || zustand.eigentuemer || "treffer").replace(/[^\w]+/g, "_")}.csv`);
 }
 
 // Suchfeld
@@ -276,7 +280,7 @@ sidebar.suche.addEventListener("input", () => {
   }, 120);
 });
 sidebar.suche.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { sidebar.setzeVorschlaege(null); sucheAusText(sidebar.suche.value.trim()); } });
-document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "" }, true, true); sucheAusfuehren(); });
+document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "", beruf: "", eigentuemer: "" }, true, true); sucheAusfuehren(); });
 document.addEventListener("click", (ev) => { if (!ev.target.closest(".suchfeld")) sidebar.setzeVorschlaege(null); });
 window.addEventListener("popstate", async () => {
   zustand = gateZustand(liesZustand(location.search));
@@ -297,6 +301,7 @@ async function start() {
   karte.setzeFilter(zustand); karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   zeichneSteuerung(); zeichneLegende();
   if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
+  else if (zustand.eigentuemer) auswahl = { art: "eigentuemer", name: zustand.eigentuemer };
   else if (zustand.q) {
     const s = await strasseAusZustand(zustand.q);
     auswahl = s || { art: "person", q: zustand.q };

@@ -18,6 +18,8 @@ const DATEIEN = {
   "daten/suche/strassen/la.json": { "Lattenkamp|heute|Katernberg": ["a1", "b2"] },
   "daten/suche/berufe.json": [["bergm", "Bergm.", 2], ["kfm", "Kfm.", 1]],
   "daten/suche/berufe/be.json": { "Bergm.": [["a1", 1], ["b2", 1]] },
+  "daten/suche/eigentuemer.json": [["fried krupp ag", "Fried. Krupp AG", 2, "industrie"], ["stadt essen", "Stadt Essen", 1, "stadt_staat"]],
+  "daten/suche/eigentuemer/fr.json": { "Fried. Krupp AG": [["a1", 1], ["b2", 2]] },
 };
 const fetchFake = async (url) => ({
   ok: url in DATEIEN, status: url in DATEIEN ? 200 : 404, json: async () => DATEIEN[url],
@@ -72,6 +74,16 @@ test("treffer für Straße, Beruf und Person", async () => {
   const p = await treffer({ art: "person", q: "Sepeur" }, lader());
   assert.deepEqual(p.adressIds, ["b2", "a1"]);
   assert.equal(p.personen.length, 2);
+});
+
+test("Vorschlagsart Eigentümer und Treffermenge", async () => {
+  const l = lader();
+  const v = await vorschlaege("fried", l);
+  assert.deepEqual(v.eigentuemer, [{ art: "eigentuemer", text: "Fried. Krupp AG", untertitel: "2 Häuser · Industrie", name: "Fried. Krupp AG" }]);
+  assert.equal(v.gesamt_eigentuemer, 1);
+  const t = await treffer({ art: "eigentuemer", name: "Fried. Krupp AG" }, l);
+  assert.deepEqual(t.adressIds, ["a1", "b2"]);
+  assert.equal(t.zaehler.get("b2"), 2);
 });
 
 test("Hinweis auf Lücke H–J", async () => {

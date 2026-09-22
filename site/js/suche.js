@@ -1,6 +1,7 @@
 import { falte, praefix2 } from "./schluessel.js";
+import { KATEGORIEN } from "./kategorien.js";
 
-const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3 };
+const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3 };
 
 export function hinweisHJ(q) {
   const k = falte(q);
@@ -23,25 +24,28 @@ function strasse(s) {
 // vorschlaege(); dafür startet der Aufrufer die eigentliche Personensuche (sucheAusText).
 export async function vorschlaege(q, lader, alle = {}) {
   const k = falte(q);
-  const leer = { personen: [], strassen: [], firmen: [], berufe: [], gesamt: 0,
-                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0 };
+  const leer = { personen: [], strassen: [], firmen: [], berufe: [], eigentuemer: [], gesamt: 0,
+                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0, gesamt_eigentuemer: 0 };
   if (k.length < 2) return leer;
-  const [namen, firmen, strassen, berufe] = await Promise.all([
-    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe()]);
+  const [namen, firmen, strassen, berufe, eigentuemer] = await Promise.all([
+    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.eigentuemer()]);
   const alleP = (namen || []).filter((z) => z[0].startsWith(k)).map(person);
   const alleS = (strassen || []).filter((s) => s.schluessel.startsWith(k)).map(strasse);
   const alleF = (firmen || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "firma", text: z[1], untertitel: z[2], eintragId: z[3], adressId: z[4] }));
   const alleB = (berufe || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "beruf", text: z[1], untertitel: `${z[2]} Einträge`, beruf: z[1] }));
+  const alleE = (eigentuemer || []).filter((z) => z[0].startsWith(k))
+    .map((z) => ({ art: "eigentuemer", text: z[1], untertitel: `${z[2]} Häuser · ${KATEGORIEN[z[3]] || z[3]}`, name: z[1] }));
   return {
     personen: alleP.slice(0, MAX.personen),
     strassen: alle.strassen ? alleS : alleS.slice(0, MAX.strassen),
     firmen: alle.firmen ? alleF : alleF.slice(0, MAX.firmen),
     berufe: alle.berufe ? alleB : alleB.slice(0, MAX.berufe),
-    gesamt: alleP.length + alleS.length + alleF.length + alleB.length,
+    eigentuemer: alle.eigentuemer ? alleE : alleE.slice(0, MAX.eigentuemer),
+    gesamt: alleP.length + alleS.length + alleF.length + alleB.length + alleE.length,
     gesamt_personen: alleP.length, gesamt_strassen: alleS.length,
-    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length,
+    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length, gesamt_eigentuemer: alleE.length,
   };
 }
 
@@ -67,6 +71,9 @@ export async function treffer(auswahl, lader) {
     hinweis = personen.length === 0 && hinweisHJ(auswahl.q);
   } else if (auswahl.art === "firma") {
     zaehler.set(auswahl.adressId, 1);
+  } else if (auswahl.art === "eigentuemer") {
+    const s = await lader.eigentuemerScherbe(praefix2(auswahl.name));
+    for (const [a, n] of (s && s[auswahl.name]) || []) zaehler.set(a, n);
   }
   return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis };
 }
