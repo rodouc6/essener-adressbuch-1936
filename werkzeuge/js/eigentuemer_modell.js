@@ -109,10 +109,17 @@ export function zusammenfuehren(m, quelle, ziel) {
   return [...zs, ...entpruefe(zielZeilen)];
 }
 
+// Vorschläge gelten je Schreibweise (nicht je Gruppe) — nur diese eine Zeile wandert zum Ziel,
+// der Rest ihrer bisherigen Gruppe bleibt unverändert dort stehen.
 export function uebernehmeVorschlag(m, schreibweise, ziel) {
   const z = m.zeilen.get(schreibweise);
   if (!z) return [];
-  return zusammenfuehren(m, z.eigentuemer, ziel).filter((x) => x === z || x.eigentuemer === ziel);
+  const zielZeilen = zeilenVon(m, ziel);
+  if (!zielZeilen.length || z.eigentuemer === ziel) return [];
+  merke(m);
+  const alteGruppe = zeilenVon(m, z.eigentuemer).filter((x) => x !== z);
+  z.eigentuemer = ziel; z.kategorie = zielZeilen[0].kategorie; z.geprueft = "";
+  return [z, ...entpruefe(alteGruppe), ...entpruefe(zielZeilen)];
 }
 
 export function rueckgaengig(m) {

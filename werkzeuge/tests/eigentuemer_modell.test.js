@@ -52,7 +52,7 @@ test("abspalten, zusammenführen, Vorschlag übernehmen", () => {
   const z = zusammenfuehren(m, "Fried. Krupp AG.", "Fried. Krupp AG");
   assert.deepEqual(z.map((x) => x.eigentuemer), ["Fried. Krupp AG"]);
   setzeKategorie(m, "Fried. Krupp AG", "industrie");
-  const u = uebernehmeVorschlag(m, "Krupp Stiftung", "Fried. Krupp AG").filter((x) => x.schreibweise === "Krupp Stiftung");
+  const u = uebernehmeVorschlag(m, "Krupp Stiftung", "Fried. Krupp AG");
   assert.deepEqual(u.map((x) => [x.schreibweise, x.eigentuemer, x.kategorie, x.geprueft]), [["Krupp Stiftung", "Fried. Krupp AG", "industrie", ""]]);
   assert.equal(eigentuemerListe(m)[1].haeuser, 9);
   // Zusammenführen hebt „geprüft“ des Ziels auf, weil sich sein Bestand geändert hat
@@ -70,4 +70,16 @@ test("rückgängig stellt den vorigen Stand her und liefert die geänderten Zeil
   r = rueckgaengig(m);
   assert.deepEqual(r.map((z) => z.kategorie), ["", ""]);
   assert.equal(rueckgaengig(m), null);
+});
+
+test("Vorschlag übernehmen bewegt nur die eine Schreibweise", () => {
+  const m = frisch();
+  // Krupp Stiftung bekommt eine zweite Schreibweise in derselben Gruppe
+  m.zeilen.set("Krupp-Stiftung Essen", { schreibweise: "Krupp-Stiftung Essen", art: "koerperschaft", eigentuemer: "Krupp Stiftung", kategorie: "", geprueft: "", hinweis: "", anzahl: 3, cluster_id: "k2", pruefpflichtig: false, verwaist: false });
+  setzeGeprueft(m, "Fried. Krupp AG", true);
+  const u = uebernehmeVorschlag(m, "Krupp Stiftung", "Fried. Krupp AG");
+  assert.deepEqual(u.map((x) => [x.schreibweise, x.eigentuemer, x.geprueft]).sort(),
+    [["Fried. Krupp A.G.", "Fried. Krupp AG", ""], ["Fried. Krupp AG.", "Fried. Krupp AG", ""], ["Krupp Stiftung", "Fried. Krupp AG", ""]]);
+  assert.equal(m.zeilen.get("Krupp-Stiftung Essen").eigentuemer, "Krupp Stiftung");   // bleibt zurück
+  assert.equal(uebernehmeVorschlag(m, "Krupp Stiftung", "Fried. Krupp AG").length, 0); // schon dort
 });
