@@ -461,7 +461,9 @@ def _block(schluessel: str) -> str:
 
 
 def _sim(a: str, b: str) -> float:
-    return fuzz.token_set_ratio(a, b) / 100.0
+    # token_sort_ratio statt token_set_ratio: bei Teilmengen („… Schacht 3“) liefert token_set_ratio 1,0
+    # und würde Teilanlagen in die Zeche mergen; precision first (Ruling Vorprüfung).
+    return fuzz.token_sort_ratio(a, b) / 100.0
 
 
 def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, vorschlag_ab: float = 0.75) -> list[dict]:
@@ -522,7 +524,7 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
 - [ ] **Step 4: Tests laufen lassen**
 
 Run: `python3 -m pytest tests/test_eigentuemer_cluster.py -q`
-Expected: 8 passed. Falls `test_clustere_grenzfall_wird_vorschlag` scheitert, weil die Ähnlichkeit ≥ 0,92 ist (Token-Set-Ratio ist bei Teilmengen großzügig): Testdaten so ändern, dass das dritte Mitglied „Gewerkschaft Viktoria Mathias, Zeche Schacht 3“ heißt, und die tatsächliche Zahl mit `python3 -c "from rapidfuzz import fuzz; print(fuzz.token_set_ratio('gewerkschaft viktoria mathias','gewerkschaft viktoria mathias zeche schacht 3'))"` prüfen; liegt sie weiterhin ≥ 92, in `_sim` `fuzz.token_sort_ratio` statt `token_set_ratio` verwenden (Spec-Nachtrag im Commit nennen).
+Expected: 8 passed. Das Ähnlichkeitsmaß ist `token_sort_ratio` (Spec §4.3 nennt Token-Set-Ratio; geändert, weil Token-Set bei Teilmengen 1,0 liefert — im Commit als Spec-Nachtrag nennen).
 
 - [ ] **Step 5: Commit**
 
@@ -581,7 +583,7 @@ def test_vorschlagszeilen_und_pruefpflicht():
     assert by["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", anzahl="7", cluster_id=cluster_id("Schmidt, Wilh."),
                                         cluster_name="Schmidt, Wilh.", aehnlichkeit="1.0", vorschlag_fuer="", pruefpflichtig="ja")
     assert by["Meier, Karl"]["pruefpflichtig"] == "nein"
-    assert [x["schreibweise"] for x in z][:2] == ["Schmidt, Wilh.", "Fried. Krupp A.G."]   # nach Häusern absteigend
+    assert [x["schreibweise"] for x in z][:3] == ["Fried. Krupp A.G.", "Fried. Krupp AG", "Schmidt, Wilh."]   # nach Häusern absteigend, bei Gleichstand nach Name
 
 
 def test_aktualisiere_kuratierung_sperre():
