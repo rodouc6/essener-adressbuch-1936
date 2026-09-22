@@ -1,0 +1,31 @@
+kurz,lang,kontext,beleg
+fried,friedrich,,v1-Katalog geprüft
+friedr,friedrich,,v1-Katalog geprüft
+bergw,bergwerks,,v1-Katalog geprüft
+bergwerksver,bergwerksverein,,v1-Katalog geprüft
+gew,gewerkschaft,,v1-Katalog geprüft
+gewerksch,gewerkschaft,,v1-Katalog geprüft
+ess,essener,,v1-Katalog geprüft
+mülh,mülheimer,,v1-Katalog geprüft
+dtsch,deutsche,,v1-Katalog geprüft
+dtsche,deutsche,,v1-Katalog geprüft
+gebr,gebrüder,,v1-Katalog geprüft
+ges,gesellschaft,,v1-Katalog geprüft
+nachf,nachfolger,,v1-Katalog geprüft
+wwe,witwe,,v1-Katalog geprüft
+stahlw,stahlwerke,,v1-Katalog geprüft
+ver,vereinigte,firmenwort,"v1-Befund: „Ver." heißt zu 16 % „Verein", daher nur vor Firmenwort"
+verein,vereinigte,firmenwort,"nur mit Punkt (Abkürzung) und vor Firmenwort; „Verein" ohne Punkt bleibt"
+,stahlwerke,firmenwort,Firmenwort
+,bergwerke,firmenwort,Firmenwort
+,bergwerks,firmenwort,Firmenwort
+,bergwerksverein,firmenwort,Firmenwort
+,hütten,firmenwort,Firmenwort
+,hüttenwerke,firmenwort,Firmenwort
+,glanzstoff,firmenwort,Firmenwort
+,kesselwerke,firmenwort,Firmenwort
+,gesellschaft,firmenwort,Firmenwort
+,verein,firmenwort,Firmenwort
+,steinkohlen,firmenwort,Firmenwort
+,bergwerk,firmenwort,Firmenwort
+,werke,firmenwort,Firmenwort

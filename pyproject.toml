@@ -3,7 +3,7 @@ name = "essener-adressbuch-1936"
 version = "0.1.0"
 description = "Datenpipeline zum Essener Adreßbuch 1936: Bereinigung, Adress-Parsing, Straßenauflösung, Geokodierung"
 requires-python = ">=3.12"
-dependencies = ["requests>=2.31"]
+dependencies = ["requests>=2.31", "rapidfuzz>=3.0"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
