@@ -170,16 +170,21 @@ Datenpaket erzeugen (braucht `build/04_geokodiert.csv`, `build/eintraege.csv` un
 ```
 python3 pipeline/06_karte_export.py
 ```
-Schreibt nach `site/daten/` (Adresspunkte, Sucheindex, Kennzahlen, Themen). Ergebnis wird
-committet, nicht neu gebaut beim Deploy (Pages baut nicht). Der Workflow für GitHub Pages liegt als
-`docs/pages.yml.beispiel` bereit und wird erst bei der Veröffentlichung nach `.github/workflows/` kopiert
-(Push von Workflow-Dateien braucht ein `gh`-Token mit `workflow`-Scope).
+Schreibt nach `site/daten/` (Adresspunkte, Sucheindex, Kennzahlen, Themen, Zechen). Das Verzeichnis
+ist **nicht versioniert** (`.gitignore`), weil es ≈130 MB in 1.600 Dateien wiegt und bei jeder
+Regenerierung komplett neu entsteht; es wird lokal erzeugt und beim Deploy mitgenommen.
 
-`site/daten/` wiegt insgesamt ≈110 MB (`adressen.pmtiles` 3,5 MB, `haus/` 55 MB, `suche/` 37 MB,
-`adressen/` 18 MB) und wird bei jeder Regenerierung komplett neu committet, damit Pages ohne
-Build-Schritt auskommt — jede Regenerierung legt dieses Volumen erneut in der Git-Historie ab.
-Bekannter Trade-off; Alternativen für später: Build in CI statt Commit, Auslieferung über
-Release-Assets, oder kompaktere Array- statt Objekt-Scherben.
+Deploy nach GitHub Pages:
+```
+werkzeuge/deploy.sh              # Schnappschuss von site/ → Branch gh-pages (Force-Push)
+werkzeuge/deploy.sh --nur-bauen  # nur den lokalen Branch gh-pages setzen, nicht pushen
+```
+Das Skript baut aus `site/` (ohne `site/tests`, `package.json` und das Roh-GeoJSON) einen einzelnen
+Commit ohne Vorgänger und ersetzt damit `gh-pages`; der Branch trägt also immer genau einen Stand,
+und `main` bleibt frei von Datenpaketen. Es verweigert den Deploy bei uncommitteten Änderungen,
+fehlendem Datenpaket oder `PLAN_FREIGEGEBEN = true` (Stadtplan-Rechte). GitHub Pages wird in den
+Repo-Einstellungen auf „Deploy from a branch: gh-pages / (root)“ gestellt; ein Actions-Build kommt
+nicht in Frage, weil die Pipeline die lokalen Quelldaten und die eigene Nominatim-Instanz braucht.
 
 Lokale Ansicht:
 ```
