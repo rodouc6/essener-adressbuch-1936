@@ -192,6 +192,26 @@ python3 werkzeuge/serve.py 8765   # → http://localhost:8765/site/
 ```
 `serve.py` statt `python3 -m http.server`, weil PMTiles Range-Requests braucht (siehe oben).
 
+## Eigentümer (Teilprojekt 3)
+
+Eigentümer aus Teil II werden zu kanonischen Eigentümern mit Kategorie zusammengeführt
+(Spec `docs/superpowers/specs/2026-09-22-eigentuemer-design.md`).
+
+```
+python3 werkzeuge/eigentuemer_cluster.py [--min-haeuser 5]   # Vorschläge → build/, legt kuratierung/eigentuemer.csv an
+python3 werkzeuge/serve.py 8765                              # dann http://localhost:8765/werkzeuge/eigentuemer.html
+python3 pipeline/06_karte_export.py                          # geprüfte Zuordnungen in die Karte (Thema „Besitz“)
+```
+
+`kuratierung/eigentuemer.csv`: eine Zeile je Schreibweise (`schreibweise, art, eigentuemer, kategorie,
+geprueft, bearbeiter, datum, hinweis`). Die Automatik überschreibt nur Zeilen, die ungeprüft sind und
+`bearbeiter=eigentuemer_cluster` tragen; alles, was das Werkzeug gespeichert hat, bleibt. Kategorien:
+`stadt_staat, bergbau, industrie, genossenschaft_siedlung, kirche_stiftung, bank_versicherung,
+privatperson, sonstige`. Abkürzungskatalog: `kuratierung/eigentuemer_abkuerzungen.csv`. Auf der Karte
+zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
+„Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL). Tests: `node --test werkzeuge/tests/`
+(`werkzeuge/package.json` mit `type: module`).
+
 Tests:
 ```
 node --test site/tests/                  # Frontend-Module (Resolver, Zustand, Suche …)
@@ -213,6 +233,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `suche/strassen/<ab>.json` | Je Straße (Name\|Art\|Ort) die sortierten Adress-IDs, Scherbe nach den ersten zwei Schlüsselzeichen |
 | `suche/berufe.json`, `suche/berufe/<ab>.json` | Berufsschreibungen mit Häufigkeit bzw. je Schreibung die Adress-IDs mit Zähler |
 | `suche/stadtteile.json` | Name, Mittelpunkt, Zeilenzahl je Stadtteil |
+| `suche/eigentuemer.json`, `suche/eigentuemer/<xx>.json` | Kanonische Eigentümer (Schlüssel, Name, Häuserzahl, Kategorie) bzw. je Eigentümer die Adress-IDs, Scherbe nach den ersten zwei Schlüsselzeichen; nur geprüfte Zuordnungen |
 | `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` mit `status_1936`, `aktiv_1936`, Artikel-/Listenjahren, `jahre_widerspruch`, `plan_1935` |
 | `startseite.json` | Beispielpunkte aus `kuratierung/startseite_beispiele.csv` (adress_id, eintrag_id; nur hausgenau) mit Titel, Zeile und Koordinaten — derzeit von der Startseite nicht genutzt (Entscheidung 2026-09-21: ruhiger, abgedunkelter Planhintergrund `site/bilder/startplan-1935-*.{webp,jpg}` ohne Punkte) |
 | `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
@@ -229,6 +250,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `praez` | Aktive Präzisionsstufen, kommagetrennt: `haus,strasse,stadtplan` | alle |
 | `beruf` | Berufsfilter | keiner |
 | `thema` | Aktives Thema (`site/daten/themen/<id>.json`) | keins |
+| `eigentuemer` | Filter auf einen kanonischen Eigentümer (Suche im Thema Besitz) | keiner |
 | `id` | Adress-ID (öffnet die Hausansicht) oder Eintrags-ID (öffnet die Hausansicht und hebt den Eintrag hervor) | keine |
 | `karte` | Grundkartenstil: `positron` oder `liberty` | `positron` |
 | `plan` | Stadtplan-1935-Ebene ein-/ausblenden: `0` oder `1` — nur nach Freigabe wirksam (siehe unten) | `0` |
@@ -244,7 +266,7 @@ Stadtplan-1935-Ebene, bis die Stadt Essen bzw. der Historische Verein die Nutzun
 ### Themenformat (`kuratierung/themen/<id>.json` → `site/daten/themen/`)
 
 Felder: `titel`, `text`, `grundlage` (Quelle, Prüfdatum), `filter` (Merkmale, Ebenen), `farbe`
-(eine Farbe | Kategorien | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
+(eine Farbe | Kategorien (`art: kategorien`, `feld`, `werte`, `sonst`) | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
 `darstellung` (`punkte`; `strassen` ist für Teilprojekt 4 reserviert), `freigegeben` (nur dann
 erscheint die Kachel auf der Startseite). Die Definitionen liegen versioniert in `kuratierung/themen/`;
 Stufe 06 kopiert sie nach `site/daten/themen/` und erzeugt dort `index.json`. Merkmale stammen aus `kuratierung/merkmale/<name>.csv`

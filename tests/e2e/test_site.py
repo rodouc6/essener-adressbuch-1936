@@ -105,3 +105,23 @@ def test_mobil_sheet(basis, browser):
     assert s.get_attribute("#sidebar", "data-stufe") == "halb"
     assert s.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert s.fehler == []
+
+
+def test_thema_besitz_legende_und_hausansicht(basis, browser):
+    """Thema Besitz: Legende zeigt Kategorien; ein Haus mit geprüftem Eigentümer zeigt „Zugeordnet“."""
+    import json
+    s = _seite(browser)
+    s.goto(basis + "karte.html?thema=besitz")
+    s.wait_for_selector("#legende .zeile")
+    legende = s.locator("#legende").inner_text()
+    assert "Industrie" in legende and "ungeprüft" in legende
+    liste = json.loads((W / "site" / "daten" / "suche" / "eigentuemer.json").read_text(encoding="utf-8"))
+    if not liste:
+        pytest.skip("noch kein geprüfter Eigentümer im Datenpaket")
+    name = liste[0][1]
+    s.goto(basis + "karte.html?thema=besitz&eigentuemer=" + name)
+    s.wait_for_selector(".treffer")
+    s.locator(".treffer").first.click()
+    s.wait_for_selector(".eintrag")
+    assert "Zugeordnet" in s.locator("#inhalt").inner_text()
+    assert s.fehler == []
