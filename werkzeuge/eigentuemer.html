@@ -25,6 +25,9 @@
   .sw { display: flex; gap: 6px; align-items: center; padding: 2px 0; } .sw span { flex: 1; } .sw small { color: #6b7280; }
   .sw button, .vs button { font-size: 12px; }
   #banner { position: fixed; bottom: 12px; right: 12px; background: #b91c1c; color: #fff; padding: 8px 12px; border-radius: 6px; display: none; }
+  #banner.dauerhaft { background: #7f1d1d; }
+  #banner button { margin-left: 6px; }
+  .gestoert #rechts, .gestoert #liste { pointer-events: none; opacity: .6; }
   #zusammen { width: 100%; padding: 6px; } #zusammen-liste div { padding: 3px 6px; cursor: pointer; } #zusammen-liste div:hover { background: #eef2ff; }
   kbd { border: 1px solid #ccc; border-radius: 3px; padding: 0 4px; font-size: 11px; }
 </style></head>
@@ -96,19 +99,50 @@ const karte = L.map("karte").setView([51.455, 7.01], 11);
 L.tileLayer("https://tiles.openfreemap.org/styles/positron/512/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap, OpenFreeMap" }).addTo(karte);
 let marker = L.layerGroup().addTo(karte);
 
-function zeigeBanner(text) { const b = document.getElementById("banner"); b.textContent = text; b.style.display = "block"; setTimeout(() => (b.style.display = "none"), 6000); }
+function zeigeBanner(text, dauerhaft = false) {
+  const b = document.getElementById("banner");
+  b.textContent = text;
+  if (dauerhaft) {
+    const btn = document.createElement("button");
+    btn.textContent = "Neu laden";
+    btn.addEventListener("click", () => location.reload());
+    b.appendChild(document.createTextNode(" "));
+    b.appendChild(btn);
+  }
+  b.classList.toggle("dauerhaft", dauerhaft);
+  b.style.display = "block";
+  if (!dauerhaft) setTimeout(() => (b.style.display = "none"), 6000);
+}
+
+// Testhaken: Pfad für POSTs, damit ein Rauchtest einen Speicherfehler ohne echten Serverausfall
+// simulieren kann (window.__speicherPfad auf einen nicht existierenden Pfad setzen).
+const speicherPfad = () => window.__speicherPfad || "/kuratierung/eigentuemer.csv";
 
 // Sequenzielle Speicherung: POSTs laufen über eine Promise-Kette, nie parallel, damit der Server
 // keine sich überholenden Schreibvorgänge auf kuratierung/eigentuemer.csv sieht.
+// Bei einem Fehler NICHT rueckgaengig(m) aufrufen: merke() legt die Schnappschüsse synchron beim
+// Auslösen der Aktion an, nicht beim Senden — bei zwei bereits in der Kette wartenden Aktionen
+// würde ein fehlschlagender erster Save den Schnappschuss der zweiten, noch gar nicht gescheiterten
+// Aktion zurücknehmen (falscher lokaler Stand, ohne dass der Fehler dazu passt). Stattdessen wird das
+// Werkzeug gesperrt, bis die Seite neu geladen wird — der zuletzt gespeicherte Stand auf dem Server
+// bleibt so die einzige Quelle der Wahrheit.
 let kette = Promise.resolve();
+let gestoert = false;
 function speichere(zeilen) {
-  if (!zeilen.length) return;
+  if (gestoert || !zeilen.length) return;
   kette = kette.then(async () => {
+    if (gestoert) return;
     try {
-      const r = await fetch("/kuratierung/eigentuemer.csv", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zeilen: zeilen.map(zumSpeichern) }) });
-      if (!r.ok) { zeigeBanner("Speichern fehlgeschlagen: " + (await r.text())); const z = rueckgaengig(m); if (z) zeichne(); }
-    } catch (e) { zeigeBanner("Speichern fehlgeschlagen: " + e.message); const z = rueckgaengig(m); if (z) zeichne(); }
+      const r = await fetch(speicherPfad(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zeilen: zeilen.map(zumSpeichern) }) });
+      if (!r.ok) { const text = await r.text(); sperre("Speichern fehlgeschlagen: " + text); }
+    } catch (e) { sperre("Speichern fehlgeschlagen: " + e.message); }
   });
+}
+
+function sperre(text) {
+  gestoert = true;
+  document.body.classList.add("gestoert");
+  zeigeBanner(text + " — Seite neu laden; die letzten Änderungen wurden nicht gespeichert.", true);
 }
 
 function gefiltert(liste) {
@@ -188,6 +222,7 @@ document.getElementById("vorschlaege").addEventListener("click", (ev) => { const
 document.getElementById("zusammen").addEventListener("input", () => zeichneZusammen(eigentuemerListe(m)));
 document.getElementById("zusammen-liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-ziel]"); if (z) { const ziel = z.dataset.ziel; speichere(zusammenfuehren(m, aktiv, ziel)); waehle(ziel); } });
 document.addEventListener("keydown", (ev) => {
+  if (gestoert) return;
   if (ev.target.matches("input, select, textarea")) return;
   const k = Object.keys(KATEGORIEN)[Number(ev.key) - 1];
   if (k && aktiv) { speichere(setzeKategorie(m, aktiv, k)); zeichne(); }
