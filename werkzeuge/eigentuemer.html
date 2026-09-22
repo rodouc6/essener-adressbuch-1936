@@ -103,7 +103,7 @@ function digibibUrl(seite) {
 const m = baueModell(csvLesen(vText), csvLesen(kText));
 let aktiv = null;   // Name des aktiven Eigentümers
 const karte = L.map("karte").setView([51.455, 7.01], 11);
-L.tileLayer("https://tiles.openfreemap.org/styles/positron/512/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap, OpenFreeMap" }).addTo(karte);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap", maxZoom: 19 }).addTo(karte);   // wie pruefung.html; OpenFreeMap liefert keine Rasterkacheln
 let marker = L.layerGroup().addTo(karte);
 
 function zeigeBanner(text, dauerhaft = false) {
