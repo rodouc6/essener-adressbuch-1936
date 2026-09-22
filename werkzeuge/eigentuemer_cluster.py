@@ -18,12 +18,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pipeline.lib.io import lies_csv
 
 # Rechtsformen: Buchschreibungen wie „A.G.“, „A. G.“, „A.-G.“, „AG.“, „A. -G.“ → ein Token.
+# Case-insensitiv nur in den eigenen Buchstaben (Scoped-Group `(?i:...)`), damit die nachfolgende
+# Lookahead-Prüfung auf ein großgeschriebenes Wort case-sensitiv bleibt: Initialen vor einem Namen
+# („A. G. Müller“) werden dadurch NICHT als Rechtsform erkannt, ein Namensanhang („Fried. Krupp A.G.“,
+# „…A.G., Abt. II“) schon (Spec §4.2, Review-Fund Task 2 Runde 1).
+def _rechtsform_muster(kern: str) -> re.Pattern:
+    # Atomic Group `(?>...)`: verhindert, dass die Regex-Engine den optionalen End-Punkt
+    # zurücknimmt, nur um die nachfolgende Lookahead-Prüfung zu umgehen (sonst würde
+    # „A. G. Müller“ trotz Lookahead noch als „A. G“ + isoliertem Punkt erkannt).
+    return re.compile(rf"(?>(?i:{kern}))(?!\s*[A-ZÄÖÜ][a-zäöüß])")
+
+
 RECHTSFORMEN: list[tuple[re.Pattern, str]] = [
-    (re.compile(r"\be\.?\s?g\.?\s?m\.?\s?b\.?\s?h\b\.?", re.I), "egmbh"),
-    (re.compile(r"\bg\.?\s?m\.?\s?b\.?\s?h\b\.?", re.I), "gmbh"),
-    (re.compile(r"\ba\.?\s?-?\s?g\b\.?", re.I), "ag"),
-    (re.compile(r"\be\.\s?v\b\.?", re.I), "ev"),
-    (re.compile(r"\bk\.\s?-?\s?g\b\.?", re.I), "kg"),
+    (_rechtsform_muster(r"\be\.?\s?g\.?\s?m\.?\s?b\.?\s?h\b\.?"), "egmbh"),
+    (_rechtsform_muster(r"\bg\.?\s?m\.?\s?b\.?\s?h\b\.?"), "gmbh"),
+    (_rechtsform_muster(r"\ba\.?\s?-?\s?g\b\.?"), "ag"),
+    (_rechtsform_muster(r"\be\.\s?v\b\.?"), "ev"),
+    (_rechtsform_muster(r"\bk\.\s?-?\s?g\b\.?"), "kg"),
 ]
 RECHTSFORM_TOKENS = {"egmbh", "gmbh", "ag", "ev", "kg", "ohg"}
 ANZEIGE = {"egmbh": "eGmbH", "gmbh": "GmbH", "ag": "AG", "ev": "e. V.", "kg": "KG"}
@@ -53,8 +64,9 @@ def _rechtsformen(text: str) -> str:
 def normalisiere(name: str, katalog: Katalog) -> str:
     """Vergleichsschlüssel: klein, Rechtsformen vereinheitlicht, Abkürzungen (nur mit Punkt) aufgelöst,
     Komposita aus Firmenwörtern zusammengezogen, Interpunktion entfernt (Spec §4.2)."""
-    t = unicodedata.normalize("NFKC", name).lower()
+    t = unicodedata.normalize("NFKC", name)
     t = _rechtsformen(t)
+    t = t.lower()
     t = t.replace(",", " ").replace("/", " ")
     roh = [x for x in re.split(r"\s+", t.strip()) if x]
     tokens: list[str] = []

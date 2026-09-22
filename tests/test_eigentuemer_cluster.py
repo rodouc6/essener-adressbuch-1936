@@ -36,3 +36,12 @@ def test_rechtsform_anzeige():
     assert rechtsform_anzeige("Fried. Krupp, A.G.") == "Fried. Krupp AG"
     assert rechtsform_anzeige("Sparverein e. G. m. b. H.") == "Sparverein eGmbH"
     assert rechtsform_anzeige("Stadt Essen") == "Stadt Essen"
+
+
+def test_rechtsform_nicht_bei_initialen():
+    assert normalisiere("A. G. Müller", KAT) == "a g müller"
+    assert normalisiere("Schmidt K. G.", KAT) == "schmidt kg"        # am Ende: Rechtsform
+    assert normalisiere("K. G. Schmidt", KAT) == "k g schmidt"
+    assert normalisiere("Gelsenk. Bergw. A.G., Abt. II", KAT).startswith("gelsenk bergwerks ag")
+    assert rechtsform_anzeige("A. G. Müller") == "A. G. Müller"
+    assert rechtsform_anzeige("Fried. Krupp, A. G.") == "Fried. Krupp AG"
