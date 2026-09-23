@@ -8,7 +8,7 @@
 <h1>Über das Projekt</h1>
 <p>Diese Karte zeigt das <em>Adreßbuch der Stadt Essen 1936</em> (Verlag Scherl) auf der heutigen Stadtkarte. Grundlage ist die Erfassung des Vereins für Computergenealogie (DES-Projekt <a href="https://des.genealogy.net/essen1936/" rel="noopener">essen1936</a>). Die Karte ist <strong>work in progress</strong>; Stand und Kennzahlen unten. Diese Seite ist vorläufig und wird mit dem Projekt ausgebaut.</p>
 <h2 id="karte">Was die Karte zeigt</h2>
-<p>Jeder Punkt ist eine Adresse des Adressbuchs auf der heutigen Karte; ein Klick öffnet das Haus mit allen dort verzeichneten Personen, Eigentümern und Firmen samt Verweis auf die Seite der Vorlage. Die Suche findet Namen, Straßen, Berufe und Firmen; Treffer lassen sich als CSV herunterladen. Themen heben Gruppen von Einträgen farblich hervor (erstes Thema: akademische Titel). Als Zeitschicht sind die 1936 fördernden Zechen eingetragen. Grundkarte wahlweise schlicht oder detailliert; der Zustand der Karte steht in der Adresszeile, Links sind also teilbar.</p>
+<p>Jeder Punkt ist eine Adresse des Adressbuchs auf der heutigen Karte; ein Klick öffnet das Haus mit allen dort verzeichneten Personen, Eigentümern und Firmen samt Verweis auf die Seite der Vorlage. Die Suche findet Namen, Straßen, Berufe und Firmen; Treffer lassen sich als CSV herunterladen. Themen heben Gruppen von Einträgen farblich hervor (akademische Titel; Besitz nach Art des Eigentümers). Als Zeitschicht sind die 1936 fördernden Zechen eingetragen. Grundkarte wahlweise schlicht oder detailliert; der Zustand der Karte steht in der Adresszeile, Links sind also teilbar.</p>
 <h2 id="quelle">Quelle und Teile</h2>
 <p>Teil I Einwohner, Teil II Häuser und Eigentümer, Teil III Gewerbe. Behörden (IV) und Innungen (W) sind nicht kartiert.</p>
 <div class="zahlen" id="zahlen"></div>
@@ -18,8 +18,10 @@
 <p>Jede Adresse trägt eine Stufe: <b>hausgenau</b> (heutige Hausnummer gefunden), <b>nur straßengenau</b> (Straße bekannt, Nummer nicht auffindbar; der Punkt liegt an der Straße, nicht am Haus, gestrichelt dargestellt) oder <b>Stadtplan 1935</b> (Straße verschwunden, Punkt von Hand am Stadtplan von 1935 gesetzt). Straßen wurden über den Datensatz <a href="https://doi.org/10.5281/zenodo.22757900" rel="noopener">Essener Straßennamen (Dickhoff 2015)</a> und den Stadtplan 1935 der Stadt Essen aufgelöst. Umbenannte und neu gezählte Straßen sind gekennzeichnet; wo die Hausnummer nicht belastbar ist, steht das im Eintrag. Regel: lieber „nicht verortet“ als falsch.</p>
 <h2 id="zechen">Zechen</h2>
 <p>Die Zechenpunkte stammen aus der Wikipedia-Liste der Bergwerke in Essen; ob eine Zeche 1936 in Betrieb war, wurde für jede einzeln gegen die Chronik von Joachim Huske (Auszüge im Historischen Portal Essen), den Wikipedia-Artikel und die Beschriftung des Stadtplans 1935 geprüft. Nur Zechen mit belegtem Betrieb 1936 sind auf der Karte; die Betriebsjahre im Fenster nennen die Quelle.</p>
+<h2 id="eigentuemer">Eigentümer</h2>
+<p>Teil II nennt zu jedem Haus den Eigentümer, in wechselnder Schreibweise und Abkürzung („Fried. Krupp A.-G.“, „Krupp, Fried., A.G.“). Für das Thema „Besitz“ wurden die Schreibweisen zusammengeführt und jedem Eigentümer eine Kategorie zugewiesen (Stadt/Staat, Bergbau, Industrie, Genossenschaft/Siedlung, Kirche/Stiftung, Bank/Versicherung, Privatperson, Sonstige). Ein Programm schlägt ähnliche Schreibweisen vor; entschieden wurde jede Zuordnung von Hand, vollständig für alle Eigentümer mit mindestens fünf Häusern. Farbig sind auf der Karte nur geprüfte Zuordnungen, alle anderen Häuser grau. Bei Privatpersonen ist die Kategorie sicher, die Identität meist nicht: Ob zwei Einträge „Müller, H.“ dieselbe Person meinen, lässt sich aus dem Adressbuch nicht belegen. In Suche und Eigentümerliste erscheinen daher nur Personen, deren Identität durch Titel oder seltenen Namen gesichert ist. Kirchengemeinden ohne Namenszusatz wurden nach Stadtteil getrennt; wo eine Zuordnung nicht möglich war, bleibt der Eintrag ungeprüft.</p>
 <h2 id="stand">Stand des Projekts</h2>
-<p>Abgeschlossen: Aufbereitung der Daten (Straßenauflösung, Verortung) und die Basiskarte. In Arbeit: die Eigentümer aus Teil II werden zu kanonischen Eigentümern mit Kategorie zusammengeführt (Thema „Besitz“; farbig sind nur von Hand geprüfte Zuordnungen, alles andere grau). Danach die Auflösung der Berufsabkürzungen. Nachtrag der fehlenden Buchstaben H–J, sobald die Erfassung vorliegt.</p>
+<p>Abgeschlossen: Aufbereitung der Daten (Straßenauflösung, Verortung), die Basiskarte und die Eigentümer-Kuratierung (Thema „Besitz“). In Arbeit: die Auflösung der Berufsabkürzungen. Nachtrag der fehlenden Buchstaben H–J, sobald die Erfassung vorliegt.</p>
 <h2 id="methode">Methode und Code</h2>
 <p>Pipeline und Kuratierungstabellen liegen offen im Repository <a href="https://github.com/rodouc6/essener-adressbuch-1936" rel="noopener">essener-adressbuch-1936</a>; die Entscheidungen zur Straßenauflösung sind dort dokumentiert.</p>
 </main>
@@ -29,7 +31,7 @@ import { Lader } from "./js/daten.js";
 try {
   const kz = await new Lader().kennzahlen();
   if (kz) document.getElementById("zahlen").innerHTML = [[kz.eintraege_je_teil.I, "Einwohner"], [kz.eintraege_je_teil.II, "Eigentümereinträge"], [kz.eintraege_je_teil.III, "Firmen"],
-    [kz.adressen, "verortete Adressen"],
+    [kz.adressen, "verortete Adressen"], [kz.besitz_geprueft, "Adressen mit geprüftem Eigentümer"], [kz.eigentuemer_geprueft, "geprüfte Eigentümer"],
     [kz.stufen.haus + " %", "hausgenau"], [kz.stufen.strasse + " %", "straßengenau"], [kz.stufen.stadtplan + " %", "Stadtplan 1935"], [kz.stufen.offen + " %", "nicht verortet"], [kz.stand, "Datenstand"]]
     .map(([n, l]) => `<div><b>${typeof n === "number" ? n.toLocaleString("de-DE") : n}</b><small>${l}</small></div>`).join("");
 } catch (fehler) {

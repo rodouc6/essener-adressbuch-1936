@@ -63,6 +63,12 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .pname { padding: 3px 0; cursor: pointer; } .pname:hover { text-decoration: underline; }
 .pmehr { color: var(--blau); cursor: pointer; padding-top: 4px; }
 .thema { background: #eef2ff; border-radius: 8px; padding: 8px 12px; margin: 10px 12px 0; font-size: 13px; }
+/* Themenkopf darf die Trefferliste (.inhalt) nicht verdrängen: feste Höhe, Eigentümerliste scrollt für sich. */
+#themenkopf { flex: none; }
+#themenkopf .gruppe { padding: 8px 12px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
+.eigentuemerliste { max-height: 28vh; overflow: auto; padding: 0 12px 8px; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
+.eigentuemerliste .themaknopf { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; }
+.eigentuemerliste .themaknopf small { color: var(--grau); }
 
 @media (max-width: 899px) {
   .sidebar { left: 0; right: 0; bottom: 0; border-radius: 14px 14px 0 0; transition: height .2s; }
