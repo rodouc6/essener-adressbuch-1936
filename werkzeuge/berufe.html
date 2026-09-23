@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Berufs-Kuratierung</title>
+<style>
+  body { margin: 0; font: 14px system-ui, sans-serif; color: #1f2937; display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+  #links { border-right: 1px solid #ddd; display: flex; flex-direction: column; min-height: 0; }
+  #links .kopf { padding: 10px 12px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #links input[type=search] { flex: 1 1 100%; padding: 6px; }
+  #liste { overflow: auto; flex: 1; }
+  .ez { padding: 6px 12px; border-bottom: 1px solid #f1f1f1; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .ez.aktiv { background: #eef2ff; } .ez.geprueft { color: #6b7280; } .ez b { flex: 1; font-weight: 500; } .ez small { color: #6b7280; }
+  .punkt { width: 10px; height: 10px; border-radius: 50%; background: #d1d5db; flex: none; }
+  #rechts { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  #kopf { padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #kopf h2 { margin: 0; font-size: 18px; flex-basis: 100%; }
+  #beruf { font-size: 16px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; min-width: 260px; }
+  button[aria-pressed=true] { background: #1d4ed8; color: #fff; }
+  #mitte { padding: 12px 16px; overflow: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kand, .treffer { padding: 4px 6px; border-bottom: 1px solid #f1f1f1; cursor: pointer; display: flex; gap: 8px; }
+  .kand span, .treffer span { flex: 1; } .kand small, .treffer small { color: #6b7280; }
+  .kand.aktiv, .treffer:hover, .kand:hover { background: #eef2ff; } .kand.anders { border-left: 3px solid #d97706; }
+  table { border-collapse: collapse; width: 100%; } td, th { padding: 3px 6px; border-bottom: 1px solid #f1f1f1; text-align: left; font-size: 13px; }
+  #banner { position: fixed; bottom: 12px; right: 12px; background: #b91c1c; color: #fff; padding: 8px 12px; border-radius: 6px; display: none; }
+  #banner.dauerhaft { background: #7f1d1d; } .gestoert #rechts, .gestoert #liste { pointer-events: none; opacity: .6; }
+  kbd { border: 1px solid #ccc; border-radius: 3px; padding: 0 4px; font-size: 11px; }
+</style></head>
+<body>
+<div id="links">
+  <div class="kopf">
+    <input type="search" id="filter" placeholder="Schreibweise oder Beruf suchen …">
+    <label><input type="radio" name="status" value="offen" checked> ungeprüft</label>
+    <label><input type="radio" name="status" value="geprueft"> geprüft</label>
+    <label><input type="radio" name="status" value="alle"> alle</label>
+    <label><input type="checkbox" id="nur-ohne"> nur ohne Vorschlag</label>
+    <label><input type="checkbox" id="nur-niveau"> Niveau entscheiden</label>
+    <div id="fortschritt" style="flex-basis:100%;color:#6b7280"></div>
+  </div>
+  <div id="liste"></div>
+</div>
+<div id="rechts">
+  <div id="kopf">
+    <h2><span id="schreibweise"></span> <small id="nennungen"></small></h2>
+    <input id="beruf" title="Aufgelöste Bezeichnung (Enter)">
+    <span id="zuordnung"></span>
+    <button id="status" title="Taste S">Status: <span id="status-text">–</span> <kbd>S</kbd></button>
+    <button id="niveau" title="Taste N">Niveau unsicher <kbd>N</kbd></button>
+    <button id="geprueft" title="Taste G">Geprüft <kbd>G</kbd></button>
+    <button id="rueck" title="Taste Z">Rückgängig <kbd>Z</kbd></button>
+    <button id="katalog" hidden>In Katalog</button>
+    <input id="hinweis" placeholder="Hinweis" style="flex:1 1 200px">
+  </div>
+  <div id="mitte">
+    <div><h4 style="margin:0 0 6px">Vorschlag und Kandidaten <small id="grund"></small></h4><div id="kandidaten"></div>
+      <h4 style="margin:12px 0 6px">OhdAB suchen</h4><input id="suche" placeholder="Normbezeichnung …" style="width:100%;padding:6px"><div id="treffer"></div></div>
+    <div><h4 style="margin:0 0 6px">Belege</h4><div id="belege"></div></div>
+  </div>
+</div>
+<div id="banner"></div>
+<script type="module">
+import { STATUS, baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, setzeBeruf, setzeGeprueft,
+         setzeHinweis, setzeNiveauUnsicher, setzeZuordnung, sucheOhdab, zumSpeichern } from "./js/berufe_modell.js";
+const NIVEAUS = { helfer: "Helfer-/Anlerntätigkeit", fachlich: "Fachliche Tätigkeit", spezialist: "Komplexe Spezialistentätigkeit",
+  hochkomplex: "Hoch komplexe Tätigkeit", aufsicht: "Aufsichtskraft", fuehrung: "Führungskraft", keins: "ohne Niveau" };
+const FARBEN = { helfer: "#fde68a", fachlich: "#f59e0b", spezialist: "#dc2626", hochkomplex: "#7f1d1d", aufsicht: "#2563eb", fuehrung: "#1e3a8a", keins: "#9ca3af" };
+const STATUS_TEXT = { "": "–", ruhestand: "Ruhestand", invalide: "Invalide", witwe: "Witwe" };
+const DIGIBIB = "https://www.digibib.genealogy.net/viewer/image/857439804_1936/";
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// CSV-Leser für RFC-4180 (Anführungszeichen, Kommas in Feldern, \n in Feldern) — wörtlich wie in eigentuemer.html.
+function csvLesen(text) {
+  const zeilen = []; let feld = "", zeile = [], q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { feld += '"'; i++; } else q = false; } else feld += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { zeile.push(feld); feld = ""; }
+    else if (c === "\n") { zeile.push(feld); zeilen.push(zeile); zeile = []; feld = ""; }
+    else if (c !== "\r") feld += c;
+  }
+  if (feld || zeile.length) { zeile.push(feld); zeilen.push(zeile); }
+  const kopf = zeilen.shift();
+  return zeilen.filter((z) => z.length > 1 || z[0]).map((z) => Object.fromEntries(kopf.map((k, i) => [k, z[i] ?? ""])));
+}
+
+function zeigeBanner(text, dauerhaft = false) {
+  const b = document.getElementById("banner");
+  b.textContent = text;
+  if (dauerhaft) {
+    const btn = document.createElement("button");
+    btn.textContent = "Neu laden";
+    btn.addEventListener("click", () => location.reload());
+    b.appendChild(document.createTextNode(" "));
+    b.appendChild(btn);
+  }
+  b.classList.toggle("dauerhaft", dauerhaft);
+  b.style.display = "block";
+  if (!dauerhaft) setTimeout(() => (b.style.display = "none"), 6000);
+}
+
+// Testhaken: Pfad für POSTs, damit ein Rauchtest einen Speicherfehler ohne echten Serverausfall
+// simulieren kann (window.__speicherPfad auf einen nicht existierenden Pfad setzen).
+const speicherPfad = () => window.__speicherPfad || "/kuratierung/berufe.csv";
+
+// Sequenzielle Speicherung: POSTs laufen über eine Promise-Kette, nie parallel. Bei einem Fehler NICHT
+// rueckgaengig(m) aufrufen (siehe eigentuemer.html) — stattdessen wird das Werkzeug gesperrt, bis die
+// Seite neu geladen wird; der zuletzt gespeicherte Stand auf dem Server bleibt die einzige Quelle der Wahrheit.
+let kette = Promise.resolve();
+let gestoert = false;
+function speichere(zeilen) {
+  if (gestoert || !zeilen.length) return;
+  kette = kette.then(async () => {
+    if (gestoert) return;
+    try {
+      const r = await fetch(speicherPfad(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zeilen: zeilen.map(zumSpeichern) }) });
+      if (!r.ok) { const text = await r.text(); sperre("Speichern fehlgeschlagen: " + text); }
+    } catch (e) { sperre("Speichern fehlgeschlagen: " + e.message); }
+  });
+}
+
+function sperre(text) {
+  gestoert = true;
+  document.body.classList.add("gestoert");
+  zeigeBanner(text + " — Seite neu laden; die letzten Änderungen wurden nicht gespeichert.", true);
+}
+
+const [kText, oText, belege, kandidaten, faksimile] = await Promise.all([
+  fetch("../kuratierung/berufe.csv").then((r) => { if (!r.ok) throw new Error("kuratierung/berufe.csv fehlt — zuerst werkzeuge/berufe_vorschlag.py ausführen"); return r.text(); }),
+  fetch("../kuratierung/ohdab.csv").then((r) => { if (!r.ok) throw new Error("kuratierung/ohdab.csv fehlt — zuerst werkzeuge/ohdab_laden.py ausführen"); return r.text(); }),
+  fetch("../build/berufe_belege.json").then((r) => r.ok ? r.json() : {}),
+  fetch("../build/berufe_kandidaten.json").then((r) => r.ok ? r.json() : {}),
+  fetch("../site/daten/faksimile.json").then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+]).catch((e) => { zeigeBanner(e.message); throw e; });
+function digibibUrl(seite) {
+  const bild = faksimile[seite];
+  return bild ? `${DIGIBIB}${bild}/` : DIGIBIB;
+}
+const m = baueModell(csvLesen(kText), csvLesen(oText), kandidaten);
+let aktiv = null;   // Schreibweise der aktiven Zeile
+
+// gefiltert(l): status-Radio, nur-ohne (ohne ohdab_id), nur-niveau (niveauEntscheiden), Textfilter auf schreibweise/beruf.
+function gefiltert(l) {
+  const status = document.querySelector("input[name=status]:checked").value;
+  const nurOhne = document.getElementById("nur-ohne").checked;
+  const nurNiveau = document.getElementById("nur-niveau").checked;
+  const q = document.getElementById("filter").value.trim().toLowerCase();
+  return l.filter((z) => (status === "alle" || (status === "geprueft") === (z.geprueft === "ja")) && (!nurOhne || !z.ohdab_id)
+    && (!nurNiveau || z.niveauEntscheiden) && (!q || z.schreibweise.toLowerCase().includes(q) || z.beruf.toLowerCase().includes(q)));
+}
+
+// zeichneListe(): Zeilen mit Punktfarbe nach Niveau des zugeordneten Items; Fortschritt „x von n geprüft · y % der Nennungen“.
+function zeichneListe(l) {
+  const gef = gefiltert(l);
+  document.getElementById("liste").innerHTML = gef.map((z) => {
+    const niveau = z.ohdab_id ? (m.ohdab.get(z.ohdab_id)?.niveau || "keins") : null;
+    return `<div class="ez${z.schreibweise === aktiv ? " aktiv" : ""}${z.geprueft === "ja" ? " geprueft" : ""}" data-schreibweise="${esc(z.schreibweise)}">` +
+      `<span class="punkt" style="background:${niveau ? FARBEN[niveau] : "#d1d5db"}"></span><b>${esc(z.schreibweise)}</b><small>${z.nennungen}</small></div>`;
+  }).join("");
+  const f = fortschritt(m);
+  const pct = f.nennungenGesamt ? Math.round((f.nennungenGeprueft / f.nennungenGesamt) * 100) : 0;
+  document.getElementById("fortschritt").textContent = `${f.geprueft} von ${f.gesamt} geprüft · ${pct} % der Nennungen`;
+}
+
+// zeichneAktiv(): Kopf (Schreibweise, Nennungen, #beruf, #zuordnung), Status-Text, aria-pressed für niveau/geprueft,
+// geprueft.disabled = !z.ohdab_id, #katalog.hidden = !katalogVorschlag(m, s), #grund, Kandidatenliste, Belegtabelle.
+function zeichneAktiv() {
+  const z = m.zeilen.get(aktiv);
+  if (!z) { document.getElementById("kopf").style.visibility = "hidden"; return; }
+  document.getElementById("kopf").style.visibility = "visible";
+  document.getElementById("schreibweise").textContent = z.schreibweise;
+  document.getElementById("nennungen").textContent = `${z.nennungen} Nennungen`;
+  document.getElementById("beruf").value = z.beruf;
+  const o = z.ohdab_id ? m.ohdab.get(z.ohdab_id) : null;
+  document.getElementById("zuordnung").textContent = o ? `${o.ohdab_id} · ${o.maennlich || o.norm}${o.weiblich ? "/" + o.weiblich : ""} · ${NIVEAUS[o.niveau] || o.niveau} · ${o.gattung}` : "keine Zuordnung";
+  document.getElementById("status-text").textContent = STATUS_TEXT[z.status.split(";")[0]] || z.status;
+  document.getElementById("niveau").setAttribute("aria-pressed", z.niveau_unsicher === "ja");
+  document.getElementById("geprueft").setAttribute("aria-pressed", z.geprueft === "ja");
+  const geprBtn = document.getElementById("geprueft");
+  geprBtn.disabled = !z.ohdab_id;
+  geprBtn.title = geprBtn.disabled ? "Erst eine OhdAB-Zuordnung wählen" : "Taste G";
+  document.getElementById("hinweis").value = z.hinweis;
+  const kv = katalogVorschlag(m, aktiv);
+  document.getElementById("katalog").hidden = !kv;
+  document.getElementById("grund").textContent = z.vorschlag_grund;
+  document.getElementById("kandidaten").innerHTML = z.kandidaten.length ? z.kandidaten.map((k) => {
+    const io = m.ohdab.get(k.ohdab_id);
+    const erstesNiveau = z.kandidaten[0].niveau;
+    return `<div class="kand${k.ohdab_id === z.ohdab_id ? " aktiv" : ""}${k.niveau !== erstesNiveau ? " anders" : ""}" data-ohdab="${esc(k.ohdab_id)}">` +
+      `<span>${esc(io ? (io.maennlich || io.norm) : k.ohdab_id)}</span><small>${esc(k.grund)} · ${NIVEAUS[k.niveau] || k.niveau}</small></div>`;
+  }).join("") : "<small>keine</small>";
+  const b = belege[z.schreibweise] || [];
+  document.getElementById("belege").innerHTML = `<table><tr><th>Name</th><th>Adresse</th><th>Teil</th><th>Seite</th></tr>` +
+    b.slice(0, 5).map((h) => `<tr><td>${esc(h.name)}</td><td>${esc(h.adresse)}</td><td>${esc(h.teil)}</td><td><a href="${digibibUrl(h.seite)}" target="_blank" rel="noopener">${esc(h.seite)}</a></td></tr>`).join("") + `</table>`;
+  document.getElementById("treffer").innerHTML = "";
+  document.getElementById("suche").value = "";
+}
+
+// zeichneTreffer(): sucheOhdab(m, #suche.value) → .treffer-Zeilen (Norm · Niveau · Gattung); Klick = setzeZuordnung.
+function zeichneTreffer() {
+  const q = document.getElementById("suche").value;
+  const z = m.zeilen.get(aktiv);
+  const tr = q.trim() ? sucheOhdab(m, q) : [];
+  document.getElementById("treffer").innerHTML = tr.map((o) =>
+    `<div class="treffer" data-ohdab="${esc(o.ohdab_id)}"><span>${esc(o.maennlich || o.norm)}${o.weiblich ? "/" + esc(o.weiblich) : ""}</span><small>${NIVEAUS[o.niveau] || o.niveau} · ${esc(o.gattung)}</small></div>`).join("");
+}
+
+function zeichne() { const l = liste(m); zeichneListe(l); zeichneAktiv(); }
+
+function waehle(s) { aktiv = s; zeichne(); }
+
+function naechsterOffener() {
+  const l = gefiltert(liste(m));
+  const i = l.findIndex((z) => z.schreibweise === aktiv);
+  const n = l.slice(i + 1).find((z) => z.geprueft !== "ja") || l.find((z) => z.geprueft !== "ja");
+  if (n) waehle(n.schreibweise); else zeichne();
+}
+
+function naechsteZeile(richtung) {
+  const l = gefiltert(liste(m));
+  const i = l.findIndex((z) => z.schreibweise === aktiv);
+  const n = l[i + richtung];
+  if (n) waehle(n.schreibweise);
+}
+
+// Ereignisse
+document.getElementById("liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-schreibweise]"); if (z) waehle(z.dataset.schreibweise); });
+for (const id of ["filter", "nur-ohne", "nur-niveau"]) document.getElementById(id).addEventListener("input", () => zeichneListe(liste(m)));
+document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListener("change", () => zeichneListe(liste(m))));
+document.getElementById("beruf").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && aktiv) { speichere(setzeBeruf(m, aktiv, ev.target.value)); zeichne(); } });
+document.getElementById("status").addEventListener("click", () => { if (aktiv) { speichere(schalteStatus(m, aktiv)); zeichne(); } });
+document.getElementById("niveau").addEventListener("click", () => { if (aktiv) { const z = m.zeilen.get(aktiv); speichere(setzeNiveauUnsicher(m, aktiv, z.niveau_unsicher !== "ja")); zeichne(); } });
+document.getElementById("geprueft").addEventListener("click", () => {
+  if (!aktiv) return;
+  const z = m.zeilen.get(aktiv);
+  const neuGeprueft = z.geprueft !== "ja";
+  speichere(setzeGeprueft(m, aktiv, neuGeprueft));
+  if (neuGeprueft) naechsterOffener(); else zeichne();
+});
+document.getElementById("rueck").addEventListener("click", () => {
+  const z = rueckgaengig(m);
+  if (z) { speichere(z); if (!m.zeilen.has(aktiv)) aktiv = z[0]?.schreibweise || null; zeichne(); }
+});
+document.getElementById("hinweis").addEventListener("change", (ev) => { if (aktiv) speichere(setzeHinweis(m, aktiv, ev.target.value)); });
+document.getElementById("katalog").addEventListener("click", async () => {
+  const kv = katalogVorschlag(m, aktiv);
+  if (!kv) return;
+  try {
+    const r = await fetch("/kuratierung/berufe_abkuerzungen.csv", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zeile: { kurz: kv.kurz, lang: kv.lang, status: kv.status, beleg: "Werkzeug" } }) });
+    if (r.status === 409) zeigeBanner("steht schon im Katalog");
+    else if (!r.ok) zeigeBanner("Katalog fehlgeschlagen: " + (await r.text()));
+    else zeigeBanner("In Katalog übernommen");
+  } catch (e) { zeigeBanner("Katalog fehlgeschlagen: " + e.message); }
+});
+document.getElementById("kandidaten").addEventListener("click", (ev) => { const k = ev.target.closest("[data-ohdab]"); if (k && aktiv) { speichere(setzeZuordnung(m, aktiv, k.dataset.ohdab)); zeichne(); } });
+document.getElementById("treffer").addEventListener("click", (ev) => { const t = ev.target.closest("[data-ohdab]"); if (t && aktiv) { speichere(setzeZuordnung(m, aktiv, t.dataset.ohdab)); zeichne(); } });
+document.getElementById("suche").addEventListener("input", zeichneTreffer);
+document.addEventListener("keydown", (ev) => {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;   // Browser-/System-Kürzel (Strg+F, Cmd+R …) unberührt lassen
+  if (gestoert) return;
+  if (ev.target.matches("input, select, textarea")) return;
+  if (!aktiv) return;
+  const z = m.zeilen.get(aktiv);
+  const k = ev.key.toLowerCase();
+  if (ev.key === "Enter") {
+    if (!z.ohdab_id && z.kandidaten.length) { speichere(setzeZuordnung(m, aktiv, z.kandidaten[0].ohdab_id)); zeichne(); }
+  } else if (k === "g" && !document.getElementById("geprueft").disabled) document.getElementById("geprueft").click();
+  else if (k === "n") document.getElementById("niveau").click();
+  else if (k === "s") document.getElementById("status").click();
+  else if (k === "z") document.getElementById("rueck").click();
+  else if (ev.key === "ArrowDown") { ev.preventDefault(); naechsteZeile(1); }
+  else if (ev.key === "ArrowUp") { ev.preventDefault(); naechsteZeile(-1); }
+});
+
+// Start: erste gefilterte Zeile wählen.
+const erste = gefiltert(liste(m))[0];
+if (erste) waehle(erste.schreibweise); else zeichne();
+</script>
+</body></html>

@@ -125,3 +125,17 @@ def test_thema_besitz_legende_und_hausansicht(basis, browser):
     s.wait_for_selector(".eintrag")
     assert "Zugeordnet" in s.locator("#inhalt").inner_text()
     assert s.fehler == []
+
+
+def test_werkzeug_berufe_laedt_und_speichert_nicht_bei_fehler(basis, browser):
+    if not (W / "kuratierung" / "berufe.csv").exists():
+        pytest.skip("kuratierung/berufe.csv fehlt")
+    s = _seite(browser)
+    s.goto(basis.replace("/site/", "/werkzeuge/") + "berufe.html")
+    s.wait_for_selector("#liste .ez")
+    s.evaluate("window.__speicherPfad = '/kuratierung/gibt-es-nicht.csv'")
+    s.locator("#liste .ez").first.click()
+    s.locator("#hinweis").fill("Probe"); s.locator("#hinweis").dispatch_event("change")
+    s.wait_for_selector("#banner.dauerhaft")
+    assert "gestoert" in s.locator("body").get_attribute("class")
+    assert s.fehler == []
