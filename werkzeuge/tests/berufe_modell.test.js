@@ -66,3 +66,16 @@ test("Zuordnung ändern entprüft; Katalogvorschlag nur bei Punktwort und Abweic
   setzeBeruf(m, "Arbeiter", "Hilfsarbeiter");
   assert.equal(katalogVorschlag(m, "Arbeiter"), null);                     // kein Punktwort
 });
+
+test("formenVon: Geschlechtszusatz vor Umlaut bleibt stehen (Unicode-Wortgrenze, wie Python)", () => {
+  const m = baueModell([], [{ ohdab_id: "X", norm: "Bergrat/-rätin", maennlich: "Bergrat", weiblich: "Bergrätin" }], {});
+  assert.deepEqual(m.formen.map(([f]) => f), ["bergrat", "bergraetin", "bergrat raetin"]);
+});
+
+test("katalogVorschlag: Status-Wort wie „Pensionär“ wird aus kurz entfernt (wie STATUS_MUSTER)", () => {
+  const kZeile = { schreibweise: "Bergm. Pensionär", nennungen: "3", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100",
+    niveau_unsicher: "", geprueft: "", vorschlag_grund: "", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "" };
+  const m = baueModell([...K, kZeile], O, KAND);
+  setzeBeruf(m, "Bergm. Pensionär", "pensionierter Bergmann");
+  assert.equal(katalogVorschlag(m, "Bergm. Pensionär").kurz, "Bergm.");
+});

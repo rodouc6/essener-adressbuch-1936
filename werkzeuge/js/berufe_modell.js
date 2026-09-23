@@ -9,9 +9,15 @@ export function falte(t) {
   return String(t ?? "").toLowerCase().replace(/-/g, " ").replace(/[äöüß]/g, (c) => UMLAUTE[c]).replace(/[^a-z0-9 ]+/g, " ").trim().replace(/\s+/g, " ");
 }
 
+// Geschlechtszusatz wie pipeline/lib/berufe._GESCHLECHT: „/in“, „/-r“ usw. am Wortende entfernen.
+// JS kennt kein Unicode-\b, darum expliziter Lookahead statt \b — sonst reißt z. B. „Marineintendanturrat/-rätin“
+// vor dem „ä“ eine (aus ASCII-Sicht) Wortgrenze auf und „/-r“ verschwindet fälschlich mit.
+const WORTZEICHEN = "A-Za-z0-9_äöüÄÖÜß";
+const GESCHLECHT = new RegExp(`/-?(innen|in|frau|r|e)(?![${WORTZEICHEN}])`, "g");
+
 // Formen wie pipeline/lib/berufe.formen_von: männlich, weiblich, Norm ohne Geschlechts- und „ - “-Zusatz.
 function formenVon(o) {
-  const norm = (o.norm || "").replace(/\/-?(innen|in|frau|r|e)\b/g, "").replace(/\s+-\s+/g, " ");
+  const norm = (o.norm || "").replace(GESCHLECHT, "").replace(/\s+-\s+/g, " ");
   const out = [];
   for (const f of [o.maennlich, o.weiblich, norm]) { const k = falte(f); if (k && !out.includes(k)) out.push(k); }
   return out;
@@ -105,11 +111,25 @@ export function fortschritt(m) {
   return { geprueft: g.length, gesamt: l.length, nennungenGeprueft: g.reduce((s, z) => s + z.nennungen, 0), nennungenGesamt: l.reduce((s, z) => s + z.nennungen, 0) };
 }
 
+// Status-Wörter wie werkzeuge/berufe_vorschlag.py STATUS_MUSTER (ruhestand, invalide, witwe) — als eigenes
+// Wort entfernen, damit „kurz“ wie in zerlege() nur den Berufskern behält.
+const STATUS_MUSTER = [
+  new RegExp(`(?<![${WORTZEICHEN}])(i\\.\\s?R\\.|a\\.\\s?D\\.|Pensionär(?:in)?|Pension\\.|Pens\\.|Rentner(?:in)?|Rentenempf\\.|Rentn\\.|Rent\\.|Ruhest\\.)(?![${WORTZEICHEN}])`, "g"),
+  new RegExp(`(?<![${WORTZEICHEN}])(Invalide|Invalidin|Invalid\\.|Inval\\.|Inv\\.|Inval)(?![${WORTZEICHEN}])`, "g"),
+  new RegExp(`(?<![${WORTZEICHEN}])(Ww\\.|Wwe\\.|Witwe)(?![${WORTZEICHEN}])`, "g"),
+];
+
+function ohneStatusWoerter(text) {
+  let kern = text;
+  for (const muster of STATUS_MUSTER) kern = kern.replace(muster, " ");
+  return kern.split(/\s+/).filter(Boolean).join(" ").replace(/^[\s,;]+|[\s,;]+$/g, "");
+}
+
 // Katalog-Rückkopplung (Spec §5.1): Schreibweise enthält ein Punktwort und der Beruf weicht vom Automatik-Wert ab.
 export function katalogVorschlag(m, s) {
   const z = m.zeilen.get(s);
   if (!z || !/\.\s*(\s|$)/.test(s) || !z.beruf || z.beruf === z.automatikBeruf) return null;
-  return { kurz: s.replace(/\b(i\.\s?R\.|a\.\s?D\.|Ww\.|Wwe\.|Inval\.)/g, "").trim().replace(/[,;\s]+$/, ""), lang: z.beruf, status: "" };
+  return { kurz: ohneStatusWoerter(s), lang: z.beruf, status: "" };
 }
 
 export function zumSpeichern(z) { return Object.fromEntries(CSV_FELDER.map((f) => [f, z[f]])); }
