@@ -1,5 +1,11 @@
 import { EBENEN, PRAEZISION, DIGIBIB_WERK } from "./konfig.js";
-import { KATEGORIEN } from "./kategorien.js";
+import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
+
+// Statustexte der Berufsangabe (mehrere, durch ";" getrennt, einzeln übersetzt und mit ", " verbunden).
+const STATUS_TEXT = { ruhestand: "Ruhestand", invalide: "Invalide", witwe: "Witwe" };
+function statusText(status) {
+  return status.split(";").map((s) => STATUS_TEXT[s] || s).join(", ");
+}
 
 export function esc(t) {
   return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -50,7 +56,7 @@ export function popupHtml(eig, eintraege, kompakt) {
 
 // Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
 function eintragHtml(e, faksimile) {
-  const felder = [["Beruf", e.beruf], ["Etage laut Buch", e.etage], ["Stand", e.stand],
+  const felder = [["Beruf", e.beruf_norm ? `${e.beruf} → ${e.beruf_norm} · ${NIVEAUS[e.niveau] || e.niveau}${e.status ? " · " + statusText(e.status) : ""}` : e.beruf], ["Etage laut Buch", e.etage], ["Stand", e.stand],
     ["Bezugsperson", [e.bezug_vorname, e.bezug_beruf].filter(Boolean).join(", ")], ["Firma", e.firma],
     ["Eigentümer", e.eigentuemer],
     ["Zugeordnet", e.eigentuemer_kanon ? `${e.eigentuemer_kanon} · ${KATEGORIEN[e.kategorie] || e.kategorie}` : ""],

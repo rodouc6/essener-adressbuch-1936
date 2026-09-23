@@ -1,5 +1,5 @@
 import { falte, praefix2 } from "./schluessel.js";
-import { KATEGORIEN } from "./kategorien.js";
+import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
 
 const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3 };
 
@@ -27,14 +27,19 @@ export async function vorschlaege(q, lader, alle = {}) {
   const leer = { personen: [], strassen: [], firmen: [], berufe: [], eigentuemer: [], gesamt: 0,
                  gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0, gesamt_eigentuemer: 0 };
   if (k.length < 2) return leer;
-  const [namen, firmen, strassen, berufe, eigentuemer] = await Promise.all([
-    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.eigentuemer()]);
+  const [namen, firmen, strassen, berufe, berufeNorm, eigentuemer] = await Promise.all([
+    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.berufeNorm(), lader.eigentuemer()]);
   const alleP = (namen || []).filter((z) => z[0].startsWith(k)).map(person);
   const alleS = (strassen || []).filter((s) => s.schluessel.startsWith(k)).map(strasse);
   const alleF = (firmen || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "firma", text: z[1], untertitel: z[2], eintragId: z[3], adressId: z[4] }));
-  const alleB = (berufe || []).filter((z) => z[0].startsWith(k))
-    .map((z) => ({ art: "beruf", text: z[1], untertitel: `${z[2]} Einträge`, beruf: z[1] }));
+  // Normbezeichnungen (Vorschlagsart "ohdab") zuerst, danach die ungeprüften Rohtexte — Task 11.
+  const alleB = [
+    ...(berufeNorm || []).filter((z) => z[0].startsWith(k))
+      .map((z) => ({ art: "ohdab", text: z[1], untertitel: `${z[3]} Einträge · ${z[4]} Schreibweisen · ${NIVEAUS[z[5]] || z[5]}`, ohdab: z[2], name: z[1] })),
+    ...(berufe || []).filter((z) => z[0].startsWith(k))
+      .map((z) => ({ art: "beruf", text: z[1], untertitel: `${z[2]} Einträge`, beruf: z[1] })),
+  ];
   const alleE = (eigentuemer || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "eigentuemer", text: z[1], untertitel: `${z[2]} Häuser · ${KATEGORIEN[z[3]] || z[3]}`, name: z[1] }));
   return {
@@ -74,6 +79,9 @@ export async function treffer(auswahl, lader) {
   } else if (auswahl.art === "eigentuemer") {
     const s = await lader.eigentuemerScherbe(praefix2(auswahl.name));
     for (const [a, n] of (s && s[auswahl.name]) || []) zaehler.set(a, n);
+  } else if (auswahl.art === "ohdab") {
+    const s = await lader.berufeNormScherbe(praefix2(auswahl.name));
+    for (const [a, n] of (s && s[auswahl.ohdab]) || []) zaehler.set(a, n);
   }
   return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis };
 }

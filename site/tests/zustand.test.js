@@ -50,3 +50,8 @@ test("eigentuemer im Zustand", () => {
   assert.equal(z.eigentuemer, "Fried. Krupp AG");
   assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: "Stadt Essen" }), "eigentuemer=Stadt+Essen");
 });
+
+test("ohdab im Zustand", () => {
+  assert.equal(liesZustand("?ohdab=B+21112-100").ohdab, "B 21112-100");
+  assert.equal(schreibeZustand({ ...STANDARD, ohdab: "B 21112-100" }), "ohdab=B+21112-100");
+});

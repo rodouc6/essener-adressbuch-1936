@@ -8,7 +8,7 @@ import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
-import { KATEGORIEN } from "./kategorien.js";
+import { ANZEIGE } from "./kategorien.js";
 
 const lader = new Lader();
 // PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart: ein manipulierter ?plan=1-Link darf die
@@ -98,15 +98,25 @@ async function setzeZustand(patch, push, nurKarte = false) {
     karte.setzeFilter(zustand);
     karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   }
-  if (alt.beruf !== zustand.beruf || alt.eigentuemer !== zustand.eigentuemer) {
-    auswahl = zustand.beruf ? { art: "beruf", beruf: zustand.beruf } : zustand.eigentuemer ? { art: "eigentuemer", name: zustand.eigentuemer } : null;
+  if (alt.beruf !== zustand.beruf || alt.eigentuemer !== zustand.eigentuemer || alt.ohdab !== zustand.ohdab) {
+    if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
+    else if (zustand.eigentuemer) auswahl = { art: "eigentuemer", name: zustand.eigentuemer };
+    else if (zustand.ohdab) auswahl = { art: "ohdab", ohdab: zustand.ohdab, name: await ohdabName(zustand.ohdab) };
+    else auswahl = null;
     // Aus „Größte Eigentümer“ gewählt (sidebar.js) setzt nur den Zustand, nicht das Suchfeld — ohne das
     // hier nachzuholen bliebe der aktive Filter unsichtbar und „Suche leeren“ hätte nichts zum Leeren.
     if (zustand.eigentuemer) sidebar.suche.value = zustand.eigentuemer;
+    if (zustand.ohdab) sidebar.suche.value = auswahl.name;
     await sucheAusfuehren();
   }
   else await zeigeInhalt();
   zeichneSteuerung(); zeichneLegende();
+}
+
+// Normbezeichnung zu einer OhdAB-Nummer nachschlagen (Suchfeld/CSV bei aktivem ?ohdab=…, Task 11).
+async function ohdabName(id) {
+  const liste = (await lader.berufeNorm()) || [];
+  return (liste.find((z) => z[2] === id) || [])[1] || id;
 }
 
 async function wendeThemaAn() {
@@ -151,8 +161,9 @@ async function waehleVorschlag(v) {
   sidebar.setzeVorschlaege(null);
   sidebar.suche.value = v.text;
   if (v.art === "person" || v.art === "firma") { setzeZustand({ q: v.text, id: v.adressId }, true, true); return oeffneHaus(v.adressId, v.eintragId); }
-  if (v.art === "beruf") return setzeZustand({ q: "", eigentuemer: "", beruf: v.beruf }, true);
-  if (v.art === "eigentuemer") return setzeZustand({ q: "", beruf: "", eigentuemer: v.name }, true);
+  if (v.art === "beruf") return setzeZustand({ q: "", eigentuemer: "", ohdab: "", beruf: v.beruf }, true);
+  if (v.art === "eigentuemer") return setzeZustand({ q: "", beruf: "", ohdab: "", eigentuemer: v.name }, true);
+  if (v.art === "ohdab") return setzeZustand({ q: "", beruf: "", eigentuemer: "", ohdab: v.ohdab }, true);
   // v.art === "strasse": v trägt bereits name/artName/ort/schluessel, treffer() lädt die IDs selbst.
   // q wird als reiner Name geschrieben (nicht v.text mit "(Ort)") — sonst kann strasseAusZustand()
   // die URL bei Reload/Zurück/Vor nicht mehr auflösen (Fix-Runde 1).
@@ -184,7 +195,7 @@ async function strasseAusZustand(q) {
 async function sucheAusText(q) {
   const s = await strasseAusZustand(q);
   auswahl = s || { art: "person", q };
-  setzeZustand({ q, id: "", beruf: "", eigentuemer: "" }, true, true);
+  setzeZustand({ q, id: "", beruf: "", eigentuemer: "", ohdab: "" }, true, true);
   await sucheAusfuehren();
 }
 
@@ -247,8 +258,8 @@ function zeichneLegende() {
       html += `<div class="zeile"><span class="punkt" style="background:linear-gradient(90deg, ${gradient})"></span> ${themaAktiv.legende}</div>`;
     } else if (farbe.art === "kategorien") {
       html += `<div class="zeile"><b>${themaAktiv.legende}</b></div>`;
-      for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${KATEGORIEN[k] || k}</div>`;
-      html += `<div class="zeile"><span class="punkt" style="background:${farbe.sonst || "#c8c8c8"}"></span> ${KATEGORIEN.ungeprueft}</div>`;
+      for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${ANZEIGE[k] || k}</div>`;
+      html += `<div class="zeile"><span class="punkt" style="background:${farbe.sonst || "#c8c8c8"}"></span> ${ANZEIGE.ungeprueft}</div>`;
     }
   }
 
@@ -265,12 +276,14 @@ function zeichneLegende() {
 async function exportiere() {
   if (!ergebnis) return;
   const csv = await csvAusTreffern(ergebnis, lader, await eigMap(ergebnis.adressIds));
-  herunterladen(csv, `essen1936-${(zustand.q || zustand.beruf || zustand.eigentuemer || "treffer").replace(/[^\w]+/g, "_")}.csv`);
+  herunterladen(csv, `essen1936-${(zustand.q || zustand.beruf || zustand.eigentuemer || zustand.ohdab || "treffer").replace(/[^\w]+/g, "_")}.csv`);
 }
 
 // Suchfeld
 let timer = null;
-sidebar.suche.value = zustand.q || zustand.eigentuemer || "";
+// ohdab zeigt vorerst die rohe OhdAB-Nummer; start() ersetzt sie durch die Normbezeichnung, sobald
+// der Normindex geladen ist (Task 11).
+sidebar.suche.value = zustand.q || zustand.eigentuemer || zustand.ohdab || "";
 sidebar.suche.addEventListener("input", () => {
   clearTimeout(timer);
   document.getElementById("suche-leeren").hidden = !sidebar.suche.value;
@@ -283,7 +296,7 @@ sidebar.suche.addEventListener("input", () => {
   }, 120);
 });
 sidebar.suche.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { sidebar.setzeVorschlaege(null); sucheAusText(sidebar.suche.value.trim()); } });
-document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "", beruf: "", eigentuemer: "" }, true, true); sucheAusfuehren(); });
+document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "", beruf: "", eigentuemer: "", ohdab: "" }, true, true); sucheAusfuehren(); });
 document.addEventListener("click", (ev) => { if (!ev.target.closest(".suchfeld")) sidebar.setzeVorschlaege(null); });
 window.addEventListener("popstate", async () => {
   zustand = gateZustand(liesZustand(location.search));
@@ -291,7 +304,7 @@ window.addEventListener("popstate", async () => {
     const gespeichert = liesKarteSpeicher();
     if (gespeichert) zustand = { ...zustand, karte: gespeichert };
   }
-  sidebar.suche.value = zustand.q || zustand.eigentuemer || "";
+  sidebar.suche.value = zustand.q || zustand.eigentuemer || zustand.ohdab || "";
   await start();
 });
 
@@ -305,6 +318,11 @@ async function start() {
   zeichneSteuerung(); zeichneLegende();
   if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
   else if (zustand.eigentuemer) auswahl = { art: "eigentuemer", name: zustand.eigentuemer };
+  else if (zustand.ohdab) {
+    const name = await ohdabName(zustand.ohdab);
+    auswahl = { art: "ohdab", ohdab: zustand.ohdab, name };
+    sidebar.suche.value = name;
+  }
   else if (zustand.q) {
     const s = await strasseAusZustand(zustand.q);
     auswahl = s || { art: "person", q: zustand.q };

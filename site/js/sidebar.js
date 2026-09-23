@@ -119,7 +119,7 @@ export class Sidebar {
     if (groesste && groesste.length) {
       this.themenkopf.insertAdjacentHTML("beforeend", `<div class="gruppe">Größte Eigentümer</div><div class="eigentuemerliste">` +
         groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
-      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onZustand({ q: "", beruf: "", eigentuemer: b.dataset.eigentuemer, id: "" })));
+      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onZustand({ q: "", beruf: "", ohdab: "", eigentuemer: b.dataset.eigentuemer, id: "" })));
     }
   }
 
@@ -143,7 +143,7 @@ export class Sidebar {
       if (praez.length) this.a.onZustand({ praez }); else c.checked = true;
     }));
     const beruf = this.inhalt.querySelector('[data-filter="beruf"]');
-    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), eigentuemer: "" }));
+    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), eigentuemer: "", ohdab: "" }));
   }
 
   _klick(ev) {

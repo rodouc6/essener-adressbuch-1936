@@ -40,6 +40,8 @@ export class Lader {
   strassen() { return this.json("suche/strassen.json"); }
   strassenScherbe(praefix) { return this.json(`suche/strassen/${praefix}.json`); }
   berufe() { return this.json("suche/berufe.json"); }
+  berufeNorm() { return this.json("suche/berufe_norm.json"); }
+  berufeNormScherbe(praefix) { return this.json(`suche/berufe_norm/${praefix}.json`); }
   eigentuemer() { return this.json("suche/eigentuemer.json"); }
   eigentuemerScherbe(praefix) { return this.json(`suche/eigentuemer/${praefix}.json`); }
   stadtteile() { return this.json("suche/stadtteile.json"); }

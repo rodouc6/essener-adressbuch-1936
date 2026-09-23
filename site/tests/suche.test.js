@@ -20,6 +20,8 @@ const DATEIEN = {
   "daten/suche/berufe/be.json": { "Bergm.": [["a1", 1], ["b2", 1]] },
   "daten/suche/eigentuemer.json": [["fried krupp ag", "Fried. Krupp AG", 2, "industrie"], ["stadt essen", "Stadt Essen", 1, "stadt_staat"]],
   "daten/suche/eigentuemer/fr.json": { "Fried. Krupp AG": [["a1", 1], ["b2", 2]] },
+  "daten/suche/berufe_norm.json": [["bergmann", "Bergmann", "B 21112-100", 3, 2, "fachlich"]],
+  "daten/suche/berufe_norm/be.json": { "B 21112-100": [["a1", 2], ["b2", 1]] },
 };
 const fetchFake = async (url) => ({
   ok: url in DATEIEN, status: url in DATEIEN ? 200 : 404, json: async () => DATEIEN[url],
@@ -63,7 +65,8 @@ test("vorschlaege Nachname Vorname und Straße 1936", async () => {
   assert.equal(s.strassen[0].artName, "1936");
   assert.equal(s.strassen[0].ort, "Katernberg");
   const b = await vorschlaege("berg", lader());
-  assert.equal(b.berufe[0].text, "Bergm.");
+  // Normbezeichnungen (Vorschlagsart "ohdab") stehen vor den Rohtexten — Task 11.
+  assert.equal(b.berufe[1].text, "Bergm.");
 });
 
 test("treffer für Straße, Beruf und Person", async () => {
@@ -84,6 +87,17 @@ test("Vorschlagsart Eigentümer und Treffermenge", async () => {
   const t = await treffer({ art: "eigentuemer", name: "Fried. Krupp AG" }, l);
   assert.deepEqual(t.adressIds, ["a1", "b2"]);
   assert.equal(t.zaehler.get("b2"), 2);
+});
+
+test("Vorschläge: Normbezeichnung vor Rohtext, Untertitel mit Niveau", async () => {
+  const v = await vorschlaege("Berg", lader());
+  assert.deepEqual(v.berufe.map((b) => [b.art, b.text]), [["ohdab", "Bergmann"], ["beruf", "Bergm."]]);
+  assert.equal(v.berufe[0].untertitel, "3 Einträge · 2 Schreibweisen · Fachliche Tätigkeit");
+});
+
+test("Treffer für ohdab über die Normscherbe", async () => {
+  const t = await treffer({ art: "ohdab", ohdab: "B 21112-100", name: "Bergmann" }, lader());
+  assert.deepEqual(t.adressIds, ["a1", "b2"]); assert.equal(t.zaehler.get("a1"), 2);
 });
 
 test("Hinweis auf Lücke H–J", async () => {

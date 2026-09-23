@@ -69,3 +69,10 @@ test("Hausansicht zeigt geprüften Eigentümer mit Kategorie, sonst nur Buchschr
   assert.match(h, /Firma<\/span> Fried\. Krupp A\.G\./);
   assert.equal((h.match(/Zugeordnet/g) || []).length, 1);
 });
+
+test("Hausansicht zeigt die Berufszuordnung mit Niveau und Status", () => {
+  const h = hausHtml(EIG, [{ id: "9", teil: "I", seite: "I-1", name: "A", vorname: "", beruf: "Bergm. i. R.", beruf_norm: "Bergmann", ohdab: "B 21112-100", niveau: "fachlich", status: "ruhestand", etage: "", stand: "", flags: [], merkmale: [] }]);
+  assert.match(h, /Bergm\. i\. R\. → Bergmann · Fachliche Tätigkeit · Ruhestand/);
+  const u = hausHtml(EIG, [{ id: "9", teil: "I", seite: "I-1", name: "A", vorname: "", beruf: "Kfm.", etage: "", stand: "", flags: [], merkmale: [] }]);
+  assert.match(u, /<span class="k">Beruf<\/span> Kfm\.<\/div>/);
+});
