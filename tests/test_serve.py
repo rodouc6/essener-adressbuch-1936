@@ -16,6 +16,9 @@ KOPF = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse
 KOPF_1935 = "strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum"
 KOPF_ZUORDNUNG = "strasse_roh_norm,vorort,strasse_heute,schl_nr,hausnr_von,hausnr_bis,nummer_unsicher,beleg,bearbeiter,datum"
 KOPF_EIGENTUEMER = "schreibweise,art,eigentuemer,kategorie,geprueft,bearbeiter,datum,hinweis,identitaet"
+KOPF_BERUFE = "schreibweise,nennungen,beruf,status,ohdab_id,niveau_unsicher,geprueft,vorschlag_grund,bearbeiter,datum,hinweis"
+KOPF_OHDAB = "ohdab_id,qid,norm,maennlich,weiblich,niveau,gattung_id,gattung"
+KOPF_BERUFE_ABK = "kurz,lang,status,beleg,bearbeiter,datum"
 
 
 @pytest.fixture
@@ -29,6 +32,16 @@ def server(tmp_path):
         KOPF_EIGENTUEMER + "\nStadt Essen,koerperschaft,Stadt Essen,stadt_staat,,eigentuemer_cluster,2026-09-22,,\n"
         "Fried. Krupp A.G.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,,\n"
         "Fried. Krupp AG.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,,\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "berufe.csv").write_text(
+        KOPF_BERUFE + "\n"
+        "Bergm.,9,Bergmann,,B 21112-100,,,exakt,berufe_vorschlag,2026-09-23,\n"
+        "Lehrer,3,Lehrer,,B 84124-120,,,exakt,berufe_vorschlag,2026-09-23,\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "ohdab.csv").write_text(
+        KOPF_OHDAB + "\n"
+        "B 21112-100,Q123,Bergmann/-frau,Bergmann,Bergfrau,Fachliche Tätigkeiten,G1,Bergbau\n"
+        "B 84124-120,Q456,Lehrer/in,Lehrer,Lehrerin,Fachliche Tätigkeiten,G2,Bildung\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "berufe_abkuerzungen.csv").write_text(
+        KOPF_BERUFE_ABK + "\nBergm.,Bergmann,,üblich,Claude,2026-09-23\n", encoding="utf-8")
     ziel = tmp_path / "docs" / "stichprobe_7.csv"
     with open(ziel, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=KOPF, lineterminator="\n")
@@ -193,4 +206,41 @@ def test_eigentuemer_post_validiert(server):
     assert fehler({**basis, "kategorie": "", "geprueft": "ja"}) == (400, "geprueft=ja verlangt eine Kategorie")
     with pytest.raises(urllib.error.HTTPError) as e:
         post(url + "/kuratierung/eigentuemer.csv", {"zeile": basis})
+    assert e.value.code == 400
+
+
+def test_berufe_post_ersetzt_und_setzt_bearbeiter(server):
+    url, _ = server
+    r = post(url + "/kuratierung/berufe.csv", {"zeilen": [dict(schreibweise="Bergm.", beruf="Bergmann", status="ruhestand", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja", hinweis="ok")]})
+    assert r.status == 200
+    zeilen = lies(Handler.wurzel / "kuratierung" / "berufe.csv")
+    z = next(x for x in zeilen if x["schreibweise"] == "Bergm.")
+    assert z["geprueft"] == "ja" and z["bearbeiter"] == "christos" and z["datum"] and z["nennungen"] == "9" and z["vorschlag_grund"] == "exakt"
+
+
+def test_berufe_post_validiert(server):
+    url, _ = server
+    for zeile, text in [
+        (dict(schreibweise="Nix", beruf="x", geprueft=""), "unbekannte Schreibweise"),
+        (dict(schreibweise="Bergm.", beruf="Bergmann", ohdab_id="Q 0", geprueft=""), "unbekannte ohdab_id"),
+        (dict(schreibweise="Bergm.", beruf="Bergmann", ohdab_id="", geprueft="ja"), "geprueft=ja verlangt eine ohdab_id"),
+        (dict(schreibweise="Bergm.", beruf="Bergmann", status="tot", geprueft=""), "unbekannter Status"),
+        (dict(schreibweise="Bergm.", beruf="Bergmann", niveau_unsicher="x", geprueft=""), "niveau_unsicher"),
+        (dict(schreibweise="Bergm.", beruf="Bergmann", geprueft="nein"), "geprueft"),
+    ]:
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(url + "/kuratierung/berufe.csv", {"zeilen": [zeile]})
+        assert e.value.code == 400 and text in e.value.read().decode(), text
+
+
+def test_katalog_post_legt_an_und_lehnt_dublette_ab(server):
+    url, _ = server
+    assert post(url + "/kuratierung/berufe_abkuerzungen.csv", {"zeile": dict(kurz="Kfm.", lang="Kaufmann", status="", beleg="Werkzeug")}).status == 200
+    zeilen = lies(Handler.wurzel / "kuratierung" / "berufe_abkuerzungen.csv")
+    assert [z["kurz"] for z in zeilen] == ["Bergm.", "Kfm."] and zeilen[1]["bearbeiter"] == "christos"
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/berufe_abkuerzungen.csv", {"zeile": dict(kurz="Bergm.", lang="Bergarbeiter", status="", beleg="")})
+    assert e.value.code == 409
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/berufe_abkuerzungen.csv", {"zeile": dict(kurz="X.", lang="", status="tot", beleg="")})
     assert e.value.code == 400

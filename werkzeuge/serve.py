@@ -18,6 +18,13 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
   ersetzt nach Schlüssel `schreibweise`, setzt bearbeiter=christos und datum. 400 bei unbekannter
   Kategorie, leerem eigentuemer, geprueft ∉ {ja, leer}, unbekannter Schreibweise oder geprueft=ja
   ohne Kategorie.
+- POST /kuratierung/berufe.csv — mehrere Zeilen ({"zeilen": [...]}) der Berufs-Kuratierung; ersetzt
+  nach Schlüssel `schreibweise`, setzt bearbeiter=christos und datum. 400 bei unbekannter
+  Schreibweise, unbekannter ohdab_id, unbekanntem Status, niveau_unsicher/geprueft ∉ {ja, leer}
+  oder geprueft=ja ohne ohdab_id.
+- POST /kuratierung/berufe_abkuerzungen.csv — eine Zeile ({"zeile": {kurz,lang,status,beleg}}) für
+  den Abkürzungskatalog; 400 bei fehlendem kurz/lang oder unbekanntem Status, 409 bei vorhandenem
+  kurz.
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 - GET mit Range-Header — Teilstücke für PMTiles (site/daten/adressen.pmtiles).
@@ -37,6 +44,8 @@ import requests
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
+from pipeline.lib.berufe import FELDER_KURATIERUNG as FELDER_BERUFE, STATUS as STATUS_BERUFE, lade_ohdab
+from pipeline.lib.berufe import lade_kuratierung as lade_berufe
 from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, IDENTITAETEN, KATEGORIEN, lade_kuratierung
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
@@ -127,6 +136,27 @@ def pruefe_eigentuemer(z: dict, bekannt: set[str]) -> str:
     return ""
 
 
+def pruefe_berufe(z: dict, bekannt: set[str], ohdab: set[str]) -> str:
+    if not isinstance(z, dict):
+        return "Zeile fehlt"
+    s = str(z.get("schreibweise", "")).strip()
+    if s not in bekannt:
+        return f"unbekannte Schreibweise: {s}"
+    oid = str(z.get("ohdab_id", "")).strip()
+    if oid and oid not in ohdab:
+        return f"unbekannte ohdab_id: {oid}"
+    for st in [x for x in str(z.get("status", "")).split(";") if x.strip()]:
+        if st.strip() not in STATUS_BERUFE:
+            return f"unbekannter Status: {st}"
+    if str(z.get("niveau_unsicher", "")).strip() not in ("", "ja"):
+        return "niveau_unsicher muss ja oder leer sein"
+    if str(z.get("geprueft", "")).strip() not in ("", "ja"):
+        return "geprueft muss ja oder leer sein"
+    if str(z.get("geprueft", "")).strip() == "ja" and not oid:
+        return "geprueft=ja verlangt eine ohdab_id"
+    return ""
+
+
 def upsert_viele(pfad: pathlib.Path, zeilen: list[dict], schluessel: str, felder: list[str]) -> int:
     """Ersetzt je Schlüsselwert die vorhandene Zeile an Ort und Stelle (Reihenfolge bleibt), hängt Neues an."""
     alt = lies_csv(pfad)
@@ -214,6 +244,10 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self) -> None:
         if self.path == "/kuratierung/eigentuemer.csv":
             return self._eigentuemer()
+        if self.path == "/kuratierung/berufe.csv":
+            return self._berufe()
+        if self.path == "/kuratierung/berufe_abkuerzungen.csv":
+            return self._berufe_katalog()
         k = _KURATIERUNG.match(self.path)
         if k:
             return self._kuratierung(k.group(1))
@@ -277,6 +311,47 @@ class Handler(SimpleHTTPRequestHandler):
         heute = datetime.date.today().isoformat()
         n = upsert_viele(pfad, [{**z, "bearbeiter": "christos", "datum": heute} for z in zeilen], "schreibweise", FELDER_KURATIERUNG)
         self._antwort(200, f"eigentuemer.csv: {n} Zeilen")
+
+    def _berufe(self) -> None:
+        try:
+            koerper = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+            zeilen = koerper["zeilen"]; assert isinstance(zeilen, list)
+        except (ValueError, KeyError, TypeError, AssertionError):
+            return self._antwort(400, "ungültiger Inhalt")
+        pfad = self.wurzel / "kuratierung" / "berufe.csv"
+        if not pfad.exists():
+            return self._antwort(404, "berufe.csv fehlt")
+        alt = lade_berufe(lies_csv(pfad))
+        ohdab = set(lade_ohdab(self.wurzel / "kuratierung" / "ohdab.csv"))
+        for z in zeilen:
+            fehler = pruefe_berufe(z, set(alt), ohdab)
+            if fehler:
+                return self._antwort(400, fehler)
+        heute = datetime.date.today().isoformat()
+        # Felder, die das Werkzeug nicht sendet (nennungen, vorschlag_grund), aus der bestehenden Zeile übernehmen.
+        voll = [dict(alt[str(z["schreibweise"]).strip()], **{k: str(z.get(k, "")).strip() for k in ("beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis")},
+                     bearbeiter="christos", datum=heute) for z in zeilen]
+        n = upsert_viele(pfad, voll, "schreibweise", FELDER_BERUFE)
+        self._antwort(200, f"berufe.csv: {n} Zeilen")
+
+    def _berufe_katalog(self) -> None:
+        try:
+            koerper = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+            z = koerper["zeile"]; kurz = str(z["kurz"]).strip(); lang = str(z.get("lang", "")).strip()
+        except (ValueError, KeyError, TypeError, AttributeError):
+            return self._antwort(400, "ungültiger Inhalt")
+        status = str(z.get("status", "")).strip()
+        if not kurz or not lang or (status and status not in STATUS_BERUFE):
+            return self._antwort(400, "kurz und lang sind Pflicht; status leer oder aus dem Vokabular")
+        pfad = self.wurzel / "kuratierung" / "berufe_abkuerzungen.csv"
+        if not pfad.exists():
+            return self._antwort(404, "berufe_abkuerzungen.csv fehlt")
+        zeilen = lies_csv(pfad)
+        if any((x.get("kurz") or "").strip() == kurz for x in zeilen):
+            return self._antwort(409, f"{kurz} steht schon im Katalog")
+        zeilen.append(dict(kurz=kurz, lang=lang, status=status, beleg=str(z.get("beleg", "")).strip() or "Werkzeug", bearbeiter="christos", datum=datetime.date.today().isoformat()))
+        schreib_csv(pfad, zeilen, ["kurz", "lang", "status", "beleg", "bearbeiter", "datum"])
+        self._antwort(200, f"berufe_abkuerzungen.csv: {len(zeilen)} Zeilen")
 
     def log_message(self, fmt, *args):  # nur Speichervorgänge und Fehler ins Terminal
         if self.command == "POST" or (len(args) > 1 and not str(args[1]).startswith(("2", "3"))):
