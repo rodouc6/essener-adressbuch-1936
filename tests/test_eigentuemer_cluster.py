@@ -159,7 +159,7 @@ def test_aktualisiere_kuratierung_sperre():
     assert neu["Fried. Krupp A.G."]["kategorie"] == "industrie" and neu["Fried. Krupp A.G."]["hinweis"] == "x"  # Kategorie/Hinweis bleiben
     assert neu["Fried. Krupp A.G."]["datum"] == "2026-09-22"
     assert neu["Fried. Krupp AG."]["eigentuemer"] == "Krupp"                        # vom Menschen angefasst: bleibt
-    assert neu["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", eigentuemer="Schmidt, Wilh.", kategorie="privatperson", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-22", hinweis="")
+    assert neu["Schmidt, Wilh."] == dict(schreibweise="Schmidt, Wilh.", art="person", eigentuemer="Schmidt, Wilh.", kategorie="privatperson", geprueft="", bearbeiter=AUTOMATIK, datum="2026-09-22", hinweis="", identitaet="")
     assert neu["Weg GmbH"]["eigentuemer"] == "Weg GmbH"                              # verwaist: bleibt stehen
     assert "Meier, Karl" not in neu                                                  # Person unter Untergrenze: keine neue Zeile
     assert list(neu) == ["Stadt Essen", "Fried. Krupp A.G.", "Fried. Krupp AG.", "Weg GmbH", "Schmidt, Wilh."]  # alte Reihenfolge, Neues hinten
@@ -179,3 +179,15 @@ def test_main_schreibt_dateien(tmp_path):
     kur = lies_csv(tmp_path / "kuratierung" / "eigentuemer.csv")
     assert [z["schreibweise"] for z in kur] == ["Stadt Essen", "Schmidt, Wilh."]
     assert kur[1]["kategorie"] == "privatperson"
+
+
+def test_sammle_nach_stadtteil_und_kategorie_erben():
+    e = [_z(id="1", Firmenname="Kath. Kirchengem.", stadtteil="Katernberg"), _z(id="2", Firmenname="Kath. Kirchengem.", stadtteil="Horst"),
+         _z(id="3", Firmenname="Kath. Kirchengem.", stadtteil="Horst", hausnr="2"), _z(id="4", Firmenname="Kath. Kirchengem. St. Josef", stadtteil="Horst")]
+    k, _, belege = sammle(e, frozenset({"Kath. Kirchengem."}))
+    assert k == {"Kath. Kirchengem. ‹Katernberg›": 1, "Kath. Kirchengem. ‹Horst›": 2, "Kath. Kirchengem. St. Josef": 1}
+    assert [b["id"] for b in belege["Kath. Kirchengem. ‹Horst›"]] == ["2", "3"]
+    alt = [dict(schreibweise="Kath. Kirchengem.", art="koerperschaft", eigentuemer="Kath. Kirchengem.", kategorie="kirche_stiftung", geprueft="ja", bearbeiter="christos", datum="", hinweis="", identitaet="")]
+    neu = aktualisiere_kuratierung(alt, [dict(schreibweise="Kath. Kirchengem. ‹Horst›", art="koerperschaft", cluster_name="Kath. Kirchengem. ‹Horst›")], "2026-09-23")
+    z = {x["schreibweise"]: x for x in neu}["Kath. Kirchengem. ‹Horst›"]
+    assert z["kategorie"] == "kirche_stiftung" and z["eigentuemer"] == "Kath. Kirchengem. ‹Horst›" and z["geprueft"] == ""

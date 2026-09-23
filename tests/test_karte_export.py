@@ -336,3 +336,23 @@ def test_schreibe_paket_mit_eigentuemer(tmp_path):
     schreibe_paket(tmp_path, e, [], [], "2026-09-22", kacheln=False, eigentuemer=EIG)
     assert json.loads((tmp_path / "suche" / "eigentuemer.json").read_text(encoding="utf-8")) == [["stadt essen", "Stadt Essen", 1, "stadt_staat"]]
     assert (tmp_path / "suche" / "eigentuemer" / "st.json").exists()
+
+
+def test_gruppiere_stadtteil_schreibweise_und_identitaet():
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    kur = lade_kuratierung([
+        _kur(schreibweise="Kath. Kirchengem. ‹Katernberg›", eigentuemer="Kath. Kirchengemeinde St. Joseph Katernberg", kategorie="kirche_stiftung", geprueft="ja"),
+        _kur(schreibweise="Kath. Kirchengem.", eigentuemer="Kath. Kirchengem.", kategorie="kirche_stiftung", geprueft="ja"),
+        dict(_kur(schreibweise="Müller, J.", eigentuemer="Müller, J.", kategorie="privatperson", geprueft="ja"), art="person", identitaet=""),
+        dict(_kur(schreibweise="Reismann-Grone, Dr. phil., Th.", eigentuemer="Reismann-Grone, Dr. phil., Th.", kategorie="privatperson", geprueft="ja"), art="person", identitaet="sicher")])
+    e = [_v(id="1", teil="II", hausnr="1", stadtteil="Katernberg", **{"Firmenname": "Kath. Kirchengem."}),
+         _v(id="2", teil="II", hausnr="2", stadtteil="Horst", **{"Firmenname": "Kath. Kirchengem."}),
+         _v(id="3", teil="II", hausnr="3", lastname="Müller", firstname="J."),
+         _v(id="4", teil="II", hausnr="4", lastname="Reismann-Grone", firstname="Dr. phil., Th.")]
+    a = gruppiere(e, [], kur)
+    by = {x["hausnr"]: x for x in a.values()}
+    assert eintrag_kurz(by["1"]["eintraege"][0], [])["eigentuemer_kanon"] == "Kath. Kirchengemeinde St. Joseph Katernberg"
+    assert eintrag_kurz(by["2"]["eintraege"][0], [])["eigentuemer_kanon"] == "Kath. Kirchengem."   # Rückfall auf einfache Schreibweise
+    assert by["3"]["besitz"] == "privatperson" and by["4"]["besitz"] == "privatperson"
+    liste, _ = baue_eigentuemerindex(a)
+    assert [x[1] for x in liste] == ["Kath. Kirchengem.", "Kath. Kirchengemeinde St. Joseph Katernberg", "Reismann-Grone, Dr. phil., Th."]  # Müller, J. fehlt: Identität nicht belegt

@@ -9,7 +9,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline.lib.eigentuemer import lade_kuratierung, schreibweise_von
+from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
 
@@ -91,13 +91,16 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                                     strasse_heute=e.get("strasse_heute", ""), hausnr=e.get("hausnr", ""),
                                     hausnr_zusatz=e.get("hausnr_zusatz", ""), historisch=_historisch(e),
                                     nummer_unsicher=e.get("nummer_unsicher", "nein"), eintraege=[])
-        kanon, kat = "", ""
+        kanon, kat, sicher = "", "", False
         if e.get("teil") == "II":
             s, _ = schreibweise_von(e)
-            z = eigentuemer.get(s)
+            # zuerst die stadtteilgenaue Schreibweise („… ‹Katernberg›“), sonst die einfache
+            z = eigentuemer.get(mit_stadtteil(s, e)) or eigentuemer.get(s)
             if z and z.get("geprueft") == "ja" and z.get("kategorie"):
                 kanon, kat = z["eigentuemer"], z["kategorie"]
-        e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat)
+                sicher = identitaet_sicher(z)
+        # _identitaet: nur identifizierte Eigentümer kommen in Suchindex und Liste; die Kategorie gilt immer.
+        e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher)
         a["eintraege"].append(e)
     for a in gruppen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
@@ -244,7 +247,7 @@ def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[s
     kategorien: dict[str, set[str]] = defaultdict(set)
     for a in adressen.values():
         for e in a["eintraege"]:
-            if e.get("_eigentuemer"):
+            if e.get("_eigentuemer") and e.get("_identitaet"):
                 zaehler[e["_eigentuemer"]][a["id"]] += 1
                 kategorien[e["_eigentuemer"]].add(e["_kategorie"])
     kategorie = {n: (k.pop() if len(k) == 1 else "gemischt") for n, k in kategorien.items()}

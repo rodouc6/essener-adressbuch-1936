@@ -18,7 +18,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.lib.eigentuemer import AUTOMATIK, FELDER_KURATIERUNG, gesperrt, lade_kuratierung, schreibweise_von
+from pipeline.lib.eigentuemer import (AUTOMATIK, FELDER_KURATIERUNG, STADTTEIL_AUF, gesperrt, lade_kuratierung,
+                                      lade_stadtteil_liste, schreibweise_von)
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 # Rechtsformen: Buchschreibungen wie „A.G.“, „A. G.“, „A.-G.“, „AG.“, „A. -G.“ → ein Token.
@@ -220,7 +221,7 @@ def _zahl(v: str):
         return None
 
 
-def sammle(eintraege: list[dict]) -> tuple[dict[str, int], dict[str, int], dict[str, list[dict]]]:
+def sammle(eintraege: list[dict], nach_stadtteil: frozenset[str] = frozenset()) -> tuple[dict[str, int], dict[str, int], dict[str, list[dict]]]:
     """Teil-II-Zeilen → (Zähler Körperschaften, Zähler Personen, Belege je Schreibweise, Spec §3.2)."""
     koerper: dict[str, int] = defaultdict(int)
     personen: dict[str, int] = defaultdict(int)
@@ -228,7 +229,7 @@ def sammle(eintraege: list[dict]) -> tuple[dict[str, int], dict[str, int], dict[
     for e in eintraege:
         if e.get("teil") != "II":
             continue
-        s, art = schreibweise_von(e)
+        s, art = schreibweise_von(e, nach_stadtteil)
         if not s:
             continue
         (koerper if art == "koerperschaft" else personen)[s] += 1
@@ -243,9 +244,11 @@ def vorschlagszeilen(cluster: list[dict], personen: dict[str, int], min_haeuser:
     zeilen: list[dict] = []
     for c in cluster:
         for s, n in c["mitglieder"]:
+            # Stadtteil-Schreibweisen sind immer prüfpflichtig — sie entstehen nur, um von Hand zugeordnet zu werden.
+            pflicht = c["haeuser"] >= min_haeuser or STADTTEIL_AUF in s
             zeilen.append(dict(schreibweise=s, art="koerperschaft", anzahl=str(n), cluster_id=c["id"], cluster_name=c["name"],
                                aehnlichkeit=str(c["aehnlichkeit"]), vorschlag_fuer=c["vorschlag_fuer"],
-                               pruefpflichtig="ja" if c["haeuser"] >= min_haeuser else "nein", _haeuser=c["haeuser"]))
+                               pruefpflichtig="ja" if pflicht else "nein", _haeuser=c["haeuser"]))
     for s, n in personen.items():
         zeilen.append(dict(schreibweise=s, art="person", anzahl=str(n), cluster_id=cluster_id(s), cluster_name=s,
                            aehnlichkeit="1.0", vorschlag_fuer="", pruefpflichtig="ja" if n >= min_haeuser else "nein", _haeuser=n))
@@ -273,9 +276,12 @@ def aktualisiere_kuratierung(alt: list[dict], vorschlag: list[dict], datum: str)
             # Spec §3.3: neue Personen-Zeilen nur ab der Prüfpflicht-Untergrenze; Körperschaften immer.
             if v["art"] == "person" and v.get("pruefpflichtig", "ja") != "ja":
                 continue
-            out.append(dict(schreibweise=s, art=v["art"], eigentuemer=v["cluster_name"],
-                            kategorie="privatperson" if v["art"] == "person" else "", geprueft="",
-                            bearbeiter=AUTOMATIK, datum=datum, hinweis=""))
+            # Stadtteil-Aufteilung („Kath. Kirchengem. ‹Katernberg›“): Kategorie der einfachen Schreibweise erben,
+            # den Namen aber nicht — der ist ja gerade je Stadtteil zu entscheiden.
+            basis = bekannt.get(s.split(STADTTEIL_AUF)[0]) if STADTTEIL_AUF in s else None
+            kategorie = "privatperson" if v["art"] == "person" else (basis or {}).get("kategorie", "")
+            out.append(dict(schreibweise=s, art=v["art"], eigentuemer=v["cluster_name"], kategorie=kategorie, geprueft="",
+                            bearbeiter=AUTOMATIK, datum=datum, hinweis="", identitaet=""))
     return out
 
 
@@ -286,7 +292,9 @@ def main(argv: list[str] | None = None) -> dict:
     a = ap.parse_args(argv)
     W = Path(a.wurzel) if a.wurzel else projektwurzel()
     katalog = lade_katalog(W / "kuratierung" / "eigentuemer_abkuerzungen.csv")
-    koerper, personen, belege = sammle(lies_csv(W / "build" / "eintraege.csv"))
+    st_pfad = W / "kuratierung" / "eigentuemer_stadtteil.csv"
+    nach_stadtteil = lade_stadtteil_liste(lies_csv(st_pfad)) if st_pfad.exists() else frozenset()
+    koerper, personen, belege = sammle(lies_csv(W / "build" / "eintraege.csv"), nach_stadtteil)
     cluster = clustere(koerper, katalog)
     vorschlag = vorschlagszeilen(cluster, personen, a.min_haeuser)
     schreib_csv(W / "build" / "eigentuemer_vorschlag.csv", vorschlag, VORSCHLAG_FELDER)

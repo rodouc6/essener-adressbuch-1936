@@ -24,4 +24,17 @@ def test_lade_kuratierung_und_sperre():
     assert gesperrt(k["Stadt Essen"]) is True          # geprüft
     assert gesperrt(k["Fried. Krupp A.G."]) is False   # Automatik, ungeprüft
     assert gesperrt(k["Fried. Krupp AG."]) is True     # vom Menschen angefasst
-    assert FELDER_KURATIERUNG == ["schreibweise", "art", "eigentuemer", "kategorie", "geprueft", "bearbeiter", "datum", "hinweis"]
+    assert FELDER_KURATIERUNG == ["schreibweise", "art", "eigentuemer", "kategorie", "geprueft", "bearbeiter", "datum", "hinweis", "identitaet"]
+
+
+def test_stadtteil_aufteilung_und_identitaet():
+    from pipeline.lib.eigentuemer import identitaet_sicher, lade_stadtteil_liste, mit_stadtteil
+    e = {"Firmenname": "Kath. Kirchengem.", "lastname": "", "firstname": "", "stadtteil": "Katernberg"}
+    assert schreibweise_von(e) == ("Kath. Kirchengem.", "koerperschaft")
+    assert schreibweise_von(e, {"Kath. Kirchengem."}) == ("Kath. Kirchengem. ‹Katernberg›", "koerperschaft")
+    assert mit_stadtteil("X", {"stadtteil": "", "Vorort": "Kray"}) == "X ‹Kray›"
+    assert mit_stadtteil("X", {}) == "X ‹Stadtteil unbekannt›"
+    assert lade_stadtteil_liste([{"schreibweise": " Kath. Kirchengem. "}, {"schreibweise": ""}]) == frozenset({"Kath. Kirchengem."})
+    assert identitaet_sicher({"art": "koerperschaft"}) is True
+    assert identitaet_sicher({"art": "person", "identitaet": ""}) is False
+    assert identitaet_sicher({"art": "person", "identitaet": "sicher"}) is True

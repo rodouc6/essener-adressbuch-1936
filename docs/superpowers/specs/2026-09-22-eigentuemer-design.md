@@ -243,3 +243,15 @@ Liste `[schluessel, anzeige, haeuser, kategorie]` (nur geprüfte Eigentümer) un
 Werkzeug in Betrieb, Körperschaften ≥ 5 Häuser geprüft (≈ 150 Cluster), Personen ≥ 5
 Häuser durchgesehen; Thema `besitz` mit Legende auf der Karte; Hausansicht und Suche zeigen
 kanonische Eigentümer; Über-Seite nennt Methode und Stand der Prüfung; Journal-Eintrag.
+
+## Nachtrag 2026-09-23 — Identität und Stadtteil-Aufteilung
+
+- Befund aus der ersten Durchsicht: Von 453 prüfpflichtigen Personen tragen 425 nur Initialen, 3 einen Titel — die
+  Identität („dieselbe Person?“) ist aus dem Namen nicht belegbar, die Kategorie `privatperson` dagegen immer sicher.
+  Neue Spalte `identitaet` (leer | `sicher`); alle Personen wurden pauschal auf `geprueft=ja`, `privatperson`,
+  `identitaet` leer gesetzt (Hinweis in der Zeile). Export: Kategorie färbt die Karte, aber nur `identitaet=sicher`
+  kommt in Suchindex und „Größte Eigentümer“. Werkzeug: Taste `U`.
+- Kirchengemeinden ohne Zusatz („Kath. Kirchengem.“) lassen sich nur über den Stadtteil der Adresse trennen.
+  `kuratierung/eigentuemer_stadtteil.csv` listet solche Schreibweisen; die Automatik führt sie je Stadtteil als
+  eigene Schreibweise „… ‹Stadtteil›“ (immer prüfpflichtig, Kategorie von der einfachen Schreibweise geerbt), die
+  von Hand benannt und zusammengeführt werden. Export: stadtteilgenaue Schreibweise vor einfacher.

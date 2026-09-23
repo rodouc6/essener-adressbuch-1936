@@ -1,6 +1,6 @@
 // Zustand des Eigentümer-Werkzeugs (Spec §5): eine Zeile je Schreibweise; ein „Eigentümer“ ist die Menge
 // der Zeilen mit gleichem eigentuemer-Wert. Aktionen liefern die geänderten Zeilen zum Speichern.
-const CSV_FELDER = ["schreibweise", "art", "eigentuemer", "kategorie", "geprueft", "hinweis"];
+const CSV_FELDER = ["schreibweise", "art", "eigentuemer", "kategorie", "geprueft", "hinweis", "identitaet"];
 const VERLAUF_MAX = 20;
 
 export function baueModell(vorschlagZeilen, kuratierungZeilen) {
@@ -10,7 +10,7 @@ export function baueModell(vorschlagZeilen, kuratierungZeilen) {
     const s = k.schreibweise.trim();
     const v = vorschlag.get(s);
     zeilen.set(s, { schreibweise: s, art: k.art || (v && v.art) || "", eigentuemer: (k.eigentuemer || "").trim() || s,
-      kategorie: k.kategorie || "", geprueft: k.geprueft || "", hinweis: k.hinweis || "",
+      kategorie: k.kategorie || "", geprueft: k.geprueft || "", hinweis: k.hinweis || "", identitaet: k.identitaet || "",
       anzahl: v ? Number(v.anzahl) : 0, cluster_id: v ? v.cluster_id : "", pruefpflichtig: !!v && v.pruefpflichtig === "ja", verwaist: !v });
   }
   return { zeilen, vorschlag, verlauf: [] };
@@ -50,7 +50,7 @@ export function eigentuemerListe(m) {
       for (const w of wartendJeZiel.get(id) || []) if (w.zeile.eigentuemer !== name) vorschlaege.push(w);
     }
     vorschlaege.sort((a, b) => b.aehnlichkeit - a.aehnlichkeit || b.zeile.anzahl - a.zeile.anzahl);
-    return { name, art: zs[0].art, kategorie: zs[0].kategorie, haeuser: zs.reduce((s, z) => s + z.anzahl, 0), schreibweisen: zs,
+    return { name, art: zs[0].art, kategorie: zs[0].kategorie, identitaet: zs[0].identitaet || "", haeuser: zs.reduce((s, z) => s + z.anzahl, 0), schreibweisen: zs,
       geprueft: zs.every((z) => z.geprueft === "ja"), pruefpflichtig: zs.some((z) => z.pruefpflichtig), vorschlaege };
   });
   return liste.sort((a, b) => b.haeuser - a.haeuser || a.name.localeCompare(b.name, "de"));
@@ -90,6 +90,16 @@ export function benenne(m, alt, neu) {
   merke(m);
   const zs = zeilenVon(m, alt);
   for (const z of zs) z.eigentuemer = neu;
+  return zs;
+}
+
+// Identität (Personen): "sicher" = vom Bearbeiter bestätigt, leer = nicht belegbar; gilt für alle Zeilen des Eigentümers.
+export function setzeIdentitaet(m, name, sicher) {
+  const zs = zeilenVon(m, name);
+  const wert = sicher ? "sicher" : "";
+  if (!zs.length || zs.every((z) => z.identitaet === wert)) return [];
+  merke(m);
+  for (const z of zs) z.identitaet = wert;
   return zs;
 }
 

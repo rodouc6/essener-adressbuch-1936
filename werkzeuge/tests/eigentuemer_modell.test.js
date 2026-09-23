@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { abspalten, baueModell, benenne, eigentuemerListe, fortschritt, rueckgaengig, setzeGeprueft,
+import { abspalten, baueModell, benenne, eigentuemerListe, fortschritt, rueckgaengig, setzeGeprueft, setzeIdentitaet,
          setzeHinweis, setzeKategorie, uebernehmeVorschlag, zumSpeichern, zusammenfuehren } from "../js/eigentuemer_modell.js";
 
 const V = [
@@ -41,7 +41,7 @@ test("Kategorie, Name, geprüft gelten für alle Schreibweisen", () => {
   assert.equal(p.length, 2);
   assert.deepEqual(fortschritt(m), { geprueft: 2, gesamt: 2, haeuserGeprueft: 16, haeuserGesamt: 16 });
   assert.deepEqual(zumSpeichern(m.zeilen.get("Fried. Krupp A.G.")),
-    { schreibweise: "Fried. Krupp A.G.", art: "koerperschaft", eigentuemer: "Friedrich Krupp AG", kategorie: "industrie", geprueft: "ja", hinweis: "" });
+    { schreibweise: "Fried. Krupp A.G.", art: "koerperschaft", eigentuemer: "Friedrich Krupp AG", kategorie: "industrie", geprueft: "ja", hinweis: "", identitaet: "" });
 });
 
 test("abspalten, zusammenführen, Vorschlag übernehmen", () => {
@@ -115,4 +115,16 @@ test("Vorschlag übernehmen bewegt nur die eine Schreibweise", () => {
     [["Fried. Krupp A.G.", "Fried. Krupp AG", ""], ["Fried. Krupp AG.", "Fried. Krupp AG", ""], ["Krupp Stiftung", "Fried. Krupp AG", ""]]);
   assert.equal(m.zeilen.get("Krupp-Stiftung Essen").eigentuemer, "Krupp Stiftung");   // bleibt zurück
   assert.equal(uebernehmeVorschlag(m, "Krupp Stiftung", "Fried. Krupp AG").length, 0); // schon dort
+});
+
+test("Identität nur als Ganzes und ohne Verlaufseintrag bei Nulländerung", () => {
+  const m = frisch();
+  m.zeilen.set("Müller, J.", { schreibweise: "Müller, J.", art: "person", eigentuemer: "Müller, J.", kategorie: "privatperson", geprueft: "ja", hinweis: "", identitaet: "", anzahl: 31, cluster_id: "p1", pruefpflichtig: true, verwaist: false });
+  assert.deepEqual(setzeIdentitaet(m, "Müller, J.", false), []);
+  assert.equal(m.verlauf.length, 0);
+  const g = setzeIdentitaet(m, "Müller, J.", true);
+  assert.deepEqual(g.map((z) => z.identitaet), ["sicher"]);
+  assert.equal(eigentuemerListe(m).find((e) => e.name === "Müller, J.").identitaet, "sicher");
+  assert.deepEqual(zumSpeichern(g[0]).identitaet, "sicher");
+  assert.deepEqual(rueckgaengig(m).map((z) => z.identitaet), [""]);
 });

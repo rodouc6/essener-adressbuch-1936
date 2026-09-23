@@ -207,7 +207,12 @@ python3 pipeline/06_karte_export.py                          # geprüfte Zuordnu
 geprueft, bearbeiter, datum, hinweis`). Die Automatik überschreibt nur Zeilen, die ungeprüft sind und
 `bearbeiter=eigentuemer_cluster` tragen; alles, was das Werkzeug gespeichert hat, bleibt. Kategorien:
 `stadt_staat, bergbau, industrie, genossenschaft_siedlung, kirche_stiftung, bank_versicherung,
-privatperson, sonstige`. Abkürzungskatalog: `kuratierung/eigentuemer_abkuerzungen.csv`. Auf der Karte
+privatperson, sonstige`. Abkürzungskatalog: `kuratierung/eigentuemer_abkuerzungen.csv`.
+Nachtrag 2026-09-23: Spalte `identitaet` (leer = Identität nicht belegbar, `sicher` = bestätigt; Taste `U` im
+Werkzeug) — Personen tragen immer die sichere Kategorie `privatperson`, erscheinen in Suche und Liste „Größte
+Eigentümer“ aber nur mit `identitaet=sicher`. Schreibweisen aus `kuratierung/eigentuemer_stadtteil.csv`
+(Kirchengemeinden ohne Zusatz) führt die Automatik je Stadtteil als eigene, immer prüfpflichtige Schreibweise
+„Kath. Kirchengem. ‹Katernberg›“; der Export sucht zuerst diese, dann die einfache Schreibweise. Auf der Karte
 zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
 „Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL). Tests: `node --test werkzeuge/tests/`
 (`werkzeuge/package.json` mit `type: module`).

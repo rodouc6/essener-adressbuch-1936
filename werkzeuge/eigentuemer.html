@@ -17,7 +17,7 @@
   #rechts { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; }
   #kopf { padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   #name { font-size: 18px; font-weight: 600; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; min-width: 320px; }
-  .kats button { margin: 0 2px; } .kats button[aria-pressed=true] { background: #1d4ed8; color: #fff; }
+  .kats button { margin: 0 2px; } .kats button[aria-pressed=true], #identitaet[aria-pressed=true] { background: #1d4ed8; color: #fff; }
   #mitte { padding: 12px 16px; overflow: auto; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   #unten { display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
   #belege { overflow: auto; padding: 8px 16px; } #karte { min-height: 200px; }
@@ -50,6 +50,7 @@
     <span id="haeuser"></span>
     <span class="kats" id="kats"></span>
     <button id="geprueft" title="Taste G">Geprüft <kbd>G</kbd></button>
+    <button id="identitaet" title="Nur Personen: Identität als dieselbe Person belegt (Titel, seltener Name). Taste U" hidden>Identität sicher <kbd>U</kbd></button>
     <button id="rueck" title="Taste Z">Rückgängig <kbd>Z</kbd></button>
     <input id="hinweis" placeholder="Hinweis" style="flex:1 1 200px">
   </div>
@@ -63,7 +64,7 @@
 <div id="banner"></div>
 <script type="module">
 import { abspalten, baueModell, benenne, eigentuemerListe, fortschritt, rueckgaengig, setzeGeprueft, setzeHinweis,
-         setzeKategorie, uebernehmeVorschlag, zumSpeichern, zusammenfuehren } from "./js/eigentuemer_modell.js";
+         setzeIdentitaet, setzeKategorie, uebernehmeVorschlag, zumSpeichern, zusammenfuehren } from "./js/eigentuemer_modell.js";
 
 const KATEGORIEN = { stadt_staat: "Stadt/Staat/Reich", bergbau: "Bergbau", industrie: "Industrie", genossenschaft_siedlung: "Genossenschaft/Siedlung",
   kirche_stiftung: "Kirche/Stiftung", bank_versicherung: "Bank/Versicherung", privatperson: "Privatperson", sonstige: "Sonstige" };
@@ -174,7 +175,13 @@ function zeichneAktiv(liste) {
   if (!e) { document.getElementById("kopf").style.visibility = "hidden"; return; }
   document.getElementById("kopf").style.visibility = "visible";
   document.getElementById("name").value = e.name;
-  document.getElementById("haeuser").textContent = `${e.haeuser} Häuser · ${e.art === "person" ? "Person" : "Körperschaft"}${e.geprueft ? " · geprüft" : ""}`;
+  document.getElementById("haeuser").textContent = `${e.haeuser} Häuser · ${e.art === "person" ? "Person" : "Körperschaft"}${e.geprueft ? " · geprüft" : ""}` +
+    (e.art === "person" ? (e.identitaet === "sicher" ? " · Identität sicher" : " · Identität nicht belegt") : "");
+  // Personen: Kategorie „Privatperson“ ist immer sicher, die Identität (dieselbe Person?) nur mit Titel/seltenem Namen.
+  // Nur „Identität sicher“ erscheint in Suche und Liste „Größte Eigentümer“ (Nachtrag 2026-09-23).
+  const identBtn = document.getElementById("identitaet");
+  identBtn.hidden = e.art !== "person";
+  identBtn.setAttribute("aria-pressed", e.identitaet === "sicher");
   document.getElementById("hinweis").value = e.schreibweisen[0].hinweis;
   document.getElementById("kats").innerHTML = Object.entries(KATEGORIEN).map(([k, t], i) => `<button data-kat="${k}" aria-pressed="${e.kategorie === k}">${i + 1} ${esc(t)}</button>`).join("");
   // geprueft=ja ohne Kategorie lehnt der Server ab (F2) — der Knopf ist dann gar nicht erst klickbar.
@@ -224,6 +231,7 @@ function naechsterOffener(liste = eigentuemerListe(m)) {
 document.getElementById("liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-name]"); if (z) waehle(z.dataset.name); });
 for (const id of ["filter", "nur-pflicht", "art"]) document.getElementById(id).addEventListener("input", () => zeichneListe(eigentuemerListe(m)));
 document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListener("change", () => zeichneListe(eigentuemerListe(m))));
+document.getElementById("identitaet").addEventListener("click", () => { const e = eigentuemerListe(m).find((x) => x.name === aktiv); if (e) { speichere(setzeIdentitaet(m, aktiv, e.identitaet !== "sicher")); zeichne(); } });
 document.getElementById("kats").addEventListener("click", (ev) => { const b = ev.target.closest("[data-kat]"); if (b) { speichere(setzeKategorie(m, aktiv, b.dataset.kat)); zeichne(); } });
 document.getElementById("name").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const neu = ev.target.value; const g = benenne(m, aktiv, neu); if (g.length) { aktiv = neu.trim(); speichere(g); zeichne(); } } });
 document.getElementById("hinweis").addEventListener("change", (ev) => speichere(setzeHinweis(m, aktiv, ev.target.value)));
@@ -240,6 +248,7 @@ document.addEventListener("keydown", (ev) => {
   const k = Object.keys(KATEGORIEN)[Number(ev.key) - 1];
   if (k && aktiv) { speichere(setzeKategorie(m, aktiv, k)); zeichne(); }
   else if (ev.key.toLowerCase() === "g" && aktiv && !document.getElementById("geprueft").disabled) document.getElementById("geprueft").click();
+  else if (ev.key.toLowerCase() === "u" && aktiv && !document.getElementById("identitaet").hidden) document.getElementById("identitaet").click();
   else if (ev.key.toLowerCase() === "z") document.getElementById("rueck").click();
 });
 

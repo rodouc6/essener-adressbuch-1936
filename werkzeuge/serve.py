@@ -37,7 +37,7 @@ import requests
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, KATEGORIEN, lade_kuratierung
+from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, IDENTITAETEN, KATEGORIEN, lade_kuratierung
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
@@ -120,6 +120,8 @@ def pruefe_eigentuemer(z: dict, bekannt: set[str]) -> str:
         return f"unbekannte Kategorie: {kat}"
     if str(z.get("geprueft", "")).strip() not in ("", "ja"):
         return "geprueft muss ja oder leer sein"
+    if str(z.get("identitaet", "")).strip() not in IDENTITAETEN:
+        return "identitaet muss sicher oder leer sein"
     if str(z.get("geprueft", "")).strip() == "ja" and not kat:
         return "geprueft=ja verlangt eine Kategorie"
     return ""

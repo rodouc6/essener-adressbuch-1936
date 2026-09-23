@@ -15,7 +15,7 @@ KOPF = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse
 
 KOPF_1935 = "strasse_roh_norm,vorort,befund,lat,lon,name_im_plan,stadtteil,bemerkung,bearbeiter,datum"
 KOPF_ZUORDNUNG = "strasse_roh_norm,vorort,strasse_heute,schl_nr,hausnr_von,hausnr_bis,nummer_unsicher,beleg,bearbeiter,datum"
-KOPF_EIGENTUEMER = "schreibweise,art,eigentuemer,kategorie,geprueft,bearbeiter,datum,hinweis"
+KOPF_EIGENTUEMER = "schreibweise,art,eigentuemer,kategorie,geprueft,bearbeiter,datum,hinweis,identitaet"
 
 
 @pytest.fixture
@@ -26,9 +26,9 @@ def server(tmp_path):
     (tmp_path / "kuratierung" / "strassen_zuordnung.csv").write_text(
         KOPF_ZUORDNUNG + "\n" + 'x,Kray,Y,00001,1,9,nein,"Bereich, bleibt",T,2026-09-15\n', encoding="utf-8")
     (tmp_path / "kuratierung" / "eigentuemer.csv").write_text(
-        KOPF_EIGENTUEMER + "\nStadt Essen,koerperschaft,Stadt Essen,stadt_staat,,eigentuemer_cluster,2026-09-22,\n"
-        "Fried. Krupp A.G.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,\n"
-        "Fried. Krupp AG.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,\n", encoding="utf-8")
+        KOPF_EIGENTUEMER + "\nStadt Essen,koerperschaft,Stadt Essen,stadt_staat,,eigentuemer_cluster,2026-09-22,,\n"
+        "Fried. Krupp A.G.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,,\n"
+        "Fried. Krupp AG.,koerperschaft,Fried. Krupp AG,,,eigentuemer_cluster,2026-09-22,,\n", encoding="utf-8")
     ziel = tmp_path / "docs" / "stichprobe_7.csv"
     with open(ziel, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=KOPF, lineterminator="\n")
@@ -188,6 +188,7 @@ def test_eigentuemer_post_validiert(server):
     assert fehler({**basis, "kategorie": "adel"}) == (400, "unbekannte Kategorie: adel")
     assert fehler({**basis, "eigentuemer": " "}) == (400, "eigentuemer ist Pflicht")
     assert fehler({**basis, "geprueft": "vielleicht"}) == (400, "geprueft muss ja oder leer sein")
+    assert fehler({**basis, "identitaet": "vermutlich"}) == (400, "identitaet muss sicher oder leer sein")
     assert fehler({**basis, "schreibweise": "Gibt es nicht"}) == (400, "unbekannte Schreibweise: Gibt es nicht")
     assert fehler({**basis, "kategorie": "", "geprueft": "ja"}) == (400, "geprueft=ja verlangt eine Kategorie")
     with pytest.raises(urllib.error.HTTPError) as e:
