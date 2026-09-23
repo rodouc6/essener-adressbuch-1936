@@ -78,7 +78,7 @@ def test_zuordnung_nur_geprueft(ohdab_pfad):
                           dict(schreibweise="Kfm.", beruf="Kaufmann", status="", ohdab_id="", niveau_unsicher="", geprueft=""),
                           dict(schreibweise="Arbeiter", beruf="Arbeiter", status="", ohdab_id="B 20002-500", niveau_unsicher="ja", geprueft="ja"),
                           dict(schreibweise="Kaputt", beruf="x", status="", ohdab_id="Q 0", niveau_unsicher="", geprueft="ja")])
-    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", status="ruhestand")
+    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", status="ruhestand", norm="Bergmann")
     assert zuordnung({"Beruf o. ä.": "Kfm."}, k, o) is None
     assert zuordnung({"Beruf o. ä.": "Arbeiter"}, k, o)["niveau"] == "unsicher"
     assert zuordnung({"Beruf o. ä.": ""}, k, o) is None

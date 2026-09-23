@@ -388,3 +388,41 @@ def test_niveau_je_adresse_und_berufsnormindex(tmp_path):
     assert [x[1] for x in roh] == ["Kfm."]                      # geprüfte Schreibweisen nur noch über die Normbezeichnung
     kz = baue_kennzahlen(eintraege, a, "2026-09-23")
     assert kz["berufe_geprueft"] == 75.0 and kz["berufe_schreibweisen_geprueft"] == 3   # 6 von 8 Teil-I-Einträgen
+
+
+def test_berufsnormindex_nutzt_ohdab_norm_nicht_kuratierten_beruf(tmp_path):
+    """Zwei Schreibweisen mit unterschiedlichem kuratierten `beruf`, aber demselben ohdab_id, ergeben EINEN
+    Indexeintrag mit der OhdAB-Normbezeichnung als Label — unabhängig davon, welche Zeile zuletzt verarbeitet
+    wird (Finding 1: baue_berufsnormindex bildete Label/Schlüssel/Scherbe bisher aus dem kuratierten `beruf`)."""
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from pipeline.lib.karte_export import baue_berufsnormindex
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja"),
+                     dict(schreibweise="Bergarb.", beruf="Bergarbeiter", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja")])
+    basis = dict(stufe="haus", lat="51.4", lon="7.0", strasse_norm="x", strasse_roh="X", hausnr="1", Vorort="", stadtteil="Kray", lastname="N", firstname="", page="I-1")
+    def e(i, beruf, hausnr="1"):
+        return dict(basis, id=str(i), teil="I", hausnr=hausnr, **{"Beruf o. ä.": beruf})
+    for reihenfolge in ([e(1, "Bergarb."), e(2, "Bergm.")], [e(1, "Bergm."), e(2, "Bergarb.")]):
+        a = gruppiere(reihenfolge, [], None, berufe=b, ohdab=o)
+        liste, scherben = baue_berufsnormindex(a)
+        assert len(liste) == 1
+        assert liste[0][1:3] == ["Bergmann", "B 21112-100"]   # Label = OhdAB-Norm, nicht der kuratierte beruf
+        assert list(scherben["be"]) == ["B 21112-100"]
+
+
+def test_gruppiere_ordnet_teil_iii_keinen_beruf_zu(tmp_path):
+    """Berufszuordnung gilt nur für Teil I (Einwohner) und Teil II (Eigentümer) — Teil III (Gewerbe) hat kein
+    eigenes Feld `Beruf o. ä.` im fachlichen Sinn; eine geprüfte Schreibweise darf dort nicht `_beruf` setzen
+    (Finding 5). Der Eintrag bleibt daher im Rohtext-Berufsindex."""
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja")])
+    e = _v(id="1", teil="III", **{"Beruf o. ä.": "Bergm."})
+    a = gruppiere([e], [], None, berufe=b, ohdab=o)
+    eintrag = next(iter(a.values()))["eintraege"][0]
+    assert eintrag["_beruf"] is None
+    assert eintrag_kurz(eintrag, [])["beruf_norm"] == ""
+    roh, _ = baue_berufsindex(a)
+    assert [x[1] for x in roh] == ["Bergm."]

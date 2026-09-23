@@ -9,7 +9,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline.lib.berufe import NIVEAUS, lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
+from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -106,7 +106,7 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                 sicher = identitaet_sicher(z)
         # _identitaet: nur identifizierte Eigentümer kommen in Suchindex und Liste; die Kategorie gilt immer.
         e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
-                _beruf=berufszuordnung(e, berufe, ohdab) if berufe else None)
+                _beruf=berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None)
         a["eintraege"].append(e)
     for a in gruppen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
@@ -271,7 +271,9 @@ def baue_berufsindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, d
 def baue_berufsnormindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
     """Suchindex nach Normbezeichnung geprüfter Zuordnungen (Spec §6.4): Liste [Schlüssel, Beruf, ohdab_id,
     Nennungen, Schreibweisen, Niveau] nach Nennungen absteigend; Scherbe praefix2(Beruf) → ohdab_id →
-    [[Adress-ID, Zähler]]."""
+    [[Adress-ID, Zähler]]. Label/Schlüssel/Scherbe kommen aus der OhdAB-Normbezeichnung (`norm`), nicht aus
+    dem kuratierten `beruf` — sonst hätte dieselbe Zuordnung unter verschiedenen Schreibweisen (mit
+    unterschiedlich kuratiertem `beruf`) verschiedene Indexeinträge bekommen können."""
     zaehler: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     info: dict[str, dict] = {}
     schreibweisen: dict[str, set[str]] = defaultdict(set)
@@ -282,11 +284,11 @@ def baue_berufsnormindex(adressen: dict[str, dict]) -> tuple[list[list], dict[st
                 zaehler[b["ohdab"]][a["id"]] += 1
                 info[b["ohdab"]] = b
                 schreibweisen[b["ohdab"]].add(e.get("Beruf o. ä.", ""))
-    liste = sorted([[falte(info[o]["beruf"]), info[o]["beruf"], o, sum(z.values()), len(schreibweisen[o]), info[o]["niveau"]] for o, z in zaehler.items()],
+    liste = sorted([[falte(info[o]["norm"]), info[o]["norm"], o, sum(z.values()), len(schreibweisen[o]), info[o]["niveau"]] for o, z in zaehler.items()],
                    key=lambda x: (-x[3], x[0]))
     scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
     for o, z in zaehler.items():
-        scherben[praefix2(info[o]["beruf"])][o] = sorted([[aid, n] for aid, n in z.items()])
+        scherben[praefix2(info[o]["norm"])][o] = sorted([[aid, n] for aid, n in z.items()])
     return liste, dict(scherben)
 
 

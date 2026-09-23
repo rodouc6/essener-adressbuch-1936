@@ -106,4 +106,6 @@ def zuordnung(eintrag: dict, kuratierung: dict[str, dict], ohdab: dict[str, dict
     if o is None:
         raise ValueError(f"kuratierung/berufe.csv: {s!r} ist geprüft, aber ohdab_id {z['ohdab_id']!r} fehlt im Schnappschuss")
     niveau = "unsicher" if z.get("niveau_unsicher") == "ja" else o["niveau"]
-    return dict(beruf=z["beruf"], ohdab=z["ohdab_id"], niveau=niveau, gattung=o["gattung"], status=z.get("status", ""))
+    norm = o["maennlich"] or o["norm"]
+    return dict(beruf=z["beruf"], ohdab=z["ohdab_id"], niveau=niveau, gattung=o["gattung"], status=z.get("status", ""),
+               norm=norm)
