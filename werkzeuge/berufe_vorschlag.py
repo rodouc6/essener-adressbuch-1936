@@ -157,3 +157,87 @@ def loese_auf(kern: str, katalog: dict[str, tuple[str, str]]) -> tuple[str, list
                 vollstaendig = False
             woerter.append(w)
     return " ".join(woerter), status, vollstaendig
+
+
+def sammle(eintraege: list[dict]) -> tuple[dict[str, int], dict[str, list[dict]]]:
+    """Nennungen je Schreibweise (Teil I+II) und bis zu 5 Belege (Teil I bevorzugt, verschiedene Adressen)."""
+    nennungen: dict[str, int] = defaultdict(int)
+    belege: dict[str, list[dict]] = defaultdict(list)
+    adressen: dict[str, set[str]] = defaultdict(set)
+    for e in sorted(eintraege, key=lambda e: e.get("teil") != "I"):
+        if e.get("teil") not in ("I", "II"):
+            continue
+        s = (e.get("Beruf o. ä.") or "").strip()
+        if not s:
+            continue
+        nennungen[s] += 1
+        nr = ((e.get("hausnr") or "") + (e.get("hausnr_zusatz") or "")).strip()
+        adresse = " ".join(x for x in (e.get("strasse_roh", ""), nr) if x)
+        if e.get("Vorort"):
+            adresse += f", {e['Vorort']}"
+        if len(belege[s]) < 5 and adresse not in adressen[s]:
+            adressen[s].add(adresse)
+            name = ", ".join(x for x in ((e.get("lastname") or "").strip(), (e.get("firstname") or "").strip()) if x)
+            belege[s].append(dict(name=name, adresse=adresse, teil=e["teil"], seite=e.get("page", "")))
+    return dict(nennungen), dict(belege)
+
+
+def aktualisiere_kuratierung(alt: list[dict], vorschlaege: dict[str, dict], nennungen: dict[str, int], datum: str,
+                             min_nennungen: int) -> list[dict]:
+    """Gesperrte Zeilen: nur `nennungen` nachführen. Automatik-Zeilen: Vorschlag übernehmen (hinweis bleibt),
+    datum nur bei Änderung. Neue Zeilen nur ab der Untergrenze. Verwaistes bleibt stehen."""
+    bekannt = lade_kuratierung(alt)
+    out = [dict(z) for z in alt]
+    index = {z["schreibweise"].strip(): i for i, z in enumerate(out)}
+    for s, v in vorschlaege.items():
+        n = str(nennungen.get(s, 0))
+        if s in bekannt:
+            z = out[index[s]]
+            z["nennungen"] = n
+            if gesperrt(bekannt[s]):
+                continue
+            neu = dict(beruf=v["beruf"], status=v["status"], ohdab_id=v["ohdab_id"], vorschlag_grund=v["grund"])
+            if any(z.get(k, "") != w for k, w in neu.items()):
+                z.update(neu, datum=datum)
+        elif nennungen.get(s, 0) >= min_nennungen:
+            out.append(dict(schreibweise=s, nennungen=n, beruf=v["beruf"], status=v["status"], ohdab_id=v["ohdab_id"],
+                            niveau_unsicher="", geprueft="", vorschlag_grund=v["grund"], bearbeiter=AUTOMATIK, datum=datum, hinweis=""))
+    return out
+
+
+def main(argv: list[str] | None = None) -> dict:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--min-nennungen", type=int, default=5)
+    ap.add_argument("--llm", action="store_true", help="LLM-Reserve für Zeilen ohne Vorschlag (Task 5)")
+    ap.add_argument("--wurzel", default=None, help="Projektwurzel (Tests)")
+    a = ap.parse_args(argv)
+    W = Path(a.wurzel) if a.wurzel else projektwurzel()
+    ohdab = lade_ohdab(W / "kuratierung" / "ohdab.csv")
+    index = formen_index(ohdab)
+    katalog = lade_katalog(W / "kuratierung" / "berufe_abkuerzungen.csv")
+    nennungen, belege = sammle(lies_csv(W / "build" / "eintraege.csv"))
+    pfad = W / "kuratierung" / "berufe.csv"
+    alt = lies_csv(pfad) if pfad.exists() else []
+    bekannt = lade_kuratierung(alt)
+    relevant = sorted(s for s in nennungen if nennungen[s] >= a.min_nennungen or s in bekannt)
+    vorschlaege = {s: vorschlag_fuer(s, katalog, ohdab, index) for s in relevant}
+    neu = aktualisiere_kuratierung(alt, vorschlaege, nennungen, datetime.date.today().isoformat(), a.min_nennungen)
+    if a.llm:
+        from werkzeuge.berufe_llm import ergaenze_llm   # Task 5
+        neu = ergaenze_llm(neu, belege, ohdab, index, datetime.date.today().isoformat())
+    schreib_csv(pfad, neu, FELDER_KURATIERUNG)
+    (W / "build").mkdir(exist_ok=True)
+    (W / "build" / "berufe_belege.json").write_text(json.dumps({s: belege.get(s, []) for s in relevant}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (W / "build" / "berufe_kandidaten.json").write_text(json.dumps({s: v["kandidaten"] for s, v in vorschlaege.items()}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    gruende: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for z in neu:
+        g = (z.get("vorschlag_grund") or "").split(" ")[0].rstrip(";") or "ohne"
+        gruende[g][0] += 1; gruende[g][1] += int(z.get("nennungen") or 0)
+    k = dict(schreibweisen=len(relevant), zeilen=len(neu), nennungen=sum(nennungen[s] for s in relevant),
+             gruende={g: dict(werte=w, nennungen=n) for g, (w, n) in sorted(gruende.items())})
+    print(json.dumps(k, ensure_ascii=False, indent=1))
+    return k
+
+
+if __name__ == "__main__":
+    main()
