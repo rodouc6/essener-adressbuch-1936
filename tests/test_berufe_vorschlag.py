@@ -19,6 +19,11 @@ def test_zerlege_status():
     assert zerlege("Bergm. i. R. Ww.") == ("Bergm.", ["ruhestand", "witwe"])
     assert zerlege("Berginval.") == ("Berginval.", [])          # kein Wortanfang vor „inval“ → bleibt dem Katalog
     assert zerlege("  Schlosser  ") == ("Schlosser", [])
+    assert zerlege("Rentn.") == ("", ["ruhestand"])
+    assert zerlege("Bergm. Pension.") == ("Bergm.", ["ruhestand"])
+    assert zerlege("Schlosser Invalid.") == ("Schlosser", ["invalide"])
+    assert zerlege("Inval") == ("", ["invalide"])
+    assert zerlege("Rentier") == ("Rentier", [])
 
 
 def test_loese_auf(tmp_path):

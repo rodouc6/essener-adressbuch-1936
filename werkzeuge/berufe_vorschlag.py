@@ -20,8 +20,8 @@ from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 # Status-Zusätze (Spec §3.3): als eigenes Wort (Wortanfang), nicht mitten im Wort („Berginval.“ bleibt dem Katalog).
 STATUS_MUSTER = [
-    ("ruhestand", re.compile(r"(?<![\wäöüÄÖÜ])(i\.\s?R\.|a\.\s?D\.|Pens\.|Pensionär(in)?|Rentner(in)?|Ruhest\.)(?![\wäöüÄÖÜ])")),
-    ("invalide", re.compile(r"(?<![\wäöüÄÖÜ])(Inval\.|Invalide|Invalidin)(?![\wäöüÄÖÜ])")),
+    ("ruhestand", re.compile(r"(?<![\wäöüÄÖÜ])(i\.\s?R\.|a\.\s?D\.|Pensionär(in)?|Pension\.|Pens\.|Rentner(in)?|Rentenempf\.|Rentn\.|Rent\.|Ruhest\.)(?![\wäöüÄÖÜ])")),
+    ("invalide", re.compile(r"(?<![\wäöüÄÖÜ])(Invalide|Invalidin|Invalid\.|Inval\.|Inval)(?![\wäöüÄÖÜ])")),
     ("witwe", re.compile(r"(?<![\wäöüÄÖÜ])(Ww\.|Wwe\.|Witwe)(?![\wäöüÄÖÜ])")),
 ]
 _REST = re.compile(r"^[\s,;]+|[\s,;]+$")
