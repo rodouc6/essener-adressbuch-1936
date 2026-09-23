@@ -127,6 +127,25 @@ def test_thema_besitz_legende_und_hausansicht(basis, browser):
     assert s.fehler == []
 
 
+def test_thema_berufe_legende_und_hausansicht(basis, browser):
+    """Thema Berufe: Legende zeigt Niveaus; ein Haus mit geprüfter Berufszuordnung zeigt „→“."""
+    import json
+    s = _seite(browser)
+    s.goto(basis + "karte.html?thema=berufe")
+    s.wait_for_selector("#legende .zeile")
+    legende = s.locator("#legende").inner_text()
+    assert "Fachliche Tätigkeit" in legende and "ungeprüft" in legende
+    liste = json.loads((W / "site" / "daten" / "suche" / "berufe_norm.json").read_text(encoding="utf-8"))
+    if not liste:
+        pytest.skip("noch keine geprüfte Berufszuordnung im Datenpaket")
+    s.goto(basis + "karte.html?thema=berufe&ohdab=" + urllib.parse.quote(liste[0][2], safe=""))
+    s.wait_for_selector(".treffer")
+    s.locator(".treffer").first.click()
+    s.wait_for_selector(".eintrag")
+    assert "→" in s.locator("#inhalt").inner_text()
+    assert s.fehler == []
+
+
 def test_werkzeug_berufe_laedt_und_speichert_nicht_bei_fehler(basis, browser):
     if not (W / "kuratierung" / "berufe.csv").exists():
         pytest.skip("kuratierung/berufe.csv fehlt")

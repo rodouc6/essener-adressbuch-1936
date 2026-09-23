@@ -256,6 +256,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `beruf` | Berufsfilter | keiner |
 | `thema` | Aktives Thema (`site/daten/themen/<id>.json`) | keins |
 | `eigentuemer` | Filter auf einen kanonischen Eigentümer (Suche im Thema Besitz) | keiner |
+| `ohdab` | Filter auf eine OhdAB-Normbezeichnung (Suche im Thema Berufe); schließt sich mit `beruf` und `eigentuemer` aus | keiner |
 | `id` | Adress-ID (öffnet die Hausansicht) oder Eintrags-ID (öffnet die Hausansicht und hebt den Eintrag hervor) | keine |
 | `karte` | Grundkartenstil: `positron` oder `liberty` | `positron` |
 | `plan` | Stadtplan-1935-Ebene ein-/ausblenden: `0` oder `1` — nur nach Freigabe wirksam (siehe unten) | `0` |
@@ -307,6 +308,49 @@ sieben Schlüsseln (FactGrid-Label → Schlüssel):
 `gattung_id` ist der Teil der OhdAB-ID vor dem Bindestrich (`B 21112`), `gattung` das Label des
 Kategorie-Items ohne den ID-Präfix. `pipeline/lib/berufe.py` lädt den Schnappschuss und bricht
 mit klarer Meldung ab, wenn die Datei fehlt.
+
+```
+python3 werkzeuge/berufe_vorschlag.py [--min-nennungen 5] [--llm]   # Vorschlag je Schreibweise → kuratierung/berufe.csv
+python3 werkzeuge/serve.py 8765                                      # dann http://localhost:8765/werkzeuge/berufe.html
+python3 pipeline/06_karte_export.py                                  # geprüfte Zuordnungen in die Karte (Thema „Berufe“)
+```
+
+`werkzeuge/berufe_vorschlag.py` liest `build/eintraege.csv`, `kuratierung/ohdab.csv`,
+`kuratierung/berufe_abkuerzungen.csv` und `kuratierung/berufe.csv`; schreibt
+`kuratierung/berufe.csv` (Upsert je Schreibweise ≥ `--min-nennungen`, Standard 5) sowie
+`build/berufe_belege.json` (bis 5 Beispiel-Einträge je Schreibweise) und
+`build/berufe_kandidaten.json` (bis 20 Kandidaten je Schreibweise für das Werkzeug). Ablauf je
+Schreibweise: Status abtrennen (`ruhestand`/`invalide`/`witwe`, Vokabular s. u.), Kern über
+`kuratierung/berufe_abkuerzungen.csv` auflösen (ganze Wortfolgen vor Einzelwörtern), dann
+Exakt-Abgleich auf die gefalteten Formen aus `kuratierung/ohdab.csv` und zuletzt RapidFuzz
+„ähnlich“ ab Schwelle 0,90; mit `--llm` zusätzlich eine LLM-Reserve für Zeilen ohne Vorschlag
+(Anthropic API, nur `vorschlag_grund=llm`, nie `geprueft`). Auf einem Lauf ohne Katalog fanden
+77,5 % der Nennungen einen Vorschlag, mit dem vorbefüllten Katalog (`berufe_abkuerzungen.csv`,
+486 Zeilen) steigt das auf **89,9 % der Nennungen** (154.772 von 172.136, verteilt auf 1.110 von
+1.977 Schreibweisen).
+
+`kuratierung/berufe.csv` (eine Zeile je Schreibweise): Spalten `schreibweise, nennungen, beruf,
+status, ohdab_id, niveau_unsicher, geprueft, vorschlag_grund, bearbeiter, datum, hinweis`.
+`status` ist leer oder eine `;`-Liste aus `ruhestand`, `invalide`, `witwe`; `vorschlag_grund`
+nennt die beteiligten Schritte (`katalog`, `exakt`, `aehnlich 0.93`, `llm`, Kombinationen wie
+„katalog; exakt“). Sperrregel wie bei den Eigentümern: `geprueft=ja` oder
+`bearbeiter≠berufe_vorschlag` → die Automatik ändert die Zeile nicht mehr (nur `nennungen` wird
+nachgeführt); `geprueft=ja` verlangt eine gültige `ohdab_id`. Niveau und Gattung stehen nicht in
+der Tabelle, sondern kommen beim Export aus dem Schnappschuss (eine Wahrheit); `niveau_unsicher`
+setzt nur der Mensch im Werkzeug, für Fälle, in denen die OhdAB-Stufe für die 1936er Schreibweise
+zu unsicher ist (häufig bei „Arbeiter“). `kuratierung/berufe_abkuerzungen.csv`: Spalten `kurz,
+lang, beleg, bearbeiter, datum`; die Vorlage hat kein Abkürzungsverzeichnis für Berufe, daher
+steht bei allen vorbefüllten Zeilen `beleg=üblich`.
+
+Export (Stufe 06): Mehrheitsregel je Adresse — unter den geprüften Teil-I-Einträgen hat eine
+Niveaustufe mehr als die Hälfte → diese Stufe als Punktattribut `niveau`; sonst `gemischt`; nur
+`unsicher`-Einträge → `unsicher`; kein geprüfter Eintrag → `ungeprueft`. Zusätzlich Zählfelder
+`n_helfer, n_fachlich, n_spezialist, n_hochkomplex, n_aufsicht, n_fuehrung, n_unsicher` (nur bei
+Wert > 0) für Teilprojekt 5. Suchindex nach Normbezeichnung: `suche/berufe_norm.json` und
+`suche/berufe_norm/<praefix>.json` (nur geprüfte Zuordnungen; der bisherige Rohtext-Index
+`suche/berufe.json` bleibt für ungeprüfte Schreibweisen bestehen). Kennzahlen `berufe_geprueft`
+(Anteil der Teil-I-Nennungen verorteter Adressen mit geprüfter Zuordnung) und
+`berufe_schreibweisen_geprueft` (Zahl geprüfter Schreibweisen) in `kennzahlen.json`.
 
 ## Dokumentation
 
