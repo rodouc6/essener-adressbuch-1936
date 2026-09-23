@@ -17,13 +17,13 @@ from pathlib import Path
 from rapidfuzz import fuzz, process
 
 from pipeline.lib.berufe import (AUTOMATIK, FELDER_KURATIERUNG, STATUS, falte_form, formen_von, gesperrt,
-                                 lade_kuratierung, lade_ohdab)
+                                 lade_kuratierung, lade_ohdab, norm_form)
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 # Status-Zusätze (Spec §3.3): als eigenes Wort (Wortanfang), nicht mitten im Wort („Berginval.“ bleibt dem Katalog).
 STATUS_MUSTER = [
     ("ruhestand", re.compile(r"(?<![\wäöüÄÖÜ])(i\.\s?R\.|a\.\s?D\.|Pensionär(in)?|Pension\.|Pens\.|Rentner(in)?|Rentenempf\.|Rentn\.|Rent\.|Ruhest\.)(?![\wäöüÄÖÜ])")),
-    ("invalide", re.compile(r"(?<![\wäöüÄÖÜ])(Invalide|Invalidin|Invalid\.|Inval\.|Inval)(?![\wäöüÄÖÜ])")),
+    ("invalide", re.compile(r"(?<![\wäöüÄÖÜ])(Invalide|Invalidin|Invalid\.|Inval\.|Inv\.|Inval)(?![\wäöüÄÖÜ])")),
     ("witwe", re.compile(r"(?<![\wäöüÄÖÜ])(Ww\.|Wwe\.|Witwe)(?![\wäöüÄÖÜ])")),
 ]
 _REST = re.compile(r"^[\s,;]+|[\s,;]+$")
@@ -61,9 +61,16 @@ def formen_index(ohdab: dict[str, dict]) -> dict[str, list[str]]:
     return dict(idx)
 
 
-def waehle(ids: list[str], ohdab: dict[str, dict]) -> str:
-    """Mehrdeutig → kürzeste Normbezeichnung, bei Gleichstand kleinste ID (Spec §4 Schritt 3)."""
-    return sorted(ids, key=lambda i: (len(ohdab[i]["norm"]), i))[0] if ids else ""
+def waehle(ids: list[str], ohdab: dict[str, dict], beruf: str = "") -> str:
+    """Mehrdeutig → zuerst Items, deren Normbezeichnung (ohne Geschlechtszusatz) genau dem Beruf
+    entspricht, also ohne Qualifizierung wie „im Nebenerwerb“, „ - Bergbau“, „(kaufmännisches
+    Geschäft)“; danach kürzeste Normbezeichnung, bei Gleichstand kleinste ID (Spec §4 Schritt 3).
+
+    Ohne `beruf` bleibt es beim alten Verhalten (kürzeste Norm zuerst)."""
+    if not ids:
+        return ""
+    k = falte_form(beruf)
+    return sorted(ids, key=lambda i: (not (k and norm_form(ohdab[i]) == k), len(ohdab[i]["norm"]), i))[0]
 
 
 def exakt(beruf: str, index: dict[str, list[str]]) -> list[str]:
@@ -103,7 +110,7 @@ def vorschlag_fuer(schreibweise: str, katalog: dict[str, tuple[str, str]], ohdab
         roh = (schreibweise or "").strip()
         ids = exakt(roh, index)
         if ids:
-            oid = waehle(ids, ohdab)
+            oid = waehle(ids, ohdab, roh)
             beruf = ohdab[oid]["maennlich"] or ohdab[oid]["norm"]
             gruende.append("status; exakt")
             kandidaten = [[i, "exakt", 1.0] for i in sorted(ids, key=lambda i: (len(ohdab[i]["norm"]), i))]
@@ -116,7 +123,7 @@ def vorschlag_fuer(schreibweise: str, katalog: dict[str, tuple[str, str]], ohdab
     elif beruf and vollstaendig:
         ids = exakt(beruf, index)
         if ids:
-            oid = waehle(ids, ohdab)
+            oid = waehle(ids, ohdab, beruf)
             gruende.append("exakt")
             kandidaten = [[i, "exakt", 1.0] for i in sorted(ids, key=lambda i: (len(ohdab[i]["norm"]), i))]
     if beruf and not oid:

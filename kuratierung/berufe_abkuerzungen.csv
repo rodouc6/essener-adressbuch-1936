@@ -185,7 +185,6 @@ Technik.,Techniker,,üblich,Claude,2026-09-23
 Bauing.,Bauingenieur,,üblich,Claude,2026-09-23
 Bauingen.,Bauingenieur,,üblich,Claude,2026-09-23
 Rechtsanw.,Rechtsanwalt,,üblich,Claude,2026-09-23
-Inv.,Invalide,,üblich,Claude,2026-09-23
 Berginv.,Bergmann,invalide,üblich,Claude,2026-09-23
 Kriegsinval.,Kriegsinvalide,,üblich,Claude,2026-09-23
 Bergm,Bergmann,,üblich,Claude,2026-09-23
@@ -391,3 +390,98 @@ Hdlgs. Geh.,Handlungsgehilfe,,üblich,Claude,2026-09-23
 prakt. Arzt,praktischer Arzt,,üblich,Claude,2026-09-23
 Kraftw. Führer,Kraftwagenführer,,üblich,Claude,2026-09-23
 Kraftw. Führ,Kraftwagenführer,,üblich,Claude,2026-09-23
+Kfm. Beamt.,kaufmännischer Beamter,,üblich,Claude,2026-09-23
+Kfm. Grubenbeamt.,kaufmännischer Grubenbeamter,,üblich,Claude,2026-09-23
+kaufm. Beamt.,kaufmännischer Beamter,,üblich,Claude,2026-09-23
+Assist. Arzt,Assistenzarzt,,üblich,Claude,2026-09-23
+Landw. Arb.,landwirtschaftlicher Arbeiter,,üblich,Claude,2026-09-23
+Landw. Geh.,landwirtschaftlicher Gehilfe,,üblich,Claude,2026-09-23
+Elektrotechn. Gesch.,elektrotechnisches Geschäft,,üblich,Claude,2026-09-23
+Beamt. Anw.,Beamtenanwärter,,üblich,Claude,2026-09-23
+Lok. Führ. Anwärt.,Lokomotivführeranwärter,,üblich,Claude,2026-09-23
+Grubenlok. Führ.,Grubenlokomotivführer,,üblich,Claude,2026-09-23
+Rechn. Führ.,Rechnungsführer,,üblich,Claude,2026-09-23
+Rechn. Beamt.,Rechnungsbeamter,,üblich,Claude,2026-09-23
+Rechn. Revis.,Rechnungsrevisor,,üblich,Claude,2026-09-23
+Vollzieh. Beamt.,Vollziehungsbeamter,,üblich,Claude,2026-09-23
+Ob. Vollz. Beamt.,Obervollziehungsbeamter,,üblich,Claude,2026-09-23
+Postbetr. Assist.,Postbetriebsassistent,,üblich,Claude,2026-09-23
+Postbetr. Arb.,Postbetriebsarbeiter,,üblich,Claude,2026-09-23
+Hilfsbetr. Assist.,Hilfsbetriebsassistent,,üblich,Claude,2026-09-23
+Rbhn. Hilfsbetr. Assist.,Reichsbahnhilfsbetriebsassistent,,üblich,Claude,2026-09-23
+kfm. Angestellt.,kaufmännischer Angestellter,,üblich,Claude,2026-09-23
+kaufm. Angestellt.,kaufmännischer Angestellter,,üblich,Claude,2026-09-23
+kfm. Grubenbeamt.,kaufmännischer Grubenbeamter,,üblich,Claude,2026-09-23
+städt. Angest.,städtischer Angestellter,,üblich,Claude,2026-09-23
+Städt. Angest.,städtischer Angestellter,,üblich,Claude,2026-09-23
+städt. Beamt.,städtischer Beamter,,üblich,Claude,2026-09-23
+Städt. Beamt.,städtischer Beamter,,üblich,Claude,2026-09-23
+Städt. Arb.,städtischer Arbeiter,,üblich,Claude,2026-09-23
+Pol. Sekr.,Polizeisekretär,,üblich,Claude,2026-09-23
+Pol. Ob. Sekr.,Polizeiobersekretär,,üblich,Claude,2026-09-23
+Pol. Assist.,Polizeiassistent,,üblich,Claude,2026-09-23
+Pol. Inspekt.,Polizeiinspektor,,üblich,Claude,2026-09-23
+Pol. Kommiss.,Polizeikommissar,,üblich,Claude,2026-09-23
+Pol. Obermstr.,Polizeiobermeister,,üblich,Claude,2026-09-23
+Pol. Betr. Assist.,Polizeibetriebsassistent,,üblich,Claude,2026-09-23
+Pol. Haupt Wachtmstr.,Polizeihauptwachtmeister,,üblich,Claude,2026-09-23
+Baupol. Ob. Inspekt.,Baupolizeioberinspektor,,üblich,Claude,2026-09-23
+Stadt Ob. Inspekt.,Stadtoberinspektor,,üblich,Claude,2026-09-23
+Stadtob. Inspekt.,Stadtoberinspektor,,üblich,Claude,2026-09-23
+Stadt-Ob. Inspekt.,Stadtoberinspektor,,üblich,Claude,2026-09-23
+Stadtoberinspekt.,Stadtoberinspektor,,üblich,Claude,2026-09-23
+Stadt Ob. Sekr.,Stadtobersekretär,,üblich,Claude,2026-09-23
+Stadt-Ob. Sekr.,Stadtobersekretär,,üblich,Claude,2026-09-23
+Stadtob. Sekr.,Stadtobersekretär,,üblich,Claude,2026-09-23
+Stadtobersekr.,Stadtobersekretär,,üblich,Claude,2026-09-23
+Stadt Inspekt.,Stadtinspektor,,üblich,Claude,2026-09-23
+Stadt Ob. Amtm.,Stadtoberamtmann,,üblich,Claude,2026-09-23
+techn. Stadtinspekt.,technischer Stadtinspektor,,üblich,Claude,2026-09-23
+Techn. Stadtinspekt.,technischer Stadtinspektor,,üblich,Claude,2026-09-23
+techn. Ob. Inspekt.,technischer Oberinspektor,,üblich,Claude,2026-09-23
+Techn. Ob. Inspekt.,technischer Oberinspektor,,üblich,Claude,2026-09-23
+techn. Oberinspekt.,technischer Oberinspektor,,üblich,Claude,2026-09-23
+techn. Beamt.,technischer Beamter,,üblich,Claude,2026-09-23
+techn. Beamter,technischer Beamter,,üblich,Claude,2026-09-23
+techn. Stadtsekr.,technischer Stadtsekretär,,üblich,Claude,2026-09-23
+techn. Inspekt.,technischer Inspektor,,üblich,Claude,2026-09-23
+techn. Ob. Sekr.,technischer Obersekretär,,üblich,Claude,2026-09-23
+techn. Stadt Ob. Inspekt.,technischer Stadtoberinspektor,,üblich,Claude,2026-09-23
+techn. Stadtob. Inspekt.,technischer Stadtoberinspektor,,üblich,Claude,2026-09-23
+techn. Stadt-Ob. Inspekt.,technischer Stadtoberinspektor,,üblich,Claude,2026-09-23
+techn. Stadtoberinspekt.,technischer Stadtoberinspektor,,üblich,Claude,2026-09-23
+techn. Stadtobersekr.,technischer Stadtobersekretär,,üblich,Claude,2026-09-23
+techn. Reichsb. Ob. Sekr.,technischer Reichsbahnobersekretär,,üblich,Claude,2026-09-23
+Techn. Reichsb. Ob. Sekr.,technischer Reichsbahnobersekretär,,üblich,Claude,2026-09-23
+techn. Reichsb. Inspekt.,technischer Reichsbahninspektor,,üblich,Claude,2026-09-23
+techn. Rbhn. Inspekt.,technischer Reichsbahninspektor,,üblich,Claude,2026-09-23
+techn. Rbhn. Ob. Sekr.,technischer Reichsbahnobersekretär,,üblich,Claude,2026-09-23
+techn. Revisor,technischer Revisor,,üblich,Claude,2026-09-23
+techn. Lehrerin,technische Lehrerin,,üblich,Claude,2026-09-23
+Techn. Lehrerin,technische Lehrerin,,üblich,Claude,2026-09-23
+Telegr. Ob. Sekr.,Telegrafenobersekretär,,üblich,Claude,2026-09-23
+Ob. Telegr. Sekr.,Obertelegrafensekretär,,üblich,Claude,2026-09-23
+Ob. Telegr. Inspekt.,Obertelegrafeninspektor,,üblich,Claude,2026-09-23
+Telegr. Leitgs. Aufseh.,Telegrafenleitungsaufseher,,üblich,Claude,2026-09-23
+Telegr. Leitgsaufseh.,Telegrafenleitungsaufseher,,üblich,Claude,2026-09-23
+Verwaltgs. Sekr.,Verwaltungssekretär,,üblich,Claude,2026-09-23
+Verwaltgs. Beamt.,Verwaltungsbeamter,,üblich,Claude,2026-09-23
+Verw. Ob. Inspekt.,Verwaltungsoberinspektor,,üblich,Claude,2026-09-23
+Verw. Geh.,Verwaltungsgehilfe,,üblich,Claude,2026-09-23
+Abtlgs. Vorsteh.,Abteilungsvorsteher,,üblich,Claude,2026-09-23
+Abteilgs. Vorsteh.,Abteilungsvorsteher,,üblich,Claude,2026-09-23
+Bergw. Direkt.,Bergwerksdirektor,,üblich,Claude,2026-09-23
+Bergw. Beamt.,Bergwerksbeamter,,üblich,Claude,2026-09-23
+Synd. Beamt.,Syndikatsbeamter,,üblich,Claude,2026-09-23
+Reichsbk. Beamt.,Reichsbankbeamter,,üblich,Claude,2026-09-23
+Ziv. Ing.,Zivilingenieur,,üblich,Claude,2026-09-23
+Ziv. Ingen.,Zivilingenieur,,üblich,Claude,2026-09-23
+Versich. Vertret.,Versicherungsvertreter,,üblich,Claude,2026-09-23
+Versich. Inspekt.,Versicherungsinspektor,,üblich,Claude,2026-09-23
+Bez. Schornsteinfegermstr.,Bezirksschornsteinfegermeister,,üblich,Claude,2026-09-23
+Bez. Direkt.,Bezirksdirektor,,üblich,Claude,2026-09-23
+Krim. Bez. Sekr.,Kriminalbezirkssekretär,,üblich,Claude,2026-09-23
+Strafanst. Ob. Wachtmstr.,Strafanstaltsoberwachtmeister,,üblich,Claude,2026-09-23
+Stabsob. Wachtmstr.,Stabsoberwachtmeister,,üblich,Claude,2026-09-23
+Kataster Ob. Sekr.,Katasterobersekretär,,üblich,Claude,2026-09-23
+Laborat. Beamt.,Laboratoriumsbeamter,,üblich,Claude,2026-09-23

@@ -33,6 +33,8 @@ def test_zerlege_status():
     assert zerlege("Bergm. Pension.") == ("Bergm.", ["ruhestand"])
     assert zerlege("Schlosser Invalid.") == ("Schlosser", ["invalide"])
     assert zerlege("Inval") == ("", ["invalide"])
+    assert zerlege("Bergm. Inv.") == ("Bergm.", ["invalide"])
+    assert zerlege("Berginv.") == ("Berginv.", [])          # kein Wortanfang vor „Inv.“ → bleibt dem Katalog
     assert zerlege("Rentier") == ("Rentier", [])
 
 
@@ -55,6 +57,23 @@ def test_exakt_und_wahl(tmp_path):
     assert sorted(exakt("Arbeiter", idx)) == ["B 20002-500"]
     assert exakt("Fabrikarbeiter", idx) == []
     assert waehle(["B 84124-521", "B 84124-120"], o) == "B 84124-120"   # kürzeste Normbezeichnung
+
+
+def test_waehle_bevorzugt_unqualifiziertes_item(tmp_path):
+    """Ein Item mit Qualifizierung darf das genau passende Item nicht verdrängen (Ruling Fix-Runde 1).
+
+    Beide Items tragen die männliche Form „Bergmann“, sind also beide Exakt-Treffer. Die
+    Normbezeichnungen sind gleich lang, der alte Schlüssel entschiede über die kleinere ID.
+    """
+    p = tmp_path / "o.csv"
+    p.write_text(OHDAB_KOPF
+                 + "B 21112-050,Q9,Bergmann - Tag,Bergmann,Bergfrau,fachlich,B 21112,Berg- und Tagebau\n"
+                 + "B 21112-100,Q8,Bergmann/-frau,Bergmann,Bergfrau,fachlich,B 21112,Berg- und Tagebau\n",
+                 encoding="utf-8")
+    o = lade_ohdab(p)
+    ids = ["B 21112-050", "B 21112-100"]
+    assert waehle(ids, o) == "B 21112-050"                      # ohne Beruf: kleinste ID bei gleicher Länge
+    assert waehle(ids, o, "Bergmann") == "B 21112-100"          # mit Beruf: unqualifizierte Normbezeichnung
 
 
 def test_aehnlich(tmp_path):

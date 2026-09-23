@@ -54,6 +54,12 @@ def falte_form(text: str) -> str:
     return " ".join(_NICHT_ZEICHEN.sub(" ", t).split())
 
 
+def norm_form(z: dict) -> str:
+    """Gefaltete Normbezeichnung ohne Geschlechtszusatz, aber MIT Qualifizierung („Landwirt/in im
+    Nebenerwerb“ → „landwirt im nebenerwerb“). Damit lässt sich ein unqualifiziertes Item erkennen."""
+    return falte_form(_GESCHLECHT.sub("", z.get("norm") or ""))
+
+
 def formen_von(z: dict) -> list[str]:
     """Gefaltete Vergleichsformen eines OhdAB-Items: männliche und weibliche Form, Normbezeichnung ohne
     Geschlechtszusatz und ohne „ - “-Zusatz; ohne Dubletten, Reihenfolge stabil."""
