@@ -106,6 +106,7 @@ def vorschlag_fuer(schreibweise: str, katalog: dict[str, tuple[str, str]], ohdab
             oid = waehle(ids, ohdab)
             beruf = ohdab[oid]["maennlich"] or ohdab[oid]["norm"]
             gruende.append("status; exakt")
+            kandidaten = [[i, "exakt", 1.0] for i in sorted(ids, key=lambda i: (len(ohdab[i]["norm"]), i))]
         else:
             kandidat = STATUS_ITEMS.get(status[0], "")
             oid = kandidat if kandidat in ohdab else ""
