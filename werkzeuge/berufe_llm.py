@@ -35,11 +35,13 @@ def baue_prompt(schreibweise: str, belege: list[dict], kandidaten: list[tuple[st
 
 def ergaenze_llm(zeilen: list[dict], belege: dict[str, list[dict]], ohdab: dict[str, dict], index: dict[str, list[str]],
                  datum: str, frage=frage_anthropic) -> list[dict]:
+    if frage is frage_anthropic and not os.environ.get("ANTHROPIC_API_KEY"):
+        raise SystemExit("ANTHROPIC_API_KEY fehlt — --llm braucht einen API-Schlüssel")
     out = [dict(z) for z in zeilen]
     for z in out:
         if gesperrt(z) or z.get("ohdab_id"):
             continue
-        kandidaten = aehnlich(z.get("beruf") or z["schreibweise"], index, n=20)
+        kandidaten = aehnlich(z.get("beruf") or z["schreibweise"], index, schwelle=0.0, n=20)
         if not kandidaten:
             continue
         antwort = frage(baue_prompt(z["schreibweise"], belege.get(z["schreibweise"], []), kandidaten, ohdab)).strip()

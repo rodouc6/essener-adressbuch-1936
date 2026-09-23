@@ -1,7 +1,8 @@
 import pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+import pytest
 from pipeline.lib.berufe import AUTOMATIK, lade_ohdab
-from werkzeuge.berufe_llm import baue_prompt, ergaenze_llm
+from werkzeuge.berufe_llm import baue_prompt, ergaenze_llm, frage_anthropic
 from werkzeuge.berufe_vorschlag import formen_index
 from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
 
@@ -26,5 +27,34 @@ def test_llm_antwort_ausserhalb_der_liste_wird_verworfen(tmp_path):
     p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8")
     o = lade_ohdab(p); idx = formen_index(o)
     z = [dict(schreibweise="Bergmnn.", beruf="Bergmnn.", status="", ohdab_id="", vorschlag_grund="", geprueft="", bearbeiter=AUTOMATIK, datum="", hinweis="", nennungen="5", niveau_unsicher="")]
-    neu = ergaenze_llm(z, {}, o, idx, "d", frage=lambda p: "A 10200-502")   # nicht unter den 20 nächsten → verwerfen
+    # ID kommt in der Fixture gar nicht vor → verwerfen (frei erfunden, nicht unter den Kandidaten)
+    neu = ergaenze_llm(z, {}, o, idx, "d", frage=lambda p: "Z 99999-999")
     assert neu[0]["ohdab_id"] == "" and neu[0]["vorschlag_grund"] == ""
+
+
+def test_llm_antwort_unklar_setzt_nichts(tmp_path):
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8")
+    o = lade_ohdab(p); idx = formen_index(o)
+    z = [dict(schreibweise="Bergmnn.", beruf="Bergmnn.", status="", ohdab_id="", vorschlag_grund="", geprueft="", bearbeiter=AUTOMATIK, datum="", hinweis="", nennungen="5", niveau_unsicher="")]
+    neu = ergaenze_llm(z, {}, o, idx, "d", frage=lambda p: "unklar")
+    assert neu[0]["ohdab_id"] == "" and neu[0]["vorschlag_grund"] == ""
+
+
+def test_prompt_enthaelt_alle_fixture_kandidaten(tmp_path):
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8")
+    o = lade_ohdab(p); idx = formen_index(o)
+    z = [dict(schreibweise="Bergmnn.", beruf="Bergmnn.", status="", ohdab_id="", vorschlag_grund="", geprueft="", bearbeiter=AUTOMATIK, datum="", hinweis="", nennungen="5", niveau_unsicher="")]
+    prompts = []
+    ergaenze_llm(z, {}, o, idx, "d", frage=lambda p: prompts.append(p) or "unklar")
+    # schwelle=0.0, n=20 → alle 6 OhdAB-IDs der Fixture sind Kandidaten (weniger als 20 insgesamt)
+    for oid in o:
+        assert oid in prompts[0]
+
+
+def test_ergaenze_llm_ohne_schluessel_bricht_vor_der_arbeit_ab(tmp_path, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8")
+    o = lade_ohdab(p); idx = formen_index(o)
+    z = [dict(schreibweise="Bergmnn.", beruf="Bergmnn.", status="", ohdab_id="", vorschlag_grund="", geprueft="", bearbeiter=AUTOMATIK, datum="", hinweis="", nennungen="5", niveau_unsicher="")]
+    with pytest.raises(SystemExit):
+        ergaenze_llm(z, {}, o, idx, "d")   # frage=frage_anthropic (Default)
