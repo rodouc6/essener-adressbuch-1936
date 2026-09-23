@@ -1,6 +1,8 @@
 import csv
 import json
+import os
 import threading
+import time
 import urllib.request
 import urllib.error
 from http.server import ThreadingHTTPServer
@@ -224,6 +226,7 @@ def test_berufe_post_validiert(server):
         (dict(schreibweise="Nix", beruf="x", geprueft=""), "unbekannte Schreibweise"),
         (dict(schreibweise="Bergm.", beruf="Bergmann", ohdab_id="Q 0", geprueft=""), "unbekannte ohdab_id"),
         (dict(schreibweise="Bergm.", beruf="Bergmann", ohdab_id="", geprueft="ja"), "geprueft=ja verlangt eine ohdab_id"),
+        (dict(schreibweise="Bergm.", beruf="", ohdab_id="B 21112-100", geprueft="ja"), "geprueft=ja verlangt einen Beruf"),
         (dict(schreibweise="Bergm.", beruf="Bergmann", status="tot", geprueft=""), "unbekannter Status"),
         (dict(schreibweise="Bergm.", beruf="Bergmann", niveau_unsicher="x", geprueft=""), "niveau_unsicher"),
         (dict(schreibweise="Bergm.", beruf="Bergmann", geprueft="nein"), "geprueft"),
@@ -231,6 +234,25 @@ def test_berufe_post_validiert(server):
         with pytest.raises(urllib.error.HTTPError) as e:
             post(url + "/kuratierung/berufe.csv", {"zeilen": [zeile]})
         assert e.value.code == 400 and text in e.value.read().decode(), text
+
+
+def test_berufe_ohdab_cache_erkennt_neuen_schnappschuss(server):
+    """Die OhdAB-IDs werden auf der Handler-Klasse zwischengespeichert (Finding 10, nicht bei jedem POST neu
+    geladen); ändert sich kuratierung/ohdab.csv (neue mtime), muss der nächste POST trotzdem den neuen
+    Schnappschuss sehen — sonst würde eine frisch geladene ID fälschlich als unbekannt abgelehnt."""
+    url, _ = server
+    Handler._ohdab_ids = None
+    Handler._ohdab_mtime = None
+    assert post(url + "/kuratierung/berufe.csv", {"zeilen": [dict(schreibweise="Lehrer", beruf="Lehrer", ohdab_id="B 84124-120", geprueft="ja")]}).status == 200
+    assert Handler._ohdab_ids == {"B 21112-100", "B 84124-120"}   # Cache gefüllt
+    ohdab_pfad = Handler.wurzel / "kuratierung" / "ohdab.csv"
+    neu = ohdab_pfad.read_text(encoding="utf-8") + "B 99999-100,Q9,Neu/-e,Neu,Neue,Fachliche Tätigkeiten,G9,Neu\n"
+    ohdab_pfad.write_text(neu, encoding="utf-8")
+    zukunft = time.time() + 5
+    os.utime(ohdab_pfad, (zukunft, zukunft))   # mtime sicher verschieben (manche Dateisysteme runden)
+    r = post(url + "/kuratierung/berufe.csv", {"zeilen": [dict(schreibweise="Lehrer", beruf="Neu", ohdab_id="B 99999-100", geprueft="ja")]})
+    assert r.status == 200
+    assert "B 99999-100" in Handler._ohdab_ids
 
 
 def test_katalog_post_legt_an_und_lehnt_dublette_ab(server):

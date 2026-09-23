@@ -154,6 +154,8 @@ def pruefe_berufe(z: dict, bekannt: set[str], ohdab: set[str]) -> str:
         return "geprueft muss ja oder leer sein"
     if str(z.get("geprueft", "")).strip() == "ja" and not oid:
         return "geprueft=ja verlangt eine ohdab_id"
+    if str(z.get("geprueft", "")).strip() == "ja" and not str(z.get("beruf", "")).strip():
+        return "geprueft=ja verlangt einen Beruf"
     return ""
 
 
@@ -174,9 +176,21 @@ def upsert_viele(pfad: pathlib.Path, zeilen: list[dict], schluessel: str, felder
 
 class Handler(SimpleHTTPRequestHandler):
     wurzel: pathlib.Path = projektwurzel()
+    _ohdab_ids: set[str] | None = None
+    _ohdab_mtime: float | None = None
 
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(self.wurzel), **kw)
+
+    def _lade_ohdab_ids(self) -> set[str]:
+        """OhdAB-IDs auf der Handler-Klasse zwischenspeichern (jeder POST sonst eine erneute Datei); ein
+        neuer Schnappschuss (mtime geändert) lädt trotzdem neu."""
+        pfad = self.wurzel / "kuratierung" / "ohdab.csv"
+        mtime = pfad.stat().st_mtime if pfad.exists() else None
+        if Handler._ohdab_ids is None or Handler._ohdab_mtime != mtime:
+            Handler._ohdab_ids = set(lade_ohdab(pfad))
+            Handler._ohdab_mtime = mtime
+        return Handler._ohdab_ids
 
     def _antwort(self, code: int, text: str) -> None:
         daten = text.encode("utf-8")
@@ -322,7 +336,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not pfad.exists():
             return self._antwort(404, "berufe.csv fehlt")
         alt = lade_berufe(lies_csv(pfad))
-        ohdab = set(lade_ohdab(self.wurzel / "kuratierung" / "ohdab.csv"))
+        ohdab = self._lade_ohdab_ids()
         for z in zeilen:
             fehler = pruefe_berufe(z, set(alt), ohdab)
             if fehler:
