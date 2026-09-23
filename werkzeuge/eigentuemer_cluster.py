@@ -151,6 +151,20 @@ def _numerisch_vertraeglich(a: str, b: str) -> bool:
     return _zahlentoken(a) == _zahlentoken(b)
 
 
+_STADTTEIL_SUFFIX = re.compile(r"\s‹(.+)›$")
+
+
+def _stadtteile(c: dict) -> frozenset[str]:
+    """Stadtteil-Zusätze der Mitglieder („… ‹Werden›“) — Schreibweisen verschiedener Stadtteile werden weder
+    zusammengeführt noch einander vorgeschlagen (sie wurden gerade erst nach Stadtteil getrennt)."""
+    return frozenset(m.group(1) for s, _ in c["mitglieder"] for m in [_STADTTEIL_SUFFIX.search(s)] if m)
+
+
+def _stadtteil_vertraeglich(a: dict, b: dict) -> bool:
+    sa, sb = _stadtteile(a), _stadtteile(b)
+    return not sa or not sb or sa == sb
+
+
 def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, vorschlag_ab: float = 0.75) -> list[dict]:
     """Schreibweise → Anzahl zu Clustern (Spec §4.3): exakt gleicher Schlüssel, dann Complete-Linkage
     innerhalb eines Blocks (erstes signifikantes Token); Grenzfälle als vorschlag_fuer."""
@@ -172,7 +186,8 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
             for i in range(len(aktiv)):
                 for j in range(i + 1, len(aktiv)):
                     mn = min(_sim(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
-                    vertraeglich = all(_numerisch_vertraeglich(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
+                    vertraeglich = (all(_numerisch_vertraeglich(a, b) for a in aktiv[i]["schluessel"] for b in aktiv[j]["schluessel"])
+                                    and _stadtteil_vertraeglich(aktiv[i], aktiv[j]))
                     if mn >= schwelle and vertraeglich and (bestes is None or mn > bestes[0]):
                         bestes = (mn, i, j)
             if bestes is None:
@@ -199,6 +214,8 @@ def clustere(zaehler: dict[str, int], katalog: Katalog, schwelle: float = 0.92, 
                 mx = max(_sim(a, b) for a in klein["schluessel"] for b in gross["schluessel"])
                 # Zahlen-Wächter: unterscheiden sich alle Paare in ihren Zahl-Token, war die Fusion oben
                 # blockiert, egal wie hoch die Ähnlichkeit — der Deckel `schwelle` entfällt dann.
+                if not _stadtteil_vertraeglich(klein, gross):
+                    continue   # andere Stadtteile: auch kein Vorschlag
                 vertraeglich = all(_numerisch_vertraeglich(a, b) for a in klein["schluessel"] for b in gross["schluessel"])
                 obergrenze = schwelle if vertraeglich else 1.0 + 1e-9
                 if vorschlag_ab <= mx < obergrenze and mx > klein.get("_vorschlag_sim", 0.0):

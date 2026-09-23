@@ -191,3 +191,12 @@ def test_sammle_nach_stadtteil_und_kategorie_erben():
     neu = aktualisiere_kuratierung(alt, [dict(schreibweise="Kath. Kirchengem. ‹Horst›", art="koerperschaft", cluster_name="Kath. Kirchengem. ‹Horst›")], "2026-09-23")
     z = {x["schreibweise"]: x for x in neu}["Kath. Kirchengem. ‹Horst›"]
     assert z["kategorie"] == "kirche_stiftung" and z["eigentuemer"] == "Kath. Kirchengem. ‹Horst›" and z["geprueft"] == ""
+
+
+def test_clustere_stadtteile_weder_merge_noch_vorschlag():
+    c = clustere({"Kath. Kirchengem. ‹Werden›": 6, "Kath. Kirchengem. ‹Steele›": 3, "Kath. Kirchengemeinde ‹Werden›": 2}, KAT)
+    namen = {x["name"]: x for x in c}
+    assert len(c) == 2                                                  # Werden (zwei Schreibweisen) + Steele
+    werden = next(x for x in c if x["haeuser"] == 8)
+    assert {m[0] for m in werden["mitglieder"]} == {"Kath. Kirchengem. ‹Werden›", "Kath. Kirchengemeinde ‹Werden›"}
+    assert all(x["vorschlag_fuer"] == "" for x in c)                    # Steele wird Werden nicht vorgeschlagen
