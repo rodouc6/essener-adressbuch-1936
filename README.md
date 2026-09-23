@@ -279,6 +279,35 @@ Stufe 06 kopiert sie nach `site/daten/themen/` und erzeugt dort `index.json`. Me
 jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
 `thema=<id>` in der URL, kombinierbar mit Suche und Filtern.
 
+## Berufe (Teilprojekt 4)
+
+Berufsangaben (`Beruf o. ä.`, Teil I/II) werden je Schreibweise auf ein Schlüssel-Item der
+**OhdAB** (Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen, Katrin
+Moeller/Uni Halle, publiziert auf FactGrid, CC BY 4.0) abgebildet
+(Spec `docs/superpowers/specs/2026-09-23-berufe-design.md`).
+
+```
+python3 werkzeuge/ohdab_laden.py [--ziel kuratierung/ohdab.csv]   # Schnappschuss per SPARQL von database.factgrid.de
+```
+
+`kuratierung/ohdab.csv` (versioniert, Schnappschuss vom 2026-09-23, 46.220 Items): Spalten
+`ohdab_id, qid, norm, maennlich, weiblich, niveau, gattung_id, gattung`. `niveau` ist einer von
+sieben Schlüsseln (FactGrid-Label → Schlüssel):
+
+| Label | Schlüssel |
+|---|---|
+| Tätigkeitsprofil Helfer- und Anlerntätigkeiten | `helfer` |
+| Fachliche Tätigkeiten | `fachlich` |
+| Komplexe Spezialistentätigkeit | `spezialist` |
+| Hoch komplexe Tätigkeiten | `hochkomplex` |
+| Tätigkeitsprofil Aufsichtskräfte | `aufsicht` |
+| Tätigkeitsprofil Führungskräfte | `fuehrung` |
+| (fehlt/unbekannt) | `keins` |
+
+`gattung_id` ist der Teil der OhdAB-ID vor dem Bindestrich (`B 21112`), `gattung` das Label des
+Kategorie-Items ohne den ID-Präfix. `pipeline/lib/berufe.py` lädt den Schnappschuss und bricht
+mit klarer Meldung ab, wenn die Datei fehlt.
+
 ## Dokumentation
 
 Spezifikation: Obsidian-Vault `~/Projekte/obsidian-chris`, Ordner
