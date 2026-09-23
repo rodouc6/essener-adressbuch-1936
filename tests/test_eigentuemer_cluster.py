@@ -19,7 +19,7 @@ def test_rechtsformen():
         assert normalisiere(s, KAT) == "friedrich krupp ag", s
     assert normalisiere("Bau- u. Sparverein e.G.m.b.H.", KAT) == normalisiere("Bau- u. Sparverein e. G. m. b. H.", KAT)
     assert normalisiere("Wohnungsbau G.m.b.H.", KAT).endswith(" gmbh")
-    assert normalisiere("Kath. Kirchengemeinde St. Josef", KAT) == "kath kirchengemeinde st josef"
+    assert normalisiere("Kath. Kirchengemeinde St. Josef", KAT) == "katholische kirchengemeinde st josef"
 
 
 def test_abkuerzungen_und_ver_regel():
