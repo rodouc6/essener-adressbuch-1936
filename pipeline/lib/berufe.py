@@ -93,3 +93,17 @@ def lade_kuratierung(zeilen: list[dict]) -> dict[str, dict]:
 def gesperrt(z: dict) -> bool:
     """Die Automatik darf eine Zeile nur überschreiben, wenn sie ungeprüft ist und zuletzt von ihr selbst stammt."""
     return z.get("geprueft") == "ja" or (z.get("bearbeiter") or AUTOMATIK) != AUTOMATIK
+
+
+def zuordnung(eintrag: dict, kuratierung: dict[str, dict], ohdab: dict[str, dict]) -> dict | None:
+    """Nur geprüfte Schreibweisen mit gültiger ohdab_id (Spec §6.1); eine geprüfte ID, die im Schnappschuss
+    fehlt, ist ein Fehler, kein stiller Ausfall."""
+    s = (eintrag.get("Beruf o. ä.") or "").strip()
+    z = kuratierung.get(s) if s else None
+    if not z or z.get("geprueft") != "ja" or not z.get("ohdab_id"):
+        return None
+    o = ohdab.get(z["ohdab_id"])
+    if o is None:
+        raise ValueError(f"kuratierung/berufe.csv: {s!r} ist geprüft, aber ohdab_id {z['ohdab_id']!r} fehlt im Schnappschuss")
+    niveau = "unsicher" if z.get("niveau_unsicher") == "ja" else o["niveau"]
+    return dict(beruf=z["beruf"], ohdab=z["ohdab_id"], niveau=niveau, gattung=o["gattung"], status=z.get("status", ""))

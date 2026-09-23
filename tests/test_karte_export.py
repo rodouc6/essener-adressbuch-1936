@@ -83,7 +83,8 @@ def test_eintrag_kurz_und_scherben():
     assert k == {"id": "7", "teil": "I", "seite": "I-551", "name": "Sepeur", "vorname": "Wilh.",
                  "beruf": "Dr. Bergm.", "etage": "II", "stand": "Wwe.", "bezug_vorname": "", "bezug_beruf": "",
                  "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "eigentuemer_kanon": "",
-                 "kategorie": "", "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
+                 "kategorie": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "",
+                 "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
     adressen = gruppiere([e], REGELN)
     sch = baue_scherben(adressen)
     aid = adress_id(e)
@@ -356,3 +357,34 @@ def test_gruppiere_stadtteil_schreibweise_und_identitaet():
     assert by["3"]["besitz"] == "privatperson" and by["4"]["besitz"] == "privatperson"
     liste, _ = baue_eigentuemerindex(a)
     assert [x[1] for x in liste] == ["Kath. Kirchengem.", "Kath. Kirchengemeinde St. Joseph Katernberg", "Reismann-Grone, Dr. phil., Th."]  # Müller, J. fehlt: Identität nicht belegt
+
+
+def test_niveau_je_adresse_und_berufsnormindex(tmp_path):
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from pipeline.lib.karte_export import baue_berufsindex, baue_berufsnormindex, baue_kennzahlen, eintrag_kurz, gruppiere, punkt_feature
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja"),
+                     dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", niveau_unsicher="", geprueft="ja"),
+                     dict(schreibweise="Arbeiter", beruf="Arbeiter", status="", ohdab_id="B 20002-500", niveau_unsicher="ja", geprueft="ja")])
+    basis = dict(stufe="haus", lat="51.4", lon="7.0", strasse_norm="x", strasse_roh="X", hausnr="1", Vorort="", stadtteil="Kray", lastname="N", firstname="", page="I-1")
+    def e(i, teil, beruf, hausnr="1"):
+        return dict(basis, id=str(i), teil=teil, hausnr=hausnr, **{"Beruf o. ä.": beruf})
+    eintraege = [e(1, "I", "Bergm."), e(2, "I", "Bergm."), e(3, "I", "Lehrer"), e(4, "II", "Lehrer"), e(5, "I", "Kfm."),   # Haus 1: 2× fachlich, 1× hochkomplex, 1 ungeprüft → Mehrheit? 2 von 3 geprüften → fachlich
+                 e(6, "I", "Bergm.", "2"), e(7, "I", "Lehrer", "2"),                                                        # Haus 2: 1:1 → gemischt
+                 e(8, "I", "Arbeiter", "3"),                                                                                 # Haus 3: nur unsicher
+                 e(9, "I", "Kfm.", "4")]                                                                                     # Haus 4: ungeprüft
+    a = gruppiere(eintraege, [], None, berufe=b, ohdab=o)
+    nach_nr = {x["hausnr"]: x for x in a.values()}
+    assert nach_nr["1"]["niveau"] == "fachlich" and nach_nr["2"]["niveau"] == "gemischt" and nach_nr["3"]["niveau"] == "unsicher" and nach_nr["4"]["niveau"] == "ungeprueft"
+    p1 = punkt_feature(nach_nr["1"])["properties"]
+    assert p1["niveau"] == "fachlich" and p1["n_fachlich"] == 2 and p1["n_hochkomplex"] == 1 and "n_helfer" not in p1
+    k = eintrag_kurz(nach_nr["1"]["eintraege"][0], [])
+    assert (k["beruf"], k["beruf_norm"], k["ohdab"], k["niveau"], k["status"]) == ("Bergm.", "Bergmann", "B 21112-100", "fachlich", "")
+    liste, scherben = baue_berufsnormindex(a)
+    assert liste[0][1:] == ["Bergmann", "B 21112-100", 3, 1, "fachlich"] and liste[0][0] == "bergmann"
+    assert scherben["be"]["B 21112-100"] == sorted([[nach_nr["1"]["id"], 2], [nach_nr["2"]["id"], 1]])
+    roh, _ = baue_berufsindex(a)
+    assert [x[1] for x in roh] == ["Kfm."]                      # geprüfte Schreibweisen nur noch über die Normbezeichnung
+    kz = baue_kennzahlen(eintraege, a, "2026-09-23")
+    assert kz["berufe_geprueft"] == 75.0 and kz["berufe_schreibweisen_geprueft"] == 3   # 6 von 8 Teil-I-Einträgen
