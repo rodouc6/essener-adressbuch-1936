@@ -50,6 +50,8 @@ def server(tmp_path):
         w.writeheader()
         w.writerow(dict.fromkeys(KOPF, "") | {"stufe": "haus", "hausnr": "1", "lat": "51.4", "lon": "7.0"})
     Handler.wurzel = tmp_path
+    Handler._ohdab_ids = None   # Cache aus einem vorigen Test (anderes tmp_path) nicht wiederverwenden
+    Handler._ohdab_mtime = None
     srv = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
