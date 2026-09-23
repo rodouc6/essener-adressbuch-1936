@@ -326,7 +326,7 @@ Exakt-Abgleich auf die gefalteten Formen aus `kuratierung/ohdab.csv` und zuletzt
 „ähnlich“ ab Schwelle 0,90; mit `--llm` zusätzlich eine LLM-Reserve für Zeilen ohne Vorschlag
 (Anthropic API, nur `vorschlag_grund=llm`, nie `geprueft`). Auf einem Lauf ohne Katalog fanden
 77,5 % der Nennungen einen Vorschlag, mit dem vorbefüllten Katalog (`berufe_abkuerzungen.csv`,
-486 Zeilen) steigt das auf **89,9 % der Nennungen** (154.772 von 172.136, verteilt auf 1.110 von
+486 Zeilen) steigt das auf **89,9 % der Nennungen** (154.772 von 172.136, verteilt auf 1.159 von
 1.977 Schreibweisen).
 
 `kuratierung/berufe.csv` (eine Zeile je Schreibweise): Spalten `schreibweise, nennungen, beruf,
@@ -339,8 +339,8 @@ nachgeführt); `geprueft=ja` verlangt eine gültige `ohdab_id`. Niveau und Gattu
 der Tabelle, sondern kommen beim Export aus dem Schnappschuss (eine Wahrheit); `niveau_unsicher`
 setzt nur der Mensch im Werkzeug, für Fälle, in denen die OhdAB-Stufe für die 1936er Schreibweise
 zu unsicher ist (häufig bei „Arbeiter“). `kuratierung/berufe_abkuerzungen.csv`: Spalten `kurz,
-lang, beleg, bearbeiter, datum`; die Vorlage hat kein Abkürzungsverzeichnis für Berufe, daher
-steht bei allen vorbefüllten Zeilen `beleg=üblich`.
+lang, status, beleg, bearbeiter, datum`; die Vorlage hat kein Abkürzungsverzeichnis für Berufe,
+daher steht bei allen vorbefüllten Zeilen `beleg=üblich`.
 
 Export (Stufe 06): Mehrheitsregel je Adresse — unter den geprüften Teil-I-Einträgen hat eine
 Niveaustufe mehr als die Hälfte → diese Stufe als Punktattribut `niveau`; sonst `gemischt`; nur
