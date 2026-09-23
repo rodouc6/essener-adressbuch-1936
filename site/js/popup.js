@@ -37,7 +37,10 @@ function zaehlerText(eig) {
 
 function nameZeile(e, mitBeruf = true) {
   const name = e.firma && e.teil === "III" ? e.firma : [e.name, e.vorname].filter(Boolean).join(", ");
-  const rest = mitBeruf ? [e.beruf, e.stand].filter(Boolean).join(", ") : "";
+  // Kompakt (Popup): bei geprüfter Zuordnung nur „Rohtext → Norm“, ohne Niveau/Status (steht in der
+  // Hausansicht, siehe eintragHtml) — sonst der rohe Beruf wie im Buch.
+  const beruf = e.beruf_norm ? `${e.beruf} → ${e.beruf_norm}` : e.beruf;
+  const rest = mitBeruf ? [beruf, e.stand].filter(Boolean).join(", ") : "";
   return `<b>${esc(name)}</b>${rest ? ` · ${esc(rest)}` : ""}${e.etage ? ` <span class="etage">${esc(e.etage)}</span>` : ""}`;
 }
 

@@ -76,3 +76,16 @@ test("Hausansicht zeigt die Berufszuordnung mit Niveau und Status", () => {
   const u = hausHtml(EIG, [{ id: "9", teil: "I", seite: "I-1", name: "A", vorname: "", beruf: "Kfm.", etage: "", stand: "", flags: [], merkmale: [] }]);
   assert.match(u, /<span class="k">Beruf<\/span> Kfm\.<\/div>/);
 });
+
+test("popupHtml (kompakt) zeigt bei geprüfter Zuordnung nur Rohtext → Norm, ohne Niveau/Status", () => {
+  const eintraege = [{ id: "9", teil: "I", seite: "I-1", name: "Sepeur", vorname: "Wilh.", beruf: "Bergm.",
+    beruf_norm: "Bergmann", ohdab: "B 21112-100", niveau: "fachlich", status: "ruhestand", etage: "", stand: "", flags: [], merkmale: [] }];
+  const h = popupHtml(EIG, eintraege, true);
+  assert.match(h, /Bergm\. → Bergmann/);
+  assert.doesNotMatch(h, /Fachliche Tätigkeit/);
+  assert.doesNotMatch(h, /Ruhestand/);
+  // ungeprüfter Beruf (kein beruf_norm) bleibt wie bisher der rohe Text
+  const roh = popupHtml(EIG, [{ id: "8", teil: "I", seite: "I-1", name: "B", vorname: "", beruf: "Kfm.", etage: "", stand: "", flags: [], merkmale: [] }], true);
+  assert.match(roh, /Kfm\./);
+  assert.doesNotMatch(roh, /→/);
+});
