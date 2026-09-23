@@ -117,6 +117,12 @@ def test_vorschlag_fuer(tmp_path):
     v = vorschlag_fuer("Bergmnn", k, o, idx)
     assert v["ohdab_id"] == "B 21112-100" and v["grund"].startswith("aehnlich 0.9")
     assert v["kandidaten"][0][0] == "B 21112-100"
+    # Schreibweise mit einer Ähnlichkeit unter der Vorschlagsschwelle (0,90): kein automatischer
+    # Vorschlag, aber die Kandidatenliste ist trotzdem nicht leer (Finding 2 — vorher brach die
+    # Kandidatensuche selbst bei der Schwelle 0,90 ab, das Werkzeug zeigte dann gar nichts an).
+    v = vorschlag_fuer("Bergmenn", k, o, idx)
+    assert v["ohdab_id"] == "" and v["grund"] == ""
+    assert v["kandidaten"] and v["kandidaten"][0][0] == "B 21112-100" and v["kandidaten"][0][2] < 0.90
 
 
 def test_sammle_zaehlt_nur_teil_I_und_II():

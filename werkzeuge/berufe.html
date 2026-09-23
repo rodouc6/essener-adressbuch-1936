@@ -56,7 +56,7 @@
 </div>
 <div id="banner"></div>
 <script type="module">
-import { STATUS, baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, setzeBeruf, setzeGeprueft,
+import { baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, setzeBeruf, setzeGeprueft,
          setzeHinweis, setzeNiveauUnsicher, setzeZuordnung, sucheOhdab, zumSpeichern } from "./js/berufe_modell.js";
 const NIVEAUS = { helfer: "Helfer-/Anlerntätigkeit", fachlich: "Fachliche Tätigkeit", spezialist: "Komplexe Spezialistentätigkeit",
   hochkomplex: "Hoch komplexe Tätigkeit", aufsicht: "Aufsichtskraft", fuehrung: "Führungskraft", keins: "ohne Niveau" };
@@ -184,7 +184,7 @@ function zeichneAktiv() {
     const io = m.ohdab.get(k.ohdab_id);
     const erstesNiveau = z.kandidaten[0].niveau;
     return `<div class="kand${k.ohdab_id === z.ohdab_id ? " aktiv" : ""}${k.niveau !== erstesNiveau ? " anders" : ""}" data-ohdab="${esc(k.ohdab_id)}">` +
-      `<span>${esc(io ? (io.maennlich || io.norm) : k.ohdab_id)}</span><small>${esc(k.grund)} · ${NIVEAUS[k.niveau] || k.niveau}</small></div>`;
+      `<span>${esc(io ? (io.maennlich || io.norm) : k.ohdab_id)}</span><small>${esc(k.grund)}${k.grund === "aehnlich" ? " " + k.wert.toFixed(2) : ""} · ${NIVEAUS[k.niveau] || k.niveau}</small></div>`;
   }).join("") : "<small>keine</small>";
   const b = belege[z.schreibweise] || [];
   document.getElementById("belege").innerHTML = `<table><tr><th>Name</th><th>Adresse</th><th>Teil</th><th>Seite</th></tr>` +
@@ -225,6 +225,7 @@ document.getElementById("liste").addEventListener("click", (ev) => { const z = e
 for (const id of ["filter", "nur-ohne", "nur-niveau"]) document.getElementById(id).addEventListener("input", () => zeichneListe(liste(m)));
 document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListener("change", () => zeichneListe(liste(m))));
 document.getElementById("beruf").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && aktiv) { speichere(setzeBeruf(m, aktiv, ev.target.value)); zeichne(); } });
+document.getElementById("beruf").addEventListener("change", (ev) => { if (aktiv) { speichere(setzeBeruf(m, aktiv, ev.target.value)); zeichne(); } });
 document.getElementById("status").addEventListener("click", () => { if (aktiv) { speichere(schalteStatus(m, aktiv)); zeichne(); } });
 document.getElementById("niveau").addEventListener("click", () => { if (aktiv) { const z = m.zeilen.get(aktiv); speichere(setzeNiveauUnsicher(m, aktiv, z.niveau_unsicher !== "ja")); zeichne(); } });
 document.getElementById("geprueft").addEventListener("click", () => {

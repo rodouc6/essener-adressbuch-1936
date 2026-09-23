@@ -127,8 +127,11 @@ def vorschlag_fuer(schreibweise: str, katalog: dict[str, tuple[str, str]], ohdab
             gruende.append("exakt")
             kandidaten = [[i, "exakt", 1.0] for i in sorted(ids, key=lambda i: (len(ohdab[i]["norm"]), i))]
     if beruf and not oid:
-        aehn = aehnlich(beruf, index)
-        if aehn:
+        # Kandidaten unabhängig von der Vorschlagsschwelle sammeln (bis n=20, ab Ähnlichkeit 0), damit das
+        # Werkzeug auch ohne automatischen Vorschlag eine Auswahl anbietet (Finding 2); der Vorschlag selbst
+        # (oid) bleibt an die Schwelle SCHWELLE gebunden.
+        aehn = aehnlich(beruf, index, schwelle=0.0, n=20)
+        if aehn and aehn[0][1] >= SCHWELLE:
             oid = aehn[0][0]
             gruende.append(f"aehnlich {aehn[0][1]:.2f}")
         kandidaten = [[i, "aehnlich", round(w, 2)] for i, w in aehn]
