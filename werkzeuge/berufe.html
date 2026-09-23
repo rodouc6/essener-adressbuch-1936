@@ -206,10 +206,14 @@ function zeichne() { const l = liste(m); zeichneListe(l); zeichneAktiv(); }
 
 function waehle(s) { aktiv = s; zeichne(); }
 
-function naechsterOffener() {
-  const l = gefiltert(liste(m));
-  const i = l.findIndex((z) => z.schreibweise === aktiv);
-  const n = l.slice(i + 1).find((z) => z.geprueft !== "ja") || l.find((z) => z.geprueft !== "ja");
+// vorher: die gefilterte Liste VOR dem Prüfen. Mit Filter „ungeprüft“ fällt die gerade geprüfte Zeile aus der
+// Liste; würde man erst danach filtern, wäre ihr Index -1 und der Sprung ginge immer zur ersten offenen Zeile
+// zurück (Rückmeldung Christos: „der Cursor springt ständig nach oben“). Bewusst übersprungene Zeilen bleiben
+// stehen, weil nur nach der aktuellen Position gesucht wird; erst am Listenende wird von vorn begonnen.
+function naechsterOffener(vorher) {
+  const i = vorher.findIndex((z) => z.schreibweise === aktiv);
+  const offen = (z) => m.zeilen.get(z.schreibweise)?.geprueft !== "ja";
+  const n = vorher.slice(i + 1).find(offen) || vorher.find(offen);
   if (n) waehle(n.schreibweise); else zeichne();
 }
 
@@ -232,8 +236,9 @@ document.getElementById("geprueft").addEventListener("click", () => {
   if (!aktiv) return;
   const z = m.zeilen.get(aktiv);
   const neuGeprueft = z.geprueft !== "ja";
+  const vorher = gefiltert(liste(m));
   speichere(setzeGeprueft(m, aktiv, neuGeprueft));
-  if (neuGeprueft) naechsterOffener(); else zeichne();
+  if (neuGeprueft) naechsterOffener(vorher); else zeichne();
 });
 document.getElementById("rueck").addEventListener("click", () => {
   const z = rueckgaengig(m);
