@@ -200,8 +200,24 @@ def test_zechen_geojson_status_unklar_zaehlt_nicht_als_aktiv():
 
 
 def test_tippecanoe_befehl():
-    b = tippecanoe_befehl(pathlib.Path("a.geojson"), pathlib.Path("a.pmtiles"))
+    b = tippecanoe_befehl(pathlib.Path("."), pathlib.Path("a.pmtiles"))
     assert b[0] == "tippecanoe" and "-o" in b and "a.pmtiles" in b and "--maximum-zoom=15" in b
+
+
+def test_strassen_und_hex_features_und_kachelbefehl(tmp_path):
+    from pipeline.lib.karte_export import hex_features, strassen_features, tippecanoe_befehl
+    strassen = [dict(id="00464", name="Grenzstraße", stadtteil="Katernberg", adressen=2, n_I=5),
+                dict(id="1936:Alt|Kray", name="Alt (1936)", stadtteil="Kray", adressen=1, n_I=1),
+                dict(id="00001", name="Ohne Linie", stadtteil="Kray", adressen=1, n_I=1)]
+    linien = {"Grenzstraße": [[[7.06, 51.49], [7.061, 51.491]]]}
+    f = strassen_features(strassen, linien)
+    assert len(f) == 1 and f[0]["geometry"] == {"type": "MultiLineString", "coordinates": linien["Grenzstraße"]}
+    assert f[0]["properties"] == {"id": "00464", "name": "Grenzstraße", "stadtteil": "Katernberg"} and f[0]["id"] == 464
+    h = hex_features([dict(id="0_0", lat=51.45, lon=7.01, adressen=3, n_I=4)])
+    assert h[0]["geometry"]["type"] == "Polygon" and len(h[0]["geometry"]["coordinates"][0]) == 7 and h[0]["properties"] == {"id": "0_0"}
+    cmd = tippecanoe_befehl(tmp_path, tmp_path / "a.pmtiles")
+    assert "-L" in cmd and any(x.startswith("adressen:") for x in cmd) and any(x.startswith("strassen:") for x in cmd) and any(x.startswith("hex:") for x in cmd)
+    assert "--layer=adressen" not in cmd
 
 
 def test_schreibe_paket(tmp_path):

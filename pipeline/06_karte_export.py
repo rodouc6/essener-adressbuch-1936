@@ -34,6 +34,12 @@ gruppen_pfad = W / "kuratierung" / "gruppen.csv"
 gruppen = lies_csv(gruppen_pfad) if gruppen_pfad.exists() else []
 gewerbe_pfad = W / "kuratierung" / "gewerbe.csv"
 gewerbe = lies_csv(gewerbe_pfad) if gewerbe_pfad.exists() else []
+osm_pfad = W / "build" / "osm_strassen.json"
+if osm_pfad.exists():
+    osm_linien = json.loads(osm_pfad.read_text(encoding="utf-8"))["linien"]
+else:
+    osm_linien = {}
+    print("build/osm_strassen.json fehlt — Straßenschicht bleibt leer (werkzeuge/osm_strassen_laden.py)", file=sys.stderr)
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
 for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
@@ -41,5 +47,5 @@ for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
                    themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab,
-                   gruppen=gruppen, gewerbe=gewerbe)
+                   gruppen=gruppen, gewerbe=gewerbe, osm_linien=osm_linien)
 print(json.dumps(k, ensure_ascii=False, indent=1))

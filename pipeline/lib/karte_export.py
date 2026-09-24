@@ -448,10 +448,29 @@ def zechen_geojson(zeilen: list[dict]) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
-def tippecanoe_befehl(geojson: Path, pmtiles: Path) -> list[str]:
-    return ["tippecanoe", "-o", str(pmtiles), "--force", "--layer=adressen", "--minimum-zoom=9",
-            "--maximum-zoom=15", "--drop-densest-as-needed", "--extend-zooms-if-still-dropping",
-            "--no-feature-limit", "--no-tile-size-limit", "--quiet", str(geojson)]
+def strassen_features(strassen: list[dict], linien: dict[str, list]) -> list[dict]:
+    """Nur heutige Straßen (fünfstellige schl_nr) mit OSM-Linie; Feature-id = int(schl_nr) für feature-state."""
+    out = []
+    for s in strassen:
+        if not s["id"].isdigit() or s["name"] not in linien:
+            continue
+        out.append({"type": "Feature", "id": int(s["id"]), "geometry": {"type": "MultiLineString", "coordinates": linien[s["name"]]},
+                    "properties": {"id": s["id"], "name": s["name"], "stadtteil": s.get("stadtteil", "")}})
+    return out
+
+
+def hex_features(hexe: list[dict]) -> list[dict]:
+    out = []
+    for h in hexe:
+        q, r = (int(x) for x in h["id"].split("_"))
+        out.append({"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [hex_polygon(q, r)]}, "properties": {"id": h["id"]}})
+    return out
+
+
+def tippecanoe_befehl(ausgabe: Path, pmtiles: Path) -> list[str]:
+    return ["tippecanoe", "-o", str(pmtiles), "--force", "--minimum-zoom=9", "--maximum-zoom=15", "--drop-densest-as-needed",
+            "--extend-zooms-if-still-dropping", "--no-feature-limit", "--no-tile-size-limit", "--quiet",
+            "-L", f"adressen:{ausgabe / 'adressen.geojson'}", "-L", f"strassen:{ausgabe / 'strassen.geojson'}", "-L", f"hex:{ausgabe / 'hex.geojson'}"]
 
 
 def _json(pfad: Path, daten) -> None:
@@ -503,7 +522,7 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    beispiele: list[dict] | None = None, themen: Path | None = None,
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
                    ohdab: dict[str, dict] | None = None, gruppen: list[dict] | None = None,
-                   gewerbe: list[dict] | None = None) -> dict:
+                   gewerbe: list[dict] | None = None, osm_linien: dict | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     if themen is not None:
@@ -515,8 +534,12 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
+    strassen_agg = aggregiere(adressen, "strasse")
+    sf = strassen_features(strassen_agg, osm_linien or {})
+    _json(ausgabe / "strassen.geojson", {"type": "FeatureCollection", "features": sf})
+    _json(ausgabe / "hex.geojson", {"type": "FeatureCollection", "features": hex_features(aggregiere(adressen, "hex"))})
     if kacheln:
-        subprocess.run(tippecanoe_befehl(ausgabe / "adressen.geojson", ausgabe / "adressen.pmtiles"), check=True)
+        subprocess.run(tippecanoe_befehl(ausgabe, ausgabe / "adressen.pmtiles"), check=True)
     for name, inhalt in baue_scherben(adressen).items():
         _json(ausgabe / "haus" / f"{name}.json", inhalt)
     for name, inhalt in baue_adressscherben(adressen).items():
@@ -548,5 +571,6 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     for name, inhalt in baue_layouts(adressen, lade_gruppen(gruppen or []), lade_gewerbe(gewerbe or [])).items():
         _json(ausgabe / "layout" / f"{name}.json", inhalt)
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
+    kennzahlen["strassen_mit_linie"] = len(sf)
     _json(ausgabe / "kennzahlen.json", kennzahlen)
     return kennzahlen
