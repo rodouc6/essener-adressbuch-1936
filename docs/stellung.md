@@ -60,7 +60,17 @@ geprüft, nicht gegen den vollen Text mit Gattung.
    „Bäcker/in“) → `selbstaendige`.
 
 4. **Meistertitel (Schreibweise oder Norm endet auf „meister(in)“/„mstr.“)**
-   Der Wortstamm vor „meister“ entscheidet zwischen zwei Fällen:
+   Zuerst die **Beamtenausnahme**: Trifft `_BEAMTE` (gegen Norm + Gattung + Beruf) oder `_BEAMTE_TITEL`
+   (gegen Norm + Beruf ohne Gattung) zu, gewinnt Regel 10 vor der Meister-Logik → **`beamte`, Grund
+   `beamte`**. Grund dafür: Meistertitel im Polizei- und Justizvollzugsdienst sowie in der
+   Steuerverwaltung („Pol. Wachtmstr.“, „Polizeimstr.“, „Just. Wachtmstr.“, „Steuerwachtmstr.“,
+   „Hauptwachtmstr.“ …) sind Beamte, keine betrieblichen Vorgesetzten — ohne diese Ausnahme hätte die
+   Meister-Regel die Beamten-Regel für alle Schreibweisen verdeckt, deren Norm oder aufgelöster Beruf auf
+   „meister“/„mstr.“ endet (Review-Fund TP5a: 19 Schreibweisen, 928 Nennungen, fälschlich
+   `angestellte`). Beispiel: „Pol. Wachtmstr.“ (Item „Polizeiwachtmeister/in“, Gattung „Berufe im
+   Polizeivollzugsdienst“) → `beamte`.
+
+   Erst danach entscheidet der Wortstamm vor „meister“ zwischen zwei Fällen:
    - Stamm in `_HANDWERK` (Bäcker, Metzger, Schlachter, Fleischer, Konditor, Schneider, Schuhmacher,
      Friseur, Maler, Anstreicher, Tischler, Schreiner, Schlosser, Klempner, Installateur, Dachdecker,
      Schmied, Maurer, Zimmer-, Stukkateur, Glaser, Sattler, Polsterer, Tapezier, Uhrmacher, Gold-,
@@ -176,20 +186,24 @@ Der Export schreibt in `site/daten/kennzahlen.json`:
 
 Zählfeld je Adresse/Straße/Stadtteil/Hexzelle: `n_st_<klasse>` (`pipeline/lib/ebenen.py`).
 
-**Stand der Automatik (Lauf vom 2026-09-24, real, `kuratierung/berufe.csv`, 1.977 Schreibweisen):**
-Verteilung der Vorschläge (noch keine Handprüfung — siehe unten):
+**Stand der Automatik (Lauf vom 2026-09-24, real, `kuratierung/berufe.csv`, 1.977 Schreibweisen, nach der
+Beamtenausnahme-Korrektur in Regel 4):** Verteilung der Vorschläge (noch keine Handprüfung — siehe unten):
 
 | Klasse | Schreibweisen |
 |---|---|
 | `arbeiter` | 551 |
 | `selbstaendige` | 350 |
-| `angestellte` | 317 |
-| `beamte` | 305 |
+| `beamte` | 324 |
+| `angestellte` | 298 |
 | `unbestimmt` | 196 (9,9 %) |
 | `ohne_erwerb` | 138 |
 | `unternehmer` | 63 |
 | `freie_berufe` | 54 |
 | `kaufleute` | 3 |
+
+Gegenüber dem vorigen Lauf (vor der Korrektur) sind 19 Schreibweisen (928 Nennungen) von `angestellte`
+nach `beamte` gewandert — Meistertitel im Polizei-/Justizvollzugsdienst und in der Steuerverwaltung, die
+zuvor fälschlich der Meister-Regel statt der Beamten-Regel folgten (siehe Regel 4 oben).
 
 `unbestimmt` liegt bei 9,9 % und damit deutlich unter der im Plan gesetzten Grenze von 20 %. Diese Zahlen
 sind Vorschläge der Automatik, keine geprüften Ergebnisse: Zum Stand 2026-09-24 trägt keine Zeile in

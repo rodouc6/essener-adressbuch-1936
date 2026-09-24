@@ -45,6 +45,20 @@ def test_regeln_in_reihenfolge():
     assert stellung_vorschlag(zeile("Xyz"), None, REGELN) == ("unbestimmt", "")
 
 
+def test_meister_beamtenausnahme():
+    """Meistertitel im Polizei-/Justizvollzugsdienst und in der Steuerverwaltung sind Beamte, nicht
+    Angestellte — die Meister-Regel (4) darf die Beamten-Regel (10) nicht verdecken (Review TP5a)."""
+    assert stellung_vorschlag(zeile("Pol. Wachtmstr."), item("Polizeiwachtmeister/in", "fachlich", "Berufe im Polizeivollzugsdienst – fachlich ausgerichtete Tätigkeiten", "B 53212"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Pol. Meister"), item("Polizeimeister/in", "aufsicht", "Berufe im Justizvollzugsdienst – Aufsichtskräfte", "B 53293"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Polizeimstr."), item("Polizeimeister/in", "aufsicht", "Berufe im Justizvollzugsdienst – Aufsichtskräfte", "B 53293"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Just. Wachtmstr."), item("Justizwachtmeister/in", "helfer", "Berufe im Justizvollzugsdienst – Helfer-/Anlerntätigkeiten", "B 53241"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Steuerwachtmstr."), item("Steuerwachtmeister/in", "spezialist", "Berufe in der Steuerverwaltung – komplexe Spezialistentätigkeiten", "B 73233"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Hauptwachtmstr.", beruf="Hauptwachtmeister"), None, REGELN) == ("beamte", "beamte")
+    # echte Handwerks- und Betriebsmeister bleiben unverändert.
+    assert stellung_vorschlag(zeile("Bäckermstr."), item("Bäckermeister/in", "aufsicht", "Aufsichtskräfte – Lebensmittel"), REGELN) == ("selbstaendige", "handwerksmeister")
+    assert stellung_vorschlag(zeile("Werkmstr."), item("Werkmeister/in", "aufsicht", "Aufsichtskräfte – Produktion"), REGELN) == ("angestellte", "betriebsmeister")
+
+
 def test_regeln_ohne_gattung_fehltreffer():
     """Die OhdAB-Gattung darf keine Fehltreffer aus Wortbestandteilen auslösen (Review zu TP5a Task 1)."""
     # „Obersteiger“ enthält „oberst“ als Präfix — kein Offizier, sondern Aufsichtskraft im Bergbau wie alle Steiger.
