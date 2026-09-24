@@ -1,6 +1,6 @@
 import pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from werkzeuge.osm_strassen_laden import linien_aus, overpass_abfrage
+from werkzeuge.osm_strassen_laden import _merge, linien_aus, overpass_abfrage
 
 OSM = {"elements": [
     {"type": "way", "id": 1, "tags": {"highway": "residential", "name": "Grenzstraße"}, "geometry": [{"lat": 51.49, "lon": 7.06}, {"lat": 51.491, "lon": 7.061}]},
@@ -21,3 +21,20 @@ def test_linien_je_name_ohne_fusswege_und_namenlose():
 def test_abfrage_nennt_essen_und_highway():
     q = overpass_abfrage()
     assert "62713" in q and "highway" in q and "out geom" in q
+
+
+def test_abfrage_mit_bbox_ohne_area():
+    q = overpass_abfrage((51.30, 6.85, 51.44, 7.20))
+    assert "51.3" in q and "6.85" in q and "highway" in q and "out geom" in q
+    assert "area" not in q
+
+
+def test_merge_dedupliziert_segmente_an_der_bbox_grenze():
+    # Ein Way, der die Süd/Nord-Grenze berührt, kann in beiden Bbox-Abfragen auftauchen —
+    # reine Konkatenation würde das Segment doppelt zählen.
+    sued = {"Grenzstraße": [[[7.06, 51.44], [7.061, 51.441]]], "Nur Süd": [[[7.0, 51.3]]]}
+    nord = {"Grenzstraße": [[[7.06, 51.44], [7.061, 51.441]]], "Nur Nord": [[[7.0, 51.5]]]}
+    m = _merge(sued, nord)
+    assert m["Grenzstraße"] == [[[7.06, 51.44], [7.061, 51.441]]]
+    assert m["Nur Süd"] == [[[7.0, 51.3]]] and m["Nur Nord"] == [[[7.0, 51.5]]]
+    assert list(m) == ["Grenzstraße", "Nur Nord", "Nur Süd"]

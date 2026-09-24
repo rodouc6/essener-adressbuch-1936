@@ -29,10 +29,15 @@ Letzter Abruf: **2026-09-24**, 3.381 benannte Straßen mit 16.610 Liniensegmente
   sie werden gezählt (`kennzahlen.json` → `strassen_mit_linie` vs. Gesamtzahl heutiger
   Straßen aus der Konkordanz), aber nie ersatzweise mit einer erfundenen oder falsch
   zugeordneten Linie dargestellt.
-- Namensgleichheit heutiger Straßen ist im Essener Stadtgebiet eindeutig: mehrfach
-  vorkommende Straßennamen aus den 1937 eingemeindeten Nachbargemeinden wurden bei der
-  Eingemeindung umbenannt, sodass ein heutiger Straßenname in Essen genau eine OSM-Linie
-  (bzw. Liniengruppe) ergibt.
+- **Annahme, keine Garantie:** Namensgleichheit heutiger Straßen im Essener Stadtgebiet gilt
+  als eindeutig, weil mehrfach vorkommende Straßennamen aus den 1937 eingemeindeten
+  Nachbargemeinden bei der Eingemeindung umbenannt wurden — die Zuordnung `strassen_features()`
+  geht also davon aus, dass ein heutiger Straßenname in Essen genau eine OSM-Linie (bzw.
+  Liniengruppe) ergibt. Diese Verwaltungsregel wird hier nicht gegen die tatsächlichen
+  OSM-Daten geprüft: OSM-Datenfehler (z. B. eine versehentlich doppelt vergebene Bezeichnung,
+  ein falsch benannter Weg) bleiben möglich. Träfe das zu, würde ein Namensdoppel in
+  `linien_aus()` zu einer gemeinsamen Liniengruppe unter demselben Namen zusammengefasst und
+  könnte so fälschlich zwei unterschiedlichen Straßen dieselbe Linie zuordnen.
 - Lizenz: [Open Database License (ODbL)](https://www.openstreetmap.org/copyright),
   © OpenStreetMap-Mitwirkende. Die Attribution der Grundkarte zeigt das bereits; die
   Legende der Straßenschicht nennt zusätzlich die Quelle.

@@ -48,10 +48,18 @@ def linien_aus(osm_json: dict) -> dict[str, list[list[list[float]]]]:
 
 
 def _merge(a: dict[str, list], b: dict[str, list]) -> dict[str, list]:
+    """Führt zwei Linien-Dicts zusammen; Segmente, die (z. B. an der Bbox-Grenze von
+    --halbieren) in beiden Hälften auftauchen, werden dedupliziert. Reihenfolge stabil:
+    ein Segment behält die Position seines ersten Auftretens."""
     merged: dict[str, list] = defaultdict(list)
+    gesehen: dict[str, set] = defaultdict(set)
     for d in (a, b):
         for name, segmente in d.items():
-            merged[name].extend(segmente)
+            for seg in segmente:
+                schluessel = tuple(map(tuple, seg))
+                if schluessel not in gesehen[name]:
+                    gesehen[name].add(schluessel)
+                    merged[name].append(seg)
     return dict(sorted(merged.items()))
 
 

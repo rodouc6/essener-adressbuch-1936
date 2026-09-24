@@ -452,7 +452,7 @@ def strassen_features(strassen: list[dict], linien: dict[str, list]) -> list[dic
     """Nur heutige Straßen (fünfstellige schl_nr) mit OSM-Linie; Feature-id = int(schl_nr) für feature-state."""
     out = []
     for s in strassen:
-        if not s["id"].isdigit() or s["name"] not in linien:
+        if not (len(s["id"]) == 5 and s["id"].isdigit()) or s["name"] not in linien:
             continue
         out.append({"type": "Feature", "id": int(s["id"]), "geometry": {"type": "MultiLineString", "coordinates": linien[s["name"]]},
                     "properties": {"id": s["id"], "name": s["name"], "stadtteil": s.get("stadtteil", "")}})

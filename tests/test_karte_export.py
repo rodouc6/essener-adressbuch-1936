@@ -220,6 +220,18 @@ def test_strassen_und_hex_features_und_kachelbefehl(tmp_path):
     assert "--layer=adressen" not in cmd
 
 
+def test_strassen_features_nur_fuenfstellige_schl_nr():
+    # eine nicht-fünfstellige rein numerische id (z. B. Rest eines nicht abgeschlossenen
+    # Konkordanz-Schlüssels) darf keine int()-id ergeben; nur echte fünfstellige schl_nr zählen.
+    from pipeline.lib.karte_export import strassen_features
+    strassen = [dict(id="464", name="Kurz", stadtteil="Kray"),
+                dict(id="123456", name="Lang", stadtteil="Kray"),
+                dict(id="00464", name="Kurz", stadtteil="Kray")]
+    linien = {"Kurz": [[[7.06, 51.49], [7.061, 51.491]]], "Lang": [[[7.06, 51.49], [7.061, 51.491]]]}
+    f = strassen_features(strassen, linien)
+    assert [x["properties"]["id"] for x in f] == ["00464"]
+
+
 def test_schreibe_paket(tmp_path):
     e = [_v(id="1", lastname="Sepeur", firstname="Wilh.", teil="I"), _v(id="2", lastname="Jäger", teil="III",
          Firmenname="M. Jäger, Althandlung")]
