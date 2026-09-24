@@ -37,6 +37,11 @@ def test_vorschlag_aus_gattung_und_norm():
     # Tätigkeiten“) enthält als Substring „gericht“ — ohne Wortgrenze landete das fälschlich in
     # „verwaltung“ statt in der eigentlich passenden Gruppe (hier: metall_maschinen).
     assert gruppe_vorschlag(item("Schlosser/in", "Berufe im Metallbau – fachlich ausgerichtete Tätigkeiten")) == "metall_maschinen"
+    # Regression (Review Fix-Runde 2): dieselbe Fehlerklasse bei der nackten Alternative „bau“ —
+    # ohne Wortgrenze trifft sie als Teilstring „Gartenbau“, „Gerätebau“ und „Ackerbauer“.
+    assert gruppe_vorschlag(item("Gärtner/in", "Berufe im Gartenbau")) == "haus_reinigung"
+    assert gruppe_vorschlag(item("Anlagenkonstrukteur/in", "Berufe in der Konstruktion und im Gerätebau")) == "metall_maschinen"
+    assert gruppe_vorschlag(item("Ackerbauer/-bäuerin", "Berufe in der Landwirtschaft")) == "sonstige"
 
 
 def test_export_und_baue():

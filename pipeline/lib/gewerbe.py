@@ -52,6 +52,10 @@ _REGELN = [
     # nicht handel, weil „friseur“ hier eine speziellere Regel weiter oben trifft).
     ("handel", "handel", r"eisenwaren|handlung|waren|handel|geschäft|bedarf|artikel|großhandel|vertrieb|verkauf|kohlen|farben|papier|schreib|bücher|buchhandlung|fahrräder|automobil|reifen|antiquitäten|briefmarken|ansichtspostkarten|schmuck|^uhren$|porzellan|keramik|^glas \(|glasdächer|glasschleiferei|glasätzerei|glasbläserei|kerzen|leder|koffer|kinderwagen|schallplatten|landkarten|apparat|maschin|anlage|meßinstrument|manometer|tachometer|^eisen|^stahl$|^erze?$|draht|ketten|pumpen|ventilatoren|geldschränke|waffen$|technische öle|kaufhaus|einrichtung|registratur|versteig|korken|^leim$|bohnerwachs|lack und firnis|düngemittel|^öle$|teer"),
 ]
+# Grobe Heuristik: deutsche Handwerksbetriebe enden oft auf „-ei“ oder „-meister“ (Bäckerei,
+# Schreinermeister); trifft gelegentlich auch Nicht-Handwerk (z. B. „Molkerei“ — wird aber vorher
+# schon von der lebensmittel-Regel abgefangen). Bewusst als letzter, unscharfer Fallback vor
+# „sonstige“, nicht als scharfe Regel.
 _HANDWERK_ENDUNG = re.compile(r"(meister|ei)$", re.I)
 
 
