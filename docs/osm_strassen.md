@@ -11,6 +11,14 @@ Nebenwegen (`footway`, `path`, `steps`, `cycleway`, `track`, `bridleway`, `corri
 `platform`, `construction`, `proposed`). Je Straßenname werden alle Segmente gesammelt
 (eine Straße besteht in OSM aus vielen kurzen Ways).
 
+Mit `--halbieren` wird die einteilige Area-Abfrage (nur bei Overpass-Timeout nötig) durch zwei
+Bounding-Box-Abfragen (Nord/Süd) ersetzt und das Ergebnis zusammengeführt. Die beiden Bboxen
+(51.30–51.58 / 6.85–7.20) reichen dabei über die Essener Stadtgrenze hinaus; damit trotzdem nur
+Wege **innerhalb der Stadtgrenze** erfasst werden (und bei Namensgleichheit keine fremden Segmente
+aus Nachbarstädten mit derselben Straße verschmolzen werden), filtert jede Bbox-Abfrage zusätzlich
+auf `area.essen`: `way["highway"]["name"](area.essen)(bbox)`. Die Aussage „innerhalb der
+Stadtgrenze“ gilt damit für beide Abfragewege gleichermaßen.
+
 ## Stand des Abrufs
 
 Siehe `stand` in `build/osm_strassen.json` (ISO-Datum des letzten `osm_strassen_laden.py`-Laufs).

@@ -23,10 +23,14 @@ def test_abfrage_nennt_essen_und_highway():
     assert "62713" in q and "highway" in q and "out geom" in q
 
 
-def test_abfrage_mit_bbox_ohne_area():
+def test_abfrage_mit_bbox_und_area():
+    # Review TP5a: die --halbieren-Bboxen (51.30–51.58 / 6.85–7.20) reichen über die Essener
+    # Stadtgrenze hinaus; ohne die Area-Einschränkung könnten fremde, gleichnamige Straßensegmente
+    # außerhalb Essens fälschlich mit erfasst werden. Beide Bbox-Abfragen filtern deshalb zusätzlich
+    # auf area.essen — wie die ungeteilte Abfrage.
     q = overpass_abfrage((51.30, 6.85, 51.44, 7.20))
     assert "51.3" in q and "6.85" in q and "highway" in q and "out geom" in q
-    assert "area" not in q
+    assert "62713" in q and "area.essen" in q
 
 
 def test_merge_dedupliziert_segmente_an_der_bbox_grenze():

@@ -27,11 +27,14 @@ _BBOX_NORD = (51.44, 6.85, 51.58, 7.20)
 
 
 def overpass_abfrage(bbox: tuple[float, float, float, float] | None = None) -> str:
+    """Ohne bbox: ganz Essen. Mit bbox (nur --halbieren): zusätzlich zur Bounding-Box IMMER auch auf
+    area.essen gefiltert — die beiden Nord/Süd-Bboxen reichen sonst über die Stadtgrenze hinaus und
+    könnten gleichnamige Straßen außerhalb Essens mit erfassen (Review TP5a)."""
+    essen = f"area({3600000000 + ESSEN_RELATION})->.essen;"
     if bbox is None:
-        return (f"[out:json][timeout:300];area({3600000000 + ESSEN_RELATION})->.essen;"
-                "way[\"highway\"][\"name\"](area.essen);out geom;")
+        return f"[out:json][timeout:300];{essen}way[\"highway\"][\"name\"](area.essen);out geom;"
     s, w, n, o = bbox
-    return f"[out:json][timeout:300];way[\"highway\"][\"name\"]({s},{w},{n},{o});out geom;"
+    return f"[out:json][timeout:300];{essen}way[\"highway\"][\"name\"](area.essen)({s},{w},{n},{o});out geom;"
 
 
 def linien_aus(osm_json: dict) -> dict[str, list[list[list[float]]]]:
