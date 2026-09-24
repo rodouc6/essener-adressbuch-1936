@@ -23,7 +23,7 @@ def ergaenze_stellung(zeilen: list[dict], ohdab: dict[str, dict], regeln: list[R
     out, kenn = [], Counter()
     for z in zeilen:
         z = {k: (v or "") for k, v in z.items()}
-        if z.get("stellung_geprueft") == "ja" and z.get("stellung"):
+        if z.get("stellung_geprueft") == "ja":
             kenn["geprueft"] += 1
         else:
             klasse, grund = stellung_vorschlag(z, ohdab.get(z.get("ohdab_id", "")), regeln)

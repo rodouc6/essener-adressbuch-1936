@@ -91,7 +91,7 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
         return "unternehmer", "unternehmer"
     if falte_form(_norm(item)) == "kaufmann frau" and not re.search(r"angest|beamt", text, re.I):
         return "kaufleute", "kaufmann"
-    if _ANGESTELLTE.search(text) and not (_BEAMTE.search(_norm(item)) or _BEAMTE_TITEL.search(_norm(item))):
+    if _ANGESTELLTE.search(text) and not (_BEAMTE.search(_norm(item)) or _BEAMTE_TITEL.search(_titel(zeile, item))):
         return "angestellte", "angestellte"
     if _BEAMTE.search(text) or _BEAMTE_TITEL.search(_titel(zeile, item)):
         return "beamte", "beamte"

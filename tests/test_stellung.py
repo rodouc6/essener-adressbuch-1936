@@ -79,3 +79,14 @@ def test_ergaenze_stellung_fuellt_nur_ungeprueft():
     assert [z["stellung"] for z in neu] == ["arbeiter", "freie_berufe", "unbestimmt"]
     assert [z["stellung_geprueft"] for z in neu] == ["", "ja", ""]
     assert kenn == {"niveau fachlich": 1, "ohne": 1, "geprueft": 1}
+
+
+def test_ergaenze_stellung_laesst_geprueft_ohne_stellung_unangetastet():
+    """stellung_geprueft='ja' ist allein maßgeblich — die Automatik darf es nie zurücksetzen, auch wenn
+    stellung (noch) leer ist (Review-Fund TP5a Task 2: Doppelbedingung hätte stellung_geprueft überschrieben)."""
+    from werkzeuge.stellung_vorschlag import ergaenze_stellung
+    ohdab = {"B 21112-100": item("Bergmann/-frau")}
+    zeilen = [dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", geprueft="ja", stellung="", stellung_geprueft="ja")]
+    neu, kenn = ergaenze_stellung(zeilen, ohdab, REGELN)
+    assert neu == zeilen
+    assert kenn == {"geprueft": 1}
