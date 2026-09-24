@@ -27,6 +27,10 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
 - POST /kuratierung/berufe_abkuerzungen.csv — eine Zeile ({"zeile": {kurz,lang,status,beleg}}) für
   den Abkürzungskatalog; 400 bei fehlendem kurz/lang oder unbekanntem Status, 409 bei vorhandenem
   kurz.
+- POST /kuratierung/gruppen.csv, /kuratierung/gewerbe.csv — mehrere Zeilen ({"zeilen": [...]}) des
+  generischen Zuordnungswerkzeugs (werkzeuge/zuordnung.html); ersetzt nach Schlüssel `ohdab_id` bzw.
+  `rubrik`, setzt bearbeiter=christos und datum. 400 bei unbekanntem Schlüssel, unbekanntem
+  Vokabular (gruppe/art), geprueft ∉ {ja, leer} oder geprueft=ja mit leerem Feld.
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
 - GET mit Range-Header — Teilstücke für PMTiles (site/daten/adressen.pmtiles).
@@ -49,6 +53,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from pipeline.lib.berufe import FELDER_KURATIERUNG as FELDER_BERUFE, STATUS as STATUS_BERUFE, lade_ohdab
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe
 from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, IDENTITAETEN, KATEGORIEN, lade_kuratierung
+from pipeline.lib.gewerbe import ARTEN, FELDER_GEWERBE, lade_gewerbe
+from pipeline.lib.gruppen import FELDER_GRUPPEN, GRUPPEN, lade_gruppen
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 from pipeline.lib.stellung import STELLUNGEN
 
@@ -169,6 +175,29 @@ def pruefe_berufe(z: dict, bekannt: set[str], ohdab: set[str]) -> str:
     return ""
 
 
+ZUORDNUNGEN = {
+    "gruppen": dict(felder=FELDER_GRUPPEN, schluessel="ohdab_id", lade=lade_gruppen, vokabular={"gruppe": GRUPPEN}),
+    "gewerbe": dict(felder=FELDER_GEWERBE, schluessel="rubrik", lade=lade_gewerbe, vokabular={"gruppe": GRUPPEN, "art": ARTEN}),
+}
+
+
+def pruefe_zuordnung(z: dict, bekannt: set[str], schluessel: str, vokabular: dict[str, dict]) -> str:
+    if not isinstance(z, dict):
+        return "Zeile fehlt"
+    k = str(z.get(schluessel, "")).strip()
+    if k not in bekannt:
+        return f"unbekannter Schlüssel: {k}"
+    for feld, vok in vokabular.items():
+        w = str(z.get(feld, "")).strip()
+        if w and w not in vok:
+            return f"unbekannter Wert für {feld}: {w}"
+    if str(z.get("geprueft", "")).strip() not in ("", "ja"):
+        return "geprueft muss ja oder leer sein"
+    if str(z.get("geprueft", "")).strip() == "ja" and any(not str(z.get(f, "")).strip() for f in vokabular):
+        return "geprueft=ja verlangt alle Felder"
+    return ""
+
+
 def upsert_viele(pfad: pathlib.Path, zeilen: list[dict], schluessel: str, felder: list[str]) -> int:
     """Ersetzt je Schlüsselwert die vorhandene Zeile an Ort und Stelle (Reihenfolge bleibt), hängt Neues an."""
     alt = lies_csv(pfad)
@@ -272,6 +301,9 @@ class Handler(SimpleHTTPRequestHandler):
             return self._berufe()
         if self.path == "/kuratierung/berufe_abkuerzungen.csv":
             return self._berufe_katalog()
+        z = re.fullmatch(r"/kuratierung/(gruppen|gewerbe)\.csv", self.path)
+        if z:
+            return self._zuordnung(z.group(1))
         k = _KURATIERUNG.match(self.path)
         if k:
             return self._kuratierung(k.group(1))
@@ -377,6 +409,27 @@ class Handler(SimpleHTTPRequestHandler):
         schreib_csv(pfad, zeilen, ["kurz", "lang", "status", "beleg", "bearbeiter", "datum"])
         self._antwort(200, f"berufe_abkuerzungen.csv: {len(zeilen)} Zeilen")
 
+    def _zuordnung(self, tabelle: str) -> None:
+        t = ZUORDNUNGEN[tabelle]
+        try:
+            koerper = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+            zeilen = koerper["zeilen"]; assert isinstance(zeilen, list)
+        except (ValueError, KeyError, TypeError, AssertionError):
+            return self._antwort(400, "ungültiger Inhalt")
+        pfad = self.wurzel / "kuratierung" / f"{tabelle}.csv"
+        if not pfad.exists():
+            return self._antwort(404, f"{tabelle}.csv fehlt")
+        alt = t["lade"](lies_csv(pfad))
+        for z in zeilen:
+            fehler = pruefe_zuordnung(z, set(alt), t["schluessel"], t["vokabular"])
+            if fehler:
+                return self._antwort(400, fehler)
+        heute = datetime.date.today().isoformat()
+        voll = [dict(alt[str(z[t["schluessel"]]).strip()], **{k: str(z.get(k, "")).strip() for k in (*t["vokabular"], "geprueft", "hinweis")},
+                     bearbeiter="christos", datum=heute) for z in zeilen]
+        n = upsert_viele(pfad, voll, t["schluessel"], t["felder"])
+        self._antwort(200, f"{tabelle}.csv: {n} Zeilen")
+
     def log_message(self, fmt, *args):  # nur Speichervorgänge und Fehler ins Terminal
         if self.command == "POST" or (len(args) > 1 and not str(args[1]).startswith(("2", "3"))):
             super().log_message(fmt, *args)
@@ -384,7 +437,8 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main(port: int) -> None:
     srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  ·  /werkzeuge/eigentuemer.html  (Strg+C beendet)")
+    print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  ·  /werkzeuge/eigentuemer.html  ·  "
+          "/werkzeuge/zuordnung.html?tabelle=gruppen  (Strg+C beendet)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

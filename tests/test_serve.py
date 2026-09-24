@@ -21,6 +21,8 @@ KOPF_EIGENTUEMER = "schreibweise,art,eigentuemer,kategorie,geprueft,bearbeiter,d
 KOPF_BERUFE = "schreibweise,nennungen,beruf,status,ohdab_id,niveau_unsicher,geprueft,vorschlag_grund,bearbeiter,datum,hinweis"
 KOPF_OHDAB = "ohdab_id,qid,norm,maennlich,weiblich,niveau,gattung_id,gattung"
 KOPF_BERUFE_ABK = "kurz,lang,status,beleg,bearbeiter,datum"
+KOPF_GRUPPEN = "ohdab_id,norm,nennungen,gruppe,geprueft,bearbeiter,datum,hinweis"
+KOPF_GEWERBE = "rubrik,betriebe,gruppe,art,geprueft,bearbeiter,datum,hinweis"
 
 
 @pytest.fixture
@@ -44,6 +46,10 @@ def server(tmp_path):
         "B 84124-120,Q456,Lehrer/in,Lehrer,Lehrerin,Fachliche Tätigkeiten,G2,Bildung\n", encoding="utf-8")
     (tmp_path / "kuratierung" / "berufe_abkuerzungen.csv").write_text(
         KOPF_BERUFE_ABK + "\nBergm.,Bergmann,,üblich,Claude,2026-09-23\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "gruppen.csv").write_text(
+        KOPF_GRUPPEN + "\nB 21112-100,Bergmann/-frau,9,bergbau,,gruppen_vorschlag,2026-09-26,\n", encoding="utf-8")
+    (tmp_path / "kuratierung" / "gewerbe.csv").write_text(
+        KOPF_GEWERBE + "\nBäcker,536,lebensmittel,handwerk,,gewerbe_vorschlag,2026-09-26,\n", encoding="utf-8")
     ziel = tmp_path / "docs" / "stichprobe_7.csv"
     with open(ziel, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=KOPF, lineterminator="\n")
@@ -283,4 +289,22 @@ def test_katalog_post_legt_an_und_lehnt_dublette_ab(server):
     assert e.value.code == 409
     with pytest.raises(urllib.error.HTTPError) as e:
         post(url + "/kuratierung/berufe_abkuerzungen.csv", {"zeile": dict(kurz="X.", lang="", status="tot", beleg="")})
+    assert e.value.code == 400
+
+
+def test_zuordnung_post_gruppen_und_gewerbe(server):
+    url, ziel = server
+    wurzel = ziel.parent.parent
+    post(url + "/kuratierung/gruppen.csv", {"zeilen": [dict(ohdab_id="B 21112-100", gruppe="bergbau", geprueft="ja", hinweis="")]})
+    g = list(csv.DictReader(open(wurzel / "kuratierung" / "gruppen.csv", encoding="utf-8")))
+    assert g[0]["geprueft"] == "ja" and g[0]["bearbeiter"] == "christos" and g[0]["nennungen"] == "9" and g[0]["norm"] == "Bergmann/-frau"
+    post(url + "/kuratierung/gewerbe.csv", {"zeilen": [dict(rubrik="Bäcker", gruppe="lebensmittel", art="handel", geprueft="ja", hinweis="x")]})
+    w = list(csv.DictReader(open(wurzel / "kuratierung" / "gewerbe.csv", encoding="utf-8")))
+    assert (w[0]["art"], w[0]["hinweis"], w[0]["betriebe"]) == ("handel", "x", "536")
+    for kaputt in (dict(ohdab_id="B 0", gruppe="bergbau"), dict(ohdab_id="B 21112-100", gruppe="adel"), dict(ohdab_id="B 21112-100", gruppe="", geprueft="ja")):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(url + "/kuratierung/gruppen.csv", {"zeilen": [kaputt]})
+        assert e.value.code == 400
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/gewerbe.csv", {"zeilen": [dict(rubrik="Bäcker", gruppe="lebensmittel", art="adel")]})
     assert e.value.code == 400

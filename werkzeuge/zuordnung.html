@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Zuordnung — Gruppen und Gewerbe</title>
+<style>
+  body { margin: 0; font: 14px system-ui, sans-serif; color: #1f2937; display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+  #links { border-right: 1px solid #ddd; display: flex; flex-direction: column; min-height: 0; }
+  #links .kopf { padding: 10px 12px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #links input[type=search] { flex: 1 1 100%; padding: 6px; }
+  #liste { overflow: auto; flex: 1; }
+  .ez { padding: 6px 12px; border-bottom: 1px solid #f1f1f1; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .ez.aktiv { background: #eef2ff; } .ez.geprueft { color: #6b7280; } .ez b { flex: 1; font-weight: 500; } .ez small { color: #6b7280; }
+  #rechts { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  #kopf { padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #kopf h2 { margin: 0; font-size: 18px; flex-basis: 100%; }
+  select.feld { font-size: 15px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; min-width: 220px; }
+  button[aria-pressed=true] { background: #1d4ed8; color: #fff; }
+  #mitte { padding: 12px 16px; overflow: auto; }
+  table { border-collapse: collapse; width: 100%; } td, th { padding: 3px 6px; border-bottom: 1px solid #f1f1f1; text-align: left; font-size: 13px; }
+  #banner { position: fixed; bottom: 12px; right: 12px; background: #b91c1c; color: #fff; padding: 8px 12px; border-radius: 6px; display: none; }
+  #banner.dauerhaft { background: #7f1d1d; } .gestoert #rechts, .gestoert #liste { pointer-events: none; opacity: .6; }
+  kbd { border: 1px solid #ccc; border-radius: 3px; padding: 0 4px; font-size: 11px; }
+</style></head>
+<body>
+<div id="links">
+  <div class="kopf">
+    <input type="search" id="filter" placeholder="Suchen …">
+    <label><input type="radio" name="status" value="offen" checked> ungeprüft</label>
+    <label><input type="radio" name="status" value="geprueft"> geprüft</label>
+    <label><input type="radio" name="status" value="alle"> alle</label>
+    <div id="fortschritt" style="flex-basis:100%;color:#6b7280"></div>
+  </div>
+  <div id="liste"></div>
+</div>
+<div id="rechts">
+  <div id="kopf">
+    <h2><span id="anzeige"></span> <small id="menge"></small></h2>
+    <span id="felder"></span>
+    <button id="geprueft" title="Taste G">Geprüft <kbd>G</kbd></button>
+    <button id="rueck" title="Taste Z">Rückgängig <kbd>Z</kbd></button>
+    <input id="hinweis" placeholder="Hinweis" style="flex:1 1 200px">
+  </div>
+  <div id="mitte"><h4 style="margin:0 0 6px">Belege</h4><div id="belege"></div></div>
+</div>
+<div id="banner"></div>
+<script type="module">
+import { KONFIG, baueModell, fortschritt, liste, rueckgaengig, setzeFeld, setzeGeprueft, setzeHinweis, zumSpeichern } from "./js/zuordnung_modell.js";
+
+// Anzeigenamen des Vokabulars — wörtlich wie in pipeline/lib/gruppen.py (GRUPPEN) und
+// pipeline/lib/gewerbe.py (ARTEN), damit die Beschriftung der Selects mit der Python-Quelle übereinstimmt.
+const LABEL_GRUPPE = { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau",
+  holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel", handel: "Handel",
+  gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post", verwaltung: "Verwaltung, Polizei, Recht",
+  bildung_kultur_kirche: "Bildung, Kultur, Kirche", gesundheit: "Gesundheit", haus_reinigung: "Haushalt und Reinigung", sonstige: "Sonstige" };
+const LABEL_ART = { handwerk: "Handwerk", handel: "Handel", gastgewerbe: "Gastgewerbe", dienstleistung: "Dienstleistung",
+  industrie: "Industrie", freier_beruf: "Freier Beruf", sonstige: "Sonstige" };
+const LABEL = { gruppe: LABEL_GRUPPE, art: LABEL_ART };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// CSV-Leser für RFC-4180 (Anführungszeichen, Kommas in Feldern, \n in Feldern) — wörtlich wie in berufe.html.
+function csvLesen(text) {
+  const zeilen = []; let feld = "", zeile = [], q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { feld += '"'; i++; } else q = false; } else feld += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { zeile.push(feld); feld = ""; }
+    else if (c === "\n") { zeile.push(feld); zeilen.push(zeile); zeile = []; feld = ""; }
+    else if (c !== "\r") feld += c;
+  }
+  if (feld || zeile.length) { zeile.push(feld); zeilen.push(zeile); }
+  const kopf = zeilen.shift();
+  return zeilen.filter((z) => z.length > 1 || z[0]).map((z) => Object.fromEntries(kopf.map((k, i) => [k, z[i] ?? ""])));
+}
+
+function zeigeBanner(text, dauerhaft = false) {
+  const b = document.getElementById("banner");
+  b.textContent = text;
+  if (dauerhaft) {
+    const btn = document.createElement("button");
+    btn.textContent = "Neu laden";
+    btn.addEventListener("click", () => location.reload());
+    b.appendChild(document.createTextNode(" "));
+    b.appendChild(btn);
+  }
+  b.classList.toggle("dauerhaft", dauerhaft);
+  b.style.display = "block";
+  if (!dauerhaft) setTimeout(() => (b.style.display = "none"), 6000);
+}
+
+const tabelle = new URLSearchParams(location.search).get("tabelle");
+const konfig = KONFIG[tabelle];
+if (!konfig) {
+  zeigeBanner("?tabelle=gruppen|gewerbe fehlt oder ist unbekannt", true);
+  throw new Error("kein Vokabular für ?tabelle=" + tabelle);
+}
+document.title = konfig.titel;
+
+// Sequenzielle Speicherung: POSTs laufen über eine Promise-Kette, nie parallel. Bei einem Fehler NICHT
+// rueckgaengig(m) aufrufen — stattdessen wird das Werkzeug gesperrt, bis die Seite neu geladen wird;
+// der zuletzt gespeicherte Stand auf dem Server bleibt die einzige Quelle der Wahrheit.
+let kette = Promise.resolve();
+let gestoert = false;
+function speichere(zeilen) {
+  if (gestoert || !zeilen.length) return;
+  kette = kette.then(async () => {
+    if (gestoert) return;
+    try {
+      const r = await fetch(`/kuratierung/${konfig.datei}`, { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zeilen: zeilen.map((z) => zumSpeichern(z, konfig)) }) });
+      if (!r.ok) { const text = await r.text(); sperre("Speichern fehlgeschlagen: " + text); }
+    } catch (e) { sperre("Speichern fehlgeschlagen: " + e.message); }
+  });
+}
+
+function sperre(text) {
+  gestoert = true;
+  document.body.classList.add("gestoert");
+  zeigeBanner(text + " — Seite neu laden; die letzten Änderungen wurden nicht gespeichert.", true);
+}
+
+const [text, belegeText] = await Promise.all([
+  fetch(`../kuratierung/${konfig.datei}`).then((r) => { if (!r.ok) throw new Error(`kuratierung/${konfig.datei} fehlt`); return r.text(); }),
+  tabelle === "gruppen" ? fetch("../kuratierung/berufe.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
+]).catch((e) => { zeigeBanner(e.message); throw e; });
+
+const m = baueModell(csvLesen(text), konfig);
+
+// Belege je ohdab_id (nur für tabelle=gruppen): Schreibweisen mit Nennungen und Beruf aus berufe.csv.
+const belegeNachSchluessel = new Map();
+if (belegeText) {
+  for (const b of csvLesen(belegeText)) {
+    const oid = (b.ohdab_id || "").trim();
+    if (!oid) continue;
+    if (!belegeNachSchluessel.has(oid)) belegeNachSchluessel.set(oid, []);
+    belegeNachSchluessel.get(oid).push(b);
+  }
+}
+
+let aktiv = null;   // Schlüssel der aktiven Zeile
+
+function gefiltert(l) {
+  const status = document.querySelector("input[name=status]:checked").value;
+  const q = document.getElementById("filter").value.trim().toLowerCase();
+  return l.filter((z) => (status === "alle" || (status === "geprueft") === (z.geprueft === "ja"))
+    && (!q || z.schluessel.toLowerCase().includes(q) || z.anzeige.toLowerCase().includes(q)));
+}
+
+function zeichneListe(l) {
+  const gef = gefiltert(l);
+  document.getElementById("liste").innerHTML = gef.map((z) =>
+    `<div class="ez${z.schluessel === aktiv ? " aktiv" : ""}${z.geprueft === "ja" ? " geprueft" : ""}" data-schluessel="${esc(z.schluessel)}">` +
+    `<b>${esc(z.anzeige)}</b><small>${z.menge}</small></div>`).join("");
+  const f = fortschritt(m);
+  const pct = f.mengeGesamt ? Math.round((f.mengeGeprueft / f.mengeGesamt) * 100) : 0;
+  document.getElementById("fortschritt").textContent = `${f.geprueft} von ${f.gesamt} geprüft · ${pct} % der Menge`;
+}
+
+function zeichneAktiv() {
+  const z = m.zeilen.get(aktiv);
+  if (!z) { document.getElementById("kopf").style.visibility = "hidden"; document.getElementById("belege").innerHTML = ""; return; }
+  document.getElementById("kopf").style.visibility = "visible";
+  document.getElementById("anzeige").textContent = z.anzeige;
+  document.getElementById("menge").textContent = `${z.menge} ${z.menge === 1 ? "Beleg" : "Belege"}`;
+  document.getElementById("felder").innerHTML = konfig.felder.map((f) =>
+    `<select class="feld" data-feld="${f.name}" title="Ziffern 1–${f.vokabular.length}"><option value="">–</option>` +
+    f.vokabular.map((w) => `<option value="${esc(w)}"${w === z[f.name] ? " selected" : ""}>${esc(LABEL[f.name]?.[w] || w)}</option>`).join("") +
+    `</select>`).join("");
+  document.getElementById("geprueft").setAttribute("aria-pressed", z.geprueft === "ja");
+  document.getElementById("hinweis").value = z.hinweis;
+  const belege = belegeNachSchluessel.get(aktiv) || [];
+  if (tabelle !== "gruppen") {
+    document.getElementById("belege").innerHTML = "–";
+  } else if (!belege.length) {
+    document.getElementById("belege").innerHTML = "<small>keine</small>";
+  } else {
+    const sortiert = [...belege].sort((a, b) => (Number(b.nennungen) || 0) - (Number(a.nennungen) || 0));
+    document.getElementById("belege").innerHTML = `<table><tr><th>Schreibweise</th><th>Nennungen</th><th>Beruf</th></tr>` +
+      sortiert.map((b) => `<tr><td>${esc(b.schreibweise)}</td><td>${esc(b.nennungen)}</td><td>${esc(b.beruf)}</td></tr>`).join("") + `</table>`;
+  }
+}
+
+function zeichne() { const l = liste(m); zeichneListe(l); zeichneAktiv(); }
+
+function waehle(s) { aktiv = s; zeichne(); }
+
+// vorher: die gefilterte Liste VOR dem Prüfen — wörtlich wie in berufe.html (naechsterOffener), damit der
+// Cursor nach dem Prüfen nicht ständig an den Listenanfang zurückspringt.
+function naechsterOffener(vorher) {
+  const i = vorher.findIndex((z) => z.schluessel === aktiv);
+  const offen = (z) => (m.zeilen.get(z.schluessel) || z).geprueft !== "ja";
+  const n = vorher.slice(i + 1).find(offen) || vorher.find(offen);
+  if (n) waehle(n.schluessel); else zeichne();
+}
+
+function naechsteZeile(richtung) {
+  const l = gefiltert(liste(m));
+  const i = l.findIndex((z) => z.schluessel === aktiv);
+  const n = l[i + richtung];
+  if (n) waehle(n.schluessel);
+}
+
+// Ereignisse
+document.getElementById("liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-schluessel]"); if (z) waehle(z.dataset.schluessel); });
+document.getElementById("filter").addEventListener("input", () => zeichneListe(liste(m)));
+document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListener("change", () => zeichneListe(liste(m))));
+document.getElementById("felder").addEventListener("change", (ev) => {
+  const sel = ev.target.closest("select.feld");
+  if (sel && aktiv) { speichere(setzeFeld(m, aktiv, sel.dataset.feld, sel.value)); zeichne(); }
+});
+document.getElementById("geprueft").addEventListener("click", () => {
+  if (!aktiv) return;
+  const z = m.zeilen.get(aktiv);
+  const neuGeprueft = z.geprueft !== "ja";
+  const vorher = gefiltert(liste(m));
+  const geaendert = setzeGeprueft(m, aktiv, neuGeprueft);
+  speichere(geaendert);
+  if (neuGeprueft && geaendert.length) naechsterOffener(vorher); else zeichne();
+});
+document.getElementById("rueck").addEventListener("click", () => {
+  const z = rueckgaengig(m);
+  if (z) { speichere(z); if (!m.zeilen.has(aktiv)) aktiv = z[0]?.schluessel || null; zeichne(); }
+});
+document.getElementById("hinweis").addEventListener("change", (ev) => { if (aktiv) speichere(setzeHinweis(m, aktiv, ev.target.value)); });
+document.addEventListener("keydown", (ev) => {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;   // Browser-/System-Kürzel (Strg+F, Cmd+R …) unberührt lassen
+  if (gestoert) return;
+  if (ev.target.matches("input, select, textarea")) return;
+  if (!aktiv) return;
+  const k = ev.key.toLowerCase();
+  if (k === "g") document.getElementById("geprueft").click();
+  else if (k === "z") document.getElementById("rueck").click();
+  else if (ev.key === "ArrowDown") { ev.preventDefault(); naechsteZeile(1); }
+  else if (ev.key === "ArrowUp") { ev.preventDefault(); naechsteZeile(-1); }
+  else {
+    // Ziffern 1–9 setzen das erste Feld, Umschalt+Ziffer das zweite (Index in vokabular). Springt NICHT
+    // zur nächsten Zeile — nur G prüft und springt (Rückmeldung: Ziffern dienen dem schnellen Setzen,
+    // nicht dem Blättern; das gilt unabhängig vom Status-Filter).
+    const md = ev.code.match(/^Digit([1-9])$/);
+    if (md) {
+      const idx = Number(md[1]) - 1;
+      const feld = konfig.felder[ev.shiftKey ? 1 : 0];
+      if (feld && idx < feld.vokabular.length) { speichere(setzeFeld(m, aktiv, feld.name, feld.vokabular[idx])); zeichne(); }
+    }
+  }
+});
+
+// Start: erste gefilterte Zeile wählen.
+const erste = gefiltert(liste(m))[0];
+if (erste) waehle(erste.schluessel); else zeichne();
+</script>
+</body></html>
