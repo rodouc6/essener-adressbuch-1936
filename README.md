@@ -242,8 +242,11 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `zechen.geojson` | Zechen aus `kuratierung/zechen.csv` mit `status_1936`, `aktiv_1936`, Artikel-/Listenjahren, `jahre_widerspruch`, `plan_1935` |
 | `startseite.json` | Beispielpunkte aus `kuratierung/startseite_beispiele.csv` (adress_id, eintrag_id; nur hausgenau) mit Titel, Zeile und Koordinaten — derzeit von der Startseite nicht genutzt (Entscheidung 2026-09-21: ruhiger, abgedunkelter Planhintergrund `site/bilder/startplan-1935-*.{webp,jpg}` ohne Punkte) |
 | `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
-| `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum |
+| `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum, dazu Abdeckung Stellung/Gruppen/Gewerbe und `strassen_mit_linie` (Teilprojekt 5a) |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
+| `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
+| `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
+| `strassen.geojson`, `hex.geojson` | Straßenlinien (heutige OSM-Führung) und Hex-Polygone, auch als Layer `strassen`/`hex` in `adressen.pmtiles` |
 
 ### URL-Parameter (`karte.html?…`)
 
@@ -366,6 +369,134 @@ Wert > 0) für Teilprojekt 5. Suchindex nach Normbezeichnung: `suche/berufe_norm
 `suche/berufe.json` bleibt für ungeprüfte Schreibweisen bestehen). Kennzahlen `berufe_geprueft`
 (Anteil der Teil-I-Nennungen verorteter Adressen mit geprüfter Zuordnung) und
 `berufe_schreibweisen_geprueft` (Zahl geprüfter Schreibweisen) in `kennzahlen.json`.
+
+**Soziale Stellung (Teilprojekt 5a).** Zwei zusätzliche Spalten in `kuratierung/berufe.csv`:
+`stellung` (neun Klassen: `arbeiter, angestellte, beamte, selbstaendige, freie_berufe, unternehmer,
+ohne_erwerb, kaufleute, unbestimmt`) und `stellung_geprueft` (`ja` | leer). Vorschlag:
+`python3 werkzeuge/stellung_vorschlag.py [--wurzel PFAD]` füllt `stellung`, wo `stellung_geprueft`
+leer ist — auch bei für die Berufszuordnung bereits gesperrten Zeilen, weil die Stellung eine
+eigene, unabhängig zu prüfende Frage ist. Handprüfung im Berufe-Werkzeug (`werkzeuge/berufe.html`):
+Zifferntasten `1`–`9` wählen die Klasse (Reihenfolge wie im Vokabular), Taste `T` bestätigt
+(`stellung_geprueft=ja`), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export nur, wenn
+Beruf **und** Stellung geprüft sind, sonst `unbestimmt`. Regeln, Beispiele und Grenzfälle:
+`docs/stellung.md`.
+
+## Datenkerne für Perspektiven und Werkstatt (Teilprojekt 5a)
+
+Vierter Datenkern neben Berufen (Teil I), Eigentümern (Teil II) und Merkmalen: Gewerbebetriebe aus
+Teil III, dazu Berufsgruppen, Aggregationsebenen und Bubble-Layouts als Vorstufe für die Seiten
+Perspektiven und Werkstatt (Teilprojekt 5b/5c, noch nicht gebaut). Spec:
+`docs/superpowers/specs/2026-09-24-perspektiven-werkstatt-design.md`.
+
+### Berufsgruppen (`kuratierung/gruppen.csv`)
+
+Eine Zeile je OhdAB-Item, das in `berufe.csv` vorkommt (Spalten `ohdab_id, norm, nennungen, gruppe,
+geprueft, bearbeiter, datum, hinweis`). Vokabular `gruppe` (14 Schlüssel, `pipeline/lib/gruppen.py`,
+`GRUPPEN`): `bergbau, metall_maschinen, bau, holz_moebel, textil_bekleidung, lebensmittel, handel,
+gastgewerbe, verkehr_bahn_post, verwaltung, bildung_kultur_kirche, gesundheit, haus_reinigung,
+sonstige`. Vorschlag aus Gattungstext + Normbezeichnung: `python3 werkzeuge/gruppen_vorschlag.py`.
+Handprüfung: `werkzeuge/zuordnung.html?tabelle=gruppen` (Zifferntasten 1–9 setzen das Feld `gruppe`,
+Taste `G` bestätigt `geprueft=ja`, Taste `Z` macht rückgängig). Grenze: der Arbeitgeber steht nicht
+im Beruf — „Schlosser“ zählt gleich, ob bei Krupp oder auf der Zeche; Gruppen sind
+Tätigkeitsbranchen, keine Betriebszugehörigkeit. Realer Lauf 2026-09-24: 856 Items, `sonstige`
+14,95 % (unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
+Einheit: `n_gr_<gruppe>`.
+
+### Gewerberubriken Teil III (`kuratierung/gewerbe.csv`)
+
+Die Rubrik steht nicht in einer eigenen Spalte, sondern als Suffix hinter dem letzten Komma des
+Firmennamens („M. Jäger, Althandlung“ → Firma „M. Jäger“, Rubrik „Althandlung“); ohne Komma keine
+Rubrik. Realer Lauf 2026-09-24: 848 distinkte Rubriken (18.863 Betriebe). Spalten `rubrik,
+betriebe, gruppe, art, geprueft, bearbeiter, datum, hinweis`; `gruppe` wie bei den Berufsgruppen
+(gleiche 14 Schlüssel, damit Teil I und Teil III vergleichbar sind), `art` (7 Schlüssel,
+`pipeline/lib/gewerbe.py`, `ARTEN`): `handwerk, handel, gastgewerbe, dienstleistung, industrie,
+freier_beruf, sonstige`. Vorschlag aus Wortregeln auf der Rubrik:
+`python3 werkzeuge/gewerbe_vorschlag.py`. Handprüfung: `werkzeuge/zuordnung.html?tabelle=gewerbe`
+(Zifferntasten setzen `gruppe`, Umschalt+Ziffer setzt `art`). Realer Lauf: `sonstige` 11,8 % (100
+von 848 Rubriken, unter der 20-%-Vorgabe). Dublettenregel: Betriebe, die unter mehreren Rubriken an
+derselben Adresse mit gleichem Firmennamen stehen (`betriebsschluessel()`: gefalteter Firmenname +
+Straße + Hausnummer + Vorort), zählen je Gruppe nur einmal. Export nur `geprueft=ja` und `gruppe`/
+`art` im Vokabular, sonst `ungeprueft`. Zählfelder je Einheit: `n_gw_<gruppe>`, `n_gwa_<art>`.
+
+### Zählfelder und Aggregationsebenen (`pipeline/lib/ebenen.py`)
+
+`zaehlfelder(adresse)` zählt je Adresse einmal: Teile (`n_I`, `n_II`, `n_III`), Niveau (`n_helfer` …,
+wie bisher), Stellung (`n_st_<klasse>`), Berufsgruppe (`n_gr_<gruppe>`), Gewerbegruppe/-art
+(`n_gw_<gruppe>`, `n_gwa_<art>`, je Betrieb einmal über die Dublettenregel) und Besitzklasse
+(`n_bs_<klasse>`). Teil-I-Einträge ohne geprüften Beruf zählen bei Stellung und Gruppe als
+`unbestimmt`/`ungeprueft` mit — der Nenner bleibt so sichtbar, statt Zeilen stillschweigend zu
+verwerfen. `aggregiere(adressen, ebene)` summiert diese Felder auf drei Ebenen
+(`EBENEN = ("strasse", "stadtteil", "hex")`):
+
+- **Straße** (`site/daten/ebenen/strassen.json`): Schlüssel die heutige fünfstellige `schl_nr`
+  (Dickhoff-Konkordanz) oder, wenn nicht heute benannt, `1936:<Schreibung>|<Vorort>`; Felder `id,
+  name, stadtteil` (häufigster) plus alle Zählfelder. Realer Lauf 2026-09-24: 2.040 Straßen-
+  Einheiten, davon 2.016 heutige Straßen und 24 nur-1936er Einheiten (630 KB).
+- **Stadtteil** (`site/daten/ebenen/stadtteile.json`): `id, lat, lon` (Mittel), `rang_nord` (1 =
+  nördlichster; Einheiten ohne Stadtteil bekommen keinen Rang). Adressen ohne Stadtteil werden nicht
+  verworfen, sondern unter `id="ohne_stadtteil"` mitgezählt, damit die Summe der Einheiten stets der
+  Summe der Adressen entspricht (79 KB).
+- **Hexraster** (`site/daten/ebenen/hex.json`): „pointy-top“-Sechsecke, 120 m Kantenlänge, lokale
+  äquirektangulare Projektion um das Essener Zentrum, Zellen-ID `q_r` in Axialkoordinaten
+  (`hex_zelle`, `hex_mitte`, `hex_polygon`); nur Zellen mit mindestens einer Adresse (688 KB).
+
+### Layouts (`pipeline/lib/layout.py`, `site/daten/layout/*.json`)
+
+Deterministische Bubble-Packung (Kreispackung per Spiralsuche, keine Zufallszahl, keine Simulation —
+gleiche Eingabe liefert immer dieselben Koordinaten). Drei Dateien, je ein `dict(kreise=[...],
+gruppen=[...])`:
+
+- `layout/berufe.json` — Kreis je OhdAB-Norm (Fläche ∝ Nennungen), gepackt nach Berufsgruppe
+  (`packe_gruppen`), zusätzlich `niveau_xy` je Kreis aus einem Beeswarm-Layout nach Niveau-Spalte
+  (`NIVEAUS_REIHE = helfer, fachlich, spezialist, hochkomplex, aufsicht, fuehrung, keins, unsicher`).
+  Realer Lauf 2026-09-24: 854 Kreise (154 KB).
+- `layout/eigentuemer.json` — Kreis je identifiziertem Eigentümer (Fläche ∝ Häuser), gepackt nach
+  Kategorie. Realer Lauf: 101 Kreise (11 KB).
+- `layout/gewerbe.json` — Kreis je Gewerberubrik (Fläche ∝ Betriebe), gepackt nach Gruppe. Realer
+  Lauf: 823 Kreise (85 KB).
+
+Kreisfelder: `{id, n, r, x, y, ...}` (`r` aus `radius(n, max_n)`, Fläche proportional zur Menge, nicht
+der Radius). `gruppen`: `[{gruppe, x, y, r}]`, die Packungshülle je Gruppe. `packe_gruppen` packt
+zuerst jede Gruppe für sich, dann die Gruppenkreise, und verschiebt die Mitglieder entsprechend;
+`beeswarm(kreise, spalten)` legt Kreise je Spalte vom Ursprung nach außen ab (erste freie Stelle,
+abwechselnd ±).
+
+### Kachelschichten `strassen`/`hex` und Straßenlinien (OSM)
+
+`adressen.pmtiles` bekommt zwei neue Layer neben `adressen`: `strassen` (Linien, Feature-`id` =
+`int(schl_nr)`) und `hex` (Polygone, `id` = `q_r`) — beide tragen nur `id`/`name`/`stadtteil` in der
+Kachel; die Zählfelder kommen zur Laufzeit aus den `ebenen/*.json`-Dateien per MapLibre
+`feature-state`, damit Nutzergruppen ohne Tile-Neubau eingefärbt werden können. Gezeichnet werden die
+Schichten hier noch nicht (das ist Teilprojekt 5b/5c) — dieser Plan erzeugt nur die Daten.
+
+Straßenlinien kommen aus OpenStreetMap (heutige Führung, nicht die von 1936):
+`python3 werkzeuge/osm_strassen_laden.py [--url …] [--halbieren]` fragt die Overpass API ab
+(OSM-Relation 62713, Stadt Essen; nur benannte Fahrstraßen ohne Fuß-/Rad-/Nebenwege) und schreibt
+`build/osm_strassen.json` (nicht versioniert). Details, Filter, Lizenz und Kennzahlen des letzten
+Abrufs: `docs/osm_strassen.md`. `strassen_features()` verknüpft nur heutige Straßen (fünfstellige
+`schl_nr`) mit einer gefundenen OSM-Linie; Straßen ohne Linie bleiben ungezeichnet, werden aber
+gezählt (`kennzahlen.json` → `strassen_mit_linie`). Realer Lauf 2026-09-24: 1.999 von 2.016 heutigen
+Straßen (99,2 %) haben eine Linie.
+
+### Kennzahlen (`site/daten/kennzahlen.json`)
+
+Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft`,
+`stellung_unbestimmt`, `gruppen_geprueft`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`) und
+`strassen_mit_linie` (Zahl). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
+100.0`, `gruppen_geprueft: 0.0`, `gewerbe_geprueft: 0.0` — die Handprüfung von Stellung, Gruppen und
+Gewerbe hat zu diesem Zeitpunkt noch nicht begonnen (precision first: 0,0 % ist hier der korrekte
+Wert, kein Fehler). Nach der ersten Handprüfungsrunde ändern sich diese Werte mit dem nächsten Lauf
+von `pipeline/06_karte_export.py`.
+
+Ablauf des gesamten Teilprojekts 5a:
+
+```text
+python3 werkzeuge/stellung_vorschlag.py        # Stellung je Schreibweise vorschlagen → berufe.html (Ziffern, T)
+python3 werkzeuge/gruppen_vorschlag.py         # Berufsgruppen je Item → zuordnung.html?tabelle=gruppen
+python3 werkzeuge/gewerbe_vorschlag.py         # Rubriken Teil III → zuordnung.html?tabelle=gewerbe
+python3 werkzeuge/osm_strassen_laden.py        # Straßenlinien (Overpass) → build/osm_strassen.json
+python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Kennzahlen
+```
 
 ## Dokumentation
 
