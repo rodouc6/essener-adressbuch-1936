@@ -25,7 +25,10 @@ AUTOMATIK = "gruppen_vorschlag"
 
 # Reihenfolge = Priorität; geprüft wird Gattung + Norm.
 _REGELN = [
-    ("bergbau", r"berg- und tagebau|bergbau|kokerei|sprengtechnik|grube|zeche|hauer|steiger"),
+    # „hauer“ ohne Wortgrenze zog Bildhauer, Feilenhauer, Steinhauer, Trichinenschauer (über „schauer“) und
+    # Zimmerhauer fälschlich nach bergbau — echte Bergbauberufe tragen ohnehin die Berg-/Tagebau-Gattung
+    # (Review TP5a Task 2). Ausgenommen bleibt „Lehrhauer/in“, der dadurch in eine andere Gruppe fällt.
+    ("bergbau", r"berg- und tagebau|bergbau|kokerei|sprengtechnik|grube|zeche|steiger"),
     ("verkehr_bahn_post", r"eisenbahn|bahn|post|zustell|triebfahrzeug|fahrzeugführ|kraftfahr|straßenbahn|schiff|verkehr|lager|fuhr|kutsch|schaffner|autovermiet"),
     ("verwaltung", r"öffentliche verwaltung|polizei|justiz|recht|steuer|zoll|verwaltungs|sekretär|beamt|\bgericht|feuerwehr|militär|soldat|bürovorsteher|büroangestellt|bürogehilf|bürodiener|büroassistent|kontorist|amtmann|revisor"),
     ("bildung_kultur_kirche", r"lehrkr|lehrer|erzieh|hochschul|wissenschaft|theolog|seelsorg|pfarrer|kirche|kunst|musik|schauspiel|bibliothek|schriftsteller|journalist|redakt|schriftsetz|fotograf|buchbind|schulrektor|klavier"),

@@ -42,6 +42,12 @@ def test_vorschlag_aus_gattung_und_norm():
     assert gruppe_vorschlag(item("Gärtner/in", "Berufe im Gartenbau")) == "haus_reinigung"
     assert gruppe_vorschlag(item("Anlagenkonstrukteur/in", "Berufe in der Konstruktion und im Gerätebau")) == "metall_maschinen"
     assert gruppe_vorschlag(item("Ackerbauer/-bäuerin", "Berufe in der Landwirtschaft")) == "sonstige"
+    # Regression (Review TP5a Task 2): „hauer“ ohne Wortgrenze zog Bildhauer, Feilenhauer, Steinhauer,
+    # Trichinenschauer (über „schauer“) und Zimmerhauer fälschlich nach „bergbau“ — echte Bergbauberufe
+    # tragen ohnehin eine Berg-/Tagebau-Gattung.
+    assert gruppe_vorschlag(item("Bildhauer/in", "Berufe in der Bildhauerei – fachlich ausgerichtete Tätigkeiten")) != "bergbau"
+    assert gruppe_vorschlag(item("Steinhauer/in - allgemein", "Berufe in der Naturstein- und Mineralaufbereitung – fachlich ausgerichtete Tätigkeiten")) != "bergbau"
+    assert gruppe_vorschlag(item("Bergmann/-frau", "Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten")) == "bergbau"
 
 
 def test_export_und_baue():

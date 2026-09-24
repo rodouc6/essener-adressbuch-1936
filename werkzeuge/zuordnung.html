@@ -33,6 +33,7 @@
 <div id="rechts">
   <div id="kopf">
     <h2><span id="anzeige"></span> <small id="menge"></small></h2>
+    <small id="gattung" style="flex-basis:100%;color:#6b7280"></small>
     <span id="felder"></span>
     <button id="geprueft" title="Taste G">Geprüft <kbd>G</kbd></button>
     <button id="rueck" title="Taste Z">Rückgängig <kbd>Z</kbd></button>
@@ -117,9 +118,10 @@ function sperre(text) {
   zeigeBanner(text + " — Seite neu laden; die letzten Änderungen wurden nicht gespeichert.", true);
 }
 
-const [text, belegeText] = await Promise.all([
+const [text, belegeText, ohdabText] = await Promise.all([
   fetch(`../kuratierung/${konfig.datei}`).then((r) => { if (!r.ok) throw new Error(`kuratierung/${konfig.datei} fehlt`); return r.text(); }),
   tabelle === "gruppen" ? fetch("../kuratierung/berufe.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
+  tabelle === "gruppen" ? fetch("../kuratierung/ohdab.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
 ]).catch((e) => { zeigeBanner(e.message); throw e; });
 
 const m = baueModell(csvLesen(text), konfig);
@@ -132,6 +134,16 @@ if (belegeText) {
     if (!oid) continue;
     if (!belegeNachSchluessel.has(oid)) belegeNachSchluessel.set(oid, []);
     belegeNachSchluessel.get(oid).push(b);
+  }
+}
+
+// Gattung je ohdab_id (nur für tabelle=gruppen): zeigt im Kopf, aus welcher OhdAB-Gattung das Item stammt —
+// wörtlich wie in berufe.html (dort `${o.gattung}` im Zuordnungsfeld).
+const gattungNachSchluessel = new Map();
+if (ohdabText) {
+  for (const o of csvLesen(ohdabText)) {
+    const oid = (o.ohdab_id || "").trim();
+    if (oid) gattungNachSchluessel.set(oid, o.gattung || "");
   }
 }
 
@@ -160,8 +172,9 @@ function zeichneAktiv() {
   document.getElementById("kopf").style.visibility = "visible";
   document.getElementById("anzeige").textContent = z.anzeige;
   document.getElementById("menge").textContent = `${z.menge} ${z.menge === 1 ? "Beleg" : "Belege"}`;
+  document.getElementById("gattung").textContent = tabelle === "gruppen" ? (gattungNachSchluessel.get(aktiv) || "") : "";
   document.getElementById("felder").innerHTML = konfig.felder.map((f) =>
-    `<select class="feld" data-feld="${f.name}" title="Ziffern 1–${f.vokabular.length}"><option value="">–</option>` +
+    `<select class="feld" data-feld="${f.name}" title="Ziffern 1–9 (weitere per Auswahl)"><option value="">–</option>` +
     f.vokabular.map((w) => `<option value="${esc(w)}"${w === z[f.name] ? " selected" : ""}>${esc(LABEL[f.name]?.[w] || w)}</option>`).join("") +
     `</select>`).join("");
   document.getElementById("geprueft").setAttribute("aria-pressed", z.geprueft === "ja");

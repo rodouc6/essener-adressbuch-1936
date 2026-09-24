@@ -390,7 +390,7 @@ Perspektiven und Werkstatt (Teilprojekt 5b/5c, noch nicht gebaut). Spec:
 
 ### Berufsgruppen (`kuratierung/gruppen.csv`)
 
-Eine Zeile je OhdAB-Item, das in `berufe.csv` vorkommt (Spalten `ohdab_id, norm, nennungen, gruppe,
+Eine Zeile je OhdAB-Item, das in geprüften Zeilen von `berufe.csv` vorkommt (Spalten `ohdab_id, norm, nennungen, gruppe,
 geprueft, bearbeiter, datum, hinweis`). Vokabular `gruppe` (14 Schlüssel, `pipeline/lib/gruppen.py`,
 `GRUPPEN`): `bergbau, metall_maschinen, bau, holz_moebel, textil_bekleidung, lebensmittel, handel,
 gastgewerbe, verkehr_bahn_post, verwaltung, bildung_kultur_kirche, gesundheit, haus_reinigung,
@@ -399,7 +399,7 @@ Handprüfung: `werkzeuge/zuordnung.html?tabelle=gruppen` (Zifferntasten 1–9 se
 Taste `G` bestätigt `geprueft=ja`, Taste `Z` macht rückgängig). Grenze: der Arbeitgeber steht nicht
 im Beruf — „Schlosser“ zählt gleich, ob bei Krupp oder auf der Zeche; Gruppen sind
 Tätigkeitsbranchen, keine Betriebszugehörigkeit. Realer Lauf 2026-09-24: 856 Items, `sonstige`
-14,84 % (127 Items, unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
+15,2 % (130 Items, unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
 Einheit: `n_gr_<gruppe>`.
 
 ### Gewerberubriken Teil III (`kuratierung/gewerbe.csv`)
