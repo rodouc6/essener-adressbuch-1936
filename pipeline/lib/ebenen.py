@@ -81,7 +81,8 @@ def zaehlfelder(a: dict) -> dict[str, int]:
 
 
 def strassenschluessel(a: dict) -> tuple[str, str]:
-    """Heutige Straße über die fünfstellige schl_nr (Dickhoff); sonst die 1936er Schreibung mit Vorort."""
+    """Heutige Straße über die fünfstellige schl_nr (Dickhoff); sonst die 1936er Schreibung mit Vorort. Liest dazu nur
+    den ersten Eintrag: schl_nr/strasse_roh/Vorort sind je Adresse gleich, weil die Adress-ID daraus gebildet wird."""
     e0 = a["eintraege"][0] if a["eintraege"] else {}
     schl = (e0.get("schl_nr") or "").strip()
     if a.get("strasse_heute") and schl:
@@ -92,7 +93,11 @@ def strassenschluessel(a: dict) -> tuple[str, str]:
 
 def aggregiere(adressen: dict[str, dict], ebene: str) -> list[dict]:
     """Summen der Zählfelder je Einheit; Straße: id = Schlüssel, name, stadtteil (häufigster); Stadtteil: id = Name,
-    lat/lon (Mittel), rang_nord (1 = nördlichster); Hex: id, lat/lon der Zellmitte. Sortiert nach id."""
+    lat/lon (Mittel), rang_nord (1 = nördlichster); Hex: id, lat/lon der Zellmitte. Sortiert nach id.
+
+    Stadtteil-Ebene: Adressen ohne Stadtteil werden nicht verworfen, sondern unter der Einheit id="ohne_stadtteil"
+    mitgezählt (lat/lon-Mittel wie sonst), damit die Summe der Einheiten stets der Summe der Adressen entspricht.
+    Diese Einheit bekommt kein rang_nord, sodass Nord-Süd-Reihungen sie ignorieren können."""
     if ebene not in EBENEN:
         raise ValueError(f"unbekannte Ebene {ebene!r}")
     einheiten: dict[str, dict] = {}
@@ -102,9 +107,7 @@ def aggregiere(adressen: dict[str, dict], ebene: str) -> list[dict]:
             u = einheiten.setdefault(k, dict(id=k, name=name, _st=defaultdict(int), adressen=0, _lat=0.0, _lon=0.0))
             u["_st"][a.get("stadtteil", "")] += 1
         elif ebene == "stadtteil":
-            k = a.get("stadtteil", "")
-            if not k:
-                continue
+            k = a.get("stadtteil") or "ohne_stadtteil"
             u = einheiten.setdefault(k, dict(id=k, adressen=0, _lat=0.0, _lon=0.0))
         else:
             q, r = hex_zelle(a["lat"], a["lon"])
@@ -128,6 +131,7 @@ def aggregiere(adressen: dict[str, dict], ebene: str) -> list[dict]:
         out.append(u)
     out.sort(key=lambda u: u["id"])
     if ebene == "stadtteil":
-        for i, u in enumerate(sorted(out, key=lambda u: -u["lat"]), 1):
+        einreihbar = [u for u in out if u["id"] != "ohne_stadtteil"]
+        for i, u in enumerate(sorted(einreihbar, key=lambda u: -u["lat"]), 1):
             u["rang_nord"] = i
     return out

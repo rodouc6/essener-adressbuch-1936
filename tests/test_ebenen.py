@@ -53,3 +53,16 @@ def test_zaehlfelder_und_aggregation():
     hx = aggregiere(adressen, "hex")
     assert sum(h["adressen"] for h in hx) == 3 and all(h["id"] == hex_id(*hex_zelle(h["lat"], h["lon"])) for h in hx)
     assert strassenschluessel(_adresse(9, 51.4, 7.0, strasse="", schl="", eintraege=[("I", None, None)])) == ("1936:Grenzstr.|Katernberg", "Grenzstr. (1936)")
+
+
+def test_stadtteil_aggregation_verwirft_keine_adresse_ohne_stadtteil():
+    b2 = dict(niveau="unsicher", stellung="unbestimmt", gruppe="ungeprueft")
+    a1 = _adresse(1, 51.45, 7.01, eintraege=[("I", b2, None)])
+    a2 = _adresse(2, 51.40, 7.10, strasse="Heckstraße", schl="01226", stadtteil="Werden", eintraege=[("I", b2, None)])
+    a3 = _adresse(3, 51.42, 7.05, stadtteil="", eintraege=[("I", b2, None)])
+    adressen = {a["id"]: a for a in (a1, a2, a3)}
+    sd = aggregiere(adressen, "stadtteil")
+    assert sum(s["adressen"] for s in sd) == len(adressen)
+    ohne = next(s for s in sd if s["id"] == "ohne_stadtteil")
+    assert ohne["adressen"] == 1 and "rang_nord" not in ohne
+    assert all("rang_nord" in s for s in sd if s["id"] != "ohne_stadtteil")
