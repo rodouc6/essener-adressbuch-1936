@@ -33,7 +33,7 @@
     <label><input type="checkbox" id="nur-ohne"> nur ohne Vorschlag</label>
     <label><input type="checkbox" id="nur-niveau"> Niveau entscheiden</label>
     <label><input type="checkbox" id="nur-claude"> Vorschlag von Claude</label>
-    <label><input type="checkbox" id="nur-stellung"> Stellung offen</label>
+    <label><input type="checkbox" id="nur-stellung" title="Nur geprüfte Berufe ohne geprüfte Stellung — eine Stellung wird ohnehin nur für geprüfte Berufe exportiert (stellung_export)"> Stellung offen</label>
     <div id="fortschritt" style="flex-basis:100%;color:#6b7280"></div>
   </div>
   <div id="liste"></div>
@@ -148,7 +148,7 @@ function digibibUrl(seite) {
 const m = baueModell(csvLesen(kText), csvLesen(oText), kandidaten);
 let aktiv = null;   // Schreibweise der aktiven Zeile
 
-document.getElementById("stellung").innerHTML = STELLUNGEN.map((s) => `<option value="${s}">${esc(STELLUNG_TEXT[s])}</option>`).join("");
+document.getElementById("stellung").innerHTML = `<option value="">–</option>` + STELLUNGEN.map((s) => `<option value="${s}">${esc(STELLUNG_TEXT[s])}</option>`).join("");
 
 // gefiltert(l): status-Radio, nur-ohne (ohne ohdab_id), nur-niveau (niveauEntscheiden), nur-claude (Handvorschläge
 // mit bearbeiter=claude, Stand beim Laden), Textfilter auf schreibweise/beruf.
@@ -159,8 +159,11 @@ function gefiltert(l) {
   const nurClaude = document.getElementById("nur-claude").checked;
   const nurStellung = document.getElementById("nur-stellung").checked;
   const q = document.getElementById("filter").value.trim().toLowerCase();
+  // „Stellung offen“ zeigt nur geprüfte Berufe ohne geprüfte Stellung — eine Stellung wird ohnehin nur
+  // für geprueft="ja"-Zeilen exportiert (stellung_export), ungeprüfte Berufe gehören nicht in diesen Filter
+  // (Review TP5a: sonst sperrt schon ein Zifferndruck die Berufszuordnung über bearbeiter=christos).
   return l.filter((z) => (status === "alle" || (status === "geprueft") === (z.geprueft === "ja")) && (!nurOhne || !z.ohdab_id)
-    && (!nurNiveau || z.niveauEntscheiden) && (!nurClaude || z.bearbeiter === "claude") && (!nurStellung || z.stellung_geprueft !== "ja")
+    && (!nurNiveau || z.niveauEntscheiden) && (!nurClaude || z.bearbeiter === "claude") && (!nurStellung || (z.geprueft === "ja" && z.stellung_geprueft !== "ja"))
     && (!q || z.schreibweise.toLowerCase().includes(q) || z.beruf.toLowerCase().includes(q)));
 }
 
@@ -201,8 +204,17 @@ function zeichneAktiv() {
   const geprBtn = document.getElementById("geprueft");
   geprBtn.disabled = !z.ohdab_id;
   geprBtn.title = geprBtn.disabled ? "Erst eine OhdAB-Zuordnung wählen" : "Taste G";
-  document.getElementById("stellung").value = z.stellung || "unbestimmt";
+  document.getElementById("stellung").value = z.stellung;
   document.getElementById("stellung-geprueft").setAttribute("aria-pressed", z.stellung_geprueft === "ja");
+  // Stellung erst entscheidbar, wenn der Beruf selbst geprüft ist — Ziffern/T dürfen auf ungeprüften Zeilen
+  // nichts auslösen, sonst posted schon ein Zifferndruck die Zeile mit bearbeiter=christos und sperrt sie
+  // (serve.py::_berufe) für den eigentlich noch offenen Beruf (Review TP5a).
+  const stellungBtn = document.getElementById("stellung-geprueft");
+  const stellungSel = document.getElementById("stellung");
+  stellungSel.disabled = z.geprueft !== "ja";
+  stellungSel.title = stellungSel.disabled ? "Erst den Beruf selbst prüfen (Taste G)" : "Ziffern 1–9";
+  stellungBtn.disabled = z.geprueft !== "ja";
+  stellungBtn.title = stellungBtn.disabled ? "Erst den Beruf selbst prüfen (Taste G)" : "Taste T";
   document.getElementById("hinweis").value = z.hinweis;
   const kv = katalogVorschlag(m, aktiv);
   document.getElementById("katalog").hidden = !kv;
@@ -299,11 +311,11 @@ document.addEventListener("keydown", (ev) => {
   } else if (k === "g" && !document.getElementById("geprueft").disabled) document.getElementById("geprueft").click();
   else if (k === "n") document.getElementById("niveau").click();
   else if (k === "s") document.getElementById("status").click();
-  else if (k === "t") document.getElementById("stellung-geprueft").click();
+  else if (k === "t" && !document.getElementById("stellung-geprueft").disabled) document.getElementById("stellung-geprueft").click();
   else if (k === "z") document.getElementById("rueck").click();
   else if (ev.key === "ArrowDown") { ev.preventDefault(); naechsteZeile(1); }
   else if (ev.key === "ArrowUp") { ev.preventDefault(); naechsteZeile(-1); }
-  else if (/^[1-9]$/.test(ev.key)) {
+  else if (/^[1-9]$/.test(ev.key) && !document.getElementById("stellung").disabled) {
     const nurStellung = document.getElementById("nur-stellung").checked;
     const vorher = gefiltert(liste(m));
     speichere(setzeStellung(m, aktiv, STELLUNGEN[Number(ev.key) - 1]));
