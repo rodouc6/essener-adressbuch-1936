@@ -399,7 +399,7 @@ Handprüfung: `werkzeuge/zuordnung.html?tabelle=gruppen` (Zifferntasten 1–9 se
 Taste `G` bestätigt `geprueft=ja`, Taste `Z` macht rückgängig). Grenze: der Arbeitgeber steht nicht
 im Beruf — „Schlosser“ zählt gleich, ob bei Krupp oder auf der Zeche; Gruppen sind
 Tätigkeitsbranchen, keine Betriebszugehörigkeit. Realer Lauf 2026-09-24: 856 Items, `sonstige`
-14,95 % (unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
+14,84 % (127 Items, unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
 Einheit: `n_gr_<gruppe>`.
 
 ### Gewerberubriken Teil III (`kuratierung/gewerbe.csv`)
@@ -431,7 +431,7 @@ verwerfen. `aggregiere(adressen, ebene)` summiert diese Felder auf drei Ebenen
 - **Straße** (`site/daten/ebenen/strassen.json`): Schlüssel die heutige fünfstellige `schl_nr`
   (Dickhoff-Konkordanz) oder, wenn nicht heute benannt, `1936:<Schreibung>|<Vorort>`; Felder `id,
   name, stadtteil` (häufigster) plus alle Zählfelder. Realer Lauf 2026-09-24: 2.040 Straßen-
-  Einheiten, davon 2.016 heutige Straßen und 24 nur-1936er Einheiten (630 KB).
+  Einheiten, davon 2.016 heutige Straßen und 24 nur-1936er Einheiten (616 KB).
 - **Stadtteil** (`site/daten/ebenen/stadtteile.json`): `id, lat, lon` (Mittel), `rang_nord` (1 =
   nördlichster; Einheiten ohne Stadtteil bekommen keinen Rang). Adressen ohne Stadtteil werden nicht
   verworfen, sondern unter `id="ohne_stadtteil"` mitgezählt, damit die Summe der Einheiten stets der
@@ -448,7 +448,8 @@ gruppen=[...])`:
 
 - `layout/berufe.json` — Kreis je OhdAB-Norm (Fläche ∝ Nennungen), gepackt nach Berufsgruppe
   (`packe_gruppen`), zusätzlich `niveau_xy` je Kreis aus einem Beeswarm-Layout nach Niveau-Spalte
-  (`NIVEAUS_REIHE = helfer, fachlich, spezialist, hochkomplex, aufsicht, fuehrung, keins, unsicher`).
+  (Beeswarm-Spalten = `NIVEAUS_REIHE` (7 Werte: `helfer, fachlich, spezialist, hochkomplex,
+  aufsicht, fuehrung, keins`) `+ ["unsicher"]`).
   Realer Lauf 2026-09-24: 854 Kreise (154 KB).
 - `layout/eigentuemer.json` — Kreis je identifiziertem Eigentümer (Fläche ∝ Häuser), gepackt nach
   Kategorie. Realer Lauf: 101 Kreise (11 KB).
