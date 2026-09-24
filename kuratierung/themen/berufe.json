@@ -2,8 +2,8 @@
   "id": "berufe",
   "titel": "Berufe",
   "text": "Häuser nach dem Anforderungsniveau der Berufe ihrer Bewohner (Teil I) laut OhdAB. Farbig nur Adressen, deren Berufsangaben von Hand einem OhdAB-Eintrag zugeordnet wurden; Mehrheitsniveau je Haus, sonst „gemischt“; alle anderen grau.",
-  "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB, Moeller/Uni Halle, FactGrid, CC BY 4.0), Stand: in Arbeit",
-  "freigegeben": false,
+  "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB, Moeller/Uni Halle, FactGrid, CC BY 4.0), Stand 2026-09-24: 1.537 Schreibweisen geprüft (97,8 % der Nennungen)",
+  "freigegeben": true,
   "filter": {"ebenen": ["I"]},
   "farbe": {"art": "kategorien", "feld": "niveau", "werte": {
     "helfer": "#fde68a", "fachlich": "#f59e0b", "spezialist": "#dc2626", "hochkomplex": "#7f1d1d",
