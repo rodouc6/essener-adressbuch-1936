@@ -471,7 +471,7 @@ def test_gruppen_gewerbe_zaehlfelder_ebenen_layouts(tmp_path):
     p1 = punkt_feature(haus1)["properties"]
     assert p1["n_st_arbeiter"] == 1 and p1["n_st_unbestimmt"] == 2 and p1["n_gr_bergbau"] == 1 and p1["n_gr_ungeprueft"] == 2   # … aber gezählt als unbestimmt
     assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_ungeprueft"] == 1 and p1["n_bs_ungeprueft"] == 1
-    lay = baue_layouts(a, gr, gw)
+    lay = baue_layouts(a)
     assert [x["id"] for x in lay["berufe"]["kreise"]] == ["B 21112-100", "B 84124-120"]
     bm = lay["berufe"]["kreise"][0]
     assert bm["norm"] == "Bergmann" and bm["n"] == 2 and bm["niveau"] == "fachlich" and bm["stellung"] == "arbeiter" and bm["gruppe"] == "bergbau"

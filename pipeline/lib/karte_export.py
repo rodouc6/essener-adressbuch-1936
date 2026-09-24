@@ -375,7 +375,7 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"]["gruppe"] != "ungeprueft"), len(teil_iii)))
 
 
-def baue_layouts(adressen: dict[str, dict], gruppen: dict[str, dict], gewerbe: dict[str, dict]) -> dict[str, dict]:
+def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
     """Vorberechnete Bubble-Layouts (Spec §5.4): Berufsnormen (Gruppenpackung nach Berufsgruppe + Beeswarm nach Niveau),
     identifizierte Eigentümer (Packung nach Klasse), Gewerberubriken (Packung nach Gruppe). Stellung und Gruppe je Norm =
     Mehrheit über die Einträge (Nennungen), damit ein Item nur eine Farbe trägt; „unbestimmt“ zählt mit."""
@@ -568,7 +568,7 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     _EBENEN_DATEI = {"strasse": "strassen", "stadtteil": "stadtteile", "hex": "hex"}
     for ebene in EBENEN:
         _json(ausgabe / "ebenen" / f"{_EBENEN_DATEI[ebene]}.json", aggregiere(adressen, ebene))
-    for name, inhalt in baue_layouts(adressen, lade_gruppen(gruppen or []), lade_gewerbe(gewerbe or [])).items():
+    for name, inhalt in baue_layouts(adressen).items():
         _json(ausgabe / "layout" / f"{name}.json", inhalt)
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
     kennzahlen["strassen_mit_linie"] = len(sf)
