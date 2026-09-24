@@ -45,8 +45,37 @@ def test_regeln_in_reihenfolge():
     assert stellung_vorschlag(zeile("Xyz"), None, REGELN) == ("unbestimmt", "")
 
 
+def test_regeln_ohne_gattung_fehltreffer():
+    """Die OhdAB-Gattung darf keine Fehltreffer aus Wortbestandteilen auslösen (Review zu TP5a Task 1)."""
+    # „Obersteiger“ enthält „oberst“ als Präfix — kein Offizier, sondern Aufsichtskraft im Bergbau wie alle Steiger.
+    assert stellung_vorschlag(zeile("Ob. Steiger"), item("Obersteiger/in", "spezialist", "Berufe im Berg- und Tagebau – komplexe Spezialistentätigkeiten"), REGELN) == ("angestellte", "angestellte")
+    # „Unteroffiziere“ (Gattung) enthält „offizier“ als Bestandteil — kein Anlass für „beamte“.
+    assert stellung_vorschlag(zeile("Rottenführ."), item("Rottenführer/in", "spezialist", "Unteroffiziere ohne Portepee vor 1945"), REGELN)[0] != "beamte"
+    # „Sportlehrer“ (Gattung) enthält „lehrer“ als Bestandteil — ein Trainer ist kein Lehrer/Beamter.
+    assert stellung_vorschlag(zeile("Trainer"), item("Trainer/in - allgemein", "spezialist", "Sportlehrer/innen (ohne Spezialisierung) – komplexe Spezialistentätigkeiten"), REGELN)[0] != "beamte"
+    # „Oberstudiendirektor“ und „Katasterdirektor“ sind Beamte der Schul-/Verwaltungsleitung, keine Unternehmer.
+    assert stellung_vorschlag(zeile("Ob. Studiendirekt."), item("Oberstudiendirektor/in", "fuehrung", "Führungskräfte – Allgemeinbildende Schulen"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Katasterdirekt."), item("Katasterdirektor/in", "fuehrung", "Führungskräfte – Verwaltung"), REGELN) == ("beamte", "beamte")
+    # Echte Unternehmer-Direktoren bleiben unternehmer.
+    assert stellung_vorschlag(zeile("Bankdirektor"), item("Bankdirektor/in", "fuehrung", "Führungskräfte – Versicherungs- und Finanzdienstleistungen"), REGELN) == ("unternehmer", "unternehmer")
+    # „lehrer“/„offizier“ zählen nur im eigenen Titel (Norm), nicht in der Gattung — echte Lehrer-Komposita bleiben beamte.
+    assert stellung_vorschlag(zeile("Hauptlehr.", beruf="Hauptlehrer"), item("Hauptlehrer/in", "hochkomplex", "Lehrkräfte an allgemeinbildenden Schulen"), REGELN) == ("beamte", "beamte")
+
+
 def test_export_nur_doppelt_geprueft():
     assert stellung_export(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="ja")) == "arbeiter"
     assert stellung_export(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="")) == "unbestimmt"
     assert stellung_export(dict(geprueft="", stellung="arbeiter", stellung_geprueft="ja")) == "unbestimmt"
     assert stellung_export(dict(geprueft="ja", stellung="", stellung_geprueft="ja")) == "unbestimmt"
+
+
+def test_ergaenze_stellung_fuellt_nur_ungeprueft():
+    from werkzeuge.stellung_vorschlag import ergaenze_stellung
+    ohdab = {"B 21112-100": item("Bergmann/-frau"), "B 84124-120": item("Lehrer/in", "hochkomplex", "Lehrkräfte")}
+    zeilen = [dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", geprueft="ja", stellung="", stellung_geprueft=""),
+              dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", geprueft="ja", stellung="freie_berufe", stellung_geprueft="ja"),
+              dict(schreibweise="Kfm", beruf="Kfm", status="", ohdab_id="", geprueft="", stellung="", stellung_geprueft="")]
+    neu, kenn = ergaenze_stellung(zeilen, ohdab, REGELN)
+    assert [z["stellung"] for z in neu] == ["arbeiter", "freie_berufe", "unbestimmt"]
+    assert [z["stellung_geprueft"] for z in neu] == ["", "ja", ""]
+    assert kenn == {"niveau fachlich": 1, "ohne": 1, "geprueft": 1}

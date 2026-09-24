@@ -87,9 +87,16 @@ def test_zuordnung_nur_geprueft(ohdab_pfad):
                           dict(schreibweise="Kfm.", beruf="Kaufmann", status="", ohdab_id="", niveau_unsicher="", geprueft=""),
                           dict(schreibweise="Arbeiter", beruf="Arbeiter", status="", ohdab_id="B 20002-500", niveau_unsicher="ja", geprueft="ja"),
                           dict(schreibweise="Kaputt", beruf="x", status="", ohdab_id="Q 0", niveau_unsicher="", geprueft="ja")])
-    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", status="ruhestand", norm="Bergmann")
+    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", gattung_id="B 21112", status="ruhestand", norm="Bergmann", stellung="unbestimmt")
     assert zuordnung({"Beruf o. ä.": "Kfm."}, k, o) is None
     assert zuordnung({"Beruf o. ä.": "Arbeiter"}, k, o)["niveau"] == "unsicher"
     assert zuordnung({"Beruf o. ä.": ""}, k, o) is None
     with pytest.raises(ValueError, match="Kaputt"):
         zuordnung({"Beruf o. ä.": "Kaputt"}, k, o)
+    from pipeline.lib.berufe import FELDER_KURATIERUNG
+    assert FELDER_KURATIERUNG[-2:] == ["stellung", "stellung_geprueft"]
+    k2 = lade_kuratierung([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja", stellung="arbeiter", stellung_geprueft="ja"),
+                           dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", niveau_unsicher="", geprueft="ja", stellung="beamte", stellung_geprueft="")])
+    z = zuordnung({"Beruf o. ä.": "Bergm."}, k2, o)
+    assert z["stellung"] == "arbeiter" and z["gattung_id"] == "B 21112"
+    assert zuordnung({"Beruf o. ä.": "Lehrer"}, k2, o)["stellung"] == "unbestimmt"

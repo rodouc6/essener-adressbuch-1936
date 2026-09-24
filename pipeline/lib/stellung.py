@@ -36,11 +36,16 @@ _HANDWERK_GEFALTET = tuple(falte_form(h) for h in _HANDWERK)
 _MEISTER = re.compile(r"(meister(in)?|mstr\.?)$", re.I)
 _FREIE = re.compile(r"arzt|ärzt|zahnarzt|dentist|tierarzt|apotheker|rechtsanwalt|anwalt|notar|architekt|patentanwalt|"
                     r"wirtschaftsprüfer|steuerberater|bücherrevisor|schriftsteller|künstler|kunstmaler|bildhauer/in$", re.I)
-_UNTERNEHMER = re.compile(r"fabrikant|fabrikbesitzer|direktor|generaldirektor|vorstand|geschäftsführer|inhaber|unternehmer|"
-                          r"prokurist|bergwerksbesitzer|gutsbesitzer|hausbesitzer|rentier", re.I)
-_BEAMTE = re.compile(r"beamt|sekretär|inspektor|assistent|amtmann|\brat\b|rätin|lehrer|schaffner|zugführer|lokomotivführer|"
+_UNTERNEHMER = re.compile(r"fabrikant|fabrikbesitzer|(?<!studien)(?<!kataster)direktor|generaldirektor|vorstand|geschäftsführer|"
+                          r"inhaber|unternehmer|prokurist|bergwerksbesitzer|gutsbesitzer|hausbesitzer|rentier", re.I)
+# „oberst“ nur als eigenes Wort (nicht als Präfix in „Obersteiger“) — sonst Fehltreffer aus dem OhdAB-Gattungstext.
+_BEAMTE = re.compile(r"beamt|sekretär|inspektor|assistent|amtmann|\brat\b|rätin|schaffner|zugführer|lokomotivführer|"
                      r"briefträger|postbote|polizei|schutzmann|wachtmeister|zoll|richter|pfarrer|pastor|geistlich|"
-                     r"oberst|major|hauptmann|offizier|förster|gerichtsvollzieher|\(.*dienst\)", re.I)
+                     r"\boberst\b|major|hauptmann|förster|gerichtsvollzieher|studiendirektor|katasterdirektor|"
+                     r"\(.*dienst\)", re.I)
+# „lehrer“/„offizier“ nur im eigenen Titel (Norm/Beruf), nicht in der OhdAB-Gattung — sonst Fehltreffer wie
+# „Trainer“ über die Gattung „Sportlehrer/innen“ oder „Rottenführer“ über „Unteroffiziere ohne Portepee“.
+_BEAMTE_TITEL = re.compile(r"lehrer|offizier", re.I)
 _ANGESTELLTE = re.compile(r"angestellt|buchhalter|kontorist|techniker|ingenieur|steiger|zeichner|verkäufer|handlungsgehilf|"
                           r"kassierer|vertreter|reisender|bürogehilf|stenotypist|laborant|chemiker|betriebsführer|"
                           r"abteilungsleiter|filialleiter|disponent|expedient|magazinverwalter|werkführer|obersteiger", re.I)
@@ -56,6 +61,12 @@ def _norm(item: dict | None) -> str:
 def _text(zeile: dict, item: dict | None) -> str:
     """Prüftext = Normbezeichnung + Gattung + aufgelöster Beruf (Schreibweise selbst nur für Meister/Titel)."""
     return " | ".join(x for x in (_norm(item), (item or {}).get("gattung", ""), zeile.get("beruf", "")) if x)
+
+
+def _titel(zeile: dict, item: dict | None) -> str:
+    """Prüftext ohne Gattung: nur Normbezeichnung und aufgelöster Beruf — für Merkmale, die in der OhdAB-Gattung
+    nur zufällig als Wortbestandteil vorkommen können (Spec-Review TP5a: „Trainer“ über „Sportlehrer“-Gattung)."""
+    return " | ".join(x for x in (_norm(item), zeile.get("beruf", "")) if x)
 
 
 def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> tuple[str, str]:
@@ -80,9 +91,9 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
         return "unternehmer", "unternehmer"
     if falte_form(_norm(item)) == "kaufmann frau" and not re.search(r"angest|beamt", text, re.I):
         return "kaufleute", "kaufmann"
-    if _ANGESTELLTE.search(text) and not _BEAMTE.search(_norm(item)):
+    if _ANGESTELLTE.search(text) and not (_BEAMTE.search(_norm(item)) or _BEAMTE_TITEL.search(_norm(item))):
         return "angestellte", "angestellte"
-    if _BEAMTE.search(text):
+    if _BEAMTE.search(text) or _BEAMTE_TITEL.search(_titel(zeile, item)):
         return "beamte", "beamte"
     if _SELBSTAENDIGE.search(_norm(item)):
         return "selbstaendige", "selbstaendig"
