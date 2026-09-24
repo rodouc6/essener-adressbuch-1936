@@ -149,11 +149,14 @@ Klassen (Schlüssel, Anzeigetext):
 | `unbestimmt` | unbestimmt | alles, was keine Regel trifft |
 
 Regeln: Vorschlag deterministisch aus Item, Gattung, Niveau, Status, Titel; jede Regel steht
-mit Beispielen in `docs/stellung.md`. Handprüfung im Berufe-Werkzeug (neue Spalte, Filter
-„Stellung offen“, Schnelltasten je Klasse). Die Spalte gilt als geprüft, wenn `geprueft=ja`
-gesetzt ist **und** `stellung` nicht leer ist; eine leere `stellung` bei geprüfter Zeile ist
-`unbestimmt`. Die Automatik überschreibt `stellung` nur, wenn die Zeile ungesperrt ist
-(bestehende Sperrregel). Zählfeld je Klasse: `n_st_<klasse>`.
+mit Beispielen in `docs/stellung.md`. Zwei neue Spalten in `berufe.csv`: `stellung` (Vorschlag
+oder Entscheidung) und `stellung_geprueft` (`ja` | leer). Die Automatik
+(`werkzeuge/stellung_vorschlag.py`) füllt `stellung` überall dort, wo `stellung_geprueft` leer
+ist — auch bei Zeilen, die für die Berufszuordnung gesperrt sind, denn die Stellung ist eine
+neue, noch nicht entschiedene Frage; `stellung_geprueft=ja` setzt nur der Mensch. Handprüfung
+im Berufe-Werkzeug (Auswahl je Klasse mit Zifferntasten, Filter „Stellung offen“). In den
+Export geht eine Stellung nur mit `geprueft=ja` **und** `stellung_geprueft=ja`; alles andere
+zählt als `unbestimmt`. Zählfeld je Klasse: `n_st_<klasse>`.
 
 Grenzfälle, die die Doku benennt: Steiger (Angestellte, obwohl OhdAB Aufsicht), Meister im
 Betrieb vs. selbständiger Meister (Schreibweise entscheidet: „Bäckermstr.“ → selbständig,
