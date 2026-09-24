@@ -38,6 +38,15 @@ def test_falte_form_und_formen():
     assert "technischer kaufmann fachrichtung holz" in formen_von(z)
     assert "technische kaufmann holz" in formen_von(z)   # norm ohne Geschlechtszusätze und ohne „ - “
     assert formen_von(dict(norm="Lehrer/in", maennlich="", weiblich="")) == ["lehrer"]
+    # Klammerzusatz und Alternativen: zusätzliche Formen ohne Zusatz, „(er)“ aus „Beamt(er/in)“ bleibt
+    assert formen_von(dict(norm="Bankbeamt(er/in) (mittl. Dienst)")) == ["bankbeamter mittl dienst", "bankbeamter"]
+    assert formen_von(dict(norm="Wächter/in, Aufseher/in")) == ["waechter aufseher", "waechter", "aufseher"]
+    assert formen_von(dict(norm="Rektor/in / Präsident/in")) == ["rektor praesident", "rektor", "praesident"]
+    assert formen_von(dict(norm="Handlanger/in(Bauhilfsarbeiter/in)")) == ["handlanger bauhilfsarbeiter", "handlanger"]
+    assert formen_von(dict(norm="Handlungsgehilfe/-gehilfin (Einzelhandel)", maennlich="Handlungsgehilfe (Einzelhandel)"))[-1] == "handlungsgehilfe"
+    assert formen_von(dict(norm="Lehrer/in, akadem.")) == ["lehrer akadem"]                       # Zusatz, keine Alternative
+    assert formen_von(dict(norm="Sänger/in - Volkstümlich, Volksmusiker/in")) == ["saenger volkstuemlich volksmusiker"]
+    assert formen_von(dict(norm="Putzer/in - Gussputz")) == ["putzer gussputz"]                  # „ - “-Zusatz bleibt Teil der Form
 
 
 def test_lade_ohdab(ohdab_pfad, tmp_path):
@@ -55,7 +64,7 @@ def test_kuratierung_und_sperre():
     assert not gesperrt(dict(geprueft="", bearbeiter=AUTOMATIK))
     assert gesperrt(dict(geprueft="ja", bearbeiter=AUTOMATIK))
     assert gesperrt(dict(geprueft="", bearbeiter="christos"))
-    assert STATUS == ("ruhestand", "invalide", "witwe")
+    assert STATUS == ("ruhestand", "invalide", "witwe", "gewerbe")
 
 
 def test_ohdab_zeilen_aus():

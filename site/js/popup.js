@@ -2,7 +2,7 @@ import { EBENEN, PRAEZISION, DIGIBIB_WERK } from "./konfig.js";
 import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
 
 // Statustexte der Berufsangabe (mehrere, durch ";" getrennt, einzeln übersetzt und mit ", " verbunden).
-const STATUS_TEXT = { ruhestand: "Ruhestand", invalide: "Invalide", witwe: "Witwe" };
+const STATUS_TEXT = { ruhestand: "Ruhestand", invalide: "Invalide", witwe: "Witwe", gewerbe: "Gewerbebetrieb" };
 function statusText(status) {
   return status.split(";").map((s) => STATUS_TEXT[s] || s).join(", ");
 }

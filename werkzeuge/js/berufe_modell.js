@@ -1,7 +1,7 @@
 // werkzeuge/js/berufe_modell.js — Zustand des Berufs-Werkzeugs (Spec §5): eine Zeile je Schreibweise; Aktionen liefern
 // die geänderten Zeilen zum Speichern. Ohne DOM, damit node:test es prüfen kann.
 const CSV_FELDER = ["schreibweise", "beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis"];
-export const STATUS = ["", "ruhestand", "invalide", "witwe"];
+export const STATUS = ["", "ruhestand", "invalide", "witwe", "gewerbe"];
 const VERLAUF_MAX = 30;
 const UMLAUTE = { "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" };
 
@@ -15,11 +15,24 @@ export function falte(t) {
 const WORTZEICHEN = "A-Za-z0-9_äöüÄÖÜß";
 const GESCHLECHT = new RegExp(`/-?(innen|in|frau|r|e)(?![${WORTZEICHEN}])`, "g");
 
-// Formen wie pipeline/lib/berufe.formen_von: männlich, weiblich, Norm ohne Geschlechts- und „ - “-Zusatz.
+// Klammerzusätze ab drei Zeichen und Alternativen einer Mehrfachnorm („, “ oder „ / “), wie in Python.
+const KLAMMER = /\s*\((?=[^)]{3,})[^)]*\)/g;
+const KLAMMER_GESCHLECHT = /\((er|e)\/in\)/g;   // „Beamt(er/in)“ → „Beamter“
+const ALTERNATIVE = /,\s+|\s+\/\s+/;
+
+// Formen wie pipeline/lib/berufe.formen_von: männlich, weiblich, Norm ohne Geschlechts- und „ - “-Zusatz,
+// dazu die Norm ohne Klammerzusatz und jede Alternative einer Mehrfachnorm.
 function formenVon(o) {
-  const norm = (o.norm || "").replace(GESCHLECHT, "").replace(/\s+-\s+/g, " ");
+  const basis = (o.norm || "").replace(KLAMMER_GESCHLECHT, "$1").replace(GESCHLECHT, "");
+  const norm = basis.replace(/\s+-\s+/g, " ");
+  const extra = [norm, o.maennlich || "", o.weiblich || ""].map((f) => f.replace(KLAMMER, ""));
+  // Alternativen nur ohne „ - “-Zusatz und wenn jeder Teil großgeschrieben beginnt (wie Python).
+  const teile = extra[0].split(ALTERNATIVE);
+  if (teile.length > 1 && !/\s-\s/.test(basis) && teile.every((t) => /^[A-ZÄÖÜ]/.test(t))) extra.push(...teile);
   const out = [];
-  for (const f of [o.maennlich, o.weiblich, norm]) { const k = falte(f); if (k && !out.includes(k)) out.push(k); }
+  for (const f of [o.maennlich, o.weiblich, norm, ...extra]) {
+    const k = falte(f); if (k && !out.includes(k)) out.push(k);
+  }
   return out;
 }
 

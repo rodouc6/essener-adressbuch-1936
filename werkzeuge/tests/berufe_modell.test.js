@@ -48,6 +48,7 @@ test("Kandidat übernehmen, Status durchschalten, Niveau unsicher, Undo", () => 
   assert.equal(schalteStatus(m, "Arbeiter")[0].status, "ruhestand");
   assert.equal(schalteStatus(m, "Arbeiter")[0].status, "invalide");
   assert.equal(schalteStatus(m, "Arbeiter")[0].status, "witwe");
+  assert.equal(schalteStatus(m, "Arbeiter")[0].status, "gewerbe");
   assert.equal(schalteStatus(m, "Arbeiter")[0].status, "");
   assert.equal(setzeNiveauUnsicher(m, "Arbeiter", true)[0].niveau_unsicher, "ja");
   assert.deepEqual(setzeNiveauUnsicher(m, "Arbeiter", true), []);
@@ -78,4 +79,15 @@ test("katalogVorschlag: Status-Wort wie „Pensionär“ wird aus kurz entfernt 
   const m = baueModell([...K, kZeile], O, KAND);
   setzeBeruf(m, "Bergm. Pensionär", "pensionierter Bergmann");
   assert.equal(katalogVorschlag(m, "Bergm. Pensionär").kurz, "Bergm.");
+});
+
+test("formenVon: Klammerzusatz und Mehrfachnorm liefern zusätzliche Formen (wie Python)", () => {
+  const m = baueModell([], [
+    { ohdab_id: "B 1", norm: "Bankbeamt(er/in) (mittl. Dienst)", maennlich: "", weiblich: "" },
+    { ohdab_id: "B 2", norm: "Wächter/in, Aufseher/in", maennlich: "", weiblich: "" },
+    { ohdab_id: "B 3", norm: "Rektor/in / Präsident/in", maennlich: "", weiblich: "" },
+  ]);
+  assert.deepEqual(sucheOhdab(m, "Bankbeamter").map((t) => t.ohdab_id), ["B 1"]);
+  assert.deepEqual(sucheOhdab(m, "Aufseher").map((t) => t.ohdab_id), ["B 2"]);
+  assert.deepEqual(sucheOhdab(m, "Präsident").map((t) => t.ohdab_id), ["B 3"]);
 });

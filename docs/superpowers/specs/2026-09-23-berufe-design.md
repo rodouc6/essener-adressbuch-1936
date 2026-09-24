@@ -83,6 +83,7 @@ schreibt sie in `status` (Vokabular, mehrere durch `;`):
 | `ruhestand` | `i\. ?R\.`, `a\. ?D\.`, `Pens\.`, `Pensionär(in)?`, `Rentner(in)?`, `Ruhest\.` | „Bergm. i. R.“, „Lehrer a. D.“ |
 | `invalide` | `Inval\.`, `Invalide`, Suffix `-?inval(ide)?\.?$` | „Berginval.“ → Bergmann + invalide |
 | `witwe` | `Ww\.`, `Wwe\.`, `Witwe` | „Bergm. Ww.“ |
+| `gewerbe` | kein Muster; von Hand bzw. per Vorschlagsskript für Gewerbebezeichnungen („Bäckerei“, „Lebensmittel“, „Fuhrgesch.“) — Nachtrag 2026-09-24, s. `docs/berufe_gewerbeformen.md` | „Bäckerei“ → Bäcker/in + gewerbe + niveau_unsicher |
 
 Besteht die Schreibweise nur aus dem Status („Invalide“, „Pensionär“, „Rentner“, „Ww.“),
 wird das OhdAB-Item für den Status vorgeschlagen (z. B. `A 10200-502 Invalide/Invalidin`;

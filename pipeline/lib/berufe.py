@@ -33,7 +33,7 @@ NIVEAU_LABELS = {
     "Tätigkeitsprofil Führungskräfte": "fuehrung",
 }
 # Zusätze, die keinen Beruf bezeichnen (Spec §3.3); mehrere je Zeile mit „;“.
-STATUS = ("ruhestand", "invalide", "witwe")
+STATUS = ("ruhestand", "invalide", "witwe", "gewerbe")
 OHDAB_FEHLT = "kuratierung/ohdab.csv fehlt — zuerst python3 werkzeuge/ohdab_laden.py ausführen"
 
 _UMLAUTE = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss", "Ä": "ae", "Ö": "oe", "Ü": "ue"})
@@ -41,6 +41,12 @@ _NICHT_ZEICHEN = re.compile(r"[^a-z0-9 ]+")
 # Geschlechtszusätze der Normbezeichnung: „Lehrer/in“, „Bergmann/-frau“, „Technische/r“, „Arbeiter/in - ungelernte/r“
 _GESCHLECHT = re.compile(r"/-?(innen|in|frau|r|e)\b")
 _TRENNER = re.compile(r"\s+-\s+")
+# Klammerzusätze ab drei Zeichen („(mittl. Dienst)“, „(Büro)“; „(er)“ aus „Beamt(er/in)“ bleibt) und
+# Alternativen einer Mehrfachnorm, getrennt durch „, “ oder „ / “.
+_KLAMMER = re.compile(r"\s*\((?=[^)]{3,})[^)]*\)")
+# Geschlechtszusatz in Klammern: „Beamt(er/in)“ → „Beamter“, „Angestellt(e/in)“ → „Angestellte“.
+_KLAMMER_GESCHLECHT = re.compile(r"\((er|e)/in\)")
+_ALTERNATIVE = re.compile(r",\s+|\s+/\s+")
 
 
 def niveau_schluessel(label: str) -> str:
@@ -57,15 +63,24 @@ def falte_form(text: str) -> str:
 def norm_form(z: dict) -> str:
     """Gefaltete Normbezeichnung ohne Geschlechtszusatz, aber MIT Qualifizierung („Landwirt/in im
     Nebenerwerb“ → „landwirt im nebenerwerb“). Damit lässt sich ein unqualifiziertes Item erkennen."""
-    return falte_form(_GESCHLECHT.sub("", z.get("norm") or ""))
+    return falte_form(_GESCHLECHT.sub("", _KLAMMER_GESCHLECHT.sub(r"\1", z.get("norm") or "")))
 
 
 def formen_von(z: dict) -> list[str]:
     """Gefaltete Vergleichsformen eines OhdAB-Items: männliche und weibliche Form, Normbezeichnung ohne
-    Geschlechtszusatz und ohne „ - “-Zusatz; ohne Dubletten, Reihenfolge stabil."""
-    norm = _TRENNER.sub(" ", _GESCHLECHT.sub("", z.get("norm") or ""))
+    Geschlechtszusatz und ohne „ - “-Zusatz, dazu die Norm ohne Klammerzusatz („Bankbeamt(er/in) (mittl.
+    Dienst)“ → „bankbeamter“, auch für männliche/weibliche Form) und jede Alternative einer Mehrfachnorm („Wächter/in, Aufseher/in“,
+    „Rektor/in / Präsident/in“); ohne Dubletten, Reihenfolge stabil."""
+    basis = _GESCHLECHT.sub("", _KLAMMER_GESCHLECHT.sub(r"\1", z.get("norm") or ""))
+    norm = _TRENNER.sub(" ", basis)
+    extra = [_KLAMMER.sub("", f) for f in (norm, z.get("maennlich") or "", z.get("weiblich") or "")]
+    # Alternativen nur ohne „ - “-Zusatz und wenn jeder Teil großgeschrieben beginnt („Lehrer/in, akadem.“
+    # ist ein Zusatz, keine Alternative; „Sänger/in - Volkstümlich, Volksmusiker/in“ bleibt ein Ganzes).
+    teile = _ALTERNATIVE.split(extra[0])
+    if len(teile) > 1 and not _TRENNER.search(basis) and all(t[:1].isupper() for t in teile):
+        extra += teile
     out: list[str] = []
-    for f in (z.get("maennlich"), z.get("weiblich"), norm):
+    for f in (z.get("maennlich"), z.get("weiblich"), norm, *extra):
         k = falte_form(f or "")
         if k and k not in out:
             out.append(k)

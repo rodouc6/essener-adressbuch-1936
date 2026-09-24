@@ -322,16 +322,31 @@ python3 pipeline/06_karte_export.py                                  # geprüfte
 `build/berufe_kandidaten.json` (bis 20 Kandidaten je Schreibweise für das Werkzeug). Ablauf je
 Schreibweise: Status abtrennen (`ruhestand`/`invalide`/`witwe`, Vokabular s. u.), Kern über
 `kuratierung/berufe_abkuerzungen.csv` auflösen (ganze Wortfolgen vor Einzelwörtern), dann
-Exakt-Abgleich auf die gefalteten Formen aus `kuratierung/ohdab.csv` und zuletzt RapidFuzz
-„ähnlich“ ab Schwelle 0,90; mit `--llm` zusätzlich eine LLM-Reserve für Zeilen ohne Vorschlag
+Exakt-Abgleich auf die gefalteten Formen aus `kuratierung/ohdab.csv` (männliche und weibliche Form,
+Norm ohne Geschlechtszusatz und ohne „ - “-Zusatz, dazu die Formen ohne Klammerzusatz —
+„Bankbeamt(er/in) (mittl. Dienst)“ → „bankbeamter“ — und die Teile einer Mehrfachnorm wie
+„Wächter/in, Aufseher/in“; Komma-Zusätze wie „Lehrer/in, akadem.“ bleiben ein Ganzes) und zuletzt
+RapidFuzz „ähnlich“ ab Schwelle 0,90; mit `--llm` zusätzlich eine LLM-Reserve für Zeilen ohne Vorschlag
 (Anthropic API, nur `vorschlag_grund=llm`, nie `geprueft`). Auf einem Lauf ohne Katalog fanden
 77,5 % der Nennungen einen Vorschlag, mit dem vorbefüllten Katalog (`berufe_abkuerzungen.csv`,
 486 Zeilen) steigt das auf **89,9 % der Nennungen** (154.772 von 172.136, verteilt auf 1.159 von
-1.977 Schreibweisen).
+1.977 Schreibweisen); mit den Klammer-/Mehrfachnorm-Formen und 212 weiteren Katalogzeilen aus
+Endungsregeln (`-mstr.` → `-meister`, `-arb.` → `-arbeiter` usw., nur übernommen, wenn das Vollwort
+exakt in der OhdAB steht) sind es 1.729 Schreibweisen mit Vorschlag.
+
+**Gewerbebezeichnungen.** Rund 220 Schreibweisen mit 6.900 Nennungen sind keine Berufe, sondern
+Betriebe: „Lebensmittel“, „Bäckerei“, „Fuhrgesch.“, „Heißmangel“. Es sind Personeneinträge des
+Teils I (Name, Vorname, Adresse, kein Firmenname), bei denen Scherl statt der Berufsbezeichnung das
+Gewerbe des Inhabers setzt — dieselbe soziale Gruppe wie „Bäckermstr.“ (84 % bzw. 74 % dieser
+Personen stehen zusätzlich als Firma in Teil III, gegenüber 7 % der „Bäcker“). Sie bekommen das
+Item des Berufsträgers (Bäckerei → Bäcker/in, Lebensmittel → Lebensmittelhändler/in), den Status
+`gewerbe` und `niveau_unsicher=ja`, weil die Inhaberstellung im OhdAB-Niveau nicht abgebildet ist
+(Bäcker = fachlich, Bäckermeister = Aufsicht). Teil III bleibt außen vor, die Person wird also nicht
+doppelt gezählt. Details und Zahlen: `docs/berufe_gewerbeformen.md`.
 
 `kuratierung/berufe.csv` (eine Zeile je Schreibweise): Spalten `schreibweise, nennungen, beruf,
 status, ohdab_id, niveau_unsicher, geprueft, vorschlag_grund, bearbeiter, datum, hinweis`.
-`status` ist leer oder eine `;`-Liste aus `ruhestand`, `invalide`, `witwe`; `vorschlag_grund`
+`status` ist leer oder eine `;`-Liste aus `ruhestand`, `invalide`, `witwe`, `gewerbe`; `vorschlag_grund`
 nennt die beteiligten Schritte (`katalog`, `exakt`, `aehnlich 0.93`, `llm`, Kombinationen wie
 „katalog; exakt“). Sperrregel wie bei den Eigentümern: `geprueft=ja` oder
 `bearbeiter≠berufe_vorschlag` → die Automatik ändert die Zeile nicht mehr (nur `nennungen` wird
