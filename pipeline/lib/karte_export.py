@@ -10,14 +10,20 @@ from collections import defaultdict
 from pathlib import Path
 
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
+from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
 from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
+from pipeline.lib.gewerbe import betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
+from pipeline.lib.gruppen import gruppe_export, lade_gruppen
+from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
+from pipeline.lib.stellung import STELLUNGEN
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
 
 _UMLAUTE = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss", "Ä": "ae", "Ö": "oe", "Ü": "ue"})
 _NICHT_ZEICHEN = re.compile(r"[^a-z0-9 ]+")
 _ETAGEN = {"erdg.": 0, "erdg": 0, "parterre.": 0, "parterre": 0, "i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5}
 ETAGE_OHNE = 99
+NIVEAUS_REIHE = ["helfer", "fachlich", "spezialist", "hochkomplex", "aufsicht", "fuehrung", "keins"]
 
 
 def adress_id(eintrag: dict) -> str:
@@ -77,11 +83,13 @@ def _besitz(eintraege: list[dict]) -> str:
 
 
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
-             berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None) -> dict[str, dict]:
-    """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale, (Teil II) geprüfter Eigentümer
-    und Berufszuordnung angehängt; `besitz` je Adresse = Kategorie | gemischt | ungeprueft (Spec §6.1),
-    `niveau`/`n_niveau` je Adresse aus den Berufszuordnungen (Spec §6.2)."""
-    gruppen: dict[str, dict] = {}
+             berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None,
+             gruppen: dict[str, dict] | None = None, gewerbe: dict[str, dict] | None = None) -> dict[str, dict]:
+    """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale, (Teil II) geprüfter Eigentümer,
+    Berufszuordnung (mit Berufsgruppe) und Gewerbezuordnung (Teil III) angehängt; `besitz` je Adresse =
+    Kategorie | gemischt | ungeprueft (Spec §6.1), `niveau`/`n_niveau` je Adresse aus den Berufszuordnungen
+    (Spec §6.2)."""
+    adressen: dict[str, dict] = {}
     eigentuemer = eigentuemer or {}
     berufe = berufe or {}
     ohdab = ohdab or {}
@@ -89,9 +97,9 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         if e.get("stufe") not in VERORTET or not e.get("lat") or not e.get("lon"):
             continue
         aid = adress_id(e)
-        a = gruppen.get(aid)
+        a = adressen.get(aid)
         if a is None:
-            a = gruppen[aid] = dict(id=aid, lat=float(e["lat"]), lon=float(e["lon"]), stufe=_stufe(e),
+            a = adressen[aid] = dict(id=aid, lat=float(e["lat"]), lon=float(e["lon"]), stufe=_stufe(e),
                                     stadtteil=e.get("stadtteil", "") or e.get("Vorort", ""),
                                     strasse_heute=e.get("strasse_heute", ""), hausnr=e.get("hausnr", ""),
                                     hausnr_zusatz=e.get("hausnr_zusatz", ""), historisch=_historisch(e),
@@ -104,15 +112,24 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
             if z and z.get("geprueft") == "ja" and z.get("kategorie"):
                 kanon, kat = z["eigentuemer"], z["kategorie"]
                 sicher = identitaet_sicher(z)
+        beruf = berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None
+        if beruf:
+            beruf["gruppe"] = gruppe_export((gruppen or {}).get(beruf["ohdab"]))
+        gew = None
+        if e.get("teil") == "III" and e.get("Firmenname"):
+            firma, rubrik = rubrik_von(e["Firmenname"])
+            if rubrik:
+                g, art = gewerbe_export((gewerbe or {}).get(rubrik))
+                gew = dict(rubrik=rubrik, firma=firma, gruppe=g, art=art, schluessel=betriebsschluessel(e))
         # _identitaet: nur identifizierte Eigentümer kommen in Suchindex und Liste; die Kategorie gilt immer.
         e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
-                _beruf=berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None)
+                _beruf=beruf, _gewerbe=gew)
         a["eintraege"].append(e)
-    for a in gruppen.values():
+    for a in adressen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
         a["besitz"] = _besitz(a["eintraege"])
         a["niveau"], a["n_niveau"] = _niveau(a["eintraege"])
-    return gruppen
+    return adressen
 
 
 def _niveau(eintraege: list[dict]) -> tuple[str, dict[str, int]]:
@@ -140,17 +157,17 @@ def punkt_feature(a: dict) -> dict:
              niveau=a.get("niveau", "ungeprueft"), n_I=0, n_II=0, n_III=0)
     merkmale: dict[str, int] = defaultdict(int)
     for e in a["eintraege"]:
-        p["n_" + e["teil"]] += 1
         for m in e["_merkmale"]:
             merkmale[m] += 1
     p.update({f"m_{m}": n for m, n in sorted(merkmale.items())})
-    p.update({f"n_{k}": v for k, v in sorted(a.get("n_niveau", {}).items())})
+    p.update(zaehlfelder(a))
     return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [a["lon"], a["lat"]]},
             "properties": p}
 
 
 def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
     b = e.get("_beruf") or {}
+    g = e.get("_gewerbe") or {}
     return dict(id=e["id"], teil=e["teil"], seite=e.get("page", ""), name=e.get("lastname", ""),
                 vorname=e.get("firstname", ""), beruf=e.get("Beruf o. ä.", ""), etage=e.get("lage", ""),
                 stand=e.get("Familienstand", ""), bezug_vorname=e.get("Vorname Bezugsperson", ""),
@@ -158,7 +175,9 @@ def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
                 eigentuemer=e.get("Eigentümer", ""), verwalter=e.get("Verwalter", ""),
                 wohnort=e.get("abweichender Wohnort", ""), eigentuemer_kanon=e.get("_eigentuemer", ""),
                 kategorie=e.get("_kategorie", ""), beruf_norm=b.get("beruf", ""), ohdab=b.get("ohdab", ""),
-                niveau=b.get("niveau", ""), status=b.get("status", ""),
+                niveau=b.get("niveau", ""), status=b.get("status", ""), gattung=b.get("gattung", ""),
+                stellung=b.get("stellung", ""), gruppe=b.get("gruppe", ""), rubrik=g.get("rubrik", ""),
+                gewerbe_gruppe=g.get("gruppe", ""), gewerbe_art=g.get("art", ""),
                 flags=[f for f in FLAGS if e.get(f) == "ja"], merkmale=list(merkmale))
 
 
@@ -327,6 +346,10 @@ def baue_stadtteile(adressen: dict[str, dict]) -> list[dict]:
 STUFEN = ["haus", "strasse", "stadtplan", "offen"]
 
 
+def _prozent(z: int, n: int) -> float:
+    return round(100 * z / (n or 1), 1)
+
+
 def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str) -> dict:
     je_teil: dict[str, int] = defaultdict(int)
     je_stufe: dict[str, int] = defaultdict(int)
@@ -336,6 +359,8 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
         je_stufe[s] += 1
     n = len(eintraege) or 1
     teil_i = [e for a in adressen.values() for e in a["eintraege"] if e["teil"] == "I"]
+    teil_iii = [e for a in adressen.values() for e in a["eintraege"] if e["teil"] == "III" and e.get("_gewerbe")]
+    mit_beruf = [e for e in teil_i if e.get("_beruf")]
     return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
                 stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
@@ -343,7 +368,58 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
-                berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}))
+                berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),
+                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
+                stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
+                gruppen_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"]["gruppe"] != "ungeprueft"), len(teil_i)),
+                gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"]["gruppe"] != "ungeprueft"), len(teil_iii)))
+
+
+def baue_layouts(adressen: dict[str, dict], gruppen: dict[str, dict], gewerbe: dict[str, dict]) -> dict[str, dict]:
+    """Vorberechnete Bubble-Layouts (Spec §5.4): Berufsnormen (Gruppenpackung nach Berufsgruppe + Beeswarm nach Niveau),
+    identifizierte Eigentümer (Packung nach Klasse), Gewerberubriken (Packung nach Gruppe). Stellung und Gruppe je Norm =
+    Mehrheit über die Einträge (Nennungen), damit ein Item nur eine Farbe trägt; „unbestimmt“ zählt mit."""
+    normen: dict[str, dict] = {}
+    st: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    eig: dict[str, dict] = {}
+    rub: dict[str, dict] = {}
+    betriebe: set[tuple[str, str]] = set()
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            b = e.get("_beruf")
+            if b and e["teil"] == "I":
+                n = normen.setdefault(b["ohdab"], dict(id=b["ohdab"], norm=b["norm"], n=0, niveau=b["niveau"], gruppe=b["gruppe"]))
+                n["n"] += 1
+                st[b["ohdab"]][b["stellung"]] += 1
+            if e.get("_eigentuemer") and e.get("_identitaet"):
+                x = eig.setdefault(e["_eigentuemer"], dict(id=e["_eigentuemer"], n=0, gruppe=e["_kategorie"], haeuser=set()))
+                x["haeuser"].add(a["id"])
+            g = e.get("_gewerbe")
+            if g and (g["schluessel"], g["rubrik"]) not in betriebe:      # je Rubrik zählt ein Betrieb einmal
+                betriebe.add((g["schluessel"], g["rubrik"]))
+                r = rub.setdefault(g["rubrik"], dict(id=g["rubrik"], n=0, gruppe=g["gruppe"], art=g["art"]))
+                r["n"] += 1
+    for x in eig.values():
+        x["n"] = len(x.pop("haeuser"))
+    for n in normen.values():
+        n["stellung"] = max(st[n["id"]].items(), key=lambda kv: (kv[1], kv[0]))[0]
+
+    def layout(kreise: list[dict]) -> dict:
+        kreise = sorted(kreise, key=lambda k: (-k["n"], k["id"]))
+        mx = max((k["n"] for k in kreise), default=0)
+        for k in kreise:
+            k["r"] = radius(k["n"], mx)
+        gepackt, huellen = packe_gruppen(kreise) if kreise else ([], [])
+        return dict(kreise=gepackt, gruppen=huellen)
+
+    berufe = layout(list(normen.values()))
+    niveaus = [*NIVEAUS_REIHE, "unsicher"]
+    bees = {k["id"]: k for k in beeswarm([dict(id=k["id"], r=k["r"], spalte=k["niveau"] if k["niveau"] in niveaus else "keins")
+                                          for k in berufe["kreise"]], niveaus)}
+    for k in berufe["kreise"]:
+        k["niveau_xy"] = dict(x=bees[k["id"]]["x"], y=bees[k["id"]]["y"])
+    berufe["niveaus"] = niveaus
+    return dict(berufe=berufe, eigentuemer=layout(list(eig.values())), gewerbe=layout(list(rub.values())))
 
 
 def zechen_geojson(zeilen: list[dict]) -> dict:
@@ -426,14 +502,16 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    datum: str, kacheln: bool = True, faksimile: list[dict] | None = None,
                    beispiele: list[dict] | None = None, themen: Path | None = None,
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
-                   ohdab: dict[str, dict] | None = None) -> dict:
+                   ohdab: dict[str, dict] | None = None, gruppen: list[dict] | None = None,
+                   gewerbe: list[dict] | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     if themen is not None:
         schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln, lade_kuratierung(eigentuemer or []),
-                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {})
+                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {},
+                         gruppen=lade_gruppen(gruppen or []), gewerbe=lade_gewerbe(gewerbe or []))
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
@@ -464,6 +542,11 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         _json(ausgabe / "suche" / "eigentuemer" / f"{name}.json", inhalt)
     _json(ausgabe / "suche" / "stadtteile.json", baue_stadtteile(adressen))
     _json(ausgabe / "zechen.geojson", zechen_geojson(zechen))
+    _EBENEN_DATEI = {"strasse": "strassen", "stadtteil": "stadtteile", "hex": "hex"}
+    for ebene in EBENEN:
+        _json(ausgabe / "ebenen" / f"{_EBENEN_DATEI[ebene]}.json", aggregiere(adressen, ebene))
+    for name, inhalt in baue_layouts(adressen, lade_gruppen(gruppen or []), lade_gewerbe(gewerbe or [])).items():
+        _json(ausgabe / "layout" / f"{name}.json", inhalt)
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
     _json(ausgabe / "kennzahlen.json", kennzahlen)
     return kennzahlen

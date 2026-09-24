@@ -30,11 +30,16 @@ eigentuemer = lies_csv(eigentuemer_pfad) if eigentuemer_pfad.exists() else []
 berufe_pfad = W / "kuratierung" / "berufe.csv"
 berufe = lies_csv(berufe_pfad) if berufe_pfad.exists() else []
 ohdab = lade_ohdab(W / "kuratierung" / "ohdab.csv") if berufe else {}
+gruppen_pfad = W / "kuratierung" / "gruppen.csv"
+gruppen = lies_csv(gruppen_pfad) if gruppen_pfad.exists() else []
+gewerbe_pfad = W / "kuratierung" / "gewerbe.csv"
+gewerbe = lies_csv(gewerbe_pfad) if gewerbe_pfad.exists() else []
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
-for unter in ("haus", "suche", "adressen", "themen"):
+for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
-                   themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab)
+                   themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab,
+                   gruppen=gruppen, gewerbe=gewerbe)
 print(json.dumps(k, ensure_ascii=False, indent=1))

@@ -83,7 +83,8 @@ def test_eintrag_kurz_und_scherben():
     assert k == {"id": "7", "teil": "I", "seite": "I-551", "name": "Sepeur", "vorname": "Wilh.",
                  "beruf": "Dr. Bergm.", "etage": "II", "stand": "Wwe.", "bezug_vorname": "", "bezug_beruf": "",
                  "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "eigentuemer_kanon": "",
-                 "kategorie": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "",
+                 "kategorie": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "", "gattung": "",
+                 "stellung": "", "gruppe": "", "rubrik": "", "gewerbe_gruppe": "", "gewerbe_art": "",
                  "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
     adressen = gruppiere([e], REGELN)
     sch = baue_scherben(adressen)
@@ -409,6 +410,54 @@ def test_berufsnormindex_nutzt_ohdab_norm_nicht_kuratierten_beruf(tmp_path):
         assert len(liste) == 1
         assert liste[0][1:3] == ["Bergmann", "B 21112-100"]   # Label = OhdAB-Norm, nicht der kuratierte beruf
         assert list(scherben["be"]) == ["B 21112-100"]
+
+
+def test_gruppen_gewerbe_zaehlfelder_ebenen_layouts(tmp_path):
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from pipeline.lib.gewerbe import lade_gewerbe
+    from pipeline.lib.gruppen import lade_gruppen
+    from pipeline.lib.karte_export import baue_kennzahlen, baue_layouts, eintrag_kurz, gruppiere, punkt_feature, schreibe_paket
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja", stellung="arbeiter", stellung_geprueft="ja"),
+                     dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", niveau_unsicher="", geprueft="ja", stellung="beamte", stellung_geprueft="")])
+    gr = lade_gruppen([dict(ohdab_id="B 21112-100", norm="Bergmann/-frau", nennungen="9", gruppe="bergbau", geprueft="ja"),
+                       dict(ohdab_id="B 84124-120", norm="Lehrer/in", nennungen="2", gruppe="bildung_kultur_kirche", geprueft="")])
+    gw = lade_gewerbe([dict(rubrik="Bäcker", betriebe="2", gruppe="lebensmittel", art="handwerk", geprueft="ja"),
+                       dict(rubrik="Kohlen", betriebe="1", gruppe="handel", art="handel", geprueft="")])
+    basis = dict(stufe="haus", lat="51.45", lon="7.01", strasse_norm="x", strasse_roh="X", hausnr="1", Vorort="", stadtteil="Kray", lastname="N", firstname="", page="I-1",
+                 strasse_heute="X-Straße", schl_nr="00001")
+    def e(i, teil, beruf="", firma="", hausnr="1"):
+        return dict(basis, id=str(i), teil=teil, hausnr=hausnr, Firmenname=firma, **{"Beruf o. ä.": beruf})
+    eintraege = [e(1, "I", "Bergm."), e(2, "I", "Lehrer"), e(3, "I", "Kfm."), e(4, "II", "Lehrer"),
+                 e(5, "III", firma="A. Meier, Bäcker"), e(6, "III", firma="A. Meier, Kohlen"), e(7, "III", firma="B. Kraus, Bäcker"),
+                 e(8, "I", "Bergm.", hausnr="2")]
+    a = gruppiere(eintraege, [], None, berufe=b, ohdab=o, gruppen=gr, gewerbe=gw)
+    haus1 = next(x for x in a.values() if x["hausnr"] == "1")
+    k = {x["id"]: eintrag_kurz(x, []) for x in haus1["eintraege"]}
+    assert (k["1"]["stellung"], k["1"]["gruppe"], k["1"]["gattung"]) == ("arbeiter", "bergbau", "Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten")
+    assert (k["2"]["stellung"], k["2"]["gruppe"]) == ("unbestimmt", "ungeprueft")        # Stellung nicht geprüft, Gruppe nicht geprüft
+    assert (k["5"]["rubrik"], k["5"]["gewerbe_gruppe"], k["5"]["gewerbe_art"], k["5"]["firma"]) == ("Bäcker", "lebensmittel", "handwerk", "A. Meier, Bäcker")
+    assert (k["6"]["gewerbe_gruppe"], k["6"]["gewerbe_art"]) == ("ungeprueft", "ungeprueft")
+    assert k["3"]["stellung"] == "" and k["3"]["gruppe"] == ""                          # ohne geprüften Beruf: leer im Eintrag …
+    p1 = punkt_feature(haus1)["properties"]
+    assert p1["n_st_arbeiter"] == 1 and p1["n_st_unbestimmt"] == 2 and p1["n_gr_bergbau"] == 1 and p1["n_gr_ungeprueft"] == 2   # … aber gezählt als unbestimmt
+    assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_ungeprueft"] == 1 and p1["n_bs_ungeprueft"] == 1
+    lay = baue_layouts(a, gr, gw)
+    assert [x["id"] for x in lay["berufe"]["kreise"]] == ["B 21112-100", "B 84124-120"]
+    bm = lay["berufe"]["kreise"][0]
+    assert bm["norm"] == "Bergmann" and bm["n"] == 2 and bm["niveau"] == "fachlich" and bm["stellung"] == "arbeiter" and bm["gruppe"] == "bergbau"
+    assert {"x", "y", "r"} <= set(bm) and {"x", "y"} <= set(bm["niveau_xy"]) and [g["gruppe"] for g in lay["berufe"]["gruppen"]] == ["bergbau", "ungeprueft"]
+    assert lay["gewerbe"]["kreise"][0] == dict(lay["gewerbe"]["kreise"][0], id="Bäcker", n=2, gruppe="lebensmittel", art="handwerk")
+    assert lay["eigentuemer"]["kreise"] == []
+    kz = baue_kennzahlen(eintraege, a, "2026-09-26")
+    assert kz["stellung_geprueft"] == 50.0 and kz["stellung_unbestimmt"] == 50.0 and kz["gruppen_geprueft"] == 50.0 and kz["gewerbe_geprueft"] == 66.7
+    aus = tmp_path / "daten"
+    schreibe_paket(aus, eintraege, [], [], "2026-09-26", kacheln=False, berufe=list(b.values()), ohdab=o, gruppen=list(gr.values()), gewerbe=list(gw.values()))
+    st = json.loads((aus / "ebenen" / "strassen.json").read_text(encoding="utf-8"))
+    assert st[0]["id"] == "00001" and st[0]["n_st_arbeiter"] == 2 and st[0]["adressen"] == 2
+    assert (aus / "ebenen" / "stadtteile.json").exists() and (aus / "ebenen" / "hex.json").exists()
+    assert json.loads((aus / "layout" / "berufe.json").read_text(encoding="utf-8"))["kreise"][0]["id"] == "B 21112-100"
 
 
 def test_gruppiere_ordnet_teil_iii_keinen_beruf_zu(tmp_path):
