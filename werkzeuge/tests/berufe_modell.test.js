@@ -91,3 +91,8 @@ test("formenVon: Klammerzusatz und Mehrfachnorm liefern zusätzliche Formen (wie
   assert.deepEqual(sucheOhdab(m, "Aufseher").map((t) => t.ohdab_id), ["B 2"]);
   assert.deepEqual(sucheOhdab(m, "Präsident").map((t) => t.ohdab_id), ["B 3"]);
 });
+
+test("baueModell führt bearbeiter mit (Filter „Vorschlag von Claude“)", () => {
+  const m = baueModell([{ schreibweise: "X", nennungen: "5", beruf: "X", status: "", ohdab_id: "", niveau_unsicher: "", geprueft: "", vorschlag_grund: "hand", bearbeiter: " claude ", datum: "", hinweis: "" }], []);
+  assert.equal(m.zeilen.get("X").bearbeiter, "claude");
+});

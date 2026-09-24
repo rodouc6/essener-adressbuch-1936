@@ -46,7 +46,7 @@ export function baueModell(kuratierungZeilen, ohdabZeilen, kandidaten = {}) {
     const kand = (kandidaten[s] || []).map(([id, grund, wert]) => ({ ohdab_id: id, grund, wert: Number(wert), niveau: ohdab.get(id)?.niveau || "keins" }));
     zeilen.set(s, { schreibweise: s, nennungen: Number(k.nennungen) || 0, beruf: (k.beruf || "").trim(), status: (k.status || "").trim(),
       ohdab_id: (k.ohdab_id || "").trim(), niveau_unsicher: k.niveau_unsicher || "", geprueft: k.geprueft || "", hinweis: k.hinweis || "",
-      vorschlag_grund: k.vorschlag_grund || "", automatikBeruf: (k.beruf || "").trim(), kandidaten: kand,
+      vorschlag_grund: k.vorschlag_grund || "", bearbeiter: (k.bearbeiter || "").trim(), automatikBeruf: (k.beruf || "").trim(), kandidaten: kand,
       niveauEntscheiden: new Set(kand.map((x) => x.niveau)).size > 1 });
   }
   return { zeilen, ohdab, formen, verlauf: [] };

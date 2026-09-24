@@ -32,6 +32,7 @@
     <label><input type="radio" name="status" value="alle"> alle</label>
     <label><input type="checkbox" id="nur-ohne"> nur ohne Vorschlag</label>
     <label><input type="checkbox" id="nur-niveau"> Niveau entscheiden</label>
+    <label><input type="checkbox" id="nur-claude"> Vorschlag von Claude</label>
     <div id="fortschritt" style="flex-basis:100%;color:#6b7280"></div>
   </div>
   <div id="liste"></div>
@@ -136,14 +137,16 @@ function digibibUrl(seite) {
 const m = baueModell(csvLesen(kText), csvLesen(oText), kandidaten);
 let aktiv = null;   // Schreibweise der aktiven Zeile
 
-// gefiltert(l): status-Radio, nur-ohne (ohne ohdab_id), nur-niveau (niveauEntscheiden), Textfilter auf schreibweise/beruf.
+// gefiltert(l): status-Radio, nur-ohne (ohne ohdab_id), nur-niveau (niveauEntscheiden), nur-claude (Handvorschläge
+// mit bearbeiter=claude, Stand beim Laden), Textfilter auf schreibweise/beruf.
 function gefiltert(l) {
   const status = document.querySelector("input[name=status]:checked").value;
   const nurOhne = document.getElementById("nur-ohne").checked;
   const nurNiveau = document.getElementById("nur-niveau").checked;
+  const nurClaude = document.getElementById("nur-claude").checked;
   const q = document.getElementById("filter").value.trim().toLowerCase();
   return l.filter((z) => (status === "alle" || (status === "geprueft") === (z.geprueft === "ja")) && (!nurOhne || !z.ohdab_id)
-    && (!nurNiveau || z.niveauEntscheiden) && (!q || z.schreibweise.toLowerCase().includes(q) || z.beruf.toLowerCase().includes(q)));
+    && (!nurNiveau || z.niveauEntscheiden) && (!nurClaude || z.bearbeiter === "claude") && (!q || z.schreibweise.toLowerCase().includes(q) || z.beruf.toLowerCase().includes(q)));
 }
 
 // zeichneListe(): Zeilen mit Punktfarbe nach Niveau des zugeordneten Items; Fortschritt „x von n geprüft · y % der Nennungen“.
@@ -226,7 +229,7 @@ function naechsteZeile(richtung) {
 
 // Ereignisse
 document.getElementById("liste").addEventListener("click", (ev) => { const z = ev.target.closest("[data-schreibweise]"); if (z) waehle(z.dataset.schreibweise); });
-for (const id of ["filter", "nur-ohne", "nur-niveau"]) document.getElementById(id).addEventListener("input", () => zeichneListe(liste(m)));
+for (const id of ["filter", "nur-ohne", "nur-niveau", "nur-claude"]) document.getElementById(id).addEventListener("input", () => zeichneListe(liste(m)));
 document.querySelectorAll("input[name=status]").forEach((r) => r.addEventListener("change", () => zeichneListe(liste(m))));
 document.getElementById("beruf").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && aktiv) { speichere(setzeBeruf(m, aktiv, ev.target.value)); zeichne(); } });
 document.getElementById("beruf").addEventListener("change", (ev) => { if (aktiv) { speichere(setzeBeruf(m, aktiv, ev.target.value)); zeichne(); } });
