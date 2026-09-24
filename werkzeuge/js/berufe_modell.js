@@ -1,7 +1,9 @@
 // werkzeuge/js/berufe_modell.js — Zustand des Berufs-Werkzeugs (Spec §5): eine Zeile je Schreibweise; Aktionen liefern
 // die geänderten Zeilen zum Speichern. Ohne DOM, damit node:test es prüfen kann.
-const CSV_FELDER = ["schreibweise", "beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis"];
+const CSV_FELDER = ["schreibweise", "beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis", "stellung", "stellung_geprueft"];
 export const STATUS = ["", "ruhestand", "invalide", "witwe", "gewerbe"];
+// Reihenfolge = Zifferntaste 1–9 im Werkzeug; Werte wie pipeline/lib/stellung.STELLUNGEN.
+export const STELLUNGEN = ["arbeiter", "angestellte", "beamte", "selbstaendige", "freie_berufe", "unternehmer", "ohne_erwerb", "kaufleute", "unbestimmt"];
 const VERLAUF_MAX = 30;
 const UMLAUTE = { "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" };
 
@@ -46,6 +48,7 @@ export function baueModell(kuratierungZeilen, ohdabZeilen, kandidaten = {}) {
     const kand = (kandidaten[s] || []).map(([id, grund, wert]) => ({ ohdab_id: id, grund, wert: Number(wert), niveau: ohdab.get(id)?.niveau || "keins" }));
     zeilen.set(s, { schreibweise: s, nennungen: Number(k.nennungen) || 0, beruf: (k.beruf || "").trim(), status: (k.status || "").trim(),
       ohdab_id: (k.ohdab_id || "").trim(), niveau_unsicher: k.niveau_unsicher || "", geprueft: k.geprueft || "", hinweis: k.hinweis || "",
+      stellung: (k.stellung || "").trim(), stellung_geprueft: k.stellung_geprueft || "",
       vorschlag_grund: k.vorschlag_grund || "", bearbeiter: (k.bearbeiter || "").trim(), automatikBeruf: (k.beruf || "").trim(), kandidaten: kand,
       niveauEntscheiden: new Set(kand.map((x) => x.niveau)).size > 1 });
   }
@@ -107,6 +110,15 @@ export function setzeGeprueft(m, s, ja) {
 }
 export function setzeHinweis(m, s, text) { return aendere(m, s, { hinweis: text }); }
 
+export function setzeStellung(m, s, klasse) {
+  if (!STELLUNGEN.includes(klasse)) return [];
+  return aendere(m, s, { stellung: klasse, stellung_geprueft: "ja" });
+}
+export function schalteStellungGeprueft(m, s) {
+  const z = m.zeilen.get(s); if (!z || !z.stellung) return [];
+  return aendere(m, s, { stellung_geprueft: z.stellung_geprueft === "ja" ? "" : "ja" });
+}
+
 export function rueckgaengig(m) {
   const alt = m.verlauf.pop();
   if (!alt) return null;
@@ -121,7 +133,8 @@ export function rueckgaengig(m) {
 export function fortschritt(m) {
   const l = [...m.zeilen.values()];
   const g = l.filter((z) => z.geprueft === "ja");
-  return { geprueft: g.length, gesamt: l.length, nennungenGeprueft: g.reduce((s, z) => s + z.nennungen, 0), nennungenGesamt: l.reduce((s, z) => s + z.nennungen, 0) };
+  return { geprueft: g.length, gesamt: l.length, nennungenGeprueft: g.reduce((s, z) => s + z.nennungen, 0), nennungenGesamt: l.reduce((s, z) => s + z.nennungen, 0),
+    stellungGeprueft: l.filter((z) => z.stellung_geprueft === "ja").length };
 }
 
 // Status-Wörter wie werkzeuge/berufe_vorschlag.py STATUS_MUSTER (ruhestand, invalide, witwe) — als eigenes

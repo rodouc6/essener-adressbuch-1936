@@ -20,8 +20,10 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
   ohne Kategorie.
 - POST /kuratierung/berufe.csv — mehrere Zeilen ({"zeilen": [...]}) der Berufs-Kuratierung; ersetzt
   nach Schlüssel `schreibweise`, setzt bearbeiter=christos und datum. 400 bei unbekannter
-  Schreibweise, unbekannter ohdab_id, unbekanntem Status, niveau_unsicher/geprueft ∉ {ja, leer}
-  oder geprueft=ja ohne ohdab_id.
+  Schreibweise, unbekannter ohdab_id, unbekanntem Status, niveau_unsicher/geprueft ∉ {ja, leer},
+  geprueft=ja ohne ohdab_id oder Beruf, unbekannter Stellung (Vokabular aus
+  pipeline.lib.stellung.STELLUNGEN), stellung_geprueft ∉ {ja, leer} oder stellung_geprueft=ja
+  ohne Stellung.
 - POST /kuratierung/berufe_abkuerzungen.csv — eine Zeile ({"zeile": {kurz,lang,status,beleg}}) für
   den Abkürzungskatalog; 400 bei fehlendem kurz/lang oder unbekanntem Status, 409 bei vorhandenem
   kurz.
@@ -48,6 +50,7 @@ from pipeline.lib.berufe import FELDER_KURATIERUNG as FELDER_BERUFE, STATUS as S
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe
 from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, IDENTITAETEN, KATEGORIEN, lade_kuratierung
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
+from pipeline.lib.stellung import STELLUNGEN
 
 FELDER = ["stufe", "strasse_roh", "hausnr", "hausnr_zusatz", "stadtteil", "strasse_heute",
           "display_name", "lat", "lon", "urteil", "bemerkung", "gruppe"]
@@ -156,6 +159,13 @@ def pruefe_berufe(z: dict, bekannt: set[str], ohdab: set[str]) -> str:
         return "geprueft=ja verlangt eine ohdab_id"
     if str(z.get("geprueft", "")).strip() == "ja" and not str(z.get("beruf", "")).strip():
         return "geprueft=ja verlangt einen Beruf"
+    st = str(z.get("stellung", "")).strip()
+    if st and st not in STELLUNGEN:
+        return f"unbekannte Stellung: {st}"
+    if str(z.get("stellung_geprueft", "")).strip() not in ("", "ja"):
+        return "stellung_geprueft muss ja oder leer sein"
+    if str(z.get("stellung_geprueft", "")).strip() == "ja" and not st:
+        return "stellung_geprueft=ja verlangt eine Stellung"
     return ""
 
 
@@ -343,7 +353,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._antwort(400, fehler)
         heute = datetime.date.today().isoformat()
         # Felder, die das Werkzeug nicht sendet (nennungen, vorschlag_grund), aus der bestehenden Zeile übernehmen.
-        voll = [dict(alt[str(z["schreibweise"]).strip()], **{k: str(z.get(k, "")).strip() for k in ("beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis")},
+        voll = [dict(alt[str(z["schreibweise"]).strip()], **{k: str(z.get(k, "")).strip() for k in ("beruf", "status", "ohdab_id", "niveau_unsicher", "geprueft", "hinweis", "stellung", "stellung_geprueft")},
                      bearbeiter="christos", datum=heute) for z in zeilen]
         n = upsert_viele(pfad, voll, "schreibweise", FELDER_BERUFE)
         self._antwort(200, f"berufe.csv: {n} Zeilen")

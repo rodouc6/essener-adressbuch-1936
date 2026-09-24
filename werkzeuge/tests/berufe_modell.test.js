@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, setzeBeruf, setzeGeprueft,
-         setzeNiveauUnsicher, setzeZuordnung, sucheOhdab, uebernehmeKandidat, zumSpeichern } from "../js/berufe_modell.js";
+         setzeNiveauUnsicher, setzeStellung, setzeZuordnung, schalteStellungGeprueft, sucheOhdab, uebernehmeKandidat, zumSpeichern } from "../js/berufe_modell.js";
 
 const O = [
   { ohdab_id: "B 21112-100", norm: "Bergmann/-frau", maennlich: "Bergmann", weiblich: "Bergfrau", niveau: "fachlich", gattung_id: "B 21112", gattung: "Berufe im Berg- und Tagebau" },
@@ -9,9 +9,9 @@ const O = [
   { ohdab_id: "B 20002-500", norm: "Arbeiter/in - allgemein", maennlich: "Arbeiter", weiblich: "Arbeiterin", niveau: "fachlich", gattung_id: "B 20002", gattung: "Produktion – fachlich" },
 ];
 const K = [
-  { schreibweise: "Bergm.", nennungen: "9", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "", vorschlag_grund: "katalog; exakt", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "" },
-  { schreibweise: "Arbeiter", nennungen: "20", beruf: "Arbeiter", status: "", ohdab_id: "B 20002-500", niveau_unsicher: "", geprueft: "", vorschlag_grund: "exakt", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "" },
-  { schreibweise: "Fabrkarb.", nennungen: "5", beruf: "Fabrkarb.", status: "", ohdab_id: "", niveau_unsicher: "", geprueft: "", vorschlag_grund: "", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "" },
+  { schreibweise: "Bergm.", nennungen: "9", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "", vorschlag_grund: "katalog; exakt", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "", stellung: "arbeiter", stellung_geprueft: "" },
+  { schreibweise: "Arbeiter", nennungen: "20", beruf: "Arbeiter", status: "", ohdab_id: "B 20002-500", niveau_unsicher: "", geprueft: "", vorschlag_grund: "exakt", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "", stellung: "", stellung_geprueft: "" },
+  { schreibweise: "Fabrkarb.", nennungen: "5", beruf: "Fabrkarb.", status: "", ohdab_id: "", niveau_unsicher: "", geprueft: "", vorschlag_grund: "", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "", stellung: "", stellung_geprueft: "" },
 ];
 const KAND = { "Arbeiter": [["B 20002-500", "exakt", 1], ["B 20001-503", "exakt", 1]], "Bergm.": [["B 21112-100", "exakt", 1]] };
 const frisch = () => baueModell(K, O, KAND);
@@ -23,7 +23,7 @@ test("Modell, Liste, Kandidaten mit Niveau-Entscheidung", () => {
   assert.equal(a.niveauEntscheiden, true);
   assert.deepEqual(a.kandidaten.map((k) => [k.ohdab_id, k.niveau]), [["B 20002-500", "fachlich"], ["B 20001-503", "helfer"]]);
   assert.equal(m.zeilen.get("Bergm.").niveauEntscheiden, false);
-  assert.deepEqual(fortschritt(m), { geprueft: 0, gesamt: 3, nennungenGeprueft: 0, nennungenGesamt: 34 });
+  assert.deepEqual(fortschritt(m), { geprueft: 0, gesamt: 3, nennungenGeprueft: 0, nennungenGesamt: 34, stellungGeprueft: 0 });
 });
 
 test("sucheOhdab: Präfix vor Teilstring, Umlaute gefaltet", () => {
@@ -39,7 +39,7 @@ test("geprüft nur mit Zuordnung; Zuordnung setzt Beruf aus der Form", () => {
   const g = setzeZuordnung(m, "Fabrkarb.", "B 21112-100");
   assert.equal(g.length, 1); assert.equal(g[0].ohdab_id, "B 21112-100"); assert.equal(g[0].beruf, "Bergmann");
   assert.equal(setzeGeprueft(m, "Fabrkarb.", true)[0].geprueft, "ja");
-  assert.deepEqual(zumSpeichern(g[0]), { schreibweise: "Fabrkarb.", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "ja", hinweis: "" });
+  assert.deepEqual(zumSpeichern(g[0]), { schreibweise: "Fabrkarb.", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "ja", hinweis: "", stellung: "", stellung_geprueft: "" });
 });
 
 test("Kandidat übernehmen, Status durchschalten, Niveau unsicher, Undo", () => {
@@ -95,4 +95,16 @@ test("formenVon: Klammerzusatz und Mehrfachnorm liefern zusätzliche Formen (wie
 test("baueModell führt bearbeiter mit (Filter „Vorschlag von Claude“)", () => {
   const m = baueModell([{ schreibweise: "X", nennungen: "5", beruf: "X", status: "", ohdab_id: "", niveau_unsicher: "", geprueft: "", vorschlag_grund: "hand", bearbeiter: " claude ", datum: "", hinweis: "" }], []);
   assert.equal(m.zeilen.get("X").bearbeiter, "claude");
+});
+
+test("Stellung setzen prüft sie; Schalter nimmt die Prüfung zurück", () => {
+  const m = frisch();
+  const g = setzeStellung(m, "Bergm.", "arbeiter");
+  assert.equal(g.length, 1); assert.equal(g[0].stellung, "arbeiter"); assert.equal(g[0].stellung_geprueft, "ja");
+  assert.deepEqual(schalteStellungGeprueft(m, "Bergm.").map((z) => z.stellung_geprueft), [""]);
+  assert.deepEqual(setzeStellung(m, "Bergm.", "adel"), []);
+  assert.equal(fortschritt(m).stellungGeprueft, 0);
+  setzeStellung(m, "Arbeiter", "arbeiter");
+  assert.equal(fortschritt(m).stellungGeprueft, 1);
+  assert.equal(Object.keys(zumSpeichern(m.zeilen.get("Bergm."))).includes("stellung_geprueft"), true);
 });

@@ -238,6 +238,22 @@ def test_berufe_post_validiert(server):
         assert e.value.code == 400 and text in e.value.read().decode(), text
 
 
+def test_berufe_post_stellung(server):
+    url, ziel = server
+    wurzel = ziel.parent.parent
+    z = dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja", hinweis="",
+             stellung="arbeiter", stellung_geprueft="ja")
+    post(url + "/kuratierung/berufe.csv", {"zeilen": [z]})
+    zeilen = {x["schreibweise"]: x for x in csv.DictReader(open(wurzel / "kuratierung" / "berufe.csv", encoding="utf-8"))}
+    assert zeilen["Bergm."]["stellung"] == "arbeiter" and zeilen["Bergm."]["stellung_geprueft"] == "ja"
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/berufe.csv", {"zeilen": [dict(z, stellung="adel")]})
+    assert e.value.code == 400 and "Stellung" in e.value.read().decode()
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(url + "/kuratierung/berufe.csv", {"zeilen": [dict(z, stellung="", stellung_geprueft="ja")]})
+    assert e.value.code == 400
+
+
 def test_berufe_ohdab_cache_erkennt_neuen_schnappschuss(server):
     """Die OhdAB-IDs werden auf der Handler-Klasse zwischengespeichert (Finding 10, nicht bei jedem POST neu
     geladen); ändert sich kuratierung/ohdab.csv (neue mtime), muss der nächste POST trotzdem den neuen
