@@ -211,6 +211,24 @@ geprüft, nicht gegen den vollen Text mit Gattung.
   (`werkzeuge/handwerk_deckung.py`, nach jeder Prüfrunde neu erzeugen); das Werkzeug blendet die Kennzahl
   bei betroffenen Schreibweisen ein. Nach außen heißt die Klasse deshalb „Arbeiter/Gehilfen (nach
   Schreibung)“.
+- **Straßenbahn → Arbeiter** (Regel `strassenbahn`, Entscheidung 2026-09-25): Die Essener Straßenbahn betrieb 1936
+  die private Süddeutsche Eisenbahn-Gesellschaft (bis 1954, dann EVAG); Fahrer und Schaffner waren keine
+  Beamten, das Fahrpersonal galt versicherungsrechtlich als Arbeiter. „Schaffner“ ohne Zusatz (Straßenbahn oder
+  Bahn?) bleibt `unbestimmt`.
+- **Reichsbahn: die Grenze ist die Amtsbezeichnung.** Die Reichsbahn-Gesellschaft hatte Beamte
+  (Reichsbahn-Personalgesetz 1924), Angestellte und Arbeiter; das Adressbuch unterscheidet selbst „Reichsb.
+  Beamt.“, „Reichsb. Bedienst.“ und „Reichsb. Arb.“. Beamte sind die Amtsbezeichnungen (Assistent, Sekretär,
+  Inspektor, Amtmann, Rat) und die Laufbahnen des einfachen Dienstes (Lokomotivführer, Zugführer,
+  Reichsbahnschaffner, Rangiermeister, Rangieraufseher — die letzten beiden nach unserem Kenntnisstand,
+  Sicherheit mittel); Arbeiter sind Bahnarbeiter, Rangierer, Rottenführer, Heizer und „Bedienstete“.
+  **Dienstposten** ohne Amtscharakter — Weichenwärter/-steller, Bahn-, Schranken-, Streckenwärter, „Eisenbahner“ —
+  besetzten Beamte des einfachen Dienstes wie Arbeiter → `unbestimmt` (Regel `dienstposten`).
+- **Feuerwehr → Beamte:** Berufsfeuerwehrleute waren preußische Gemeindebeamte („Feuerwehrmann“ ist der unterste
+  Dienstgrad). Einschränkung: Werkfeuerwehren (Krupp, Zechen) hatten Arbeiter und Angestellte; ihr Anteil an den
+  „Feuerwehrm.“ ist der Schreibweise nicht anzusehen.
+- **Pfarrer, Kaplan, Vikar → Beamte**, keine eigene Klasse: öffentlich-rechtliches Dienstverhältnis der Kirchen
+  (Kirchenbeamte), so auch die Berufszählung; der Klerus ist über die Berufsgruppe `bildung_kultur_kirche`
+  auswertbar.
 - **Kaufleute bekommen eine eigene Klasse**, statt sie einer Nachbarklasse zuzuschlagen, weil die
   Schreibweise „Kaufmann“ ohne Zusatz nicht erkennen lässt, ob eine selbständige Existenz oder eine
   angestellte Stellung gemeint ist (siehe Kaufleute-Experiment unten).

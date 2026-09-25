@@ -131,3 +131,19 @@ def test_definitionen_2026_09_25():
     assert stellung_vorschlag(zeile("Schmiedemstr."), item("Schmiedemeister/in", "aufsicht", "Aufsichtskräfte – Metallbau", "B 24493"), REGELN) == ("unbestimmt", "industriemeister")
     assert stellung_vorschlag(zeile("Schlossermstr."), item("Schlossermeister/in", "aufsicht", "Aufsichtskräfte – Metallbau", "B 24493"), REGELN) == ("unbestimmt", "industriemeister")
     assert stellung_vorschlag(zeile("Fabrikant"), item("Fabrikant/in", "fuehrung", "Geschäftsführer/innen und Vorstände"), REGELN) == ("unternehmer", "unternehmer")
+
+
+def test_verkehr_und_kirche_2026_09_25():
+    g = "Berufe im Schienenbahnverkehr"
+    assert stellung_vorschlag(zeile("Straßenb. Schaffn."), item("Straßenbahnschaffner/in", "fachlich", g, "B 51522"), REGELN) == ("arbeiter", "strassenbahn")
+    assert stellung_vorschlag(zeile("Straßenb. Führ."), item("Straßenbahnführer/in", "fachlich", g, "B 51522"), REGELN) == ("arbeiter", "strassenbahn")
+    assert stellung_vorschlag(zeile("Schaffner"), item("Schaffner/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
+    assert stellung_vorschlag(zeile("Reichsb. Schaffn."), item("Eisenbahnschaffner/in", "fachlich", g, "B 51522"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Weichenwärt."), item("Weichenwärter/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
+    assert stellung_vorschlag(zeile("Eisenbahner"), item("Eisenbahner/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
+    assert stellung_vorschlag(zeile("Rangiermstr."), item("Rangiermeister/in", "aufsicht", g, "B 51593"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Rangieraufseh."), item("Rangieraufseher/in", "aufsicht", g, "B 51523"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Rangierer"), item("Rangierer/in", "fachlich", g, "B 51522"), REGELN) == ("arbeiter", "niveau fachlich")
+    assert stellung_vorschlag(zeile("Feuerwehrm."), item("Feuerwehrmann/-frau", "fachlich", "Berufe im Brandschutz", "B 53132"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Kaplan"), item("Kaplan", "spezialist", "Theologie und Seelsorge", "B 83314"), REGELN) == ("beamte", "beamte")
+    assert stellung_vorschlag(zeile("Vikar"), item("Vikar/in", "spezialist", "Theologie und Seelsorge", "B 83314"), REGELN) == ("beamte", "beamte")

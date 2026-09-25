@@ -40,6 +40,11 @@ _INDUSTRIE_GEFALTET = tuple(falte_form(h) for h in _INDUSTRIE)
 # Erwerbsquelle statt Beruf: die Berufszählung 1933 zählt Hausbesitzer, Rentiers, Privatiers ohne anderen Beruf als
 # „berufslose Selbständige“ zu den Berufslosen — hier ohne_erwerb, das damit bewusst heterogen ist (docs/stellung.md).
 _OHNE_ERWERB = re.compile(r"hausbesitzer|rentier|privatier", re.I)
+# Straßenbahn Essen 1936 = private Süddeutsche Eisenbahn-Gesellschaft; Fahrpersonal versicherungsrechtlich Arbeiter.
+_STRASSENBAHN = re.compile(r"stra(ß|ss)enbahn", re.I)
+# Dienstposten der Reichsbahn, die Beamte des einfachen Dienstes wie Arbeiter besetzten, und Schaffner ohne Zusatz
+# (Straßenbahn oder Bahn?) — nicht entscheidbar (Entscheidung 2026-09-25, docs/stellung.md Grenzfälle).
+_DIENSTPOSTEN = re.compile(r"weichenwärter|weichensteller|bahnwärter|schrankenwärter|streckenwärter|^eisenbahner|^schaffner", re.I)
 _MEISTER = re.compile(r"(meister(in)?|mstr(in)?\.?)$", re.I)   # auch „…mstrin.“ (weibliche Kurzform)
 _FREIE = re.compile(r"arzt|ärzt|zahnarzt|dentist|tierarzt|apotheker|rechtsanwalt|anwalt|notar|architekt|patentanwalt|"
                     r"wirtschaftsprüfer|steuerberater|bücherrevisor|schriftsteller|künstler|kunstmaler|bildhauer/in$", re.I)
@@ -50,7 +55,8 @@ _UNTERNEHMER = re.compile(r"fabrikant|fabrikbesitzer|(?<!studien)(?<!kataster)di
                           r"inhaber|unternehmer|bergwerksbesitzer|gutsbesitzer", re.I)
 # „oberst“ nur als eigenes Wort (nicht als Präfix in „Obersteiger“) — sonst Fehltreffer aus dem OhdAB-Gattungstext.
 _BEAMTE = re.compile(r"beamt|sekretär|inspektor|assistent|amtmann|\brat\b|rätin|schaffner|zugführer|lokomotivführer|"
-                     r"briefträger|postbote|polizei|schutzmann|wachtmeister|zoll|richter|pfarrer|pastor|geistlich|"
+                     r"briefträger|postbote|polizei|schutzmann|wachtmeister|zoll|richter|pfarrer|pastor|geistlich|kaplan|vikar|"
+                     r"feuerwehr|rangiermeister|rangieraufseher|"
                      r"\boberst\b|major|hauptmann|förster|gerichtsvollzieher|studiendirektor|katasterdirektor|"
                      r"\(.*dienst\)", re.I)
 # „lehrer“/„offizier“ nur im eigenen Titel (Norm/Beruf), nicht in der OhdAB-Gattung — sonst Fehltreffer wie
@@ -104,6 +110,10 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
         return "freie_berufe", "freier beruf"
     if _OHNE_ERWERB.search(_norm(item)):
         return "ohne_erwerb", "erwerbsquelle"
+    if _STRASSENBAHN.search(_titel(zeile, item)):
+        return "arbeiter", "strassenbahn"
+    if _DIENSTPOSTEN.search(_norm(item)):
+        return UNBESTIMMT, "dienstposten"
     if _UNTERNEHMER.search(text):
         return "unternehmer", "unternehmer"
     if falte_form(_norm(item)) == "kaufmann frau" and not re.search(r"angest|beamt", text, re.I):
