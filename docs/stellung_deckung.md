@@ -17,8 +17,8 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | schornsteinfeger | 8 | 22 | 35 | 13 | 162% | unbestimmt | Schornsteinfegermeister | Schornsteinfeger |
 | dekorateur | 105 | 0 | 143 | 143 | 136% | unbestimmt | Dekorateur u. Dekorationsgeschäft | Dekorateur |
 | uhrmacher | 141 | 9 | 130 | 121 | 86% | unbestimmt | Uhrmacher und Uhrenhandlung | Uhrm., Uhrmach., Uhrmacher |
-| schuhmacher | 494 | 295 | 693 | 398 | 81% | unbestimmt | Schuhmacher | Schuhm., Schuhmach., Schuhmacher |
 | friseur | 809 | 300 | 657 | 357 | 44% | unbestimmt | Friseur, Friseur für Damen | Friseur, Friseuse |
+| schuhmacher | 494 | 582 | 693 | 111 | 22% | unbestimmt | Schuhmacher | Schuhm., Schuhmach., Schuhmacher |
 | drechsler | 26 | 5 | 10 | 5 | 19% | unbestimmt | Drechsler (Holz- u. Horn-) | Drechsler |
 | kuerschner | 17 | 15 | 18 | 3 | 18% | unbestimmt | Kürschner | Kürschner |
 | maler | 2048 | 439 | 728 | 289 | 14% | unbestimmt | Maler | Anstreich., Anstreicher, Maler |
@@ -27,7 +27,6 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | schmied | 1337 | 0 | 122 | 122 | 9% | arbeiter | Schmied | Schmied |
 | buchdrucker | 303 | 83 | 110 | 27 | 9% | arbeiter | Buchdruckerei | Buchdruck., Buchdrucker |
 | glasblaeser | 50 | 0 | 3 | 3 | 6% | arbeiter | Glasbläserei | Glasbläs., Glasbläser |
-| stellmacher | 162 | 21 | 25 | 4 | 2% | arbeiter | Stellmacher | Stellm., Stellmach., Stellmacher |
 | konditor | 173 | 158 | 162 | 4 | 2% | arbeiter | Konditorei | Konditor |
 | schleifer | 382 | 0 | 8 | 8 | 2% | arbeiter | Schleiferei | Schleifer |
 | sattler | 202 | 66 | 70 | 4 | 2% | arbeiter | Sattler | Sattler |
@@ -42,6 +41,7 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | metzger | 541 | 741 | 496 | 0 | 0% | arbeiter | Metzger, Metzger (Groß-) | Fleischer, Metzg., Metzger |
 | zimmerer | 478 | 67 | 44 | 0 | 0% | arbeiter | Zimmermeister | Zimmerer, Zimmerm., Zimmermann |
 | dachdecker | 306 | 163 | 85 | 0 | 0% | arbeiter | Dachdeckermeister | Dachdeck., Dachdecker |
+| stellmacher | 162 | 31 | 25 | 0 | 0% | arbeiter | Stellmacher | Stellm., Stellmach., Stellmacher |
 | weber | 146 | 5 | 5 | 0 | 0% | arbeiter | Weberei | Weber |
 | buchbinder | 121 | 28 | 26 | 0 | 0% | arbeiter | Buchbinderei | Buchbind., Buchbinder |
 | kuefer | 39 | 19 | 9 | 0 | 0% | arbeiter | Küfer | Küfer |

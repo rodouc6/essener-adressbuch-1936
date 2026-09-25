@@ -110,3 +110,9 @@ def test_meisterin_abgekuerzt():
     # „…mstrin.“ ist die weibliche Kurzform; sie folgt derselben Handwerks-/Betriebs-Unterscheidung wie „…mstr.“.
     assert stellung_vorschlag(zeile("Schneidermstrin.", beruf="Schneidermstrin."), item("Schneider/in", "fachlich", "Berufe in der Textilverarbeitung", "B 28212"), REGELN) == ("selbstaendige", "handwerksmeister")
     assert stellung_vorschlag(zeile("Hausmstrin.", beruf="Hausmeisterin"), item("Hausmeister/in", "fachlich", "Hausmeister", "B 34112"), REGELN) == ("angestellte", "betriebsmeister")
+
+
+def test_handwerksmeister_stamm_aus_dem_item():
+    # Abgekürzte Schreibweise ohne erkennbaren Stamm — das Item liefert ihn.
+    assert stellung_vorschlag(zeile("Schuhmmstr."), item("Schuhmachermeister/in", "aufsicht", "Aufsichtskräfte – Schuhherstellung", "B 28393"), REGELN) == ("selbstaendige", "handwerksmeister")
+    assert stellung_vorschlag(zeile("Polstermstr."), item("Polsterermeister/in", "aufsicht", "Aufsichtskräfte – Polsterei", "B 28393"), REGELN) == ("selbstaendige", "handwerksmeister")

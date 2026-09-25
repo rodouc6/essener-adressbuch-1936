@@ -83,7 +83,8 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
     if _MEISTER.search(schreibweise) or _MEISTER.search(_norm(item)):
         if _BEAMTE.search(text) or _BEAMTE_TITEL.search(_titel(zeile, item)):
             return "beamte", "beamte"
-        stamm = falte_form(schreibweise or _norm(item))
+        # Stamm in Schreibweise UND Normbezeichnung suchen — „Schuhmmstr.“ trägt den Stamm nur im Item „Schuhmachermeister/in“.
+        stamm = falte_form(schreibweise) + " " + falte_form(_norm(item))
         return ("selbstaendige", "handwerksmeister") if any(h in stamm for h in _HANDWERK_GEFALTET) else ("angestellte", "betriebsmeister")
     if "akademiker" in merkmale_fuer({"Beruf o. ä.": schreibweise}, regeln):
         return "freie_berufe", "akademiker"
