@@ -94,6 +94,14 @@ try {
     k.querySelector("b").textContent = themen[0].titel; k.querySelector("small").textContent = "Thema";
     k.hidden = false;
   }
+  // Kachel erscheint erst, sobald ein Perspektiven-Kapitel freigegeben ist (Spec §6.2); ein
+  // fehlendes perspektiven/index.json (noch kein Export) darf die Startseite nicht stören.
+  try {
+    const p = await lader.perspektivenIndex();
+    if (p && p.some((k) => k.freigegeben)) document.getElementById("kachel-perspektiven").hidden = false;
+  } catch (fehler) {
+    console.error("Startseite: Perspektiven-Index konnte nicht geladen werden", fehler);
+  }
 } catch (fehler) {
   console.error("Startseite: Kennzahlen/Kacheln konnten nicht geladen werden", fehler);
 }

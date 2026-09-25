@@ -248,6 +248,8 @@ Reihenfolge, keine Zufallszahl), Test prüft Überlappungsfreiheit und Reproduzi
 
 ### 5.4a Stadtteil je Adresse (ergänzt 2026-09-25, für 5b vorgezogen)
 
+Umgesetzt in 5b (Plan `docs/superpowers/plans/2026-09-25-tp5b-perspektiven.md`).
+
 Bis 5a war der Stadtteil einer Adresse die Stadtteil-Liste ihrer Straße aus `essener-strassen`
 („Stadtkern; Ostviertel; Südostviertel; Huttrop; Steele“ für die Steeler Straße). 140 solcher
 Kombinationen banden 32 % der Adressen — für Nord-Süd-Fragen unbrauchbar. Neu: jede verortete
@@ -269,6 +271,8 @@ Stadtteilgrenzen“.
 „Datenkerne“ und „Ansicht-Format“, Über-Seite (neue Zahlen), Journal.
 
 ## 6. TP5b — Perspektiven (`site/perspektiven.html`)
+
+Umgesetzt in 5b (Plan `docs/superpowers/plans/2026-09-25-tp5b-perspektiven.md`).
 
 ### 6.1 Aufbau
 
@@ -374,6 +378,8 @@ der Ansicht (`history.replaceState` bei jeder Änderung); „Meine Ansichten“ 
 `min_n`, Abdeckung des Datenkerns.
 
 ## 8. Karte (`site/karte.html`)
+
+Umgesetzt in 5b (Plan `docs/superpowers/plans/2026-09-25-tp5b-perspektiven.md`).
 
 - `zustand.js`: Feld `ansicht` (base64url-JSON); bei gesetzter Ansicht steuert sie Ebene,
   Färbung und Legende; die bisherigen Filter (`ebene`, `praez`, `stadtteil`) bleiben wirksam.

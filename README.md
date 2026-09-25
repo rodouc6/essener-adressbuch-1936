@@ -249,6 +249,8 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
 | `strassen.geojson`, `hex.geojson` | Straßenlinien (heutige OSM-Führung) und Hex-Polygone, auch als Layer `strassen`/`hex` in `adressen.pmtiles` |
 | `stadtteile.geojson` | Heutige OSM-Stadtteilgrenzen (`Stadtteile.geojson()`), je Feature `id` (Name), `quelle`, `stand` — nicht die Stadtteilgrenzen von 1936, siehe `docs/stadtteile.md` |
+| `perspektiven/index.json` | Kapitelübersicht der Perspektiven-Seite (`id, titel, untertitel, freigegeben, reihenfolge`, Teilprojekt 5b, s. u.) |
+| `perspektiven/<id>.json` | Vollständiges, aufgelöstes Kapitel (Schritte, Ansichten, Gruppen, Grenzen, Quellen) — Schema in `docs/perspektiven.md` |
 
 ### URL-Parameter (`karte.html?…`)
 
@@ -268,6 +270,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `zechen` | Zechen-Ebene ein-/ausblenden: `0` oder `1` | `0` |
 | `z` | Zoomstufe | 11 |
 | `c` | Kartenmitte `lon,lat` | Essen gesamt |
+| `ansicht` | Ansicht-Definition (base64url-JSON, Spec §4/`site/js/ansicht.js`) — färbt Stadtteile, Straßen und Hexfelder statt der Punkte; ersetzt kein Thema | keine |
 
 Fehlende Parameter fallen auf den Standardwert zurück. Änderungen an Filtern/Ansicht schreiben
 `history.replaceState`; Navigationsschritte (Suche, Haus öffnen) `pushState`. Die Grundkartenwahl
@@ -507,13 +510,13 @@ und Perspektiven. Grundlage: `python3 werkzeuge/osm_stadtteile_laden.py` → `bu
 ### Kennzahlen (`site/daten/kennzahlen.json`)
 
 Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (handgeprüft),
-`stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25),
+`stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft`, `gewerbe_entschieden`, `gewerbe_vorschlag`
+(Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25),
 `strassen_mit_linie` (Zahl) und `stadtteil_polygon` (Prozentanteil der verorteten Adressen mit Polygontreffer,
-s. o.). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
-100.0`, `gruppen_geprueft: 0.0`, `gewerbe_geprueft: 0.0` — die Handprüfung von Stellung, Gruppen und
-Gewerbe hat zu diesem Zeitpunkt noch nicht begonnen (precision first: 0,0 % ist hier der korrekte
-Wert, kein Fehler). Nach der ersten Handprüfungsrunde ändern sich diese Werte mit dem nächsten Lauf
-von `pipeline/06_karte_export.py`.
+s. o.). Stand 2026-09-25 (Lauf nach der ersten Handprüfungsrunde): `stellung_geprueft: 73.0`,
+`stellung_vorschlag: 6.2`, `stellung_unbestimmt: 22.6`, `gewerbe_geprueft: 68.1`, `gewerbe_entschieden: 20.2`,
+`gewerbe_vorschlag: 11.7`, `besitz_geprueft: 7546`, `stadtteil_polygon: 100.0`, `adressen: 70316`. Diese Werte
+ändern sich mit jeder weiteren Handprüfungsrunde beim nächsten Lauf von `pipeline/06_karte_export.py`.
 
 Ablauf des gesamten Teilprojekts 5a:
 
@@ -525,6 +528,61 @@ python3 werkzeuge/osm_strassen_laden.py        # Straßenlinien (Overpass) → b
 python3 werkzeuge/osm_stadtteile_laden.py      # Stadtteilgrenzen (Overpass) → build/osm_stadtteile.json
 python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Stadtteile, Kennzahlen
 ```
+
+## Perspektiven (Teilprojekt 5b)
+
+Scrollytelling-Seite `site/perspektiven.html`: Einleitung, Inhaltsverzeichnis, Kapitel untereinander,
+je Kapitel eine sticky Grafikfläche neben/hinter Textkarten (Scrollama 3.2.0, lokal in
+`site/vendor/scrollama.js`, kein CDN — Datenschutz und Reproduzierbarkeit, s. `site/vendor/README.md`).
+Nur Kapitel mit `freigegeben: true` erscheinen; alle Kapitel (auch unfreigegebene) sind mit
+`?vorschau=1` sichtbar, damit der Projektleiter Text und Ansicht im echten Seitenkontext prüfen kann,
+ohne sie zu veröffentlichen — dieser Parameter steht deshalb an keiner öffentlichen Stelle (Startseite,
+Über-Seite) verlinkt. Die Startseiten-Kachel „Perspektiven“ (`site/index.html`) bleibt `hidden`, bis
+`start.js` in `perspektiven/index.json` mindestens ein `freigegeben: true`-Kapitel findet; ein
+fehlender oder fehlerhafter Index bricht die Startseite dabei nicht ab.
+
+**Ansicht-Format** (Spec §4, `site/js/ansicht.js`): Karte, Perspektiven und Werkstatt lesen und
+schreiben dasselbe Objekt `{daten, ebene, form, gruppen, kaufleute, unsicher, mass, bezug, min_n,
+filter, karte}`. Es wird als base64url-JSON im URL-Parameter `?ansicht=` transportiert (`kodiere`/
+`dekodiere`); Standardwerte werden weggelassen, damit Links kurz bleiben. `kennzahlen(einheit, ansicht)`
+berechnet Anteil, dominante Gruppe, Mischung und Dichte je Einheit rein im Browser aus den Zählfeldern
+der `ebenen/*.json`-Dateien.
+
+**Kapitel-JSON** (`kuratierung/perspektiven/<id>.json` → `site/daten/perspektiven/`): Schema, Pflichtfelder,
+die Gruppen-Kurzform `wie:`, die Platzhalter in `grenzen` und die Freigabelogik stehen in
+`docs/perspektiven.md`. Drei Kapitel sind angelegt (Wohneigentum; Soziale Stellung; Gewerbe und
+Versorgung), alle mit `freigegeben: false` — die Ansichten sind fertig, die Texte noch Platzhalter.
+
+**Formen** (`site/js/formen/{balken,bubbles,rangliste,stadtteilkarte,skalen}.js`): reine SVG-Erzeuger
+ohne DOM-Abhängigkeit, gemeinsame Schnittstelle `zeige(ansicht, daten, optionen) → {svg, legende,
+zahlen}`. Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
+dargestellt (Grau-Regel); `zahlen` nennt zur gezeichneten Menge, wie viele Einheiten das tatsächlich
+sind (z. B. „15 von 50 Stadtteilen“), damit eine Rangliste oder ein Ausschnitt nicht als Vollständigkeit
+missverstanden wird.
+
+**Karte `?ansicht=`** (`site/js/app.js`, `karte.js`, `ansicht_farben.js`): Drei neue, standardmäßig
+unsichtbare Ebenen `stadtteile-flaeche`, `strassen-linie`, `hex-flaeche` werden per MapLibre
+`feature-state` eingefärbt, je nachdem welche `ebene` die aktive Ansicht trägt; Punkte
+(`ebene=adresse`) bleiben ungefärbt (das folgt erst in 5c mit den Nutzergruppen der Werkstatt). Die
+Sidebar zeigt die aktive Ansicht in `#ansichtkopf` und darunter eine Legende (Gruppen mit Farbe, `N`,
+`min_n`, ausgeschlossene Einheiten `n_aus`, Herkunft/Grundlage). Perspektiven-Schritte verlinken „Auf
+der Karte öffnen“ (`karte.html?ansicht=…`) und „In der Werkstatt öffnen“; letzterer Link führt erst ab
+Teilprojekt 5c auf eine bestehende Seite (`site/werkstatt.html` existiert noch nicht).
+
+**Kennzeichnungen:** Die Stadtteilgrenzen sind durchgehend die **heutigen** (OpenStreetMap,
+`admin_level=10`, ODbL — nicht die von 1936, s. `docs/stadtteile.md`); jede Kennzahl je Stadtteil trägt
+diesen Vorbehalt in Karte und Perspektiven. Jede vorgeschlagene (nicht handgeprüfte) Stellungs- bzw.
+Gewerbezuordnung ist an `stellung_quelle`/`gewerbe_quelle` erkennbar (`hand` vs. Automatik-Vorschlag).
+Kapiteltexte sind, solange `freigegeben: false` gilt, ausdrücklich Platzhalter und nicht redaktionell
+geprüft.
+
+**Ruling:** Die im Spec (§4.2) skizzierte Migration der Themen (`kuratierung/themen/`) auf das
+Ansicht-Format ist **nicht** Teil von 5b — `themen.js` bleibt unverändert. Sie gehört zu Teilprojekt 5c,
+sobald die Werkstatt Standardgruppen aus den Themen lesen soll.
+
+Tests: `node --test site/tests/` (Ansicht-Modell, Formen ohne DOM-Teile), `python3 -m pytest -q -m
+"not e2e"` (Kapitel-Schema, Export, Stadtteilzuordnung). Playwright-Rauchtests für Scrollama-
+Schrittwechsel, Detailkasten und Kartenlinks folgen mit der Werkstatt (5c), s. Spec §9.
 
 ## Dokumentation
 

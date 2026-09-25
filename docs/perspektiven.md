@@ -1,5 +1,8 @@
 # Perspektiven — Kapitel-Schema
 
+Stand 2026-09-25: Drei Kapitel angelegt (Wohneigentum; Soziale Stellung; Gewerbe und Versorgung), alle
+mit `freigegeben: false` — die Texte sind Platzhalter, keins ist freigegeben.
+
 Die Scrollytelling-Seite „Perspektiven" (Spec §6.2) besteht aus Kapiteln. Jedes Kapitel ist eine JSON-Datei
 unter `kuratierung/perspektiven/<id>.json`, die der Projektleiter von Hand pflegt (mit LLM-Vorschlag,
 Handprüfung — wie bei den anderen Kuratierungstabellen). `pipeline/lib/perspektiven.py` prüft, lädt und
