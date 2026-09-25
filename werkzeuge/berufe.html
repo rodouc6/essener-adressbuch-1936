@@ -272,7 +272,15 @@ document.getElementById("beruf").addEventListener("change", (ev) => { if (aktiv)
 document.getElementById("status").addEventListener("click", () => { if (aktiv) { speichere(schalteStatus(m, aktiv)); zeichne(); } });
 document.getElementById("niveau").addEventListener("click", () => { if (aktiv) { const z = m.zeilen.get(aktiv); speichere(setzeNiveauUnsicher(m, aktiv, z.niveau_unsicher !== "ja")); zeichne(); } });
 document.getElementById("stellung").addEventListener("change", (ev) => { if (aktiv) { speichere(setzeStellung(m, aktiv, ev.target.value)); zeichne(); } });
-document.getElementById("stellung-geprueft").addEventListener("click", () => { if (aktiv) { speichere(schalteStellungGeprueft(m, aktiv)); zeichne(); } });
+// Wie „geprüft“ (G): nach dem Bestätigen zur nächsten Zeile mit offener Stellung springen, beim Zurücknehmen bleiben.
+const stellungOffen = (z) => z.stellung_geprueft !== "ja";
+document.getElementById("stellung-geprueft").addEventListener("click", () => {
+  if (!aktiv) return;
+  const neuGeprueft = m.zeilen.get(aktiv).stellung_geprueft !== "ja";
+  const vorher = gefiltert(liste(m));
+  speichere(schalteStellungGeprueft(m, aktiv));
+  if (neuGeprueft) naechsterOffener(vorher, stellungOffen); else zeichne();
+});
 document.getElementById("geprueft").addEventListener("click", () => {
   if (!aktiv) return;
   const z = m.zeilen.get(aktiv);
@@ -316,10 +324,9 @@ document.addEventListener("keydown", (ev) => {
   else if (ev.key === "ArrowDown") { ev.preventDefault(); naechsteZeile(1); }
   else if (ev.key === "ArrowUp") { ev.preventDefault(); naechsteZeile(-1); }
   else if (/^[1-9]$/.test(ev.key) && !document.getElementById("stellung").disabled) {
-    const nurStellung = document.getElementById("nur-stellung").checked;
     const vorher = gefiltert(liste(m));
     speichere(setzeStellung(m, aktiv, STELLUNGEN[Number(ev.key) - 1]));
-    if (nurStellung) naechsterOffener(vorher, (z) => z.stellung_geprueft !== "ja"); else zeichne();
+    naechsterOffener(vorher, stellungOffen);
   }
 });
 
