@@ -64,15 +64,23 @@ function kapitelHtml(k) {
 // gesetzt, damit nicht versehentlich ein Gesamtbalken erscheint.
 function zeichne(sec, schritt) {
   if (!schritt) return;
+  // Der Detailkasten gehört zur vorigen Ansicht; stehen bliebe er mit Zahlen, die zur neuen
+  // Grafik nicht mehr passen.
+  document.getElementById("detail").hidden = true;
   const ansicht = normalisiere(schritt.ansicht);
   if (schritt.ansicht && schritt.ansicht.form === "multiples") ansicht.filter = { ...ansicht.filter, je_einheit: true };
   const form = FORMEN[formFuer(ansicht)];
   const grafik = sec.querySelector(".grafik");
   const breite = grafik.clientWidth || 600, hoehe = Math.max(320, Math.min(grafik.clientHeight || 500, 700));
   const r = form.zeige(ansicht, daten, { breite, hoehe, hervorheben: schritt.hervorheben || [], titel: schritt.beschreibung });
+  // Schrittwechsel als Überblendung des bleibenden Behälters: Übergänge auf den SVG-Knoten selbst
+  // liefen nie, weil innerHTML sie alle ersetzt. Bei reduzierter Bewegung wird hart getauscht.
   const svg = grafik.querySelector(".svg");
-  if (!reduziert) svg.classList.add("wechsel");
   svg.innerHTML = r.svg;
+  if (!reduziert) {
+    svg.classList.add("blass");
+    requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
+  }
   grafik.querySelector(".legende").innerHTML = r.legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
   // Präzision: jeder Schritt nennt den Hinweis der Form und die Zahl der Einheiten unter min_n.
   grafik.querySelector(".zahlen").textContent = r.zahlen.hinweis + (r.zahlen.unter_min ? ` · ${r.zahlen.unter_min} Einheiten unter ${ansicht.min_n} Nennungen (grau, nicht eingefärbt)` : "");

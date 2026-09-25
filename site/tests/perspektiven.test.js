@@ -13,6 +13,8 @@ test("fuellePlatzhalter aus kennzahlen", () => {
   const kz = { adressen: 70316, besitz_geprueft: 7546, stellung_geprueft: 73.0, stand: "2026-09-25" };
   assert.equal(fuellePlatzhalter("{adressen} Adressen, {besitz_geprueft} geprüft ({besitz_geprueft_prozent} %), Stand {stand}, {nix}", kz), "70.316 Adressen, 7.546 geprüft (10,7 %), Stand 2026-09-25, {nix}");
   assert.equal(fuellePlatzhalter("{stellung_geprueft} %", kz), "73 %");
+  // stellung_geprueft ist bereits ein Prozentwert — {…_prozent} darf dafür nichts ausrechnen.
+  assert.equal(fuellePlatzhalter("{stellung_geprueft_prozent}", kz), "{stellung_geprueft_prozent}");
 });
 
 test("linkKarte kodiert die Ansicht, formFuer bildet ab", () => {

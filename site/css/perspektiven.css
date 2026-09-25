@@ -65,9 +65,15 @@
 
 .perspektiven .leer { max-width: 720px; margin: 32px auto; color: var(--grau); }
 
-/* Formwechsel zwischen den Schritten: nur Positionen und Farben, höchstens 800 ms. */
-.svg.wechsel circle, .svg.wechsel path, .svg.wechsel rect { transition: all .8s ease; }
-@media (prefers-reduced-motion: reduce) { .svg.wechsel * { transition: none; } .schritt { transition: none; } }
+/* Formwechsel zwischen den Schritten: Überblendung des bleibenden Behälters (der Inhalt wird
+   komplett ersetzt, Übergänge auf den einzelnen Formen könnten also gar nicht laufen). 400 ms. */
+.grafik .svg { transition: opacity .4s ease; }
+.grafik .svg.blass { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .grafik .svg { transition: none; }
+  .grafik .svg.blass { opacity: 1; }
+  .schritt { transition: none; }
+}
 
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }

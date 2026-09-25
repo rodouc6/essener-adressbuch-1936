@@ -22,14 +22,23 @@ function alsText(v) {
   return Number.isInteger(v) ? formatZahl(v) : komma(round1(v));
 }
 
+// Kennzahlen, für die `{…_prozent}` ausgerechnet werden darf: reine Zählfelder, deren Nenner die
+// verorteten Adressen sind. Die übrigen Felder in kennzahlen.json sind entweder selbst schon
+// Prozentwerte (stellung_geprueft, gewerbe_geprueft …) oder haben einen anderen Nenner
+// (eigentuemer_geprueft) — für sie bliebe die Rechnung falsch, also wird sie nicht gemacht.
+export const PROZENT_BASIS = ["besitz_geprueft"];
+
 // Ersetzt {schluessel} aus kennzahlen.json. Der Zusatz `_prozent` rechnet den Anteil an den
-// verorteten Adressen aus ({besitz_geprueft_prozent}). Unbekannte Platzhalter bleiben sichtbar
-// stehen — lieber eine erkennbare Lücke im Text als eine stillschweigend erfundene Zahl.
+// verorteten Adressen aus ({besitz_geprueft_prozent}), aber nur für PROZENT_BASIS. Unbekannte
+// Platzhalter bleiben sichtbar stehen — lieber eine erkennbare Lücke im Text als eine
+// stillschweigend erfundene Zahl.
 export function fuellePlatzhalter(text, kennzahlen = {}) {
   const kz = kennzahlen && typeof kennzahlen === "object" ? kennzahlen : {};
   return String(text ?? "").replace(/\{(\w+)\}/g, (treffer, k) => {
     if (k.endsWith("_prozent")) {
-      const basis = kz[k.slice(0, -"_prozent".length)];
+      const feld = k.slice(0, -"_prozent".length);
+      if (!PROZENT_BASIS.includes(feld)) return treffer;
+      const basis = kz[feld];
       const nenner = kz.adressen;
       if (typeof basis !== "number" || typeof nenner !== "number" || !nenner) return treffer;
       return komma(round1((100 * basis) / nenner));

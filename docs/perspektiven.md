@@ -83,6 +83,11 @@ folgende Platzhalter enthalten, die die Seite beim Rendern aus `site/daten/kennz
   wären `{berufe_geprueft_prozent}` usw. denkbar, sind aber für Kapitel 1 nicht nötig und daher nicht
   implementiert — YAGNI, bis ein weiteres Kapitel sie braucht).
 
+`{besitz_geprueft_prozent}` ist damit derzeit der **einzige** `_prozent`-Platzhalter; jeder andere
+(`{stellung_geprueft_prozent}`, `{eigentuemer_geprueft_prozent}` …) bleibt ungefüllt im Text stehen, weil
+die betreffenden Kennzahlen entweder schon Prozentwerte sind oder einen anderen Nenner als `adressen`
+haben. Erweitert wird die Liste in `PROZENT_BASIS` in `site/js/perspektiven_modell.js`.
+
 Diese Platzhalter sind bewusst **nicht** Teil von `pruefe_kapitel` — das Schema prüft nur die Struktur, nicht
 den Text. Ein Tippfehler in einem Platzhalternamen fällt erst beim Rendern der Seite auf.
 
