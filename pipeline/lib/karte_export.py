@@ -176,7 +176,7 @@ def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
                 wohnort=e.get("abweichender Wohnort", ""), eigentuemer_kanon=e.get("_eigentuemer", ""),
                 kategorie=e.get("_kategorie", ""), beruf_norm=b.get("beruf", ""), ohdab=b.get("ohdab", ""),
                 niveau=b.get("niveau", ""), status=b.get("status", ""), gattung=b.get("gattung", ""),
-                stellung=b.get("stellung", ""), gruppe=b.get("gruppe", ""), rubrik=g.get("rubrik", ""),
+                stellung=b.get("stellung", ""), stellung_quelle=b.get("stellung_quelle", ""), gruppe=b.get("gruppe", ""), rubrik=g.get("rubrik", ""),
                 gewerbe_gruppe=g.get("gruppe", ""), gewerbe_art=g.get("art", ""),
                 flags=[f for f in FLAGS if e.get(f) == "ja"], merkmale=list(merkmale))
 
@@ -369,7 +369,8 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),
-                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
+                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand"), len(teil_i)),
+                stellung_vorschlag=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
                 stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
                 gruppen_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"]["gruppe"] != "ungeprueft"), len(teil_i)),
                 gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"]["gruppe"] != "ungeprueft"), len(teil_iii)))

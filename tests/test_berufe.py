@@ -87,7 +87,7 @@ def test_zuordnung_nur_geprueft(ohdab_pfad):
                           dict(schreibweise="Kfm.", beruf="Kaufmann", status="", ohdab_id="", niveau_unsicher="", geprueft=""),
                           dict(schreibweise="Arbeiter", beruf="Arbeiter", status="", ohdab_id="B 20002-500", niveau_unsicher="ja", geprueft="ja"),
                           dict(schreibweise="Kaputt", beruf="x", status="", ohdab_id="Q 0", niveau_unsicher="", geprueft="ja")])
-    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", gattung_id="B 21112", status="ruhestand", norm="Bergmann", stellung="unbestimmt")
+    assert zuordnung({"Beruf o. ä.": "Bergm."}, k, o) == dict(beruf="Bergmann", ohdab="B 21112-100", niveau="fachlich", gattung="Berufe im Berg- und Tagebau – fachlich ausgerichtete Tätigkeiten", gattung_id="B 21112", status="ruhestand", norm="Bergmann", stellung="unbestimmt", stellung_quelle="vorschlag")
     assert zuordnung({"Beruf o. ä.": "Kfm."}, k, o) is None
     assert zuordnung({"Beruf o. ä.": "Arbeiter"}, k, o)["niveau"] == "unsicher"
     assert zuordnung({"Beruf o. ä.": ""}, k, o) is None
@@ -99,4 +99,6 @@ def test_zuordnung_nur_geprueft(ohdab_pfad):
                            dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", niveau_unsicher="", geprueft="ja", stellung="beamte", stellung_geprueft="")])
     z = zuordnung({"Beruf o. ä.": "Bergm."}, k2, o)
     assert z["stellung"] == "arbeiter" and z["gattung_id"] == "B 21112"
-    assert zuordnung({"Beruf o. ä.": "Lehrer"}, k2, o)["stellung"] == "unbestimmt"
+    assert zuordnung({"Beruf o. ä.": "Bergm."}, k2, o)["stellung_quelle"] == "hand"
+    assert zuordnung({"Beruf o. ä.": "Lehrer"}, k2, o)["stellung"] == "beamte"            # Vorschlag wird exportiert …
+    assert zuordnung({"Beruf o. ä.": "Lehrer"}, k2, o)["stellung_quelle"] == "vorschlag"  # … und als solcher gekennzeichnet

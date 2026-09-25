@@ -249,16 +249,24 @@ erhalten, die Zahl der Handentscheidungen sinkt um rund 40 %.
 
 ## Exportregel
 
-`stellung_export(zeile)` liefert die Klasse nur, wenn **beide** Bedingungen erfüllt sind: `geprueft=ja`
-(Berufszuordnung selbst geprüft) **und** `stellung_geprueft=ja` (Stellung geprüft). Fehlt eine der beiden
-Prüfungen, exportiert die Zeile `unbestimmt` — unabhängig davon, welchen Wert die Automatik in `stellung`
-vorgeschlagen hat. Damit erscheint kein automatischer Vorschlag ungeprüft als belastbares Ergebnis.
+Bis 2026-09-25 galt: Export nur, wenn Beruf **und** Stellung geprüft. Nach der Handprüfung von 641
+Schreibweisen (91,3 % der Nennungen mit geprüftem Beruf; der Rest sind 896 Schreibweisen mit zusammen 8,7 %)
+wurde entschieden, die Automatik-Vorschläge für den Rest zu übernehmen und die Herkunft zu kennzeichnen:
+
+- `stellung_export(zeile)` liefert die Klasse, sobald `geprueft=ja` (Berufszuordnung geprüft) und `stellung`
+  gesetzt ist; ohne geprüften Beruf `unbestimmt`.
+- `stellung_quelle(zeile)` liefert `hand` (`stellung_geprueft=ja`), `vorschlag` (Automatik) oder leer (nichts
+  exportiert). Das Feld steht je Eintrag in `haus/*.json` (`stellung_quelle`); je Ebene zählt
+  `n_stellung_hand` die handgeprüften Einträge.
+- Kein Vorschlag erscheint damit ungekennzeichnet: Perspektiven und Werkstatt können Vorschläge ausblenden
+  (Ansicht-Option `unsicher`) und nennen den handgeprüften Anteil.
 
 ## Kennzahlen
 
 Der Export schreibt in `site/daten/kennzahlen.json`:
 
-- `stellung_geprueft` — Anteil der Teil-I-Einträge mit exportierter (also doppelt geprüfter) Stellung.
+- `stellung_geprueft` — Anteil der Teil-I-Einträge mit handgeprüfter Stellung (`stellung_quelle=hand`).
+- `stellung_vorschlag` — Anteil mit exportiertem Automatik-Vorschlag (ohne `unbestimmt`).
 - `stellung_unbestimmt` — Anteil der Teil-I-Einträge ohne Beruf oder mit Stellung `unbestimmt`.
 
 Zählfeld je Adresse/Straße/Stadtteil/Hexzelle: `n_st_<klasse>` (`pipeline/lib/ebenen.py`).

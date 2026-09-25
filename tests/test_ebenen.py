@@ -32,21 +32,21 @@ def _adresse(i, lat, lon, strasse="Grenzstraße", schl="00464", stadtteil="Kater
 
 
 def test_zaehlfelder_und_aggregation():
-    b1 = dict(niveau="fachlich", stellung="arbeiter", gruppe="bergbau")
+    b1 = dict(niveau="fachlich", stellung="arbeiter", stellung_quelle="hand", gruppe="bergbau")
     b2 = dict(niveau="unsicher", stellung="unbestimmt", gruppe="ungeprueft")
     g1 = dict(gruppe="lebensmittel", art="handwerk", schluessel="a|x|1|")
     a1 = _adresse(1, 51.45, 7.01, besitz="privatperson", eintraege=[("I", b1, None), ("I", b1, None), ("I", b2, None), ("II", None, None), ("III", None, g1), ("III", None, g1)])
     a2 = _adresse(2, 51.4501, 7.0101, besitz="bergbau", eintraege=[("I", b1, None), ("I", None, None)])
     a3 = _adresse(3, 51.40, 7.10, strasse="Heckstraße", schl="01226", stadtteil="Werden", eintraege=[("I", b2, None)])
     z = zaehlfelder(a1)
-    assert z == {"n_I": 3, "n_II": 1, "n_III": 2, "n_fachlich": 2, "n_unsicher": 1, "n_st_arbeiter": 2, "n_st_unbestimmt": 1,
+    assert z == {"n_I": 3, "n_II": 1, "n_III": 2, "n_fachlich": 2, "n_unsicher": 1, "n_st_arbeiter": 2, "n_st_unbestimmt": 1, "n_stellung_hand": 2,
                  "n_gr_bergbau": 2, "n_gr_ungeprueft": 1, "n_gw_lebensmittel": 1, "n_gwa_handwerk": 1, "n_bs_privatperson": 1}
     assert zaehlfelder(a2)["n_st_unbestimmt"] == 1        # Eintrag ohne geprüften Beruf zählt als unbestimmt
     adressen = {a["id"]: a for a in (a1, a2, a3)}
     st = aggregiere(adressen, "strasse")
     assert [s["id"] for s in st] == ["00464", "01226"]
     assert st[0] == {"id": "00464", "name": "Grenzstraße", "stadtteil": "Katernberg", "adressen": 2, "n_I": 5, "n_II": 1, "n_III": 2,
-                     "n_fachlich": 3, "n_unsicher": 1, "n_st_arbeiter": 3, "n_st_unbestimmt": 2, "n_gr_bergbau": 3, "n_gr_ungeprueft": 2,
+                     "n_fachlich": 3, "n_unsicher": 1, "n_st_arbeiter": 3, "n_st_unbestimmt": 2, "n_stellung_hand": 3, "n_gr_bergbau": 3, "n_gr_ungeprueft": 2,
                      "n_gw_lebensmittel": 1, "n_gwa_handwerk": 1, "n_bs_privatperson": 1, "n_bs_bergbau": 1}
     sd = aggregiere(adressen, "stadtteil")
     assert [s["id"] for s in sd] == ["Katernberg", "Werden"] and sd[0]["lat"] == round((51.45 + 51.4501) / 2, 5) and sd[0]["rang_nord"] == 1 and sd[1]["rang_nord"] == 2

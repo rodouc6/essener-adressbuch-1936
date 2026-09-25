@@ -1,7 +1,7 @@
 import pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from pipeline.lib.merkmale import Regel
-from pipeline.lib.stellung import STELLUNGEN, stellung_export, stellung_vorschlag
+from pipeline.lib.stellung import STELLUNGEN, stellung_export, stellung_quelle, stellung_vorschlag
 
 REGELN = [Regel("Beruf o. ä.", "praefix", "Dr.", "akademiker"), Regel("Beruf o. ä.", "praefix", "Dipl.", "akademiker")]
 
@@ -76,11 +76,16 @@ def test_regeln_ohne_gattung_fehltreffer():
     assert stellung_vorschlag(zeile("Hauptlehr.", beruf="Hauptlehrer"), item("Hauptlehrer/in", "hochkomplex", "Lehrkräfte an allgemeinbildenden Schulen"), REGELN) == ("beamte", "beamte")
 
 
-def test_export_nur_doppelt_geprueft():
+def test_export_mit_quelle():
+    # Seit 2026-09-25: Vorschläge werden exportiert, die Quelle wird gekennzeichnet; ohne geprüften Beruf nichts.
     assert stellung_export(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="ja")) == "arbeiter"
-    assert stellung_export(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="")) == "unbestimmt"
+    assert stellung_quelle(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="ja")) == "hand"
+    assert stellung_export(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="")) == "arbeiter"
+    assert stellung_quelle(dict(geprueft="ja", stellung="arbeiter", stellung_geprueft="")) == "vorschlag"
     assert stellung_export(dict(geprueft="", stellung="arbeiter", stellung_geprueft="ja")) == "unbestimmt"
+    assert stellung_quelle(dict(geprueft="", stellung="arbeiter", stellung_geprueft="ja")) == ""
     assert stellung_export(dict(geprueft="ja", stellung="", stellung_geprueft="ja")) == "unbestimmt"
+    assert stellung_quelle(dict(geprueft="ja", stellung="", stellung_geprueft="ja")) == "hand"
 
 
 def test_ergaenze_stellung_fuellt_nur_ungeprueft():

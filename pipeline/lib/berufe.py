@@ -122,6 +122,6 @@ def zuordnung(eintrag: dict, kuratierung: dict[str, dict], ohdab: dict[str, dict
         raise ValueError(f"kuratierung/berufe.csv: {s!r} ist geprüft, aber ohdab_id {z['ohdab_id']!r} fehlt im Schnappschuss")
     niveau = "unsicher" if z.get("niveau_unsicher") == "ja" else o["niveau"]
     norm = o["maennlich"] or o["norm"]
-    from pipeline.lib.stellung import stellung_export   # lokal: stellung.py importiert berufe.py
+    from pipeline.lib.stellung import stellung_export, stellung_quelle   # lokal: stellung.py importiert berufe.py
     return dict(beruf=z["beruf"], ohdab=z["ohdab_id"], niveau=niveau, gattung=o["gattung"], gattung_id=o["gattung_id"],
-               status=z.get("status", ""), norm=norm, stellung=stellung_export(z))
+               status=z.get("status", ""), norm=norm, stellung=stellung_export(z), stellung_quelle=stellung_quelle(z))

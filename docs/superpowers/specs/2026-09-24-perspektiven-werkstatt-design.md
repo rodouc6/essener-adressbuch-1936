@@ -99,7 +99,7 @@ und schreiben dasselbe Objekt. Modul `site/js/ansicht.js` (rein, ohne DOM).
 | `form` | `karte`, `bubbles`, `balken`, `multiples`, `rangliste` | Darstellung; nicht jede Form gilt für jede Ebene (Matrix in §7.2) |
 | `gruppen` | Liste | Nutzer- oder Standardgruppen: Name, Menge von Klassen-/Item-Schlüsseln, Farbe |
 | `kaufleute` | `unbestimmt`, `angestellte`, `selbstaendige` | Experiment: wohin die Klasse `kaufleute` zählt (nur `daten=stellung`) |
-| `unsicher` | bool | Einträge mit unsicherem Niveau einbeziehen (nur `daten=niveau`) |
+| `unsicher` | bool | Einträge mit unsicherem Niveau einbeziehen (`daten=niveau`) bzw. Automatik-Vorschläge der Stellung einbeziehen (`daten=stellung`, `stellung_quelle=vorschlag`; Standard: einbeziehen, Anteil handgeprüft wird genannt) |
 | `mass` | `anteil`, `dominant`, `mischung`, `dichte` | Kennzahl je Einheit (§4.1) |
 | `bezug` | Gruppenname | Gruppe, deren Anteil/Dichte gezeigt wird |
 | `min_n` | Zahl | Einheiten mit kleinerer Fallzahl bleiben grau |
@@ -154,9 +154,13 @@ oder Entscheidung) und `stellung_geprueft` (`ja` | leer). Die Automatik
 (`werkzeuge/stellung_vorschlag.py`) füllt `stellung` überall dort, wo `stellung_geprueft` leer
 ist — auch bei Zeilen, die für die Berufszuordnung gesperrt sind, denn die Stellung ist eine
 neue, noch nicht entschiedene Frage; `stellung_geprueft=ja` setzt nur der Mensch. Handprüfung
-im Berufe-Werkzeug (Auswahl je Klasse mit Zifferntasten, Filter „Stellung offen“). In den
-Export geht eine Stellung nur mit `geprueft=ja` **und** `stellung_geprueft=ja`; alles andere
-zählt als `unbestimmt`. Zählfeld je Klasse: `n_st_<klasse>`.
+im Berufe-Werkzeug (Auswahl je Klasse mit Zifferntasten, Filter „Stellung offen“). Export
+(geändert 2026-09-25, nach Handprüfung von 91 % der Nennungen): Eine Stellung geht in den Export,
+sobald der Beruf geprüft ist (`geprueft=ja`); das Feld `stellung_quelle` = `hand` |
+`vorschlag` kennzeichnet je Eintrag, ob der Mensch entschieden hat (`stellung_geprueft=ja`)
+oder die Automatik. Ohne geprüften Beruf `unbestimmt`. Zählfelder: `n_st_<klasse>` und
+`n_stellung_hand` (Nenner für „davon handgeprüft“); die Ansicht-Option `unsicher` kann
+Vorschläge ausblenden, Kapiteltexte nennen den Anteil.
 
 Grenzfälle, die die Doku benennt: Steiger (Angestellte, obwohl OhdAB Aufsicht), Meister im
 Betrieb vs. selbständiger Meister (Schreibweise entscheidet: „Bäckermstr.“ → selbständig,

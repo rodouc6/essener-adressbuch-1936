@@ -67,6 +67,8 @@ def zaehlfelder(a: dict) -> dict[str, int]:
             if b:
                 n["n_" + b["niveau"]] += 1
             n["n_st_" + b.get("stellung", "unbestimmt")] += 1
+            if b.get("stellung_quelle") == "hand":
+                n["n_stellung_hand"] += 1      # Nenner für „davon handgeprüft“ (kein n_st_-Präfix: keine Klasse)
             n["n_gr_" + b.get("gruppe", "ungeprueft")] += 1
         elif e["teil"] == "III" and e.get("_gewerbe"):
             g = e["_gewerbe"]

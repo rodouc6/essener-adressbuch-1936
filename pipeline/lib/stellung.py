@@ -136,7 +136,15 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
 
 
 def stellung_export(zeile: dict) -> str:
-    """Export nur, wenn Beruf und Stellung geprüft sind (Spec §5.1); sonst „unbestimmt“."""
-    if zeile.get("geprueft") == "ja" and zeile.get("stellung_geprueft") == "ja" and zeile.get("stellung") in STELLUNGEN:
+    """Export, sobald der Beruf geprüft ist (Entscheidung 2026-09-25, Spec §5.1): Handentscheidung oder
+    Automatik-Vorschlag — `stellung_quelle` sagt, welches. Ohne geprüften Beruf „unbestimmt“."""
+    if zeile.get("geprueft") == "ja" and zeile.get("stellung") in STELLUNGEN:
         return zeile["stellung"]
     return UNBESTIMMT
+
+
+def stellung_quelle(zeile: dict) -> str:
+    """„hand“ (stellung_geprueft=ja), „vorschlag“ (Automatik) oder „“ (nichts exportiert)."""
+    if stellung_export(zeile) == UNBESTIMMT and zeile.get("geprueft") != "ja":
+        return ""
+    return "hand" if zeile.get("stellung_geprueft") == "ja" else "vorschlag"

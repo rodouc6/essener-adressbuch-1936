@@ -379,8 +379,10 @@ eigene, unabhängig zu prüfende Frage ist. Handprüfung im Berufe-Werkzeug (`we
 Zifferntasten `1`–`9` wählen die Klasse (Reihenfolge wie im Vokabular), Taste `T` bestätigt
 (`stellung_geprueft=ja`), Taste `A` überträgt die Stellung zusätzlich auf alle Schreibweisen desselben
 OhdAB-Items ohne Status mit geprüftem Beruf („Ing.“, „Ingen.“, „Ingenieur“ in einem Zug; Statuszeilen wie
-„a. D.“ bleiben außen vor), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export nur, wenn
-Beruf **und** Stellung geprüft sind, sonst `unbestimmt`. Regeln, Beispiele und Grenzfälle:
+„a. D.“ bleiben außen vor), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export, sobald der
+Beruf geprüft ist; `stellung_quelle` (`hand` | `vorschlag`) kennzeichnet je Eintrag, ob Mensch oder
+Automatik entschieden hat, `n_stellung_hand` zählt je Ebene (Entscheidung 2026-09-25, nach Handprüfung von
+91 % der Nennungen). Regeln, Beispiele und Grenzfälle:
 `docs/stellung.md`. Für Handwerksberufe ohne Meister-/Gewerbezusatz („Friseur“, „Schneider“) liefert
 `python3 werkzeuge/handwerk_deckung.py` die Entscheidungsgrundlage: Betriebe in Teil III gegen die als
 Inhaber gekennzeichneten Einträge in Teil I je Berufsfamilie (`docs/stellung_deckung.md`,
@@ -486,8 +488,8 @@ Straßen (99,2 %) haben eine Linie.
 
 ### Kennzahlen (`site/daten/kennzahlen.json`)
 
-Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft`,
-`stellung_unbestimmt`, `gruppen_geprueft`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`) und
+Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (handgeprüft),
+`stellung_vorschlag`, `stellung_unbestimmt`, `gruppen_geprueft`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`) und
 `strassen_mit_linie` (Zahl). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
 100.0`, `gruppen_geprueft: 0.0`, `gewerbe_geprueft: 0.0` — die Handprüfung von Stellung, Gruppen und
 Gewerbe hat zu diesem Zeitpunkt noch nicht begonnen (precision first: 0,0 % ist hier der korrekte
