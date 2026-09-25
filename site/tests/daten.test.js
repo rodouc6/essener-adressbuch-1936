@@ -22,3 +22,11 @@ test("Lader.adresse liefert null bei 404 (Scherbe existiert nicht)", async () =>
   const a = await l.adresse("zzffffffffff");
   assert.equal(a, null);
 });
+
+test("Lader.ebene lädt ebenen/<name>.json", async () => {
+  const DATEIEN2 = { "daten/ebenen/strassen.json": [{ id: "00001", name: "Aachener Straße" }] };
+  const fetchFake2 = async (u) => ({ ok: u in DATEIEN2, status: u in DATEIEN2 ? 200 : 404, json: async () => DATEIEN2[u] });
+  const l = new Lader("daten/", fetchFake2);
+  const s = await l.ebene("strassen");
+  assert.deepEqual(s, [{ id: "00001", name: "Aachener Straße" }]);
+});
