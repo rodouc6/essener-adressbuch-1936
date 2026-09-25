@@ -1,0 +1,33 @@
+{
+  "id": "gewerbe", "reihenfolge": 3,
+  "titel": "Gewerbe und Versorgung 1936", "untertitel": "Handwerk, Handel und Dienstleistung in fünfzehn Branchen",
+  "freigegeben": false,
+  "einleitung": "Platzhaltertext: Teil III des Adressbuchs listet die gewerblichen Betriebe Essens nach Branche. Die fünfzehn Rubriken reichen von Bergbau über Handel bis Gesundheit — jede Rubrik zeigt, wie dicht eine Branche im Stadtgebiet vertreten war.",
+  "quellen": ["Adreßbuch Essen 1936, Teil III (Branchen)", "Gewerbe-Kuratierung docs/gewerbe.md"],
+  "grenzen": "{gewerbe_geprueft} % der Betriebe handgeprüft, {gewerbe_entschieden} % nach dokumentierten Prinzipien entschieden, {gewerbe_vorschlag} % Wortregel (docs/gewerbe.md). Dichte = Betriebe je 1.000 Einwohnereinträge (Teil I) der Einheit; Teil III nennt Betriebe, nicht Beschäftigte.",
+  "schritte": [
+    {"id": "rubriken", "text": "Platzhaltertext: Fünfzehn Branchen, jede als Kreis — Fläche nach Zahl der Betriebe.", "beschreibung": "Bubbles der Betriebe, gefärbt nach Branche, gepackt je Branche.", "hervorheben": ["Schneider für Herren", "Schankwirt"],
+     "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "bubbles", "gruppen": [
+        {"name": "Bergbau und Kokerei", "aus": ["bergbau"], "farbe": "#e69f00"}, {"name": "Metall, Maschinen, Elektro", "aus": ["metall_maschinen"], "farbe": "#56b4e9"},
+        {"name": "Bau", "aus": ["bau"], "farbe": "#009e73"}, {"name": "Holz und Möbel", "aus": ["holz_moebel"], "farbe": "#f0e442"},
+        {"name": "Textil und Bekleidung", "aus": ["textil_bekleidung"], "farbe": "#0072b2"}, {"name": "Lebensmittel und Genussmittel", "aus": ["lebensmittel"], "farbe": "#d55e00"},
+        {"name": "Handel (übrige Waren)", "aus": ["handel"], "farbe": "#cc79a7"}, {"name": "Gastgewerbe", "aus": ["gastgewerbe"], "farbe": "#000000"},
+        {"name": "Verkehr, Bahn, Post", "aus": ["verkehr_bahn_post"], "farbe": "#e69f00"}, {"name": "Banken, Versicherungen, Immobilien, Beratung", "aus": ["finanzen_recht"], "farbe": "#56b4e9"},
+        {"name": "Verwaltung, Polizei, Recht", "aus": ["verwaltung"], "farbe": "#009e73"}, {"name": "Bildung, Kultur, Medien, Kirche", "aus": ["bildung_kultur_kirche"], "farbe": "#f0e442"},
+        {"name": "Gesundheit", "aus": ["gesundheit"], "farbe": "#0072b2"}, {"name": "Haushalt, Reinigung, Körperpflege", "aus": ["haus_reinigung"], "farbe": "#d55e00"},
+        {"name": "Sonstige", "aus": ["sonstige"], "farbe": "#cc79a7"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Bergbau und Kokerei", "min_n": 0, "filter": {}, "karte": null}},
+    {"id": "dichte", "text": "Platzhaltertext: Wo gab es je 1.000 Einwohnereinträge die meisten Betriebe?", "beschreibung": "Betriebe je 1.000 Teil-I-Einträge je Stadtteil", "hervorheben": [],
+     "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "rangliste", "gruppen": [
+        {"name": "alle Betriebe", "aus": ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "lebensmittel", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"], "farbe": "#0072b2"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "alle Betriebe", "min_n": 200, "filter": {}, "karte": null}},
+    {"id": "karte-lebensmittel", "text": "Platzhaltertext: Wo war die Lebensmittelversorgung besonders dicht?", "beschreibung": "Stadtteilkarte: Lebensmittelbetriebe je 1.000 Teil-I-Einträge; Stadtteile unter 200 geprüften Einträgen grau.", "hervorheben": [],
+     "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [
+        {"name": "Lebensmittel", "aus": ["lebensmittel"], "farbe": "#d55e00"},
+        {"name": "übrige", "aus": ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"], "farbe": "#c8c8c8"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "Lebensmittel", "min_n": 200, "filter": {}, "karte": null}},
+    {"id": "geschaeftsstrassen", "text": "Platzhaltertext: Auf welchen Straßen war Gewerbe am dichtesten?", "beschreibung": "Rangliste der Straßen nach Betriebsdichte, die fünfzehn dichtesten.", "hervorheben": [],
+     "ansicht": {"daten": "gewerbe", "ebene": "strasse", "form": "rangliste", "gruppen": "wie:dichte",
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "alle Betriebe", "min_n": 30, "filter": {"top": 15}, "karte": null}}
+  ]
+}
