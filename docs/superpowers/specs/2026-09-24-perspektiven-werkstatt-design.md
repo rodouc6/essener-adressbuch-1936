@@ -246,6 +246,23 @@ Bubble-Layouts entstehen deterministisch (Kreispackung nach Größe absteigend, 
 Reihenfolge, keine Zufallszahl), Test prüft Überlappungsfreiheit und Reproduzierbarkeit. Der
 `gattung`-Text je Eintrag wird in `haus/*.json` ergänzt.
 
+### 5.4a Stadtteil je Adresse (ergänzt 2026-09-25, für 5b vorgezogen)
+
+Bis 5a war der Stadtteil einer Adresse die Stadtteil-Liste ihrer Straße aus `essener-strassen`
+(„Stadtkern; Ostviertel; Südostviertel; Huttrop; Steele“ für die Steeler Straße). 140 solcher
+Kombinationen banden 32 % der Adressen — für Nord-Süd-Fragen unbrauchbar. Neu: jede verortete
+Adresse erhält per Punkt-in-Polygon genau einen Stadtteil aus den **heutigen Stadtteilgrenzen
+Essens** (OSM, `boundary=administrative`, `admin_level=10`, 50 Stadtteile; ODbL). Abruf
+`werkzeuge/osm_stadtteile_laden.py` → `build/osm_stadtteile.json` (Ringe aus den Relations-
+Wegen zusammengesetzt); Zuordnung `pipeline/lib/stadtteile.py` in `karte_export.gruppiere`;
+Export `site/daten/stadtteile.geojson` (Polygone mit `id` = Name) für Perspektiven und Karte.
+Namensabgleich in `kuratierung/stadtteile_osm.csv` (OSM „Margarethenhöhe“ ↔ bisher
+„Margaretenhöhe“; „Sternviertel“ der Straßentabelle geht im Südviertel auf; Kettwig und
+Burgaltendorf gehörten 1936 nicht zu Essen und bleiben leer). Adressen außerhalb aller
+Polygone behalten den bisherigen Straßen-Stadtteil, gekennzeichnet `stadtteil_quelle=strasse`
+statt `polygon`; Kennzahl `stadtteil_polygon` (Anteil). Kennzeichnung überall: „heutige
+Stadtteilgrenzen“.
+
 ### 5.5 Doku
 
 `docs/stellung.md` (Klassen, Regeln, Grenzfälle, Kaufleute-Experiment), README-Abschnitte
@@ -287,18 +304,30 @@ Kapitel (Reihenfolge):
    Bubbles der 101 Eigentümer nach Klasse → Rangliste der 15 größten → Karte Stadtteil-Anteil
    Bergbau/Industrie → Karte Genossenschaften/Siedlungen → Grenzen. Text: Platzhalter, bis
    der Projektleiter ihn schreibt (`freigegeben: false`).
-2. **Soziale Stellung: Wer wohnte wo?** — Gliederung mit Leitfragen (Nord–Süd-Reihe der
-   Stadtteile, Mischung Stadtmitte vs. Siedlungen, Kaufleute-Experiment); Ansichten werden
-   angelegt, sobald 5a die Stellung liefert.
-3. **Gewerbe und Versorgung** — Gliederung (Rubriken als Bubbles, Dichte Bäcker/Lebensmittel/
-   Schankwirte je Stadtteil, Geschäftsstraßen); Ansichten nach 5a.
+2. **Soziale Stellung: Wer wohnte wo?** (Ansichten seit 2026-09-25 möglich; Text Platzhalter)
+   — Schritte: Anteilsbalken der neun Klassen mit Segment „unbestimmt“ → Rangliste der
+   Stadtteile nach Arbeiteranteil (Nord–Süd-Reihe, `rang_nord`) → Stadtteilkarte Arbeiteranteil
+   → Stadtteilkarte Anteil Beamte + Angestellte + freie Berufe + Unternehmer → Balken je
+   Stadtteil für Stadtkern, Südviertel, Katernberg, Margaretenhöhe (Mischung, `mass=mischung`)
+   → Kaufleute-Experiment (dieselbe Karte mit `kaufleute=selbstaendige` und `=angestellte`) →
+   Grenzen. Pflicht: Anteil „unbestimmt“ je Einheit sichtbar — er ist nicht zufällig verteilt
+   (Südviertel 37 %, Katernberg 15 %; Exploration 2026-09-25).
+3. **Gewerbe und Versorgung** (Ansichten möglich; Text Platzhalter) — Schritte: Bubbles der
+   Rubriken nach Branche → Rangliste Betriebe je 1.000 Teil-I-Einträge je Stadtteil
+   (`mass=dichte`; Stadtkern 351, Katernberg 45) → Stadtteilkarte Dichte Lebensmittel →
+   Rangliste Geschäftsstraßen (Straßen nach `n_III`) → Grenzen (`gewerbe_quelle`).
 
 ### 6.3 Technik
 
 `site/js/perspektiven.js` (Seite, Scrollama-Anbindung), `site/js/formen/{bubbles,balken,
 multiples,rangliste,karte}.js` mit gemeinsamer Schnittstelle
 `zeige(container, ansicht, daten, optionen) → {svg|canvas, legende, zahlen}`;
-`site/js/daten_ebenen.js` lädt `ebenen/*.json` und `layout/*.json` einmal je Seite.
+`site/js/daten_ebenen.js` lädt `ebenen/*.json`, `layout/*.json`, `stadtteile.geojson` und
+`hauptgruppen.json` einmal je Seite. Die Stadtteilkarte der Perspektiven ist SVG (Polygone aus
+`stadtteile.geojson`, Farbe nach Maß), keine MapLibre-Instanz — leicht, testbar, animierbar;
+MapLibre bleibt der Karte (`karte.html?ansicht=`). `multiples` wird erst in 5c gebaut.
+Vorgabewerte `min_n` aus der Verteilung 2026-09-25: Straße 30, Hex 50, Stadtteil 200.
+Unfreigegebene Kapitel sind mit `?vorschau=1` sichtbar (Textarbeit des Projektleiters).
 Scrollama 3.x als `site/vendor/scrollama.js` (MIT, Version in `vendor/README.md`).
 Startseite: Kachel „Perspektiven“; Über-Seite: Absatz.
 
@@ -326,7 +355,7 @@ Startseite: Kachel „Perspektiven“; Über-Seite: Absatz.
 
 | | adresse | strasse | stadtteil | hex |
 |---|---|---|---|---|
-| karte | Punkte | Linien | Fläche (Zentrum-Kreis, da keine Stadtteilpolygone; §10) | Sechsecke |
+| karte | Punkte | Linien | Fläche (heutige Stadtteilgrenzen, §5.4a) | Sechsecke |
 | bubbles | — (Einheiten sind Normen/Eigentümer/Rubriken, nicht Adressen) | — | — | — |
 | balken | gesamt | je Straße (Top-N) | je Stadtteil | — |
 | multiples | — | — | Kacheln je Stadtteil | — |
@@ -375,7 +404,6 @@ der Ansicht (`history.replaceState` bei jeder Änderung); „Meine Ansichten“ 
   heute, Daten 1936“; (b) Umrisse aus dem Stadtplan 1935 (ArcGIS-Dienst geo.essen.de, Rechte
   offen) vektorisieren — Segmentierung des Rasters oder händisches Nachzeichnen je Quartier —
   und füllen; historisch die richtige Geometrie, eigenes Projekt.
-- Stadtteilpolygone (heutige Grenzen von der Stadt Essen / OSM) statt Zentrum-Kreisen.
 - Abgleich Eigentümer ↔ Bewohner (wohnt der Eigentümer im Haus?), Anteil je Straße.
 - **Abgleich Teil I ↔ Teil III über Name + Adresse (vorziehen, Kandidat für 5b):** Wer in
   Teil III als Betrieb an derselben Adresse steht, ist Inhaber → Stellung `selbstaendige`.
