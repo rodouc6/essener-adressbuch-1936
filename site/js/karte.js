@@ -29,6 +29,9 @@ export function zechePopupHtml(p) {
   return `<b>${esc(p.name)}</b><br>${esc(p.stadtteil || "")}<br>${jahre}${widerspruch}${plan}${link}`;
 }
 
+// Grau der Einheiten ohne Farbe (unter min_n oder gar nicht in den Ebenendaten) — wie GRAU in formen/skalen.js.
+const GRAU_KARTE = "#c8c8c8";
+
 const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", false] };
 const LEERER_STIL = { version: 8, sources: {}, layers: [] };
 
@@ -37,6 +40,9 @@ export class Karte {
     this.ereignisse = ereignisse;
     this.zustand = zustand;
     this.farbe = null;          // Themenfarbregel (Task 13) oder null
+    this.ansicht = null;        // normalisierte Ansicht (Spec §8) oder null
+    this.ansichtWerte = new Map();
+    this._ansichtGen = 0;
     this.treffer = new Set();
     this.auswahl = null;
     this._stilCache = new Map();
@@ -71,6 +77,9 @@ export class Karte {
     const q = {
       adressen: { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" },
       zechen: { type: "geojson", data: new URL(DATEN + "zechen.geojson", location.href).href },
+      // Flächen der Ansichten (Spec §8); promoteId hebt die Eigenschaft `id` zur Feature-ID,
+      // damit Farben per feature-state gesetzt werden können.
+      stadtteile: { type: "geojson", data: new URL(DATEN + "stadtteile.geojson", location.href).href, promoteId: "id" },
     };
     // Solange PLAN_FREIGEGEBEN false ist (Rechte am Dienst geo.essen.de ungeklärt), weder Quelle
     // noch Ebene anlegen — kein einziger Request an den Dienst, auch nicht über ?plan=1 (C1).
@@ -89,6 +98,15 @@ export class Karte {
     const e = [];
     if (PLAN_FREIGEGEBEN) e.push({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
                                   layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
+    // Ansichtsebenen liegen unter den Adresspunkten, damit die Punkte sichtbar bleiben; ohne
+    // Ansicht sind alle drei unsichtbar. Ohne feature-state bleibt eine Einheit grau.
+    e.push({ id: "stadtteile-flaeche", type: "fill", source: "stadtteile", layout: { visibility: "none" },
+             paint: { "fill-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE], "fill-opacity": 0.55, "fill-outline-color": "#fff" } });
+    e.push({ id: "strassen-linie", type: "line", source: "adressen", "source-layer": "strassen", layout: { visibility: "none" },
+             paint: { "line-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE],
+                      "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 15, 5] } });
+    e.push({ id: "hex-flaeche", type: "fill", source: "adressen", "source-layer": "hex", layout: { visibility: "none" },
+             paint: { "fill-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE], "fill-opacity": 0.6 } });
     e.push({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
              filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
     e.push({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
@@ -151,6 +169,49 @@ export class Karte {
     this.setzeZechen(this.zustand.zechen);
     this.setzeTreffer(this.treffer.size ? [...this.treffer] : null);
     this.setzeAuswahl(this.auswahl);
+    // Nach einem Stilwechsel sind Quellen und feature-state neu — Ansicht erneut auflegen.
+    this.setzeAnsicht(this.ansicht, this.ansichtWerte);
+  }
+
+  // Eine Ansicht (Spec §8) auf der Karte zeigen: passende Ebene sichtbar, Farben per feature-state,
+  // Adresspunkte gedimmt. `werte` ist eine Map id → { farbe, … } aus ansicht_farben.js.
+  setzeAnsicht(ansicht, werte) {
+    this.ansicht = ansicht || null;
+    this.ansichtWerte = werte || new Map();
+    const m = this.map;
+    this._ansichtGen = (this._ansichtGen || 0) + 1;   // hebt noch wartende Farbanwendungen auf
+    if (!m.getLayer("stadtteile-flaeche")) return;    // vor dem ersten Stil: kommt über ebenenAufsetzen()
+    const ebene = this.ansicht ? this.ansicht.ebene : null;
+    m.setLayoutProperty("stadtteile-flaeche", "visibility", ebene === "stadtteil" ? "visible" : "none");
+    m.setLayoutProperty("strassen-linie", "visibility", ebene === "strasse" ? "visible" : "none");
+    m.setLayoutProperty("hex-flaeche", "visibility", ebene === "hex" ? "visible" : "none");
+    if (ebene && ebene !== "adresse") {
+      const quelle = ebene === "stadtteil" ? { source: "stadtteile" }
+        : { source: "adressen", sourceLayer: ebene === "strasse" ? "strassen" : "hex" };
+      this._farbenAnwenden(quelle, this._ansichtGen);
+    }
+    this._deckkraftSetzen();
+  }
+
+  // feature-state lässt sich erst setzen, wenn die Quelle geladen ist; sonst bliebe alles grau.
+  // Deshalb bei Bedarf einmal auf "sourcedata" warten und dann anwenden.
+  _farbenAnwenden(quelle, gen) {
+    const m = this.map;
+    const anwenden = () => {
+      if (gen !== this._ansichtGen) return true;      // von einer neueren Ansicht überholt
+      try {
+        m.removeFeatureState(quelle);
+        for (const [id, w] of this.ansichtWerte) m.setFeatureState({ ...quelle, id }, { farbe: w.farbe });
+      } catch { return false; }
+      return true;
+    };
+    if (m.isSourceLoaded(quelle.source) && anwenden()) return;
+    const horch = (e) => {
+      if (gen !== this._ansichtGen) { m.off("sourcedata", horch); return; }
+      if (e.sourceId !== quelle.source || !e.isSourceLoaded) return;
+      if (anwenden()) m.off("sourcedata", horch);
+    };
+    m.on("sourcedata", horch);
   }
 
   // Farbe und Größe aus Zustand + Themenregel ableiten und auf beide Adressebenen legen.
@@ -175,10 +236,12 @@ export class Karte {
     this._deckkraftSetzen();
   }
 
-  // Ohne Treffermenge sind alle Punkte voll sichtbar; mit Treffermenge nur die Treffer, der Rest gedimmt.
+  // Ohne Treffermenge sind alle Punkte voll sichtbar; mit Treffermenge nur die Treffer, der Rest
+  // gedimmt. Unter einer Flächenansicht treten die Punkte insgesamt zurück, damit die Fläche lesbar bleibt.
   _deckkraftSetzen() {
     if (!this.map.getLayer("adressen-haus")) return;
-    const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], 0.9, 0.25] : 0.9;
+    const basis = this.ansicht && this.ansicht.ebene !== "adresse" ? 0.15 : 0.9;
+    const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], basis, Math.min(basis, 0.25)] : basis;
     this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
     this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);
   }

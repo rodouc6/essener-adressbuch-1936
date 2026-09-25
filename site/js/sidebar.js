@@ -10,6 +10,7 @@ export class Sidebar {
     this.pills = el.querySelector("#pills");
     this.vorschlaegeEl = el.querySelector("#vorschlaege");
     this.themenkopf = el.querySelector("#themenkopf");
+    this.ansichtkopf = el.querySelector("#ansichtkopf");
     this.suche = el.querySelector("#suche");
     this.stadtteile = []; this.berufe = [];
     el.querySelector("#griff").addEventListener("click", () => this.naechsteStufe());
@@ -121,6 +122,22 @@ export class Sidebar {
         groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
       this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onZustand({ q: "", beruf: "", ohdab: "", eigentuemer: b.dataset.eigentuemer, id: "" })));
     }
+  }
+
+  // Kopf einer aktiven Ansicht (Spec §8). `roh` ist der unveränderte URL-String, damit der Link in
+  // die Werkstatt genau dieselbe Ansicht öffnet. Die Werkstatt kommt erst in 5c — darum gekennzeichnet.
+  zeigeAnsicht(ansicht, roh = "") {
+    const el = this.ansichtkopf;
+    if (!el) return;
+    if (!ansicht) { el.hidden = true; el.innerHTML = ""; return; }
+    const gruppen = ansicht.gruppen.map((g) => g.name).join(", ");
+    el.innerHTML = `<div class="thema ansicht"><b>Ansicht: ${esc(ansicht.daten)} · ${esc(ansicht.ebene)} · ${esc(ansicht.mass)}</b>` +
+      `<p>${ansicht.bezug ? `Bezug: ${esc(ansicht.bezug)}. ` : ""}Gruppen: ${esc(gruppen) || "keine"}.<br>` +
+      `Einheiten unter ${ansicht.min_n} Nennungen bleiben grau.</p>` +
+      `<a href="werkstatt.html?ansicht=${encodeURIComponent(roh)}">In der Werkstatt öffnen (ab 5c)</a>` +
+      `<button data-ansicht-aus="1">Ansicht verlassen</button></div>`;
+    el.hidden = false;
+    el.querySelector("[data-ansicht-aus]").addEventListener("click", () => this.a.onZustand({ ansicht: "" }));
   }
 
   zeigeThemenliste(themen) {

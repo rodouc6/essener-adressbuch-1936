@@ -51,6 +51,13 @@ test("eigentuemer im Zustand", () => {
   assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: "Stadt Essen" }), "eigentuemer=Stadt+Essen");
 });
 
+test("ansicht wird roh durchgereicht", () => {
+  const z = liesZustand("?ansicht=eyJkYXRlbiI6ImJlc2l0eiJ9");
+  assert.equal(z.ansicht, "eyJkYXRlbiI6ImJlc2l0eiJ9");
+  assert.equal(schreibeZustand(z), "ansicht=eyJkYXRlbiI6ImJlc2l0eiJ9");
+  assert.equal(liesZustand("").ansicht, "");
+});
+
 test("ohdab im Zustand", () => {
   assert.equal(liesZustand("?ohdab=B+21112-100").ohdab, "B 21112-100");
   assert.equal(schreibeZustand({ ...STANDARD, ohdab: "B 21112-100" }), "ohdab=B+21112-100");

@@ -3,7 +3,10 @@ import { Lader } from "./daten.js";
 import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
 import { liesZustand, schreibeZustand } from "./zustand.js";
-import { popupHtml } from "./popup.js";
+import { popupHtml, esc } from "./popup.js";
+import { dekodiere, normalisiere } from "./ansicht.js";
+import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
+import { werteFarben, legendeFuer } from "./ansicht_farben.js";
 import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
@@ -38,6 +41,9 @@ if (!new URLSearchParams(location.search).has("karte")) {
 let ergebnis = null;              // aktuelle Treffermenge
 let auswahl = null;               // { art, ... } der Suche
 let themaAktiv = null;            // aktives Thema mit farbregel und ebenen
+let ansichtAktiv = null;          // normalisierte Ansicht (Spec §8) oder null
+let ansichtWerte = [];            // Werte je Einheit der aktiven Ansicht
+let ebenenVersprechen = null;     // ladeEbenen() nur einmal je Seite
 const eigCache = new Map();       // adressId → Punkteigenschaften (aus Kacheln oder Adressscherbe)
 const mobil = () => matchMedia("(max-width: 899px)").matches;
 
@@ -90,6 +96,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
   // Die Karte wendet Filter/Plan/Zechen/Treffer/Auswahl in ebenenAufsetzen() selbst wieder an.
   if (alt.karte !== zustand.karte) { karte.setzeStil(zustand.karte); schreibeKarteSpeicher(zustand.karte); }
   if (alt.thema !== zustand.thema) await wendeThemaAn();
+  if (alt.ansicht !== zustand.ansicht) await wendeAnsichtAn();
   // Bei einem Stilwechsel legt ebenenAufsetzen() die Ebenen erst neu an (asynchron, nicht
   // awaitet); ein sofortiger setzeFilter/setzePlan/setzeZechen hier würde noch auf die alten,
   // gerade abgebauten Layer zielen ("Cannot filter non-existing layer"). Nur anwenden, wenn sich
@@ -127,6 +134,30 @@ async function wendeThemaAn() {
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
   schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden
+}
+
+// Eine Ansicht aus der URL auf Karte, Sidebar und Legende legen (Spec §8). Die Ebenendaten
+// (Kennzahlen je Straße/Stadtteil/Hexfeld) werden nur geladen, wenn wirklich eine Ansicht aktiv ist.
+async function wendeAnsichtAn() {
+  if (!zustand.ansicht) {
+    ansichtAktiv = null; ansichtWerte = [];
+    karte.setzeAnsicht(null, null); sidebar.zeigeAnsicht(null);
+    return;
+  }
+  try {
+    const a = normalisiere(dekodiere(zustand.ansicht));
+    if (!ebenenVersprechen) ebenenVersprechen = ladeEbenen(lader);
+    const ebenen = await ebenenVersprechen;
+    ansichtAktiv = a;
+    ansichtWerte = werteJeEinheit(a, ebenen);
+    karte.setzeAnsicht(a, werteFarben(ansichtWerte, a));
+    sidebar.zeigeAnsicht(a, zustand.ansicht);
+  } catch (fehler) {
+    // Eine kaputte Ansicht darf die Kartenseite nicht lahmlegen — Karte bleibt ohne Einfärbung.
+    console.error("Ansicht konnte nicht angewendet werden", fehler);
+    ansichtAktiv = null; ansichtWerte = [];
+    karte.setzeAnsicht(null, null); sidebar.zeigeAnsicht(null);
+  }
 }
 
 async function zeigeInhalt() {
@@ -246,6 +277,17 @@ function zeichneSteuerung() {
 function zeichneLegende() {
   let html = "";
 
+  // Legende der aktiven Ansicht (Spec §8): Stufen bzw. Gruppen, min_n, Grundlage, Herkunft.
+  if (ansichtAktiv) {
+    html += `<div class="zeile"><b>Ansicht: ${esc(ansichtAktiv.daten)} · ${esc(ansichtAktiv.mass)}</b></div>`;
+    for (const e of legendeFuer(ansichtAktiv, ansichtWerte)) {
+      html += e.farbe
+        ? `<div class="zeile"><span class="flaeche" style="background:${esc(e.farbe)}"></span> ${esc(e.text)}</div>`
+        : `<div class="zeile klein">${esc(e.text)}</div>`;
+    }
+    html += `<div class="zeile klein">Adresspunkte treten zurück, solange eine Fläche eingefärbt ist.</div>`;
+  }
+
   // Themenlegende, falls ein Thema aktiv ist (und eine Farbregel trägt — ohne Farbe keine Legende)
   if (themaAktiv && themaAktiv.farbe) {
     const farbe = themaAktiv.farbe;
@@ -314,6 +356,7 @@ async function start() {
   sidebar.setzeFilteroptionen(st, be);
   if (kz) document.getElementById("vermerk").textContent = `Work in progress · Datenstand ${kz.stand} · ${kz.stufen.haus} % hausgenau`;
   await wendeThemaAn();
+  await wendeAnsichtAn();
   karte.setzeFilter(zustand); karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   zeichneSteuerung(); zeichneLegende();
   if (zustand.beruf) auswahl = { art: "beruf", beruf: zustand.beruf };
