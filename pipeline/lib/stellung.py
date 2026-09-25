@@ -33,7 +33,7 @@ _HANDWERK = ("bäcker", "metzger", "schlachter", "fleischer", "konditor", "schne
              "stellmacher", "wagner", "böttcher", "küfer", "müller", "mühlen", "brauer", "gerber", "seiler", "töpfer",
              "ofensetzer", "steinmetz", "bildhauer", "graveur", "optiker", "mechaniker", "fotograf")
 _HANDWERK_GEFALTET = tuple(falte_form(h) for h in _HANDWERK)
-_MEISTER = re.compile(r"(meister(in)?|mstr\.?)$", re.I)
+_MEISTER = re.compile(r"(meister(in)?|mstr(in)?\.?)$", re.I)   # auch „…mstrin.“ (weibliche Kurzform)
 _FREIE = re.compile(r"arzt|ärzt|zahnarzt|dentist|tierarzt|apotheker|rechtsanwalt|anwalt|notar|architekt|patentanwalt|"
                     r"wirtschaftsprüfer|steuerberater|bücherrevisor|schriftsteller|künstler|kunstmaler|bildhauer/in$", re.I)
 _UNTERNEHMER = re.compile(r"fabrikant|fabrikbesitzer|(?<!studien)(?<!kataster)direktor|generaldirektor|vorstand|geschäftsführer|"

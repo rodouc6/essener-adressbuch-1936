@@ -104,3 +104,9 @@ def test_ergaenze_stellung_laesst_geprueft_ohne_stellung_unangetastet():
     neu, kenn = ergaenze_stellung(zeilen, ohdab, REGELN)
     assert neu == zeilen
     assert kenn == {"geprueft": 1}
+
+
+def test_meisterin_abgekuerzt():
+    # „…mstrin.“ ist die weibliche Kurzform; sie folgt derselben Handwerks-/Betriebs-Unterscheidung wie „…mstr.“.
+    assert stellung_vorschlag(zeile("Schneidermstrin.", beruf="Schneidermstrin."), item("Schneider/in", "fachlich", "Berufe in der Textilverarbeitung", "B 28212"), REGELN) == ("selbstaendige", "handwerksmeister")
+    assert stellung_vorschlag(zeile("Hausmstrin.", beruf="Hausmeisterin"), item("Hausmeister/in", "fachlich", "Hausmeister", "B 34112"), REGELN) == ("angestellte", "betriebsmeister")
