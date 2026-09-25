@@ -345,6 +345,16 @@ der Ansicht (`history.replaceState` bei jeder Änderung); „Meine Ansichten“ 
   und füllen; historisch die richtige Geometrie, eigenes Projekt.
 - Stadtteilpolygone (heutige Grenzen von der Stadt Essen / OSM) statt Zentrum-Kreisen.
 - Abgleich Eigentümer ↔ Bewohner (wohnt der Eigentümer im Haus?), Anteil je Straße.
+- **Abgleich Teil I ↔ Teil III über Name + Adresse (vorziehen, Kandidat für 5b):** Wer in
+  Teil III als Betrieb an derselben Adresse steht, ist Inhaber → Stellung `selbstaendige`.
+  Anlass (2026-09-25): „Friseur“ (724) ist als `arbeiter` vorgeschlagen, Teil III zählt aber
+  657 Friseurbetriebe (Rubriken „Friseur“ 560 + „Friseur für Damen“ 97), während Teil I nur
+  ~300 Einträge als Geschäft/Meister kennzeichnet („Friseurgesch.“ 246, „Friseurmstr.“ 30,
+  Salons 24). Mehrere hundert „Friseur“ müssen also Inhaber sein. Gleiches gilt für andere
+  Handwerksberufe ohne Meister-/Gehilfen-Zusatz (Schneider, Schuhmacher, Bäcker, Metzger,
+  Uhrmacher …); der Meisterzwang für Neugründungen galt erst ab 1935, Altinhaber ohne Titel
+  blieben. Bis zum Abgleich: solche Schreibweisen bei der Handprüfung `unbestimmt`, nicht
+  pauschal `arbeiter`.
 - Vergleich mit der Berufszählung 1933 (Stellung im Beruf) für Essen.
 - Entfernung zum nächsten Betrieb einer Rubrik je Adresse.
 - H–J-Lücke (Export adressbuecher.net), Pages-Launch, OhdAB-Rückmeldung.

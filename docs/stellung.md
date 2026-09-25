@@ -157,6 +157,13 @@ geprüft, nicht gegen den vollen Text mit Gattung.
   akademischer Titel („Dipl.-Ing.“, Akademiker-Merkmal) hebt die Zuordnung in Regel 5 auf `freie_berufe`.
 - **Gewerbeformen → Selbständige**, Niveau bleibt aber `niveau_unsicher=ja` (siehe
   `docs/berufe_gewerbeformen.md`) — die Stellung ist hier sicherer entscheidbar als das OhdAB-Niveau.
+- **Handwerksberufe ohne Meister-/Gehilfen-Zusatz („Friseur“, „Schneider“, „Schuhmacher“, „Bäcker“ …)
+  laufen nach Niveau als `arbeiter`, sind aber oft Betriebsinhaber.** Beleg: „Friseur“ 724 Einträge in
+  Teil I, dazu nur ~300 als Geschäft/Meister gekennzeichnet („Friseurgesch.“ 246, „Friseurmstr.“ 30,
+  Salons 24) — Teil III zählt aber 657 Friseurbetriebe. Der Meisterzwang für Neugründungen galt erst ab
+  1935, Altinhaber ohne Titel blieben. Bei der Handprüfung solche Schreibweisen daher als `unbestimmt`
+  belassen; auflösen kann das nur der Abgleich Teil I ↔ Teil III über Name + Adresse (Spec §10,
+  für 5b vorgezogen).
 - **Kaufleute bekommen eine eigene Klasse**, statt sie einer Nachbarklasse zuzuschlagen, weil die
   Schreibweise „Kaufmann“ ohne Zusatz nicht erkennen lässt, ob eine selbständige Existenz oder eine
   angestellte Stellung gemeint ist (siehe Kaufleute-Experiment unten).
