@@ -5,7 +5,7 @@
 import { Lader } from "./daten.js";
 import { normalisiere } from "./ansicht.js";
 import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
-import { esc } from "./formen/skalen.js";
+import { esc, nennerText } from "./formen/skalen.js";
 import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
@@ -17,14 +17,35 @@ const lader = new Lader();
 const vorschau = new URLSearchParams(location.search).get("vorschau") === "1";
 const reduziert = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const daten = await ladeEbenen(lader);
-const index = sichtbareKapitel((await lader.perspektivenIndex()) || [], vorschau);
-document.getElementById("einleitung").textContent = fuellePlatzhalter("Drei Blicke auf das Adressbuch von 1936: {adressen} verortete Adressen, Stand {stand}. Jede Grafik nennt, wie viel geprüft ist und was ausgeschlossen bleibt.", daten.kennzahlen);
-document.getElementById("inhalt").innerHTML = index.map((k) => `<li><a href="#k-${esc(k.id)}">${esc(k.titel)}</a>${k.freigegeben ? "" : " <small>(Vorschau)</small>"}</li>`).join("");
+// Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, ab vier Ziffern.
+const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei" };
 
-if (index.length === 0) {
-  document.getElementById("kapitel").innerHTML = '<p class="leer">Noch kein Kapitel freigegeben.</p>';
-} else {
+let daten = null;
+// Ein Ladefehler (Netz, kaputtes JSON) darf die Seite nicht als leere Fläche zurücklassen.
+try {
+  await seiteAufbauen();
+} catch (fehler) {
+  console.error("Perspektiven konnten nicht geladen werden", fehler);
+  document.getElementById("kapitel").innerHTML =
+    `<p class="leer">Die Perspektiven konnten nicht geladen werden (${esc((fehler && fehler.message) || fehler)}). Bitte später erneut versuchen.</p>`;
+}
+
+async function seiteAufbauen() {
+  daten = await ladeEbenen(lader);
+  const index = sichtbareKapitel((await lader.perspektivenIndex()) || [], vorschau);
+  // Die Einleitung zählt, was wirklich sichtbar ist — „Drei Blicke“ wäre falsch, sobald ein
+  // Kapitel nicht freigegeben ist.
+  const n = index.length;
+  const einleitung = n === 0 ? "Noch kein Kapitel freigegeben."
+    : `${n === 1 ? "Ein Blick" : `${ZAHLWORT[n] || n} Blicke`} auf das Adressbuch von 1936: {adressen} verortete Adressen, Stand {stand}. `
+      + "Jede Grafik nennt, wie viel geprüft ist und was ausgeschlossen bleibt.";
+  document.getElementById("einleitung").textContent = fuellePlatzhalter(einleitung, daten.kennzahlen);
+  document.getElementById("inhalt").innerHTML = index.map((k) => `<li><a href="#k-${esc(k.id)}">${esc(k.titel)}</a>${k.freigegeben ? "" : " <small>(Vorschau)</small>"}</li>`).join("");
+
+  if (index.length === 0) {
+    document.getElementById("kapitel").innerHTML = '<p class="leer">Noch kein Kapitel freigegeben.</p>';
+    return;
+  }
   for (const eintrag of index) {
     const k = await lader.kapitel(eintrag.id);
     if (!k) continue;
@@ -82,8 +103,10 @@ function zeichne(sec, schritt) {
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
   grafik.querySelector(".legende").innerHTML = r.legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
-  // Präzision: jeder Schritt nennt den Hinweis der Form und die Zahl der Einheiten unter min_n.
-  grafik.querySelector(".zahlen").textContent = r.zahlen.hinweis + (r.zahlen.unter_min ? ` · ${r.zahlen.unter_min} Einheiten unter ${ansicht.min_n} Nennungen (grau, nicht eingefärbt)` : "");
+  // Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
+  // gezeichnet sind (eine Rangliste zeigt nie alle) und wie viele unter min_n grau bleiben.
+  grafik.querySelector(".zahlen").textContent = `${r.zahlen.hinweis} · ${r.zahlen.einheiten} von ${r.zahlen.einheiten_gesamt} Einheiten gezeichnet`
+    + ` · ${r.zahlen.unter_min} unter ${ansicht.min_n} ${nennerText(ansicht)} (grau, nicht eingefärbt)`;
   svg.setAttribute("aria-label", schritt.beschreibung || "");
   const werte = werteJeEinheit(ansicht, daten);
   svg.querySelectorAll(".einheit").forEach((el) => el.addEventListener("click", () => zeigeDetail(el.dataset.id, werte, ansicht, el.querySelector("title")?.textContent)));

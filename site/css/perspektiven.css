@@ -21,7 +21,9 @@
 .kapitel > header .untertitel { color: var(--grau); margin: 2px 0 12px; }
 
 /* Zwei Spalten: links die Schritte zum Lesen, rechts die klebende Grafik. */
-.scrolly { display: grid; grid-template-columns: 40% 60%; gap: 24px; align-items: start; }
+/* minmax(0, …) statt 40%/60%: sonst wächst eine breite Grafik über ihre Spalte hinaus, weil
+   Grid-Spalten voreingestellt min-content-breit bleiben. */
+.scrolly { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 24px; align-items: start; }
 .scrolly .schritte { order: 1; }
 .scrolly .grafik { order: 2; position: sticky; top: 64px; height: calc(100vh - 96px); display: flex; flex-direction: column; justify-content: center; }
 

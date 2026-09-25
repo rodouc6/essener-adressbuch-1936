@@ -17,16 +17,16 @@
         {"name": "Gesundheit", "aus": ["gesundheit"], "farbe": "#0072b2"}, {"name": "Haushalt, Reinigung, Körperpflege", "aus": ["haus_reinigung"], "farbe": "#d55e00"},
         {"name": "Sonstige", "aus": ["sonstige"], "farbe": "#cc79a7"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Bergbau und Kokerei", "min_n": 0, "filter": {}, "karte": null}},
-    {"id": "dichte", "text": "Platzhaltertext: Wo gab es je 1.000 Einwohnereinträge die meisten Betriebe?", "beschreibung": "Betriebe je 1.000 Teil-I-Einträge je Stadtteil", "hervorheben": [],
+    {"id": "dichte", "text": "Platzhaltertext: Wo gab es je 1.000 Einwohnereinträge die meisten Betriebe?", "beschreibung": "Rangliste der Stadtteile nach Betrieben je 1.000 Teil-I-Einträgen; Stadtteile unter 200 Teil-I-Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "rangliste", "gruppen": [
         {"name": "alle Betriebe", "aus": ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "lebensmittel", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"], "farbe": "#0072b2"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "alle Betriebe", "min_n": 200, "filter": {}, "karte": null}},
-    {"id": "karte-lebensmittel", "text": "Platzhaltertext: Wo war die Lebensmittelversorgung besonders dicht?", "beschreibung": "Stadtteilkarte: Lebensmittelbetriebe je 1.000 Teil-I-Einträge; Stadtteile unter 200 geprüften Einträgen grau.", "hervorheben": [],
+    {"id": "karte-lebensmittel", "text": "Platzhaltertext: Wo war die Lebensmittelversorgung besonders dicht?", "beschreibung": "Stadtteilkarte: Lebensmittelbetriebe je 1.000 Teil-I-Einträge; Stadtteile unter 200 Teil-I-Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [
         {"name": "Lebensmittel", "aus": ["lebensmittel"], "farbe": "#d55e00"},
         {"name": "übrige", "aus": ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"], "farbe": "#c8c8c8"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "Lebensmittel", "min_n": 200, "filter": {}, "karte": null}},
-    {"id": "geschaeftsstrassen", "text": "Platzhaltertext: Auf welchen Straßen war Gewerbe am dichtesten?", "beschreibung": "Rangliste der Straßen nach Betriebsdichte, die fünfzehn dichtesten.", "hervorheben": [],
+    {"id": "geschaeftsstrassen", "text": "Platzhaltertext: Auf welchen Straßen war Gewerbe am dichtesten?", "beschreibung": "Rangliste der Straßen nach Betriebsdichte, die fünfzehn dichtesten; Straßen unter 30 Teil-I-Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "gewerbe", "ebene": "strasse", "form": "rangliste", "gruppen": "wie:dichte",
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "alle Betriebe", "min_n": 30, "filter": {"top": 15}, "karte": null}}
   ]

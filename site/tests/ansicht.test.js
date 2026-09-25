@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MIN_N, STANDARD_ANSICHT, dekodiere, kennzahlen, kodiere, normalisiere, praefix, schluesselDerEinheit, standardGruppen } from "../js/ansicht.js";
+import { MIN_N, STANDARD_ANSICHT, dekodiere, dekodiereOderNull, kennzahlen, kodiere, normalisiere, praefix, schluesselDerEinheit, standardGruppen } from "../js/ansicht.js";
 
 const G = [{ name: "Arbeiter", aus: ["arbeiter"], farbe: "#e69f00" }, { name: "Bürgertum", aus: ["beamte", "freie_berufe", "unternehmer", "angestellte"], farbe: "#0072b2" }];
 const E = { id: "Katernberg", n_I: 100, n_st_arbeiter: 60, n_st_beamte: 5, n_st_angestellte: 5, n_st_selbstaendige: 10, n_st_kaufleute: 4, n_st_unbestimmt: 16, adressen: 40 };
@@ -56,6 +56,19 @@ test("dichte nur für gewerbe: Betriebe je 1.000 Teil-I-Einträge", () => {
   const a = normalisiere({ daten: "gewerbe", gruppen: [{ name: "Lebensmittel", aus: ["lebensmittel"], farbe: "#000" }], bezug: "Lebensmittel", mass: "dichte", min_n: 0 });
   assert.equal(kennzahlen({ n_I: 500, n_gw_lebensmittel: 25, n_gw_bau: 5 }, a).wert, 50);
   assert.equal(kennzahlen({ n_I: 0, n_gw_lebensmittel: 25 }, a).wert, null);
+  // min_n schwellt bei dichte den Nenner (Teil-I-Einträge), nicht die gemessenen Betriebe.
+  const b = normalisiere({ ...a, min_n: 200 });
+  assert.equal(kennzahlen({ n_I: 150, n_gw_lebensmittel: 25 }, b).unter_min, true);
+  assert.equal(kennzahlen({ n_I: 500, n_gw_lebensmittel: 25 }, b).unter_min, false);
+});
+
+test("dekodiereOderNull: null statt Standardansicht bei kaputtem Parameter", () => {
+  const a = normalisiere({ daten: "besitz", ebene: "stadtteil", gruppen: G, bezug: "Arbeiter", min_n: 50 });
+  assert.deepEqual(dekodiereOderNull(kodiere(a)), a);
+  assert.equal(dekodiereOderNull("%%%"), null);
+  assert.equal(dekodiereOderNull(""), null);
+  assert.equal(dekodiereOderNull(Buffer.from('{"daten":"besitz"}', "utf8").toString("base64url")), null);   // ohne gruppen
+  assert.deepEqual(dekodiere("%%%"), STANDARD_ANSICHT);                                                    // Vertrag von dekodiere bleibt
 });
 
 test("standardGruppen je Datenkern", () => {

@@ -97,7 +97,7 @@ und schreiben dasselbe Objekt. Modul `site/js/ansicht.js` (rein, ohne DOM).
 |---|---|---|
 | `daten` | `stellung`, `gruppe`, `niveau`, `besitz`, `gewerbe` | Datenkern (Zählfelder, aus denen gerechnet wird) |
 | `ebene` | `adresse`, `strasse`, `stadtteil`, `hex` | Aggregationsebene; `adresse` = Punkte wie bisher |
-| `form` | `karte`, `bubbles`, `balken`, `multiples`, `rangliste` | Darstellung; nicht jede Form gilt für jede Ebene (Matrix in §7.2) |
+| `form` | `karte`, `stadtteilkarte`, `bubbles`, `balken`, `multiples`, `rangliste` | Darstellung; nicht jede Form gilt für jede Ebene (Matrix in §7.2); `stadtteilkarte` nur in Kapiteln (Stadtteilkarte als SVG) |
 | `gruppen` | Liste | Nutzer- oder Standardgruppen: Name, Menge von Klassen-/Item-Schlüsseln, Farbe |
 | `kaufleute` | `unbestimmt`, `angestellte`, `selbstaendige` | Experiment: wohin die Klasse `kaufleute` zählt (nur `daten=stellung`) |
 | `unsicher` | bool | Einträge mit unsicherem Niveau einbeziehen (`daten=niveau`) bzw. Automatik-Vorschläge der Stellung einbeziehen (`daten=stellung`, `stellung_quelle=vorschlag`; Standard: einbeziehen, Anteil handgeprüft wird genannt) |

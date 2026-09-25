@@ -47,12 +47,12 @@ Constraints der Spec), mit einer Erweiterung in `form`:
 | `unsicher` | bool | unsichere Zuordnungen mit anzeigen? |
 | `mass` | `anteil, dominant, mischung, dichte` | Kennzahl je Einheit |
 | `bezug` | str | bei `mass anteil`/`dichte`: Name der Bezugsgruppe (muss in `gruppen` vorkommen) |
-| `min_n` | int ≥ 0 | Mindestzahl geprüfter Adressen je Einheit, sonst grau/ausgeblendet |
+| `min_n` | int ≥ 0 | Mindestzahl der Nennungen je Einheit (bei `mass: "dichte"`: der Teil-I-Einträge der Einheit), sonst grau/ausgeblendet |
 | `filter` | dict | zusätzliche Einschränkung, z. B. `{"top": 15}` bei Ranglisten |
 | `karte` | dict oder `null` | Kartenausschnitt, falls die Ansicht einen eigenen braucht |
 
 `form: "stadtteilkarte"` ist in den Kapiteln der Name für `form: "karte"` mit `ebene: "stadtteil"` als
-eigenständiges Perspektiven-SVG (nicht die interaktive Leaflet-Karte der Basiskarte) — deshalb führt das
+eigenständiges Perspektiven-SVG (nicht die interaktive MapLibre-Karte der Basiskarte) — deshalb führt das
 Schema `stadtteilkarte` zusätzlich zu `karte` als eigenen Wert. `mass: "dichte"` ist nur mit
 `daten: "gewerbe"` zulässig (Dichte ergibt nur bei Gewerbebetrieben je Fläche/Adresse einen Sinn); jede
 andere Kombination meldet `pruefe_kapitel` als Fehler.
@@ -129,6 +129,15 @@ auf und löscht vor dem Export den alten `site/daten/perspektiven`-Ordner (wie b
    `id` und `reihenfolge`.
 2. `python3 pipeline/06_karte_export.py` (oder `--ohne-kacheln` für einen schnellen Lauf ohne PMTiles)
    laufen lassen. Ein ungültiges Kapitel bricht den Export mit `ValueError` und den konkreten Fehlern ab.
-3. Seite lokal mit `site/serve.py` öffnen (nicht `python3 -m http.server` — das kann keine Range-Requests
+3. Seite lokal mit `werkzeuge/serve.py` öffnen (nicht `python3 -m http.server` — das kann keine Range-Requests
    für PMTiles) und mit `?vorschau=1` aufrufen, solange `freigegeben: false` ist.
 4. Erst wenn Texte und Ansicht geprüft sind: `freigegeben: true` setzen und erneut exportieren.
+
+## Offene Punkte für 5c
+
+- Rangliste der 15 größten Eigentümer (Spec §6.2) braucht eine Layout-Rangliste; in 5b nicht baubar.
+  Die Rangliste-Form ordnet nur Einheiten einer Ebene (Straßen, Stadtteile, Hexfelder), keine Einträge
+  eines Layouts — der Schritt `rangliste` in `wohneigentum.json` zeigt deshalb vorerst die Stadtteile
+  nach Privatbesitz-Anteil.
+- `unsicher` wirkt bisher nur bei `daten=niveau`; für `stellung` (Automatik-Vorschläge ausblenden,
+  `n_stellung_hand`) in 5c.

@@ -29,7 +29,7 @@ test("balken: Gesamtbalken mit Segmenten, unbestimmt grau, Zahlenzeile", () => {
   const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "balken", gruppen: G, bezug: "Arbeiter", min_n: 0 });
   const r = balken.zeige(a, daten, { breite: 600, hoehe: 200 });
   assert.match(r.svg, /^<svg/); assert.match(r.svg, /data-id="Arbeiter"/); assert.match(r.svg, /#c8c8c8/);
-  assert.deepEqual(r.zahlen, { N: 105, n_aus: 55, unter_min: 0, einheiten: 2, hinweis: "105 Nennungen einbezogen, 55 ausgeschlossen (unbestimmt, ungeprüft)" });
+  assert.deepEqual(r.zahlen, { N: 105, n_aus: 55, unter_min: 0, einheiten: 2, einheiten_gesamt: 2, hinweis: "105 Nennungen einbezogen, 55 ausgeschlossen (unbestimmt, ungeprüft)" });
   assert.equal(r.legende.length, 3); assert.equal(r.legende[2].name, "ausgeschlossen");
   const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 200 });
   assert.match(je.svg, /data-id="Katernberg"/); assert.match(je.svg, /data-id="Südviertel"/);
@@ -45,7 +45,34 @@ test("rangliste: sortiert nach Wert, unter min_n ans Ende und grau, hervorheben"
   assert.equal(r.zahlen.unter_min, 1);
   // Gefiltert: N/n_aus/einheiten zur gezeichneten Menge, unter_min weiterhin zur ganzen Ebene.
   const t = rangliste.zeige({ ...a, filter: { top: 1 } }, daten, { breite: 600, hoehe: 300 });
-  assert.equal(t.zahlen.einheiten, 1); assert.equal(t.zahlen.unter_min, 1);
+  assert.equal(t.zahlen.einheiten, 1); assert.equal(t.zahlen.unter_min, 1); assert.equal(t.zahlen.einheiten_gesamt, 2);
+});
+
+test("Legende nach Maß: dichte in absoluten Stufen, mischung als Mischungsgrad", () => {
+  // Bei dichte darf keine Prozentstufe in der Legende stehen — gezeigt wird „je 1.000“.
+  const d = normalisiere({ daten: "gewerbe", ebene: "stadtteil", form: "rangliste", mass: "dichte",
+    gruppen: [{ name: "Lebensmittel", aus: ["lebensmittel"], farbe: "#d55e00" }], bezug: "Lebensmittel", min_n: 0 });
+  for (const form of [rangliste, stadtteilkarte]) {
+    const l = form.zeige(d, daten, { breite: 500, hoehe: 400 }).legende;
+    assert.ok(l.filter((e) => e.art === "stufe").every((e) => /je 1\.000/.test(e.text)), "dichte-Stufen nennen je 1.000");
+    assert.ok(!l.some((e) => /%/.test(e.text)), "keine Prozentangabe bei dichte");
+    assert.equal(l.at(-1).name, "unter 0 Teil-I-Einträgen");
+  }
+  const m = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "rangliste", mass: "mischung", gruppen: G, min_n: 50 });
+  for (const form of [rangliste, stadtteilkarte]) {
+    const l = form.zeige(m, daten, { breite: 500, hoehe: 400 }).legende;
+    assert.ok(l.filter((e) => e.art === "stufe").every((e) => /^Mischung /.test(e.text)), "Mischungsstufen");
+    assert.equal(l[0].text, "Mischung 0,0–0,2");
+    assert.equal(l.at(-1).name, "unter 50 Nennungen");
+  }
+});
+
+test("balken je_einheit: der Wert des Maßes steht neben dem Balken", () => {
+  const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "balken", gruppen: G, bezug: "Arbeiter", min_n: 0,
+    filter: { je_einheit: true } });
+  assert.match(balken.zeige(a, daten, { breite: 600, hoehe: 200 }).svg, /class="wert">93 %</);
+  const m = balken.zeige({ ...a, mass: "mischung" }, daten, { breite: 600, hoehe: 200 });
+  assert.match(m.svg, /class="wert">0,\d\d</);
 });
 
 test("stadtteilkarte: Pfade je Polygon, Farbe nach Anteil, grau unter min_n", () => {

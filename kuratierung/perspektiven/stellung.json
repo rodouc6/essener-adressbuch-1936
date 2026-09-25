@@ -26,7 +26,7 @@
         {"name": "Bürgertum", "aus": ["beamte", "angestellte", "freie_berufe", "unternehmer"], "farbe": "#1d4ed8"},
         {"name": "übrige bestimmte", "aus": ["arbeiter", "selbstaendige", "ohne_erwerb", "kaufleute"], "farbe": "#c8c8c8"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Bürgertum", "min_n": 200, "filter": {}, "karte": null}},
-    {"id": "mischung", "text": "Platzhaltertext: Wie gemischt waren Stadtkern, Südviertel, Katernberg und Margaretenhöhe in ihrer sozialen Stellung?", "beschreibung": "Balken je Stadtteil, gefärbt nach dem Mischungsgrad der acht Klassen.", "hervorheben": [],
+    {"id": "mischung", "text": "Platzhaltertext: Wie gemischt waren Stadtkern, Südviertel, Katernberg und Margaretenhöhe in ihrer sozialen Stellung?", "beschreibung": "Gestapelte Anteile der acht Klassen je Stadtteil (Stadtkern, Südviertel, Katernberg, Margaretenhöhe); der Mischungsgrad steht als Zahl neben jedem Balken.", "hervorheben": [],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "balken", "gruppen": "wie:anteile",
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "mischung", "bezug": "Arbeiter/Gehilfen (nach Schreibung)", "min_n": 200, "filter": {"je_einheit": true, "stadtteil": ["Stadtkern", "Südviertel", "Katernberg", "Margaretenhöhe"]}, "karte": null}},
     {"id": "kaufleute-selbstaendig", "text": "Platzhaltertext: Zählen die Kaufleute zu den Selbständigen, verschiebt sich das Bürgertum kaum.", "beschreibung": "Stadtteilkarte wie „Bürgertum“, Kaufleute den Selbständigen zugeschlagen.", "hervorheben": ["Huttrop", "Margaretenhöhe", "Südviertel"],

@@ -4,9 +4,9 @@ import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
 import { liesZustand, schreibeZustand } from "./zustand.js";
 import { popupHtml, esc } from "./popup.js";
-import { dekodiere, normalisiere } from "./ansicht.js";
+import { dekodiereOderNull } from "./ansicht.js";
 import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
-import { werteFarben, legendeFuer } from "./ansicht_farben.js";
+import { ansichtTitel, werteFarben, legendeFuer } from "./ansicht_farben.js";
 import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
@@ -44,6 +44,8 @@ let themaAktiv = null;            // aktives Thema mit farbregel und ebenen
 let ansichtAktiv = null;          // normalisierte Ansicht (Spec §8) oder null
 let ansichtWerte = [];            // Werte je Einheit der aktiven Ansicht
 let ebenenVersprechen = null;     // ladeEbenen() nur einmal je Seite
+let ebenenDaten = null;           // aufgelöste Ebenendaten (für Kennzahlen der Legende)
+let ansichtFehler = false;        // ?ansicht= war nicht lesbar
 const eigCache = new Map();       // adressId → Punkteigenschaften (aus Kacheln oder Adressscherbe)
 const mobil = () => matchMedia("(max-width: 899px)").matches;
 
@@ -139,15 +141,24 @@ async function wendeThemaAn() {
 // Eine Ansicht aus der URL auf Karte, Sidebar und Legende legen (Spec §8). Die Ebenendaten
 // (Kennzahlen je Straße/Stadtteil/Hexfeld) werden nur geladen, wenn wirklich eine Ansicht aktiv ist.
 async function wendeAnsichtAn() {
+  ansichtFehler = false;
   if (!zustand.ansicht) {
     ansichtAktiv = null; ansichtWerte = [];
     karte.setzeAnsicht(null, null); sidebar.zeigeAnsicht(null);
     return;
   }
+  // Ein unlesbarer Parameter wird nicht stillschweigend zur Standardansicht: das wäre eine Karte,
+  // die etwas anderes zeigt als der Link verspricht.
+  const a = dekodiereOderNull(zustand.ansicht);
+  if (!a) {
+    ansichtFehler = true; ansichtAktiv = null; ansichtWerte = [];
+    karte.setzeAnsicht(null, null); sidebar.zeigeAnsicht(null, "", true);
+    return;
+  }
   try {
-    const a = normalisiere(dekodiere(zustand.ansicht));
     if (!ebenenVersprechen) ebenenVersprechen = ladeEbenen(lader);
     const ebenen = await ebenenVersprechen;
+    ebenenDaten = ebenen;
     ansichtAktiv = a;
     ansichtWerte = werteJeEinheit(a, ebenen);
     karte.setzeAnsicht(a, werteFarben(ansichtWerte, a));
@@ -274,13 +285,22 @@ function zeichneSteuerung() {
   const l = s.querySelector("[data-legende]"); if (l) l.onclick = () => document.getElementById("legende").classList.toggle("offen");
 }
 
+// Straßen-Einheiten ohne OSM-Linie: sie tragen Zahlen bei, lassen sich aber nicht zeichnen.
+// `strassen_mit_linie` aus kennzahlen.json gegen die Zahl der Straßen-Einheiten gerechnet.
+function strassenOhneLinie() {
+  const kz = ebenenDaten && ebenenDaten.kennzahlen;
+  if (!kz || !Number.isFinite(kz.strassen_mit_linie)) return null;
+  return Math.max(0, (ebenenDaten.strassen || []).length - kz.strassen_mit_linie);
+}
+
 function zeichneLegende() {
   let html = "";
 
   // Legende der aktiven Ansicht (Spec §8): Stufen bzw. Gruppen, min_n, Grundlage, Herkunft.
+  if (ansichtFehler) html += `<div class="zeile"><b>Ansicht nicht lesbar – Karte ungefärbt.</b></div>`;
   if (ansichtAktiv) {
-    html += `<div class="zeile"><b>Ansicht: ${esc(ansichtAktiv.daten)} · ${esc(ansichtAktiv.mass)}</b></div>`;
-    for (const e of legendeFuer(ansichtAktiv, ansichtWerte)) {
+    html += `<div class="zeile"><b>${esc(ansichtTitel(ansichtAktiv))}</b></div>`;
+    for (const e of legendeFuer(ansichtAktiv, ansichtWerte, { ohne_linie: strassenOhneLinie() })) {
       html += e.farbe
         ? `<div class="zeile"><span class="flaeche" style="background:${esc(e.farbe)}"></span> ${esc(e.text)}</div>`
         : `<div class="zeile klein">${esc(e.text)}</div>`;

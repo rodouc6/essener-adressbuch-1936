@@ -54,7 +54,9 @@ test("Legende nennt min_n, Grundlage und Herkunft", () => {
   const l = legendeFuer(a, werte);
   assert.equal(l.filter((e) => e.farbe === SEQUENZ[0]).length, 1);
   const min = l.find((e) => e.art === "min_n");
-  assert.ok(min && min.farbe === GRAU && /200/.test(min.text) && /1 /.test(min.text));
+  assert.ok(min && min.farbe === GRAU && min.text === "unter 200 Nennungen");
+  const grau = l.find((e) => e.art === "unter_min");
+  assert.ok(grau && grau.text === "davon 1 Einheit unter 200 (grau)");
   const grundlage = l.find((e) => e.art === "grundlage");
   assert.ok(grundlage && /410/.test(grundlage.text) && /32/.test(grundlage.text));
   assert.ok(l.some((e) => e.art === "herkunft" && /Stadtteilgrenzen/.test(e.text)));
@@ -65,4 +67,21 @@ test("Legende bei dominant listet Gruppen und gemischt", () => {
   const l = legendeFuer(ANSICHT({ mass: "dominant" }), []);
   assert.deepEqual(l.filter((e) => e.art === "gruppe").map((e) => e.name), ["Arbeiter", "übrige"]);
   assert.ok(l.some((e) => e.name === "gemischt" && e.farbe === GRAU));
+});
+
+test("Legende nennt nicht darstellbare Straßen ohne OSM-Linie", () => {
+  const werte = [{ id: "A", wert: 0.5, unter_min: false, N: 400, n_aus: 0 }];
+  const l = legendeFuer(ANSICHT({ ebene: "strasse", min_n: 30 }), werte, { ohne_linie: 412 });
+  assert.ok(l.some((e) => e.art === "ohne_linie" && e.text === "412 Straßen ohne OSM-Linie (nicht darstellbar)"));
+  // Ohne Kennzahl (null) bleibt die Zeile weg, statt eine Zahl zu erfinden.
+  assert.ok(!legendeFuer(ANSICHT({ ebene: "strasse" }), werte, { ohne_linie: null }).some((e) => e.art === "ohne_linie"));
+  assert.ok(!legendeFuer(ANSICHT({ ebene: "stadtteil" }), werte, { ohne_linie: 412 }).some((e) => e.art === "ohne_linie"));
+});
+
+test("Legende bei dichte nennt absolute Stufen je 1.000, ohne Prozent", () => {
+  const a = ANSICHT({ daten: "gewerbe", mass: "dichte", min_n: 200 });
+  const l = legendeFuer(a, [{ id: "A", wert: 90, unter_min: false, N: 100, n_aus: 0 }]);
+  assert.deepEqual(l.filter((e) => e.art === "stufe").map((e) => e.text),
+    ["0–18 je 1.000", "18–36 je 1.000", "36–54 je 1.000", "54–72 je 1.000", "72–90 je 1.000"]);
+  assert.equal(l.find((e) => e.art === "min_n").text, "unter 200 Teil-I-Einträgen");
 });

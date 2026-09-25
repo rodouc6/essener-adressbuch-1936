@@ -1,5 +1,7 @@
 import { EBENEN } from "./konfig.js";
 import { esc, hausHtml, trefferzeileHtml, heutigeAdresse } from "./popup.js";
+import { ansichtTitel } from "./ansicht_farben.js";
+import { nennerText } from "./formen/skalen.js";
 
 const STUFEN = ["griff", "halb", "voll"];
 
@@ -126,14 +128,22 @@ export class Sidebar {
 
   // Kopf einer aktiven Ansicht (Spec §8). `roh` ist der unveränderte URL-String, damit der Link in
   // die Werkstatt genau dieselbe Ansicht öffnet. Die Werkstatt kommt erst in 5c — darum gekennzeichnet.
-  zeigeAnsicht(ansicht, roh = "") {
+  zeigeAnsicht(ansicht, roh = "", fehler = false) {
     const el = this.ansichtkopf;
     if (!el) return;
-    if (!ansicht) { el.hidden = true; el.innerHTML = ""; return; }
+    if (!ansicht) {
+      // Kaputter ?ansicht=-Parameter: sagen, dass nichts gefärbt ist, statt eine andere Ansicht zu zeigen.
+      if (!fehler) { el.hidden = true; el.innerHTML = ""; return; }
+      el.innerHTML = `<div class="thema ansicht"><b>Ansicht nicht lesbar – Karte ungefärbt.</b>` +
+        `<button data-ansicht-aus="1">Ansicht verlassen</button></div>`;
+      el.hidden = false;
+      el.querySelector("[data-ansicht-aus]").addEventListener("click", () => this.a.onZustand({ ansicht: "" }));
+      return;
+    }
     const gruppen = ansicht.gruppen.map((g) => g.name).join(", ");
-    el.innerHTML = `<div class="thema ansicht"><b>Ansicht: ${esc(ansicht.daten)} · ${esc(ansicht.ebene)} · ${esc(ansicht.mass)}</b>` +
+    el.innerHTML = `<div class="thema ansicht"><b>${esc(ansichtTitel(ansicht))}</b>` +
       `<p>${ansicht.bezug ? `Bezug: ${esc(ansicht.bezug)}. ` : ""}Gruppen: ${esc(gruppen) || "keine"}.<br>` +
-      `Einheiten unter ${ansicht.min_n} Nennungen bleiben grau.</p>` +
+      `Einheiten unter ${ansicht.min_n} ${esc(nennerText(ansicht))} bleiben grau.</p>` +
       `<a href="werkstatt.html?ansicht=${encodeURIComponent(roh)}">In der Werkstatt öffnen (ab 5c)</a>` +
       `<button data-ansicht-aus="1">Ansicht verlassen</button></div>`;
     el.hidden = false;

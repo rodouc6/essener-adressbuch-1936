@@ -556,16 +556,21 @@ Versorgung), alle mit `freigegeben: false` — die Ansichten sind fertig, die Te
 **Formen** (`site/js/formen/{balken,bubbles,rangliste,stadtteilkarte,skalen}.js`): reine SVG-Erzeuger
 ohne DOM-Abhängigkeit, gemeinsame Schnittstelle `zeige(ansicht, daten, optionen) → {svg, legende,
 zahlen}`. Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
-dargestellt (Grau-Regel); `zahlen` nennt zur gezeichneten Menge, wie viele Einheiten das tatsächlich
-sind (z. B. „15 von 50 Stadtteilen“), damit eine Rangliste oder ein Ausschnitt nicht als Vollständigkeit
-missverstanden wird.
+dargestellt (Grau-Regel); `zahlen` nennt neben N und den ausgeschlossenen Nennungen, wie viele
+Einheiten der Ebene gezeichnet sind und wie viele unter `min_n` grau bleiben — die Perspektiven-Seite
+druckt das als „… · 15 von 50 Einheiten gezeichnet · 8 unter 200 Nennungen (grau, nicht eingefärbt)“,
+damit eine Rangliste oder ein Ausschnitt nicht als Vollständigkeit missverstanden wird. Farbregel
+(`farbeNachMass`) und Legendentexte (`legendeNachMass`) stehen einmal in `skalen.js` und gelten für
+alle Formen und für die Kartenlegende.
 
 **Karte `?ansicht=`** (`site/js/app.js`, `karte.js`, `ansicht_farben.js`): Drei neue, standardmäßig
 unsichtbare Ebenen `stadtteile-flaeche`, `strassen-linie`, `hex-flaeche` werden per MapLibre
 `feature-state` eingefärbt, je nachdem welche `ebene` die aktive Ansicht trägt; Punkte
 (`ebene=adresse`) bleiben ungefärbt (das folgt erst in 5c mit den Nutzergruppen der Werkstatt). Die
-Sidebar zeigt die aktive Ansicht in `#ansichtkopf` und darunter eine Legende (Gruppen mit Farbe, `N`,
-`min_n`, ausgeschlossene Einheiten `n_aus`, Herkunft/Grundlage). Perspektiven-Schritte verlinken „Auf
+Sidebar zeigt die aktive Ansicht in `#ansichtkopf`; die Legende der Ansicht (Stufen bzw. Gruppen mit
+Farbe, `N`, `min_n`, graue Einheiten, nicht darstellbare Straßen, ausgeschlossene Nennungen `n_aus`,
+Herkunft/Grundlage) steht im Legendenkasten der Karte. Ein unlesbarer `?ansicht=`-Parameter wird nicht
+zur Standardansicht, sondern als „Ansicht nicht lesbar – Karte ungefärbt.“ gemeldet. Perspektiven-Schritte verlinken „Auf
 der Karte öffnen“ (`karte.html?ansicht=…`) und „In der Werkstatt öffnen“; letzterer Link führt erst ab
 Teilprojekt 5c auf eine bestehende Seite (`site/werkstatt.html` existiert noch nicht).
 

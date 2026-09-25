@@ -10,7 +10,6 @@ export const OKABE_ITO = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2",
 export const STANDARD_ANSICHT = Object.freeze({ daten: "stellung", ebene: "stadtteil", form: "karte", gruppen: [], kaufleute: "unbestimmt", unsicher: false, mass: "anteil", bezug: "", min_n: 200, filter: {}, karte: null });
 const PRAEFIX = { stellung: "n_st_", gruppe: "n_gr_", niveau: "n_", besitz: "n_bs_", gewerbe: "n_gw_" };
 const NENNER = { stellung: "n_I", gruppe: "n_I", niveau: "n_I", besitz: "adressen", gewerbe: "n_III" };
-const AUSGESCHLOSSEN = { stellung: ["unbestimmt"], gruppe: ["ungeprueft"], niveau: ["keins"], besitz: ["ungeprueft"], gewerbe: ["ungeprueft"] };
 const NIVEAUS = ["helfer", "fachlich", "spezialist", "hochkomplex", "aufsicht", "fuehrung", "unsicher"];
 const STELLUNG = { arbeiter: ["Arbeiter/Gehilfen (nach Schreibung)", "#e69f00"], angestellte: ["Angestellte", "#56b4e9"], beamte: ["Beamte", "#009e73"], selbstaendige: ["Selbständige", "#f0e442"], freie_berufe: ["Freie Berufe und Akademiker", "#0072b2"], unternehmer: ["Unternehmer und Leitende", "#d55e00"], ohne_erwerb: ["Ohne Erwerbsberuf", "#cc79a7"], kaufleute: ["Kaufleute (Stellung unbestimmt)", "#000000"] };
 const BESITZ = { privatperson: ["Privatpersonen", "#d97706"], stadt_staat: ["Stadt und Staat", "#1d4ed8"], bergbau: ["Bergbau", "#111827"], industrie: ["Industrie", "#b91c1c"], genossenschaft_siedlung: ["Genossenschaft und Siedlung", "#15803d"], kirche_stiftung: ["Kirche und Stiftung", "#7c3aed"], bank_versicherung: ["Bank und Versicherung", "#0e7490"], sonstige: ["Sonstige", "#6b7280"] };
@@ -56,6 +55,16 @@ export function dekodiere(s) {
   try { return normalisiere(JSON.parse(unb64(String(s || "")))); } catch { return { ...STANDARD_ANSICHT }; }
 }
 
+// Wie `dekodiere`, aber unterscheidbar kaputt: gibt `null` zurück, wenn der Parameter nicht lesbar
+// ist oder keine Gruppenliste trägt. Die Karte zeigt dann „nicht lesbar“ statt still die
+// Standardansicht — ein defekter Link darf nicht wie eine gewollte Ansicht aussehen.
+export function dekodiereOderNull(s) {
+  let o;
+  try { o = JSON.parse(unb64(String(s || ""))); } catch { return null; }
+  if (!o || typeof o !== "object" || !Array.isArray(o.gruppen)) return null;
+  return normalisiere(o);
+}
+
 export const praefix = (daten) => PRAEFIX[daten];
 export const nenner = (daten) => NENNER[daten];
 
@@ -89,7 +98,11 @@ export function kennzahlen(einheit, ansicht) {
   const nI = einheit?.n_I || 0;
   const dichte = ansicht.daten === "gewerbe" ? (nI ? (1000 * (zaehler[ansicht.bezug] || 0)) / nI : null) : null;
   const wert = ansicht.mass === "anteil" ? (anteile[ansicht.bezug] ?? 0) : ansicht.mass === "dominant" ? dominant : ansicht.mass === "mischung" ? mischung : dichte;
-  return { N, n_aus, unter_min: N < ansicht.min_n, anteile, zaehler, wert, dominant, mischung, dichte };
+  // Schwelle: bei `dichte` auf den Nenner (Teil-I-Einträge der Einheit), sonst auf die Nennungen der
+  // Gruppen. Bei `dichte` ist der Zähler genau das, was gemessen wird — ihn zu schwellen hieße,
+  // gerade die dünn besetzten Branchen auszublenden, statt eine dünne Grundlage zu kennzeichnen.
+  const unter_min = ansicht.mass === "dichte" ? nI < ansicht.min_n : N < ansicht.min_n;
+  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte };
 }
 
 export function standardGruppen(daten, hauptgruppen = {}) {

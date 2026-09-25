@@ -1,7 +1,7 @@
 // site/js/formen/stadtteilkarte.js — Choroplethenkarte der heutigen Stadtteilgrenzen (OSM).
 // Einfache Plattkarte mit Breitengrad-Korrektur; für das Stadtgebiet genau genug.
 import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
-import { esc, farbeAnteil, formatZahl, GRAU, einheitKlasse, leer, r2, SEQUENZ, skaliere, STUFEN_TEXT, svgKopf, zahlenZeile } from "./skalen.js";
+import { esc, farbeNachMass, einheitKlasse, leer, legendeNachMass, r2, skaliere, svgKopf, zahlenZeile } from "./skalen.js";
 
 const COS = Math.cos((51.45 * Math.PI) / 180);
 const ringe = (geom) => (!geom ? [] : geom.type === "MultiPolygon" ? geom.coordinates.flat() : geom.type === "Polygon" ? geom.coordinates : []);
@@ -36,27 +36,9 @@ export function zeige(ansicht, daten, optionen = {}) {
     if (!d) continue;
     const istHervor = hervor.has(id);
     const rand = istHervor ? ' stroke="#111" stroke-width="2"' : ' stroke="#fff" stroke-width="0.5"';
-    teile.push(`<path class="${einheitKlasse(istHervor, !w || w.unter_min)}" data-id="${esc(id)}" d="${d}" fill="${esc(fuellung(w, ansicht, maxDichte))}"${rand}><title>${esc(id)}</title></path>`);
+    // Nichts unter min_n und nichts ohne Werte wird eingefärbt (farbeNachMass, gemeinsame Regel).
+    teile.push(`<path class="${einheitKlasse(istHervor, !w || w.unter_min)}" data-id="${esc(id)}" d="${d}" fill="${esc(farbeNachMass(w, ansicht, maxDichte))}"${rand}><title>${esc(id)}</title></path>`);
   }
   teile.push("</svg>");
-  return { svg: teile.join(""), legende: legendeBauen(ansicht), zahlen };
-}
-
-// Nichts unter min_n und nichts ohne Werte wird eingefärbt.
-function fuellung(w, ansicht, maxDichte) {
-  if (!w || w.unter_min) return GRAU;
-  if (ansicht.mass === "dominant") return w.dominant === "gemischt" ? GRAU : (ansicht.gruppen.find((g) => g.name === w.dominant)?.farbe || GRAU);
-  if (ansicht.mass === "mischung") return farbeAnteil(w.mischung);
-  if (ansicht.mass === "dichte") return w.wert == null || maxDichte <= 0 ? GRAU : farbeAnteil(w.wert / maxDichte);
-  return farbeAnteil(typeof w.wert === "number" ? w.wert : 0);
-}
-
-function legendeBauen(ansicht) {
-  const grau = { name: `unter ${formatZahl(ansicht.min_n)} Nennungen`, farbe: GRAU, text: "zu wenige Nennungen" };
-  if (ansicht.mass === "dominant") {
-    return [...ansicht.gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: `überwiegend ${g.name}` })),
-      { name: "gemischt", farbe: GRAU, text: "keine Gruppe über 40 %" }, grau];
-  }
-  const stufen = STUFEN_TEXT.map((t, i) => ({ name: t, farbe: SEQUENZ[i], text: t }));
-  return [...stufen, grau];
+  return { svg: teile.join(""), legende: legendeNachMass(ansicht, { max: maxDichte }), zahlen };
 }

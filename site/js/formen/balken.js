@@ -1,10 +1,20 @@
 // site/js/formen/balken.js — Gesamtbalken (ein Balken für alle Einheiten) oder ein Balken je Einheit.
 // Die Segmente sind proportional zu N + n_aus; das letzte Segment ist immer grau „ausgeschlossen“.
 import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
-import { esc, formatProzent, formatZahl, GRAU, einheitKlasse, r2, svgKopf, zahlenZeile } from "./skalen.js";
+import { esc, formatProzent, formatZahl, GRAU, einheitKlasse, nennerText, r2, svgKopf, zahlenZeile } from "./skalen.js";
 
 const RAND = 8;
 const ZEILE = 26;
+const WERTSPALTE = 54;
+
+// Beschriftung rechts neben dem Balken einer Einheit: der Wert des Maßes, das die Ansicht trägt.
+// Ohne ihn behauptete der Kapiteltext eine Zahl, die im Bild gar nicht steht.
+function wertText(w, ansicht) {
+  if (ansicht.mass === "mischung") return (Number(w.mischung) || 0).toFixed(2).replace(".", ",");
+  if (ansicht.mass === "dominant") return String(w.dominant ?? "");
+  if (ansicht.mass === "dichte") return typeof w.wert === "number" ? `${formatZahl(w.wert)} je 1.000` : "—";
+  return formatProzent(typeof w.wert === "number" ? w.wert : 0);
+}
 
 // Segmente eines Balkens: je Gruppe eines, danach das graue für die ausgeschlossenen Nennungen.
 function segmente(ansicht, zaehler, n_aus) {
@@ -47,15 +57,16 @@ export function zeige(ansicht, daten, optionen = {}) {
       : (typeof b.wert === "number" ? b.wert : 0) - (typeof a.wert === "number" ? a.wert : 0)));
     const zeile = Math.min(ZEILE, Math.max(10, (hoehe - oben - RAND) / Math.max(1, sortiert.length)));
     const beschriftung = Math.min(160, breite * 0.3);
-    const balkenBreite = breite - beschriftung - RAND;
+    const balkenBreite = Math.max(10, breite - beschriftung - WERTSPALTE - RAND);
     for (const [i, w] of sortiert.entries()) {
       const y = oben + i * zeile;
       const h = Math.max(4, zeile - 4);
       const klasse = einheitKlasse(hervor.has(w.id), w.unter_min);
       const inhalt = w.unter_min
         ? `<rect class="segment" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(balkenBreite)}" height="${r2(h)}" fill="${GRAU}"></rect>`
-          + `<text x="${r2(beschriftung + 6)}" y="${r2(y + h - 4)}" class="hinweis">unter ${formatZahl(ansicht.min_n)} Nennungen</text>`
-        : balkenZeile(segmente(ansicht, w.zaehler, w.n_aus), beschriftung, y, balkenBreite, h, w.N + w.n_aus, true);
+          + `<text x="${r2(beschriftung + 6)}" y="${r2(y + h - 4)}" class="hinweis">unter ${formatZahl(ansicht.min_n)} ${nennerText(ansicht)}</text>`
+        : balkenZeile(segmente(ansicht, w.zaehler, w.n_aus), beschriftung, y, balkenBreite, h, w.N + w.n_aus, true)
+          + `<text x="${r2(beschriftung + balkenBreite + 6)}" y="${r2(y + h - 4)}" class="wert">${esc(wertText(w, ansicht))}</text>`;
       teile.push(`<g class="${klasse}" data-id="${esc(w.id)}">`
         + `<text x="${RAND}" y="${r2(y + h - 4)}" class="name">${esc(w.name)}</text>${inhalt}</g>`);
     }

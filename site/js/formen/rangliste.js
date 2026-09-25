@@ -1,7 +1,7 @@
 // site/js/formen/rangliste.js — Einheiten als sortierte Zeilen mit Balken; Einheiten unter min_n
 // stehen grau am Ende und werden nie eingefärbt.
 import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
-import { esc, farbeAnteil, formatProzent, formatZahl, GRAU, einheitKlasse, r2, SEQUENZ, STUFEN_TEXT, svgKopf, zahlenZeile } from "./skalen.js";
+import { esc, farbeNachMass, formatProzent, formatZahl, legendeNachMass, nennerText, einheitKlasse, r2, svgKopf, zahlenZeile } from "./skalen.js";
 
 const RAND = 8;
 
@@ -16,16 +16,6 @@ function wertText(w, ansicht) {
   if (ansicht.mass === "dichte") return w.wert == null ? "—" : `${formatZahl(w.wert)} je 1.000`;
   if (ansicht.mass === "dominant") return String(w.dominant);
   return formatProzent(laengenWert(w, ansicht));
-}
-
-// Farbe des Balkens — dieselbe Regel wie auf der Stadtteilkarte, damit beide Formen einer Ansicht
-// dieselbe Sprache sprechen. Nichts unter min_n wird eingefärbt.
-function balkenFarbe(w, ansicht, max) {
-  if (w.unter_min) return GRAU;
-  if (ansicht.mass === "dominant") return w.dominant === "gemischt" ? GRAU : (ansicht.gruppen.find((g) => g.name === w.dominant)?.farbe || GRAU);
-  if (ansicht.mass === "mischung") return farbeAnteil(w.mischung);
-  if (ansicht.mass === "dichte") return w.wert == null || max <= 0 ? GRAU : farbeAnteil(w.wert / max);
-  return farbeAnteil(typeof w.wert === "number" ? w.wert : 0);
 }
 
 export function zeige(ansicht, daten, optionen = {}) {
@@ -57,20 +47,10 @@ export function zeige(ansicht, daten, optionen = {}) {
     const istHervor = hervor.has(w.id);
     teile.push(`<g data-id="${esc(w.id)}" class="${einheitKlasse(istHervor, w.unter_min)}">`
       + `<text x="${RAND}" y="${r2(y + h - 2)}" class="name"${istHervor ? ' font-weight="bold"' : ""}>${esc(w.name)}</text>`
-      + `<rect class="balken" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(anteil * balkenBreite)}" height="${r2(h)}" fill="${esc(balkenFarbe(w, ansicht, maxDichte))}"></rect>`
-      + `<text x="${r2(beschriftung + balkenBreite + 6)}" y="${r2(y + h - 2)}" class="wert">${esc(w.unter_min ? `unter ${formatZahl(ansicht.min_n)} Nennungen` : wertText(w, ansicht))}</text>`
+      + `<rect class="balken" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(anteil * balkenBreite)}" height="${r2(h)}" fill="${esc(farbeNachMass(w, ansicht, maxDichte))}"></rect>`
+      + `<text x="${r2(beschriftung + balkenBreite + 6)}" y="${r2(y + h - 2)}" class="wert">${esc(w.unter_min ? `unter ${formatZahl(ansicht.min_n)} ${nennerText(ansicht)}` : wertText(w, ansicht))}</text>`
       + "</g>");
   }
   teile.push("</svg>");
-  return { svg: teile.join(""), legende: legendeBauen(ansicht), zahlen };
-}
-
-// Legende: bei „dominant“ die Gruppen, sonst die fünf Stufen der Sequenz; zuletzt immer Grau.
-function legendeBauen(ansicht) {
-  const grau = { name: `unter ${formatZahl(ansicht.min_n)} Nennungen`, farbe: GRAU, text: "zu wenige Nennungen" };
-  if (ansicht.mass === "dominant") {
-    return [...ansicht.gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: `überwiegend ${g.name}` })),
-      { name: "gemischt", farbe: GRAU, text: "keine Gruppe über 40 %" }, grau];
-  }
-  return [...STUFEN_TEXT.map((t, i) => ({ name: t, farbe: SEQUENZ[i], text: t })), grau];
+  return { svg: teile.join(""), legende: legendeNachMass(ansicht, { max: maxDichte }), zahlen };
 }
