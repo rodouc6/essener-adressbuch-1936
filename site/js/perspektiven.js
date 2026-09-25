@@ -36,7 +36,8 @@ async function seiteAufbauen() {
   // Die Einleitung zählt, was wirklich sichtbar ist — „Drei Blicke“ wäre falsch, sobald ein
   // Kapitel nicht freigegeben ist.
   const n = index.length;
-  const einleitung = n === 0 ? "Noch kein Kapitel freigegeben."
+  // Ohne freigegebenes Kapitel bleibt die Einleitung leer; der Leerzustand steht einmal in #kapitel.
+  const einleitung = n === 0 ? ""
     : `${n === 1 ? "Ein Blick" : `${ZAHLWORT[n] || n} Blicke`} auf das Adressbuch von 1936: {adressen} verortete Adressen, Stand {stand}. `
       + "Jede Grafik nennt, wie viel geprüft ist und was ausgeschlossen bleibt.";
   document.getElementById("einleitung").textContent = fuellePlatzhalter(einleitung, daten.kennzahlen);
@@ -105,7 +106,11 @@ function zeichne(sec, schritt) {
   grafik.querySelector(".legende").innerHTML = r.legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
   // Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
   // gezeichnet sind (eine Rangliste zeigt nie alle) und wie viele unter min_n grau bleiben.
-  grafik.querySelector(".zahlen").textContent = `${r.zahlen.hinweis} · ${r.zahlen.einheiten} von ${r.zahlen.einheiten_gesamt} Einheiten gezeichnet`
+  // Ohne bekannte Gesamtzahl (Formen, die nicht über eine Ebene gehen) wird keine erfunden.
+  const gezeichnet = Number.isInteger(r.zahlen.einheiten_gesamt)
+    ? `${r.zahlen.einheiten} von ${r.zahlen.einheiten_gesamt} Einheiten gezeichnet`
+    : `${r.zahlen.einheiten} Einheiten gezeichnet`;
+  grafik.querySelector(".zahlen").textContent = `${r.zahlen.hinweis} · ${gezeichnet}`
     + ` · ${r.zahlen.unter_min} unter ${ansicht.min_n} ${nennerText(ansicht)} (grau, nicht eingefärbt)`;
   svg.setAttribute("aria-label", schritt.beschreibung || "");
   const werte = werteJeEinheit(ansicht, daten);

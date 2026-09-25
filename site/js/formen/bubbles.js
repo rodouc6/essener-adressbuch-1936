@@ -42,7 +42,8 @@ export function zeige(ansicht, daten, optionen = {}) {
       + `<title>${esc(k.id)}: ${formatZahl(n)}</title></circle>`);
   }
   teile.push("</svg>");
-  const zahlen = { N, n_aus, unter_min, einheiten: kreise.length, hinweis: "" };
+  // Bubbles zeichnen immer alle Kreise des Layouts — gezeichnete und vorhandene Zahl sind gleich.
+  const zahlen = { N, n_aus, unter_min, einheiten: kreise.length, einheiten_gesamt: kreise.length, hinweis: "" };
   zahlen.hinweis = hinweisText(zahlen);
   const legende = [...ansicht.gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: g.name })),
     { name: "ausgeschlossen", farbe: GRAU, text: "in keiner Gruppe" }];

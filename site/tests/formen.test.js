@@ -93,6 +93,6 @@ test("bubbles: Kreise aus dem Layout, Farbe nach Gruppe, hervorheben, Skalierung
   assert.match(r.svg, /data-id="Stadt Essen"[^>]*fill="#1d4ed8"|fill="#1d4ed8"[^>]*data-id="Stadt Essen"/);
   assert.match(r.svg, /data-id="X"[^>]*fill="#c8c8c8"|fill="#c8c8c8"[^>]*data-id="X"/);   // in keiner Gruppe → grau
   assert.match(r.svg, /hervorgehoben/);
-  assert.equal(r.zahlen.einheiten, 3);
+  assert.equal(r.zahlen.einheiten, 3); assert.equal(r.zahlen.einheiten_gesamt, 3);
   assert.equal(bubbles.zeige({ ...a, daten: "niveau" }, daten, { breite: 400, hoehe: 400 }).svg, "");   // kein Layout für niveau → leer
 });
