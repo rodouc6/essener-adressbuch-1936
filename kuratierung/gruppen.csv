@@ -1,8 +1,8 @@
 ohdab_id,norm,nennungen,gruppe,geprueft,bearbeiter,datum,hinweis
-B 21112-100,Bergmann/-frau,28998,bergbau,,gruppen_vorschlag,2026-09-24,
-A 10200-502,Invalide/Invalidin,12065,sonstige,,gruppen_vorschlag,2026-09-24,
+B 21112-100,Bergmann/-frau,28998,bergbau,ja,christos,2026-09-25,
+A 10200-502,Invalide/Invalidin,12065,sonstige,ja,christos,2026-09-25,
 B 20002-500,Arbeiter/in - allgemein,9039,metall_maschinen,,gruppen_vorschlag,2026-09-24,
-B 24412-127,Schlosser/in,7477,metall_maschinen,,gruppen_vorschlag,2026-09-24,
+B 24412-127,Schlosser/in,7477,metall_maschinen,ja,christos,2026-09-25,
 B 61203-504,Kaufmann/-frau,7117,handel,,gruppen_vorschlag,2026-09-24,
 A 10300-513,Pensionär/in,3837,gastgewerbe,,gruppen_vorschlag,2026-09-24,
 B 24232-102,Dreher/in,2418,metall_maschinen,,gruppen_vorschlag,2026-09-24,
