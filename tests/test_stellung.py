@@ -121,3 +121,13 @@ def test_handwerksmeister_stamm_aus_dem_item():
 def test_landwirtschaftlicher_arbeiter_ist_kein_landwirt():
     assert stellung_vorschlag(zeile("Landw. Arb.", beruf="landwirtschaftlicher Arbeiter"), item("Landwirtschaftliche/r Arbeiter/in", "helfer", "Landwirtschaft – Helfer", "B 11101"), REGELN) == ("arbeiter", "niveau helfer")
     assert stellung_vorschlag(zeile("Landw.", beruf="Landwirt"), item("Landwirt/in", "fachlich", "Landwirtschaft", "B 11102"), REGELN) == ("selbstaendige", "selbstaendig")
+
+
+def test_definitionen_2026_09_25():
+    # Prokurist = Handlungsbevollmächtigter → Angestellte; Hausbesitzer/Rentier = Erwerbsquelle → ohne Erwerb;
+    # Meister in Industrieberufen bleiben offen (in Essen überwiegend Betriebsmeister).
+    assert stellung_vorschlag(zeile("Prokurist"), item("Prokurist/in", "spezialist", "Kaufmännische Leitung", "B 71104"), REGELN) == ("angestellte", "angestellte")
+    assert stellung_vorschlag(zeile("Hausbes.", beruf="Hausbesitzer"), item("Hausbesitzer/in", "keins", "Berufslose Selbständige", "A 40000"), REGELN) == ("ohne_erwerb", "erwerbsquelle")
+    assert stellung_vorschlag(zeile("Schmiedemstr."), item("Schmiedemeister/in", "aufsicht", "Aufsichtskräfte – Metallbau", "B 24493"), REGELN) == ("unbestimmt", "industriemeister")
+    assert stellung_vorschlag(zeile("Schlossermstr."), item("Schlossermeister/in", "aufsicht", "Aufsichtskräfte – Metallbau", "B 24493"), REGELN) == ("unbestimmt", "industriemeister")
+    assert stellung_vorschlag(zeile("Fabrikant"), item("Fabrikant/in", "fuehrung", "Geschäftsführer/innen und Vorstände"), REGELN) == ("unternehmer", "unternehmer")

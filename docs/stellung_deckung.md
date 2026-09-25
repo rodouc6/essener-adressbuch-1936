@@ -25,15 +25,15 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | stukkateur | 351 | 0 | 44 | 44 | 12% | unbestimmt | Stukkateur | Stukkateur |
 | schneider | 1218 | 1082 | 1209 | 127 | 10% | unbestimmt | Schneider für Herren, Schneider für Damen, Schneiderin | Schneid., Schneider, Schneiderin |
 | buchdrucker | 303 | 83 | 110 | 27 | 9% | arbeiter | Buchdruckerei | Buchdruck., Buchdrucker |
+| schmied | 1504 | 0 | 122 | 122 | 8% | arbeiter | Schmied | Schmied, Schmiede, Schmiedemeister, Schmiedemstr. |
+| mechaniker | 367 | 0 | 28 | 28 | 8% | arbeiter | Mechaniker und mech. Werkstätte | Mechanik., Mechaniker, Mechanikermstr. |
 | glasblaeser | 50 | 0 | 3 | 3 | 6% | arbeiter | Glasbläserei | Glasbläs., Glasbläser |
 | schleifer | 382 | 0 | 8 | 8 | 2% | arbeiter | Schleiferei | Schleifer |
 | sattler | 202 | 66 | 70 | 4 | 2% | arbeiter | Sattler | Sattler |
-| mechaniker | 344 | 23 | 28 | 5 | 2% | arbeiter | Mechaniker und mech. Werkstätte | Mechanik., Mechaniker |
-| dreher | 2418 | 0 | 4 | 4 | 0% | arbeiter | Dreherei | Dreh., Dreher |
-| schlosser | 7425 | 222 | 111 | 0 | 0% | arbeiter | Schlosser | Schloss., Schlosser |
+| dreher | 2432 | 0 | 4 | 4 | 0% | arbeiter | Dreherei | Dreh., Dreher, Drehermstr. |
+| schlosser | 7431 | 216 | 111 | 0 | 0% | arbeiter | Schlosser | Schloss., Schlosser, Schlossermeister |
 | maurer | 2416 | 60 | 19 | 0 | 0% | arbeiter | Maurermeister | Maur., Maurer |
 | schreiner | 1751 | 699 | 376 | 0 | 0% | arbeiter | Tischler | Schrein., Schreiner, Tischler |
-| schmied | 1344 | 160 | 122 | 0 | 0% | arbeiter | Schmied | Schmied, Schmiede |
 | klempner | 847 | 290 | 260 | 0 | 0% | arbeiter | Klempner, Installateur | Install., Installat., Installateur, Klempn., Klempner |
 | gaertner | 582 | 132 | 63 | 0 | 0% | arbeiter | Gärtner | Gärtn., Gärtner |
 | baecker | 565 | 840 | 536 | 0 | 0% | arbeiter | Bäcker | Bäcker |

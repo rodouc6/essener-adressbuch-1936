@@ -27,17 +27,27 @@ UNBESTIMMT = "unbestimmt"
 # Meister im Handwerk (selbständig) — Stamm vor „meister“/„mstr.“; alle anderen Meister (Werk-, Betriebs-,
 # Fahr-, Zug-, Bahnmeister …) sind betriebliche Vorgesetzte, also Angestellte.
 _HANDWERK = ("bäcker", "metzger", "schlachter", "fleischer", "konditor", "schneider", "schuhmacher", "friseur", "maler",
-             "anstreicher", "tischler", "schreiner", "schlosser", "klempner", "installateur", "dachdecker", "schmied",
+             "anstreicher", "tischler", "schreiner", "klempner", "installateur", "dachdecker",
              "maurer", "zimmer", "stukkateur", "glaser", "sattler", "polsterer", "tapezier", "uhrmacher", "gold",
              "buchbinder", "drucker", "gärtner", "fuhr", "elektro", "schornsteinfeger", "kürschner", "hut", "korb",
              "stellmacher", "wagner", "böttcher", "küfer", "müller", "mühlen", "brauer", "gerber", "seiler", "töpfer",
-             "ofensetzer", "steinmetz", "bildhauer", "graveur", "optiker", "mechaniker", "fotograf")
+             "ofensetzer", "steinmetz", "bildhauer", "graveur", "optiker", "fotograf")
+# Meister in Industrieberufen: in Essen (Krupp, Zechen) überwiegend Betriebsmeister, teils Inhaber — die Deckungstabelle
+# (docs/stellung_deckung.md) zeigt mehr Meister als Betriebe in Teil III. Entscheidung 2026-09-25: offen lassen.
+_INDUSTRIE = ("schmied", "schlosser", "dreher", "mechaniker")
 _HANDWERK_GEFALTET = tuple(falte_form(h) for h in _HANDWERK)
+_INDUSTRIE_GEFALTET = tuple(falte_form(h) for h in _INDUSTRIE)
+# Erwerbsquelle statt Beruf: die Berufszählung 1933 zählt Hausbesitzer, Rentiers, Privatiers ohne anderen Beruf als
+# „berufslose Selbständige“ zu den Berufslosen — hier ohne_erwerb, das damit bewusst heterogen ist (docs/stellung.md).
+_OHNE_ERWERB = re.compile(r"hausbesitzer|rentier|privatier", re.I)
 _MEISTER = re.compile(r"(meister(in)?|mstr(in)?\.?)$", re.I)   # auch „…mstrin.“ (weibliche Kurzform)
 _FREIE = re.compile(r"arzt|ärzt|zahnarzt|dentist|tierarzt|apotheker|rechtsanwalt|anwalt|notar|architekt|patentanwalt|"
                     r"wirtschaftsprüfer|steuerberater|bücherrevisor|schriftsteller|künstler|kunstmaler|bildhauer/in$", re.I)
+# Bewusste Abweichung von der Berufszählung (die Direktoren als leitende Angestellte führt): Inhaber und Leitende
+# bilden eine eigene Klasse, weil die Leitfragen sonst Fabrikanten und Bäckermeister nicht unterscheiden könnten.
+# Prokuristen bleiben Angestellte (Handlungsbevollmächtigte, AVG 1911 § 1).
 _UNTERNEHMER = re.compile(r"fabrikant|fabrikbesitzer|(?<!studien)(?<!kataster)direktor|generaldirektor|vorstand|geschäftsführer|"
-                          r"inhaber|unternehmer|prokurist|bergwerksbesitzer|gutsbesitzer|hausbesitzer|rentier", re.I)
+                          r"inhaber|unternehmer|bergwerksbesitzer|gutsbesitzer", re.I)
 # „oberst“ nur als eigenes Wort (nicht als Präfix in „Obersteiger“) — sonst Fehltreffer aus dem OhdAB-Gattungstext.
 _BEAMTE = re.compile(r"beamt|sekretär|inspektor|assistent|amtmann|\brat\b|rätin|schaffner|zugführer|lokomotivführer|"
                      r"briefträger|postbote|polizei|schutzmann|wachtmeister|zoll|richter|pfarrer|pastor|geistlich|"
@@ -47,7 +57,7 @@ _BEAMTE = re.compile(r"beamt|sekretär|inspektor|assistent|amtmann|\brat\b|räti
 # „Trainer“ über die Gattung „Sportlehrer/innen“ oder „Rottenführer“ über „Unteroffiziere ohne Portepee“.
 _BEAMTE_TITEL = re.compile(r"lehrer|offizier", re.I)
 _ANGESTELLTE = re.compile(r"angestellt|buchhalter|kontorist|techniker|ingenieur|steiger|zeichner|verkäufer|handlungsgehilf|"
-                          r"kassierer|vertreter|reisender|bürogehilf|stenotypist|laborant|chemiker|betriebsführer|"
+                          r"kassierer|vertreter|reisender|bürogehilf|stenotypist|laborant|chemiker|betriebsführer|prokurist|"
                           r"abteilungsleiter|filialleiter|disponent|expedient|magazinverwalter|werkführer|obersteiger", re.I)
 _SELBSTAENDIGE = re.compile(r"händler|handel|wirt(in)?$|gastwirt|schankwirt|krämer|fuhrmann|kaufmann/-frau -|kaufmann/-frau \(|"
                             r"hausierer|agent|makler|kommissionär|verleger|drogist|hebamme|masseur|heilpraktiker|"
@@ -85,11 +95,15 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
             return "beamte", "beamte"
         # Stamm in Schreibweise UND Normbezeichnung suchen — „Schuhmmstr.“ trägt den Stamm nur im Item „Schuhmachermeister/in“.
         stamm = falte_form(schreibweise) + " " + falte_form(_norm(item))
+        if any(h in stamm for h in _INDUSTRIE_GEFALTET):
+            return UNBESTIMMT, "industriemeister"
         return ("selbstaendige", "handwerksmeister") if any(h in stamm for h in _HANDWERK_GEFALTET) else ("angestellte", "betriebsmeister")
     if "akademiker" in merkmale_fuer({"Beruf o. ä.": schreibweise}, regeln):
         return "freie_berufe", "akademiker"
     if _FREIE.search(_norm(item)):
         return "freie_berufe", "freier beruf"
+    if _OHNE_ERWERB.search(_norm(item)):
+        return "ohne_erwerb", "erwerbsquelle"
     if _UNTERNEHMER.search(text):
         return "unternehmer", "unternehmer"
     if falte_form(_norm(item)) == "kaufmann frau" and not re.search(r"angest|beamt", text, re.I):

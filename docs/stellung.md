@@ -32,6 +32,39 @@ weiteren Zusatz lässt in der Schreibweise offen, ob eine selbständige Existenz
 Stellung gemeint ist (siehe Kaufleute-Experiment unten). `unbestimmt` ist die Rückfallklasse, wenn keine
 Regel greift oder wenn Beruf bzw. Stellung nicht geprüft sind (Exportregel unten).
 
+## Definitionen (Entscheidung 2026-09-25)
+
+Die Grenze zwischen den Klassen ziehen nicht wir, sondern die zeitgenössische Rechtslage, die auch die
+Berufszählung 1933 übernahm:
+
+- **Angestellte** sind, wer der Angestelltenversicherung unterlag (AVG 1911 § 1, Fassung 1924):
+  kaufmännische Angestellte und Büroangestellte (Buchhalter, Kassierer, Kontoristen, Verkäufer,
+  Handlungsgehilfen, Prokuristen), Techniker und Ingenieure, Werkmeister und ähnlich gehobene Aufsicht,
+  Bühnen- und Orchestermitglieder, Lehrer und Erzieher in Privatstellung.
+- **Arbeiter** sind Lohnempfänger in manueller oder gewerblicher Tätigkeit (Invalidenversicherung),
+  einschließlich Vorarbeiter. Nach außen heißt die Klasse „Arbeiter/Gehilfen (nach Schreibung)“, weil
+  die Schreibweise ohne Zusatz bei manchen Handwerksberufen Inhaber einschließt (Grenzfälle,
+  `docs/stellung_deckung.md`).
+- **Selbständige** umfassen Handwerk, Handel, Gastgewerbe **und Landwirtschaft** — keine eigene Klasse für
+  Landwirte; der Wirtschaftszweig ist die zweite Achse (Berufsgruppen, `kuratierung/gruppen.csv`).
+- **Unternehmer und Leitende** ist eine **bewusste Abweichung** von der Berufszählung, die Direktoren als
+  leitende Angestellte und Fabrikanten als Selbständige führt: Inhaber, Fabrikanten, Bauunternehmer,
+  Gutsbesitzer sowie Direktoren, Vorstände und Geschäftsführer bilden eine eigene Klasse, weil die Leitfragen
+  (Nord–Süd, Durchmischung) sonst Fabrikanten und Bäckermeister nicht unterscheiden könnten. Prokuristen
+  gehören nicht dazu (Handlungsbevollmächtigte → Angestellte).
+- **Ohne Erwerbsberuf** ist **bewusst heterogen**: Invalide, Witwen, Rentner am einen Ende, Hausbesitzer,
+  Rentiers, Privatiers am anderen — die Berufszählung zählt letztere als „berufslose Selbständige“ ebenfalls
+  zu den Berufslosen. Das OhdAB-Item bleibt je Eintrag erhalten, sodass die Werkstatt „Hausbesitzer/Rentier/
+  Privatier“ als eigene Gruppe herausziehen kann; Kapiteltexte müssen die Heterogenität benennen.
+- **Unbestimmt** ist die ehrliche Auflösungsgrenze der Quelle, kein Makel: Handwerksberufe ohne Zusatz mit
+  hoher Deckungslücke, Meister in Industrieberufen, Kaufleute (eigene Klasse). Erwartet nach der Handprüfung:
+  8–10 % der Nennungen.
+
+Was die Klassifikation leisten kann: Anteile je Straße, Stadtteil oder Hexfeld, mit ausgewiesenem Anteil
+„unbestimmt“. Was sie nicht kann und nirgends behaupten darf: Einkommen, Vermögen, individuelle Richtigkeit.
+Die strittigen Fälle liegen zwischen benachbarten mittleren Klassen (Angestellte ↔ Leitende, Selbständige ↔
+Angestellte), nicht zwischen Arbeitern und Fabrikanten — auf Straßenebene bleiben die Kontraste davon unberührt.
+
 ## Die Regeln, in Prüfreihenfolge
 
 `stellung_vorschlag(zeile, item, regeln)` prüft die folgenden Bedingungen der Reihe nach; die erste, die
@@ -70,13 +103,16 @@ geprüft, nicht gegen den vollen Text mit Gattung.
    `angestellte`). Beispiel: „Pol. Wachtmstr.“ (Item „Polizeiwachtmeister/in“, Gattung „Berufe im
    Polizeivollzugsdienst“) → `beamte`.
 
-   Erst danach entscheidet der Wortstamm vor „meister“ zwischen zwei Fällen:
+   Erst danach entscheidet der Wortstamm (in Schreibweise oder Normbezeichnung) vor „meister“ zwischen drei Fällen:
+   - Stamm in `_INDUSTRIE` (Schmied, Schlosser, Dreher, Mechaniker) → **`unbestimmt`, Grund `industriemeister`**:
+     In Essen (Krupp, Zechen) sind das überwiegend Betriebsmeister, teils Inhaber — die Deckungstabelle zeigt
+     mehr Meister als Betriebe in Teil III (Schlosser 222 gegen 111, Schmied 160 gegen 122). Beispiel:
+     „Schmiedemstr.“ → `unbestimmt`; die Werkstatt kann sie wie die Kaufleute umschalten.
    - Stamm in `_HANDWERK` (Bäcker, Metzger, Schlachter, Fleischer, Konditor, Schneider, Schuhmacher,
-     Friseur, Maler, Anstreicher, Tischler, Schreiner, Schlosser, Klempner, Installateur, Dachdecker,
-     Schmied, Maurer, Zimmer-, Stukkateur, Glaser, Sattler, Polsterer, Tapezier, Uhrmacher, Gold-,
+     Friseur, Maler, Anstreicher, Tischler, Schreiner, Klempner, Installateur, Dachdecker, Maurer, Zimmer-, Stukkateur, Glaser, Sattler, Polsterer, Tapezier, Uhrmacher, Gold-,
      Buchbinder, Drucker, Gärtner, Fuhr-, Elektro-, Schornsteinfeger, Kürschner, Hut-, Korb-,
      Stellmacher, Wagner, Böttcher, Küfer, Müller, Mühlen-, Brauer, Gerber, Seiler, Töpfer,
-     Ofensetzer, Steinmetz, Bildhauer, Graveur, Optiker, Mechaniker, Fotograf) → **`selbstaendige`,
+     Ofensetzer, Steinmetz, Bildhauer, Graveur, Optiker, Fotograf) → **`selbstaendige`,
      Grund `handwerksmeister`**. Beispiel: „Bäckermstr.“ (Item „Bäckermeister/in“, Niveau `aufsicht`) →
      `selbstaendige`.
    - Alle anderen Meister (Werk-, Betriebs-, Fahr-, Zug-, Bahnmeister …) → **`angestellte`, Grund
@@ -92,10 +128,14 @@ geprüft, nicht gegen den vollen Text mit Gattung.
    Patentanwalt, Wirtschaftsprüfer, Steuerberater, Bücherrevisor, Schriftsteller, Künstler, Kunstmaler,
    Bildhauer/in. Beispiel: „Rechtsanwalt“ (Item „Rechtsanwalt/-anwältin“) → `freie_berufe`.
 
+6a. **Erwerbsquelle statt Beruf (Regex `_OHNE_ERWERB` gegen die Norm: Hausbesitzer, Rentier, Privatier)** →
+   `ohne_erwerb`, Grund `erwerbsquelle` (siehe Definitionen). Beispiel: „Hausbes.“ (Item „Hausbesitzer/in“)
+   → `ohne_erwerb`.
+
 7. **Unternehmer (Regex `_UNTERNEHMER` gegen Norm + Gattung + Beruf)** → `unternehmer`, Grund
    `unternehmer`. Muster: Fabrikant, Fabrikbesitzer, Direktor/Generaldirektor (außer „Studiendirektor“
    und „Katasterdirektor“ — negativer Lookbehind, siehe Grenzfälle), Vorstand, Geschäftsführer, Inhaber,
-   Unternehmer, Prokurist, Bergwerksbesitzer, Gutsbesitzer, Hausbesitzer, Rentier. Beispiele: „Fabrikant“
+   Unternehmer, Bergwerksbesitzer, Gutsbesitzer. Prokurist nicht mehr (seit 2026-09-25 → Regel 9). Beispiele: „Fabrikant“
    → `unternehmer`; „Direktor“ (Item „Direktor/in“, Gattung „Geschäftsführer/innen und Vorstände“) →
    `unternehmer`; „Bankdirektor“ → `unternehmer` (echter Unternehmer-Direktor, vom Lookbehind nicht
    ausgenommen).
@@ -109,7 +149,7 @@ geprüft, nicht gegen den vollen Text mit Gattung.
 9. **Angestellte (Regex `_ANGESTELLTE` gegen den vollen Text), außer die Norm ist zugleich Beamten-Norm
    oder der Titel trifft `_BEAMTE_TITEL`** → `angestellte`, Grund `angestellte`. Muster: angestellt,
    Buchhalter, Kontorist, Techniker, Ingenieur, Steiger, Zeichner, Verkäufer, Handlungsgehilfe, Kassierer,
-   Vertreter, Reisender, Bürogehilfe, Stenotypist, Laborant, Chemiker, Betriebsführer, Abteilungsleiter,
+   Vertreter, Reisender, Bürogehilfe, Stenotypist, Laborant, Chemiker, Betriebsführer, Prokurist, Abteilungsleiter,
    Filialleiter, Disponent, Expedient, Magazinverwalter, Werkführer, Obersteiger. Beispiele: „Steiger“
    (Item „Steiger/in“, Niveau `spezialist`) → `angestellte`; „Techniker“ (Item „Techniker/in“) →
    `angestellte`.
