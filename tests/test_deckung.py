@@ -14,6 +14,7 @@ def test_familie_von_faltet_meister_gewerbe_und_weibliche_form():
     assert familie_von("Schneiderin") == "schneiderin"          # weibliche Form erst in deckung() gefaltet
     assert familie_von("Tischler") == "schreiner"               # Synonym
     assert familie_von("Anstreicher") == "maler"
+    assert familie_von("Schmiedemeister") == "schmied"
 
 
 def test_rubrik_familie_nimmt_erstes_wort_und_schliesst_bedarf_aus():

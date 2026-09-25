@@ -51,7 +51,7 @@ _ANGESTELLTE = re.compile(r"angestellt|buchhalter|kontorist|techniker|ingenieur|
                           r"abteilungsleiter|filialleiter|disponent|expedient|magazinverwalter|werkführer|obersteiger", re.I)
 _SELBSTAENDIGE = re.compile(r"händler|handel|wirt(in)?$|gastwirt|schankwirt|krämer|fuhrmann|kaufmann/-frau -|kaufmann/-frau \(|"
                             r"hausierer|agent|makler|kommissionär|verleger|drogist|hebamme|masseur|heilpraktiker|"
-                            r"landwirt|bauer|kötter|pächter|fischer|schiffer", re.I)
+                            r"landwirt(?!schaftlich)|bauer|kötter|pächter|fischer|schiffer", re.I)
 
 
 def _norm(item: dict | None) -> str:

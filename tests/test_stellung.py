@@ -116,3 +116,8 @@ def test_handwerksmeister_stamm_aus_dem_item():
     # Abgekürzte Schreibweise ohne erkennbaren Stamm — das Item liefert ihn.
     assert stellung_vorschlag(zeile("Schuhmmstr."), item("Schuhmachermeister/in", "aufsicht", "Aufsichtskräfte – Schuhherstellung", "B 28393"), REGELN) == ("selbstaendige", "handwerksmeister")
     assert stellung_vorschlag(zeile("Polstermstr."), item("Polsterermeister/in", "aufsicht", "Aufsichtskräfte – Polsterei", "B 28393"), REGELN) == ("selbstaendige", "handwerksmeister")
+
+
+def test_landwirtschaftlicher_arbeiter_ist_kein_landwirt():
+    assert stellung_vorschlag(zeile("Landw. Arb.", beruf="landwirtschaftlicher Arbeiter"), item("Landwirtschaftliche/r Arbeiter/in", "helfer", "Landwirtschaft – Helfer", "B 11101"), REGELN) == ("arbeiter", "niveau helfer")
+    assert stellung_vorschlag(zeile("Landw.", beruf="Landwirt"), item("Landwirt/in", "fachlich", "Landwirtschaft", "B 11102"), REGELN) == ("selbstaendige", "selbstaendig")

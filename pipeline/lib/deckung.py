@@ -23,7 +23,7 @@ MIN_OFFEN = 50       # Familien ohne Inhaberform in Teil I nur ab so vielen offe
 _SYNONYME = {
     "schreiner": ("tischler",), "maler": ("anstreicher",), "metzger": ("fleischer", "schlachter"),
     "klempner": ("installateur",), "fotograf": ("photograph",), "zimmerer": ("zimmermann", "zimmer"),
-    "stellmacher": ("wagner",), "kuefer": ("boettcher",), "friseur": ("frisoer",),
+    "stellmacher": ("wagner",), "kuefer": ("boettcher",), "friseur": ("frisoer",), "schmied": ("schmiede",),
 }
 _SYNONYM_ZU = {s: f for f, ss in _SYNONYME.items() for s in ss}
 _ZUSATZ = re.compile(r"(meisterin|meister|mstrin|mstr|ei)$")

@@ -24,10 +24,8 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | maler | 2048 | 439 | 728 | 289 | 14% | unbestimmt | Maler | Anstreich., Anstreicher, Maler |
 | stukkateur | 351 | 0 | 44 | 44 | 12% | unbestimmt | Stukkateur | Stukkateur |
 | schneider | 1218 | 1082 | 1209 | 127 | 10% | unbestimmt | Schneider für Herren, Schneider für Damen, Schneiderin | Schneid., Schneider, Schneiderin |
-| schmied | 1337 | 0 | 122 | 122 | 9% | arbeiter | Schmied | Schmied |
 | buchdrucker | 303 | 83 | 110 | 27 | 9% | arbeiter | Buchdruckerei | Buchdruck., Buchdrucker |
 | glasblaeser | 50 | 0 | 3 | 3 | 6% | arbeiter | Glasbläserei | Glasbläs., Glasbläser |
-| konditor | 173 | 158 | 162 | 4 | 2% | arbeiter | Konditorei | Konditor |
 | schleifer | 382 | 0 | 8 | 8 | 2% | arbeiter | Schleiferei | Schleifer |
 | sattler | 202 | 66 | 70 | 4 | 2% | arbeiter | Sattler | Sattler |
 | mechaniker | 344 | 23 | 28 | 5 | 2% | arbeiter | Mechaniker und mech. Werkstätte | Mechanik., Mechaniker |
@@ -35,6 +33,7 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | schlosser | 7425 | 222 | 111 | 0 | 0% | arbeiter | Schlosser | Schloss., Schlosser |
 | maurer | 2416 | 60 | 19 | 0 | 0% | arbeiter | Maurermeister | Maur., Maurer |
 | schreiner | 1751 | 699 | 376 | 0 | 0% | arbeiter | Tischler | Schrein., Schreiner, Tischler |
+| schmied | 1344 | 160 | 122 | 0 | 0% | arbeiter | Schmied | Schmied, Schmiede |
 | klempner | 847 | 290 | 260 | 0 | 0% | arbeiter | Klempner, Installateur | Install., Installat., Installateur, Klempn., Klempner |
 | gaertner | 582 | 132 | 63 | 0 | 0% | arbeiter | Gärtner | Gärtn., Gärtner |
 | baecker | 565 | 840 | 536 | 0 | 0% | arbeiter | Bäcker | Bäcker |
@@ -50,7 +49,7 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | faerber | 11 | 8 | 7 | 0 | 0% | arbeiter | Färberei | Färber |
 | leichenbestatter | 9 | 19 | 16 | 0 | 0% | arbeiter | Leichenbestatter u. -bestatterinnen | Leichenbestatter |
 | autosattler | 0 | 7 | 6 | 0 | – | – | Auto-Sattlerei |  |
-| bauunternehmer | 0 | 274 | 134 | 0 | – | – | Bauunternehmer |  |
+| bauunternehmer | 0 | 357 | 134 | 0 | – | – | Bauunternehmer |  |
 | bauklempner | 0 | 14 | 12 | 0 | – | – | Bauklempnerei |  |
 | bildhauer | 0 | 10 | 53 | 43 | – | – | Bildhauer |  |
 | gastwirt | 0 | 415 | 273 | 0 | – | – | Gastwirt |  |
@@ -58,6 +57,7 @@ Quoten über 100 % heißen: mehr unerklärte Betriebe als offene Nennungen — d
 | hebamme | 0 | 151 | 167 | 16 | – | – | Hebamme |  |
 | heilpraktiker | 0 | 16 | 54 | 38 | – | – | Heilpraktiker |  |
 | klavierbauer | 0 | 15 | 13 | 0 | – | – | Klavierbauer |  |
+| konditor | 0 | 331 | 162 | 0 | – | – | Konditorei |  |
 | kunststopfer | 0 | 14 | 15 | 1 | – | – | Kunststopferei |  |
 | masseur | 0 | 38 | 24 | 0 | – | – | Masseur und Masseuse |  |
 | schankwirt | 0 | 1413 | 904 | 0 | – | – | Schankwirt |  |

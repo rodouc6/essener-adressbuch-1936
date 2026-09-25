@@ -19,30 +19,30 @@ Amtsgeh.,27,Amtsgehilfe,,B 73201-103,,ja,,christos,2026-09-23,,arbeiter,
 Amtsger. Rat,53,Amtsgerichtsrat,,B 73154-101,,ja,hand,christos,2026-09-24,Richter am Amtsgericht,beamte,
 Amtsgerichtsrat,7,Amtsgerichtsrat,,B 73154-101,,ja,hand,christos,2026-09-24,Richter am Amtsgericht,beamte,
 Angest.,354,Angestellter,,B 20002-516,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
-Angestellt.,144,Angestellter,,B 20002-516,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Angestellte,9,Angestellte,,B 20002-516,,ja,exakt,christos,2026-09-24,,angestellte,
-Angestellter,163,Angestellter,,B 20002-516,,ja,exakt,christos,2026-09-23,,angestellte,
+Angestellt.,144,Angestellter,,B 20002-516,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Angestellte,9,Angestellte,,B 20002-516,,ja,exakt,christos,2026-09-25,,angestellte,ja
+Angestellter,163,Angestellter,,B 20002-516,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Ankerwickler,34,Magnetwickler,,B 24212-532,,,,christos,2026-09-23,Magnetwinkler?,arbeiter,
 Anschläger,55,Anschläger,,B 21112-135,,ja,hand,christos,2026-09-24,Bergbau angenommen (Fördersignal),arbeiter,
-Anstreich.,133,Anstreicher,,B 33212-121,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Anstreich.,133,Anstreicher,,B 33212-121,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Anstreicher,1455,Anstreicher,,B 33212-121,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Anstreicherei,29,Anstreicher,gewerbe,B 33212-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Anstreichergesch.,94,Anstreicher,gewerbe,B 33212-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Anstreichergesch.,94,Anstreicher,gewerbe,B 33212-121,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Anstreichergeschäft,7,Anstreicher,gewerbe,B 33212-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Anstreichermeister,11,Anstreichermeister,,,,,,berufe_vorschlag,2026-09-23,,selbstaendige,
 Anstreichermstr.,345,Maler- und Anstreichermeister,,B 33293-113,,ja,,christos,2026-09-25,,selbstaendige,ja
 Anzeichn.,20,Anzeichner,,B 24122-129,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
 Anzeichner,44,Anzeichner,,B 27212-173,,ja,aehnlich 0.91,christos,2026-09-23,,angestellte,
-Apothek.,6,Apotheker,,B 81804-105,,ja,,christos,2026-09-24,,freie_berufe,
+Apothek.,6,Apotheker,,B 81804-105,,ja,,christos,2026-09-25,,freie_berufe,
 Apothekenbes.,23,Apothekenbesitzer,,B 81894-500,,ja,,christos,2026-09-23,,unbestimmt,
 Apothekenbesrin.,5,Apothekenbesitzer,,B 81894-500,,ja,,christos,2026-09-24,,unbestimmt,
-Apotheker,109,Apotheker,,B 81804-105,,ja,exakt,christos,2026-09-23,,freie_berufe,
+Apotheker,109,Apotheker,,B 81804-105,,ja,exakt,christos,2026-09-25,,freie_berufe,
 Apparatebau,6,Apparatebau,,B 34342-116,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,selbstaendige,
 Apparatewärt.,6,Apparatewärter,,B 41312-112,,,katalog; exakt,berufe_vorschlag,2026-09-24,,arbeiter,
-Arb.,107,Arbeiter,,B 20002-500,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Arb.,107,Arbeiter,,B 20002-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Arbeit.,474,Arbeiter,,B 20002-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Arbeiter,8432,Arbeiter,,B 20002-500,,ja,exakt,christos,2026-09-25,,arbeiter,ja
-Arbeiterin,26,Arbeiterin,,B 20002-500,,ja,exakt,christos,2026-09-23,,arbeiter,
+Arbeiterin,26,Arbeiterin,,B 20002-500,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Arbeitsvermittler,6,Arbeitsvermittler,,B 71524-114,,,exakt,berufe_vorschlag,2026-09-23,,unbestimmt,
 Archit.,34,Architekt,,B 31114-103,,ja,,christos,2026-09-23,,freie_berufe,
 Architekt,588,Architekt,,B 31114-103,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
@@ -50,7 +50,7 @@ Architekt B. D. A.,5,Architekt B. D. A.,,,,,,berufe_vorschlag,2026-09-23,,unbest
 Architekt B.D.A.,5,Architekt B.D.A.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Armaturen,6,Armaturen,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Artist,41,Artist,,B 94283-101,,ja,exakt,christos,2026-09-23,,angestellte,
-Arzt,184,Arzt,,B 81404-107,,ja,exakt,christos,2026-09-23,,freie_berufe,
+Arzt,184,Arzt,,B 81404-107,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
 Assessor,7,Assessor,,B 73203-513,,ja,exakt,christos,2026-09-24,,angestellte,
 Assist. Arzt,13,Assistenzarzt,,B 81404-105,,,katalog; exakt,berufe_vorschlag,2026-09-23,,freie_berufe,
 Assistent,12,Assistent,,B 20001-509,,ja,exakt,christos,2026-09-24,,beamte,
@@ -85,9 +85,9 @@ Backwr.,13,Backwarenhändler,gewerbe,B 62312-500,ja,ja,gewerbe; exakt,christos,2
 Bademstr.,25,Bademeister,,B 53193-110,,ja,,christos,2026-09-23,,angestellte,
 Badewärt.,5,Badewärter,,B 53142-100,,,katalog; exakt,berufe_vorschlag,2026-09-24,,arbeiter,
 Baggermstr.,5,Baggermeister,,B 52593-104,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
-Bahnarb.,146,Bahnarbeiter,,B 51522-500,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Bahnassist.,8,Bahnassistent,,B 51522-504,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Bahnbeamt.,22,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-23,,beamte,
+Bahnarb.,146,Bahnarbeiter,,B 51522-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Bahnassist.,8,Bahnassistent,,B 51522-504,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
+Bahnbeamt.,22,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-25,,beamte,ja
 Bahnhofsschaffn.,5,Bahnhofsschaffner,,B 51412-110,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
 Bahnhofsvorsteh.,6,Bahnhofsvorsteh.,,B 51593-504,,,aehnlich 0.90,berufe_vorschlag,2026-09-23,,angestellte,
 Bahnmstr.,12,Bahnmeister,,B 32293-502,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
@@ -96,10 +96,10 @@ Bahnwärter,9,Bahnwärter,,B 51522-107,,ja,exakt,christos,2026-09-24,,arbeiter,
 Bandagist,10,Bandagist,,B 82512-103,,ja,exakt,christos,2026-09-24,,arbeiter,
 Bankangest.,30,Bankangestellter,,B 72112-100,,ja,,christos,2026-09-23,,angestellte,
 Bankarb.,29,Bankarb.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Bankbeamt.,286,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Bankbeamt.,286,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Bankbeamt. a. D.,5,Bankbeamter,ruhestand,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,ohne_erwerb,
-Bankbeamter,10,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
-Bankbeamtin,8,Bankbeamtin,,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Bankbeamter,10,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
+Bankbeamtin,8,Bankbeamtin,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Bankdir.,5,Bankdirektor,,B 72194-101,,ja,,christos,2026-09-24,,unternehmer,
 Bankdirekt.,28,Bankdirektor,,B 72194-101,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
 Bankdirekt. a. D.,16,Bankdirektor,ruhestand,B 72194-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
@@ -111,9 +111,9 @@ Bauarb.,639,Bauarbeiter,,B 32102-108,,ja,katalog; exakt,christos,2026-09-25,,arb
 Bauarbeit.,6,Bauarbeit.,,B 32102-108,,,aehnlich 0.90,berufe_vorschlag,2026-09-23,,arbeiter,
 Bauarbeiter,19,Bauarbeiter,,B 32102-108,,ja,exakt,christos,2026-09-23,,arbeiter,
 Bauaufseh.,7,Bauaufseher,,B 31163-102,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Bauführ.,187,Bauführer,,B 31193-105,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Bauführ.,187,Bauführer,,B 31193-105,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Bauführer,29,Bauführer,,B 31193-105,,ja,exakt,christos,2026-09-23,,angestellte,
-Baugesch.,233,Bauunternehmer,gewerbe,B 31194-104,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Baugesch.,233,Bauunternehmer,gewerbe,B 31194-104,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Baugeschäft,31,Bauunternehmer,gewerbe,B 31194-104,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Baugewerkmstr.,5,Baugewerkmstr.,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
 Baugewerksmstr.,12,Baugewerksmstr.,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
@@ -133,14 +133,14 @@ Bauschloss.,5,Bauschlosser,,B 24412-112,,,katalog; exakt,berufe_vorschlag,2026-0
 Bauschlosser,7,Bauschlosser,,B 24412-112,,ja,exakt,christos,2026-09-24,,arbeiter,
 Bauschreiner,7,Bauschreiner,,B 33332-108,,ja,exakt,christos,2026-09-24,,arbeiter,
 Baustoffe,9,Baustoffhändler,gewerbe,B 62262-112,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Bautechn.,73,Bautechniker,,B 31103-121,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Bautechniker,12,Bautechniker,,B 31103-121,,ja,exakt,christos,2026-09-24,,angestellte,
-Bauuntern.,21,Bauunternehmer,,B 31194-104,,ja,katalog; exakt,christos,2026-09-24,,unternehmer,
+Bautechn.,73,Bautechniker,,B 31103-121,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Bautechniker,12,Bautechniker,,B 31103-121,,ja,exakt,christos,2026-09-25,,angestellte,ja
+Bauuntern.,21,Bauunternehmer,,B 31194-104,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Bauunternehm.,420,Bauunternehmer,,B 31194-104,,ja,katalog; exakt,christos,2026-09-25,,unternehmer,ja
-Bauunternehmer,62,Bauunternehmer,,B 31194-104,,ja,exakt,christos,2026-09-23,,unternehmer,
+Bauunternehmer,62,Bauunternehmer,,B 31194-104,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Bauunternehmung,10,Bauunternehmer,gewerbe,B 31194-104,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Bauzeichn.,10,Bauzeichner,,B 27212-118,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Beamt.,151,Beamter,,B 70002-504,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Beamt.,151,Beamter,,B 70002-504,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Beamt. Anw.,9,Beamtenanwärter,,B 70002-505,,,katalog; aehnlich 0.91,berufe_vorschlag,2026-09-23,,beamte,
 Beamt. a. D.,20,Beamter,ruhestand,B 70002-504,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Beamt. i. R.,5,Beamter,ruhestand,B 70002-504,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
@@ -148,28 +148,28 @@ Beamtenanwärt.,8,Beamtenanwärt.,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Beamter,407,Beamter,,B 70002-504,,ja,exakt,christos,2026-09-25,,beamte,ja
 Beamter a. D.,19,Beamter,ruhestand,B 70002-504,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
 Beamter i. R.,5,Beamter,ruhestand,B 70002-504,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
-Beamtin,37,Beamter,,B 70002-504,,ja,,christos,2026-09-23,,beamte,
+Beamtin,37,Beamter,,B 70002-504,,ja,,christos,2026-09-25,,beamte,ja
 Beerdigungsanst.,13,Leichenbestatter,gewerbe,B 82402-109,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Beerdigungsanstalt,6,Leichenbestatter,gewerbe,B 82402-109,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Beifahr.,28,Beifahrer,,B 51311-116,,ja,,christos,2026-09-23,,arbeiter,
-Beifahrer,86,Beifahrer,,B 51311-116,,ja,exakt,christos,2026-09-23,,arbeiter,
+Beifahr.,28,Beifahrer,,B 51311-116,,ja,,christos,2026-09-25,,arbeiter,ja
+Beifahrer,86,Beifahrer,,B 51311-116,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Beigeordneter,6,Beigeordneter,,B 71214-102,,,exakt,berufe_vorschlag,2026-09-23,,unbestimmt,
 Beizer,42,Beizer,,B 11732-518,,ja,exakt,christos,2026-09-23,,arbeiter,
 Beleuchtungskörper,5,Beleuchtungskörper,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Berg.,9,Berg.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Bergarb.,226,Bergarbeiter,,B 21112-501,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Bergarb.,226,Bergarbeiter,,B 21112-501,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Bergassess.,30,Bergassess.,,B 21113-526,,ja,aehnlich 0.91,christos,2026-09-23,,angestellte,
 Bergassess. a. D.,7,Bergassess.,ruhestand,B 21113-526,,ja,aehnlich 0.91,christos,2026-09-24,,ohne_erwerb,
 Bergassessor,8,Bergassessor,,B 21113-526,,ja,exakt,christos,2026-09-24,,angestellte,
 Bergbauangest.,6,Bergbauangest.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Bergbaubeamt.,18,Bergbeamter,,B 21113-527,,ja,,christos,2026-09-24,,beamte,
 Bergingen.,8,Bergbauingenieur,,B 21114-116,,ja,,christos,2026-09-24,,angestellte,
-Berginv.,98,Berginvalide,invalide,A 10220-519,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
+Berginv.,98,Berginvalide,invalide,A 10220-519,,ja,katalog; exakt,christos,2026-09-25,,ohne_erwerb,ja
 Berginval.,960,Berginvalide,invalide,B 21112-100,,ja,katalog; exakt,christos,2026-09-25,,ohne_erwerb,ja
-Berginvalide,175,Berginvalide,invalide,A 10220-519,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
+Berginvalide,175,Berginvalide,invalide,A 10220-519,,ja,exakt,christos,2026-09-25,,ohne_erwerb,ja
 Bergm,37,Bergmann,,B 21112-100,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Bergm.,27781,Bergmann,,B 21112-100,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
-Bergmann,220,Bergmann,,B 21112-100,,ja,exakt,christos,2026-09-23,,arbeiter,
+Bergmann,220,Bergmann,,B 21112-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Bergrat,16,Bergrat,,B 21193-502,,ja,exakt,christos,2026-09-23,,beamte,
 Bergrevierinspekt.,5,Bergrevierinspekt.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Bergtagelöhn.,16,Bergtagelöhner,,B 21111-510,,ja,aehnlich 0.93,christos,2026-09-23,,arbeiter,
@@ -212,16 +212,16 @@ Bierhdlg.,8,Bierverleger,gewerbe,B 61213-502,ja,ja,gewerbe; hand,christos,2026-0
 Bierverlag,49,Bierverleger,gewerbe,B 61213-502,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Bierverleg.,7,Bierverleger,,B 61213-502,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
 Bierverleger,21,Bierverleger,,B 61213-502,,ja,exakt,christos,2026-09-23,,selbstaendige,
-Bildhauer,91,Bildhauer,,B 93312-105,,ja,exakt,christos,2026-09-23,,freie_berufe,
+Bildhauer,91,Bildhauer,,B 93312-105,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
 Bildhauerei,10,Bildhauer,gewerbe,B 93312-105,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Bleilöter,5,Bleilöter,,B 24422-131,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Blumengesch.,36,Blumenhändler,gewerbe,B 12202-108,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Blumenhaus,10,Blumenhändler,gewerbe,B 12202-108,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Blumenhdlg.,14,Blumenhändler,gewerbe,B 12202-108,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Bohrer,257,Bohrer,,B 24232-131,,ja,exakt,christos,2026-09-23,,arbeiter,
+Bohrer,257,Bohrer,,B 24232-131,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Bohrmstr.,7,Bohrmeister,,B 21193-115,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Bote,162,Bote,,B 51321-102,,ja,exakt,christos,2026-09-23,,arbeiter,
-Botin,9,Botin,,B 51321-102,,ja,exakt,christos,2026-09-24,,arbeiter,
+Bote,162,Bote,,B 51321-102,,ja,exakt,christos,2026-09-25,,arbeiter,ja
+Botin,9,Botin,,B 51321-102,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Brandmstr.,8,Wehrführer (Brandmeister),,B 53132-117,,ja,,christos,2026-09-24,,angestellte,
 Brauer,54,Brauer,,B 29112-101,,ja,exakt,christos,2026-09-23,,arbeiter,
 Brauereiarb.,8,Brauereiarb.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -247,7 +247,7 @@ Buchbinderei,10,Buchbinder,gewerbe,B 23422-116,ja,ja,gewerbe; exakt,christos,202
 Buchbindermstr.,18,Buchbindermstr.,,B 23493-100,,ja,aehnlich 0.90,christos,2026-09-23,,selbstaendige,
 Buchdruck.,62,Buchdrucker,,B 23412-106,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Buchdrucker,241,Buchdrucker,,B 23412-106,,ja,exakt,christos,2026-09-23,,arbeiter,
-Buchdruckerei,61,Buchdrucker,gewerbe,B 23412-106,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Buchdruckerei,61,Buchdrucker,gewerbe,B 23412-106,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Buchdruckereibes.,31,Buchdruckereiinhaber,,B 23494-527,,ja,,christos,2026-09-23,,unternehmer,
 Buchdruckermstr.,22,Buchdruckermstr.,,B 23493-101,,ja,aehnlich 0.91,christos,2026-09-23,,selbstaendige,
 Buchh.,6,Buchh.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -259,19 +259,19 @@ Buchhdl.,26,Buchhändler,,B 62512-103,,ja,katalog; exakt,christos,2026-09-24,,se
 Buchhdlg.,27,Buchhändler,gewerbe,B 62512-103,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Buchmacher,7,Buchmacher,,B 94342-500,,ja,exakt,christos,2026-09-24,,arbeiter,
 Bäcker,565,Bäcker,,B 29222-101,,ja,exakt,christos,2026-09-25,,arbeiter,ja
-Bäckerei,257,Bäcker,gewerbe,B 29222-101,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Bäckerei,257,Bäcker,gewerbe,B 29222-101,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Bäckermeister,72,Bäckermeister,,B 29293-100,,ja,exakt,christos,2026-09-23,,selbstaendige,
 Bäckermstr.,503,Bäckermeister,,B 29293-100,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Böttchermstr.,5,Böttchermeister,,B 22393-109,,,katalog; exakt,berufe_vorschlag,2026-09-24,,selbstaendige,
 Bücherrevis.,24,Bücherrevis.,,B 72244-500,,ja,aehnlich 0.92,christos,2026-09-23,,freie_berufe,
 Bücherrevisor,58,Bücherrevisor,,B 72244-500,,ja,exakt,christos,2026-09-23,,freie_berufe,
-Büfettier,65,Büfettier,,B 63382-118,,ja,exakt,christos,2026-09-23,,arbeiter,
+Büfettier,65,Büfettier,,B 63382-118,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Büffetier,7,Büffetier,,B 63382-118,,ja,aehnlich 0.90,christos,2026-09-24,,arbeiter,
 Bügler,5,Bügler,,B 54132-103,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Büglerin,15,Büglerin,,B 54132-103,,ja,exakt,christos,2026-09-23,,arbeiter,
 Bürgermstr. a. D.,5,Bürgermeister,ruhestand,B 71214-101,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Büroangest.,229,Büroangestellter,,B 71402-500,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Büroangestellt.,9,Büroangestellt.,,B 71402-500,,ja,aehnlich 0.97,christos,2026-09-24,,angestellte,
+Büroangest.,229,Büroangestellter,,B 71402-500,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Büroangestellt.,9,Büroangestellt.,,B 71402-500,,ja,aehnlich 0.97,christos,2026-09-25,,angestellte,ja
 Büroassist.,9,Büroassistent,,B 71402-115,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Bürobeamt.,1143,Bürobeamter,,B 71403-501,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Bürobeamt. a. D.,47,Bürobeamter,ruhestand,B 71403-501,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
@@ -280,24 +280,24 @@ Bürobeamtin,12,Bürobeamtin,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Bürobedarf,20,Bürobedarfshändler,gewerbe,,,,gewerbe,claude,2026-09-24,Gewerbebezeichnung; kein OhdAB-Item für den Berufsträger gefunden,selbstaendige,
 Bürodien.,54,Bürodiener,,B 71401-129,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Bürodiener,40,Bürodiener,,B 71401-129,,ja,exakt,christos,2026-09-23,,arbeiter,
-Bürogeh.,139,Bürogehilfe,,B 71402-126,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Bürogeh.,139,Bürogehilfe,,B 71402-126,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Bürogehilfe,6,Bürogehilfe,,B 71402-126,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Bürogehilfin,6,Bürogehilfin,,B 71402-126,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
-Bürovorst.,22,Bürovorsteher,,B 71493-105,,ja,,christos,2026-09-23,,angestellte,
-Bürovorsteh.,279,Bürovorsteher,,B 71493-105,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Bürovorst.,22,Bürovorsteher,,B 71493-105,,ja,,christos,2026-09-25,,angestellte,ja
+Bürovorsteh.,279,Bürovorsteher,,B 71493-105,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Bürovorsteh. a. D.,12,Bürovorsteher,ruhestand,B 71493-105,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Bürovorsteher,44,Bürovorsteher,,B 71493-105,,ja,exakt,christos,2026-09-23,,angestellte,
+Bürovorsteher,44,Bürovorsteher,,B 71493-105,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Chefarzt,6,Chefarzt,,B 81494-100,,ja,exakt,christos,2026-09-24,,freie_berufe,
-Chem.,6,Chemiker,,B 41304-105,,ja,,christos,2026-09-24,,angestellte,
+Chem.,6,Chemiker,,B 41304-105,,ja,,christos,2026-09-25,,angestellte,ja
 Chemigraph,25,Chemigraf,,B 23282-103,,ja,,christos,2026-09-23,,arbeiter,
-Chemiker,72,Chemiker,,B 41304-105,,ja,exakt,christos,2026-09-23,,angestellte,
+Chemiker,72,Chemiker,,B 41304-105,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Chemotechn.,12,Chemotechniker,,B 41323-109,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Dachbedeckungsgesch.,14,Dachdecker,gewerbe,B 32142-113,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Dachdeck.,20,Dachdecker,,B 32142-113,,ja,,christos,2026-09-23,,arbeiter,
-Dachdecker,286,Dachdecker,,B 32142-113,,ja,exakt,christos,2026-09-23,,arbeiter,
+Dachdeck.,20,Dachdecker,,B 32142-113,,ja,,christos,2026-09-25,,arbeiter,ja
+Dachdecker,286,Dachdecker,,B 32142-113,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Dachdeckergesch.,12,Dachdecker,gewerbe,B 32142-113,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Dachdeckermeister,12,Dachdeckermeister,,B 32193-108,,ja,exakt,christos,2026-09-24,,selbstaendige,
-Dachdeckermstr.,119,Dachdeckermeister,,B 32193-108,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Dachdeckermeister,12,Dachdeckermeister,,B 32193-108,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
+Dachdeckermstr.,119,Dachdeckermeister,,B 32193-108,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Dachdeckungsgesch.,6,Dachdecker,gewerbe,B 32142-113,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Damenfriseur,9,Damenfriseur,,B 82312-104,,ja,exakt,christos,2026-09-24,,arbeiter,
 Damenmoden,15,Modehändler,gewerbe,B 62212-577,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -310,8 +310,8 @@ Dekorat.,5,Dekorat.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Dekorateur,105,Dekorateur,,B 93232-101,,ja,exakt,christos,2026-09-23,,arbeiter,
 Dekorationsmaler,8,Dekorationsmaler,,B 33212-124,,,exakt,berufe_vorschlag,2026-09-24,,arbeiter,
 Delikatessen,6,Delikatessen,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Dentist,105,Dentist,,B 81474-112,,ja,exakt,christos,2026-09-23,,freie_berufe,
-Dentistin,9,Dentistin,,B 81474-112,,ja,exakt,christos,2026-09-24,,freie_berufe,
+Dentist,105,Dentist,,B 81474-112,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
+Dentistin,9,Dentistin,,B 81474-112,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
 Desinfektor,14,Desinfektor,,B 53342-101,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Destillateur,12,Destillateur,,B 29132-101,,ja,exakt,christos,2026-09-24,,arbeiter,
 Destillation,5,Destillation,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -335,7 +335,7 @@ Dipl.-Ing.,43,Diplomingenieur,,B 21004-502,,ja,katalog; exakt,christos,2026-09-2
 Direkt.,57,Direktor,,B 20094-500,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
 Direkt. a. D.,6,Direktor,ruhestand,B 20094-500,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Direktionssekr.,5,Direktionssekretär,,B 71403-527,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Direktor,199,Direktor,,B 20094-500,,ja,exakt,christos,2026-09-23,,unternehmer,
+Direktor,199,Direktor,,B 20094-500,,ja,exakt,christos,2026-09-25,,unternehmer,ja
 Direktor a. D.,12,Direktor,ruhestand,B 20094-500,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Direktor i. R.,6,Direktor,ruhestand,B 20094-500,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Direktrice,8,Direktrice,,B 28213-101,,ja,exakt,christos,2026-09-24,,angestellte,
@@ -345,9 +345,9 @@ Drechslerei,5,Drechsler,gewerbe,B 93332-510,ja,ja,gewerbe; exakt,christos,2026-0
 Dreh.,17,Dreher,,B 24232-102,,ja,,christos,2026-09-23,,arbeiter,
 Dreher,2401,Dreher,,B 24232-102,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Drehermstr.,14,Drehermeister,,B 24293-100,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
-Drogerie,86,Drogist,gewerbe,B 62412-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Drogerie,86,Drogist,gewerbe,B 62412-105,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Drogeriebes.,10,Drogeriebesitzer,gewerbe,B 62412-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Drogist,101,Drogist,,B 62412-105,,ja,exakt,christos,2026-09-23,,selbstaendige,
+Drogist,101,Drogist,,B 62412-105,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Drucker,27,Drucker,,B 23412-153,,ja,exakt,christos,2026-09-23,,arbeiter,
 Druckerei,5,Drucker,gewerbe,B 23412-153,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Druckereibes.,6,Druckereibesitzer,,B 23494-510,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
@@ -362,9 +362,9 @@ Einrahmungen,5,Einrahmungen,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Einrichter,34,Einrichter,,B 93232-501,,ja,exakt,christos,2026-09-23,,beamte,
 Einschaler,50,Einschaler,,B 32112-101,,ja,exakt,christos,2026-09-23,,arbeiter,
 Eisenb. Arb.,38,Bahnarbeiter (Eisenbahn),,B 51311-117,,ja,,christos,2026-09-23,,arbeiter,
-Eisenb. Assist.,9,Eisenbahnassistent,,B 51522-504,,ja,katalog; aehnlich 0.97,christos,2026-09-24,,beamte,
-Eisenb. Beamt.,20,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-23,,beamte,
-Eisenb. Bedienst.,103,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-23,,arbeiter,
+Eisenb. Assist.,9,Eisenbahnassistent,,B 51522-504,,ja,katalog; aehnlich 0.97,christos,2026-09-25,,beamte,ja
+Eisenb. Beamt.,20,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-25,,beamte,ja
+Eisenb. Bedienst.,103,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-25,,arbeiter,ja
 Eisenbahn.,6,Eisenbahn.,,B 51522-112,,ja,aehnlich 0.90,christos,2026-09-24,,arbeiter,
 Eisenbahner,52,Eisenbahner,,B 51522-112,,ja,exakt,christos,2026-09-23,,arbeiter,
 Eisenflechter,12,Eisenflechter,,B 32112-128,,ja,exakt,christos,2026-09-24,,arbeiter,
@@ -395,19 +395,19 @@ Emaillierer,9,Emaillierer,,B 24382-100,,ja,exakt,christos,2026-09-24,,arbeiter,
 Erdarb.,45,Erdarbeiter,,B 32201-119,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Erdarbeiter,5,Erdarbeiter,,B 32201-119,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Expedient,90,Expedient,,B 51622-100,,ja,exakt,christos,2026-09-23,,angestellte,
-Fabrarb.,16,Fabrikarbeiter,,B 20002-501,,ja,,christos,2026-09-23,,arbeiter,
-Fabrikant,30,Fabrikant,,B 27394-112,,ja,exakt,christos,2026-09-23,,unternehmer,
-Fabrikarb.,93,Fabrikarbeiter,,B 20002-501,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Fabrikarbeiter,5,Fabrikarbeiter,,B 20002-501,,ja,exakt,christos,2026-09-24,,arbeiter,
+Fabrarb.,16,Fabrikarbeiter,,B 20002-501,,ja,,christos,2026-09-25,,arbeiter,ja
+Fabrikant,30,Fabrikant,,B 27394-112,,ja,exakt,christos,2026-09-25,,unternehmer,ja
+Fabrikarb.,93,Fabrikarbeiter,,B 20002-501,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Fabrikarbeiter,5,Fabrikarbeiter,,B 20002-501,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Fabrikbes.,9,Fabrikbesitzer,,B 27394-114,,ja,katalog; exakt,christos,2026-09-24,,unternehmer,
 Fabrikdirekt.,7,Fabrikdirektor,,B 20094-502,,ja,katalog; exakt,christos,2026-09-24,,unternehmer,
 Fabrkarb.,1865,Fabrikarbeiter,,B 20002-501,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
-Fabrkarbeiter,9,Fabrkarbeiter,,B 20002-501,,ja,aehnlich 0.96,christos,2026-09-24,,arbeiter,
+Fabrkarbeiter,9,Fabrkarbeiter,,B 20002-501,,ja,aehnlich 0.96,christos,2026-09-25,,arbeiter,ja
 Fabrkbeamt.,30,Fabrkbeamt.,,B 20003-504,,ja,aehnlich 0.91,christos,2026-09-23,,beamte,
 Fabrkbes.,37,Fabrikbesitzer,,B 27394-114,,ja,,christos,2026-09-23,,unternehmer,
 Fabrkdirekt.,23,Fabrikdirektor,,B 20094-502,,ja,,christos,2026-09-23,,unternehmer,
 Fabrkdirekt. a. D.,5,Fabrikdirektor,ruhestand,B 20094-502,,ja,,christos,2026-09-24,,ohne_erwerb,
-Fabrkt.,129,Fabrikant,,B 27394-112,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
+Fabrkt.,129,Fabrikant,,B 27394-112,,ja,katalog; exakt,christos,2026-09-25,,unternehmer,ja
 Facharb.,8,Facharbeiter,,B 20002-505,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Facharzt,27,Facharzt,,B 81404-506,,ja,exakt,christos,2026-09-23,,freie_berufe,
 Fachlehrer,8,Fachlehrer,,B 84214-141,,ja,exakt,christos,2026-09-24,,beamte,
@@ -427,8 +427,8 @@ Faktor,36,Faktor,,B 51623-517,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Farben,5,Farben,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Farbenhdlg.,5,Farbenhändler,gewerbe,B 62262-505,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Farbwr.,9,Farbwarenhändler,gewerbe,B 62262-530,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Fbrkarb.,10,Fabrikarbeiter,,B 20002-501,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
-Fbrkt.,8,Fabrikant,,B 27394-112,,ja,,christos,2026-09-24,,unternehmer,
+Fbrkarb.,10,Fabrikarbeiter,,B 20002-501,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Fbrkt.,8,Fabrikant,,B 27394-112,,ja,,christos,2026-09-25,,unternehmer,ja
 Federrichter,15,Federrichter,,B 24212-178,,ja,exakt,christos,2026-09-23,,beamte,
 Feilenhauer,26,Feilenhauer,,B 24522-118,,ja,exakt,christos,2026-09-23,,arbeiter,
 Feinbäckerei,15,Feinbäckerei,,B 29222-141,,ja,aehnlich 0.92,christos,2026-09-23,,arbeiter,
@@ -439,7 +439,7 @@ Feinmechanik.,8,Feinmechanik.,,B 24512-111,,ja,aehnlich 0.92,christos,2026-09-24
 Feinmechaniker,13,Feinmechaniker,,B 24512-111,,ja,exakt,christos,2026-09-24,,arbeiter,
 Fensterputz.,9,Fensterputz.,,B 54122-101,,ja,aehnlich 0.92,christos,2026-09-24,,arbeiter,
 Fensterputzer,15,Fensterputzer,,B 54122-101,,ja,exakt,christos,2026-09-23,,arbeiter,
-Feuerarb.,84,Feuerarbeiter,,B 24101-516,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Feuerarb.,84,Feuerarbeiter,,B 24101-516,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Feuerwehrm.,176,Feuerwehrmann,,B 53132-113,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
 Feuerwehrmann,7,Feuerwehrmann,,B 53132-113,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
 Filialleit.,17,Filialleit.,,B 62194-104,,ja,aehnlich 0.91,christos,2026-09-23,,angestellte,
@@ -466,21 +466,21 @@ Friedhofsgärtner,9,Friedhofsgärtner,,B 12132-102,,ja,exakt,christos,2026-09-24
 Friedhofswärt.,8,Friedhofswärter,,B 34112-117,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Fris.,6,Fris.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Friseur,724,Friseur,,B 82312-102,,ja,exakt,christos,2026-09-25,,unbestimmt,ja
-Friseurgesch.,246,Friseur,gewerbe,B 82312-102,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Friseurgesch.,246,Friseur,gewerbe,B 82312-102,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Friseurgeschäft,5,Friseur,gewerbe,B 82312-102,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Friseurmstr.,30,Friseurmeister,,B 82393-100,,ja,,christos,2026-09-23,,selbstaendige,
 Friseursalon,8,Friseur,gewerbe,B 82312-102,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Friseuse,85,Friseur,,B 82312-102,,ja,,christos,2026-09-23,,arbeiter,
+Friseuse,85,Friseur,,B 82312-102,,ja,,christos,2026-09-25,,arbeiter,ja
 Frisiersalon,11,Friseur,gewerbe,B 82312-102,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Fräser,590,Fräser,,B 24232-117,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Fuger,6,Fuger,,B 32122-112,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
-Fuhrgesch.,204,Fuhrunternehmer,gewerbe,B 51694-113,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Fuhrgesch.,204,Fuhrunternehmer,gewerbe,B 51694-113,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Fuhrgeschäft,18,Fuhrunternehmer,gewerbe,B 51694-113,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Fuhrm.,512,Fuhrmann,,B 11342-105,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Fuhrmann,17,Fuhrmann,,B 11342-105,,ja,exakt,christos,2026-09-23,,selbstaendige,
 Fuhruntern.,6,Fuhruntern.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Fuhrunternehm.,169,Fuhrunternehmer,,B 51694-113,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
-Fuhrunternehmer,21,Fuhrunternehmer,,B 51694-113,,ja,exakt,christos,2026-09-23,,unternehmer,
+Fuhrunternehm.,169,Fuhrunternehmer,,B 51694-113,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
+Fuhrunternehmer,21,Fuhrunternehmer,,B 51694-113,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Futtermittel,26,Futtermittelhändler,gewerbe,,,,gewerbe,claude,2026-09-24,Gewerbebezeichnung; kein OhdAB-Item für den Berufsträger gefunden,selbstaendige,
 Futtermittelhdlg.,9,Futtermittelhändler,gewerbe,,,,gewerbe,claude,2026-09-24,Gewerbebezeichnung; kein OhdAB-Item für den Berufsträger gefunden,selbstaendige,
 Futtermstr.,10,Futtermeister,,B 11283-103,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
@@ -488,9 +488,9 @@ Färber,11,Färber,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Färberei,8,Färber,gewerbe,B 54132-106,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Färbermstr.,6,Färbermeister,,B 28193-526,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
 Förderaufseh.,24,Förderaufseher,,B 21193-126,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Grubenaufseher; Erdöl-Item passt nicht)",angestellte,
-Fördermasch.,81,Fördermaschinist,,B 21112-115,,ja,,christos,2026-09-23,,arbeiter,
-Fördermaschin.,11,Fördermaschinist,,B 21112-115,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
-Fördermaschinist,82,Fördermaschinist,,B 21112-115,,ja,exakt,christos,2026-09-23,,arbeiter,
+Fördermasch.,81,Fördermaschinist,,B 21112-115,,ja,,christos,2026-09-25,,arbeiter,ja
+Fördermaschin.,11,Fördermaschinist,,B 21112-115,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Fördermaschinist,82,Fördermaschinist,,B 21112-115,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Fürsorgerin,29,Fürsorgerin,,B 83123-102,,ja,exakt,christos,2026-09-23,,angestellte,
 Galvaniseur,11,Galvaniseur,,B 24302-106,,ja,exakt,christos,2026-09-24,,arbeiter,
 Garagen,10,Garagenbesitzer,gewerbe,B 61394-505,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -503,7 +503,7 @@ Gartenbaubetrieb,24,Gärtner,gewerbe,B 12102-104,ja,ja,gewerbe; hand,christos,20
 Gartengestalter,5,Gartengestalter,,B 12143-506,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Gartenmstr.,19,Gartenmstr.,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
 Gasmstr.,8,Gasmeister,,B 26293-132,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Gasstocher,13,Gasstocher,,B 21201-106,ja,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Ofenbedienung Gaswerk)",arbeiter,
+Gasstocher,13,Gasstocher,,B 21201-106,ja,ja,hand,christos,2026-09-25,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Ofenbedienung Gaswerk)",arbeiter,ja
 Gasthof,5,Gasthof,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Gaststätte,51,Gastwirt,gewerbe,B 63394-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Gastw.,291,Gastwirt,,B 63394-105,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
@@ -521,8 +521,8 @@ Gemeindeschwest.,6,Gemeindeschwest.,,B 81382-102,,,aehnlich 0.94,berufe_vorschla
 Gemeindeschwester,6,Gemeindeschwester,,B 81382-102,,,exakt,berufe_vorschlag,2026-09-24,,arbeiter,
 Gemüsegesch.,30,Gemüsehändler,gewerbe,B 62382-121,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet; kein Gemüsehändler-Item; Obsthändler/in",selbstaendige,
 Gemüsegroßhdlg.,8,Gemüsegroßhändler,gewerbe,B 62382-121,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet; kein Gemüsehändler-Item; Obsthändler/in",selbstaendige,
-Gemüsehdl.,100,Gemüsehändler,,B 62382-121,,ja,hand,christos,2026-09-24,kein Gemüsehändler-Item; Obsthändler/in,selbstaendige,
-Gemüsehdlg.,84,Gemüsehändler,gewerbe,B 62382-121,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet; kein Gemüsehändler-Item; Obsthändler/in",selbstaendige,
+Gemüsehdl.,100,Gemüsehändler,,B 62382-121,,ja,hand,christos,2026-09-25,kein Gemüsehändler-Item; Obsthändler/in,selbstaendige,ja
+Gemüsehdlg.,84,Gemüsehändler,gewerbe,B 62382-121,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet; kein Gemüsehändler-Item; Obsthändler/in",selbstaendige,ja
 Gen. Agent,13,Generalagent,,B 72133-109,,,katalog; exakt,berufe_vorschlag,2026-09-24,,selbstaendige,
 Gen. Vertr.,12,Generalvertreter,,B 61123-138,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Gen. Vertret.,24,Generalvertreter,,B 61123-138,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
@@ -589,8 +589,8 @@ Grubenschlosser,8,Grubenschlosser,,B 21112-114,,ja,exakt,christos,2026-09-24,,ar
 Grubensteig.,9,Grubensteig.,,B 21113-108,,ja,aehnlich 0.92,christos,2026-09-24,,angestellte,
 Grubensteiger,8,Grubensteiger,,B 21113-108,,ja,exakt,christos,2026-09-24,,angestellte,
 Gruppenführ.,50,Gruppenführer,,B 71393-112,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Gutsbes.,92,Gutsbesitzer,,B 11194-113,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
-Gutsbesitzer,12,Gutsbesitzer,,B 11194-113,,ja,exakt,christos,2026-09-24,,unternehmer,
+Gutsbes.,92,Gutsbesitzer,,B 11194-113,,ja,katalog; exakt,christos,2026-09-25,,unternehmer,ja
+Gutsbesitzer,12,Gutsbesitzer,,B 11194-113,,ja,exakt,christos,2026-09-25,,unternehmer,ja
 Gutspächter,6,Gutspächter,,B 11194-114,,,exakt,berufe_vorschlag,2026-09-23,,selbstaendige,
 Gutsverwalt.,9,Gutsverwalter,,B 11194-101,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
 Gußhauer,26,Gußhauer,,B 24222-161,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Gussputzer)",arbeiter,
@@ -609,18 +609,18 @@ Hammerarb.,6,Hammerarb.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Hammerführ.,9,Hammerführer,,B 24122-162,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Hammerschmied,45,Hammerschmied,,B 24122-552,,ja,exakt,christos,2026-09-23,,arbeiter,
 Handarbeiten,8,Handarbeiten,,B 20002-502,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,arbeiter,
-Handelsfrau,11,Handelsfrau,,B 62102-501,,ja,exakt,christos,2026-09-24,,selbstaendige,
-Handelsm.,124,Handelsmann,,B 62102-501,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Handelsfrau,11,Handelsfrau,,B 62102-501,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
+Handelsm.,124,Handelsmann,,B 62102-501,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Handelsmann,6,Handelsmann,,B 62102-501,,,exakt,berufe_vorschlag,2026-09-23,,selbstaendige,
-Handelsvertr.,20,Handelsvertreter,,B 61123-106,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Handelsvertret.,72,Handelsvertreter,,B 61123-106,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Handelsvertreter,19,Handelsvertreter,,B 61123-106,,ja,exakt,christos,2026-09-23,,angestellte,
+Handelsvertr.,20,Handelsvertreter,,B 61123-106,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Handelsvertret.,72,Handelsvertreter,,B 61123-106,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Handelsvertreter,19,Handelsvertreter,,B 61123-106,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Handlang.,11,Handlanger (Bauhilfsarbeiter),,B 32101-109,,,,christos,2026-09-24,,arbeiter,
 Handlanger,81,Handlanger,,B 32101-109,,,exakt,berufe_vorschlag,2026-09-24,,arbeiter,
-Handlgs. Geh.,10,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-24,,angestellte,
+Handlgs. Geh.,10,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-25,,angestellte,ja
 Handlgsbevollmächt.,5,Handlungsbevollmächtigter,,B 71104-111,,ja,,christos,2026-09-24,,unternehmer,
-Handlgsgeh.,114,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-24,,angestellte,
-Handlungsgeh.,6,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-24,,angestellte,
+Handlgsgeh.,114,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-25,,angestellte,ja
+Handlungsgeh.,6,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-25,,angestellte,ja
 Hauderei,6,Hauderer,gewerbe,B 11341-520,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Hauer,1083,Hauer,,B 21112-106,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Hauptlehr.,12,Hauptlehrer,,B 84124-109,,ja,katalog; exakt,christos,2026-09-24,,beamte,
@@ -648,9 +648,9 @@ Hausmstr. a. D.,10,Hausmeister,ruhestand,B 34102-101,,ja,katalog; exakt,christos
 Hausmstrin.,13,Hausmeisterin,,B 34102-101,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Hauswart,19,Hauswart,,B 34102-115,,ja,exakt,christos,2026-09-23,,arbeiter,
 Hautarzt,9,Hautarzt,,B 81444-127,,ja,exakt,christos,2026-09-24,,freie_berufe,
-Hdlgs. Geh.,8,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-24,,angestellte,
-Hdlgsgeh.,67,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-24,,angestellte,
-Hebamme,151,Hebamme,,B 81353-101,,ja,exakt,christos,2026-09-23,,selbstaendige,
+Hdlgs. Geh.,8,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-25,,angestellte,ja
+Hdlgsgeh.,67,Handlungsgehilfe,,B 62101-109,,ja,hand,christos,2026-09-25,,angestellte,ja
+Hebamme,151,Hebamme,,B 81353-101,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Hebammenschwester,10,Hebammenschwester,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Heildien.,13,Heildiener,,B 81301-105,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Heildiener,14,Heildiener,,B 81301-105,,,exakt,berufe_vorschlag,2026-09-24,,arbeiter,
@@ -680,8 +680,8 @@ Hilfsschullehr.,8,Hilfslehrer,,B 84183-503,,ja,,christos,2026-09-24,,beamte,
 Hilfsschullehrer,10,Hilfslehrer,,B 84183-503,,ja,,christos,2026-09-24,,beamte,
 Hilfsweichenstell.,14,Hilfsweichensteller,,B 51411-506,,,katalog; exakt,berufe_vorschlag,2026-09-24,,arbeiter,
 Hilfsweichenwärt.,9,Hilfsweichenwärter,,B 51411-503,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
-Hobler,144,Hobler,,B 24232-126,,ja,exakt,christos,2026-09-23,,arbeiter,
-Holzarb.,62,Holzarbeiter,,B 11711-505,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Hobler,144,Hobler,,B 24232-126,,ja,exakt,christos,2026-09-25,,arbeiter,ja
+Holzarb.,62,Holzarbeiter,,B 11711-505,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Holzgroßhdlg.,15,Holzgroßhändler,gewerbe,B 61212-524,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Holzhdlg.,23,Holzhändler,gewerbe,B 61282-114,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Holzmstr.,42,Holzmeister,,B 11713-517,,ja,katalog; exakt,christos,2026-09-23,Prüfen: B 11713-517 gehört zur Forstwirtschaft; im Bergbau ist der Holzmeister der Grubenholz-Aufseher,angestellte,
@@ -711,8 +711,8 @@ Ingen. i. R.,8,Ingenieur,ruhestand,B 20003-505,,ja,katalog; exakt,christos,2026-
 Ingenieur,705,Ingenieur,,B 20003-505,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Ingenieur a. D.,10,Ingenieur,ruhestand,B 20003-505,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Ingenieurbüro,7,Ingenieur,,B 20003-505,,ja,,christos,2026-09-24,,angestellte,
-Inh.,219,Inhaber,,A 40094-519,,ja,katalog; exakt,christos,2026-09-23,Prüfen: A 40094-519 meint Grundbesitz/Herrschaftsrechte; im Adressbuch meist Geschäftsinhaber → Alternative B 62194-521,unternehmer,
-Inhaber,8,Inhaber,,A 40094-519,,ja,exakt,christos,2026-09-24,,unternehmer,
+Inh.,219,Inhaber,,A 40094-519,,ja,katalog; exakt,christos,2026-09-25,Prüfen: A 40094-519 meint Grundbesitz/Herrschaftsrechte; im Adressbuch meist Geschäftsinhaber → Alternative B 62194-521,unternehmer,ja
+Inhaber,8,Inhaber,,A 40094-519,,ja,exakt,christos,2026-09-25,,unternehmer,ja
 Innenarchitekt,5,Innenarchitekt,,B 93214-104,,ja,exakt,christos,2026-09-24,,freie_berufe,
 Inspekt.,11,Inspektor,,B 73283-641,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Inspektor,13,Inspektor,,B 73283-641,,,exakt,berufe_vorschlag,2026-09-23,,beamte,
@@ -722,7 +722,7 @@ Installateur,218,Installateur,,B 34212-129,,ja,exakt,christos,2026-09-23,,arbeit
 Installation,6,Installation,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Installationsgesch.,28,Installateur,gewerbe,B 34212-129,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Installationsgeschäft,9,Installateur,gewerbe,B 34212-129,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Inv.,136,Invalide,invalide,A 10200-502,,ja,status,christos,2026-09-23,,ohne_erwerb,
+Inv.,136,Invalide,invalide,A 10200-502,,ja,status,christos,2026-09-25,,ohne_erwerb,ja
 Inval,8,Invalide,invalide,A 10200-502,,ja,status,christos,2026-09-24,,ohne_erwerb,
 Inval.,8109,Invalide,invalide,A 10200-502,,ja,status,christos,2026-09-25,,ohne_erwerb,ja
 Invalid.,8,Invalide,invalide,A 10200-502,,ja,status,christos,2026-09-24,,ohne_erwerb,
@@ -732,8 +732,8 @@ Journalist,13,Journalist,,B 92414-100,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Just. Angest.,51,Justizangestellter,,B 73252-102,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
 Just. Beamt.,19,Justizbeamter,,B 73252-104,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
 Just. Hilfswachtmstr.,6,Just. Hilfswachtmstr.,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-Just. Insp.,8,Justizinspektor,,B 73183-592,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Just. Inspekt.,64,Justizinspektor,,B 73183-592,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Just. Insp.,8,Justizinspektor,,B 73183-592,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
+Just. Inspekt.,64,Justizinspektor,,B 73183-592,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Just. Inspekt. a. D.,5,Justizinspektor,ruhestand,B 73183-592,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Just. Ob. Inspekt.,18,Justizoberinspektor,,B 73183-594,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 Just. Ob. Sekr.,56,Justizobersekretär,,B 73253-502,,ja,katalog; exakt,christos,2026-09-23,,beamte,
@@ -749,7 +749,7 @@ Juwelier,15,Juwelier,,B 62222-121,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kaffee,22,Kaffeehausbesitzer,gewerbe,B 63394-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kaffeebes.,14,Kaffeehausbesitzer,gewerbe,B 63394-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kaffeegesch.,6,Kaffeehausbesitzer,gewerbe,B 63394-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Kalkulator,133,Kalkulator,,B 72223-100,,ja,exakt,christos,2026-09-23,,angestellte,
+Kalkulator,133,Kalkulator,,B 72223-100,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Kaminbauer,23,Kaminmaurer,,B 32132-107,,ja,,christos,2026-09-23,,arbeiter,
 Kammerjäger,15,Kammerjäger,,B 53342-104,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kammermusiker,13,Kammermusiker,,B 94114-162,,ja,exakt,christos,2026-09-24,,unbestimmt,
@@ -760,7 +760,7 @@ Kartoffelgroßhdlg.,17,Kartoffelgrosshändler,gewerbe,B 61213-501,ja,ja,gewerbe;
 Kartoffelhdl.,41,Kartoffelhändler,,B 62382-584,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
 Kartoffelhdlg.,48,Kartoffelhändler,gewerbe,B 62382-584,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kassenbeamt.,15,Kassenbeamt.,,B 62112-521,,ja,aehnlich 0.96,christos,2026-09-23,,beamte,
-Kassenbote,86,Kassenbote,,B 53112-547,,ja,exakt,christos,2026-09-23,,arbeiter,
+Kassenbote,86,Kassenbote,,B 53112-547,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Kassenführ.,5,Kassenführer,,B 62112-118,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
 Kassenschaffn.,11,Kassenschaffn.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Kassierer,137,Kassierer,,B 62112-103,,ja,exakt,christos,2026-09-23,,angestellte,
@@ -768,8 +768,8 @@ Kassiererin,34,Kassiererin,,B 62112-103,,ja,exakt,christos,2026-09-23,,angestell
 Kastellan,5,Kastellan,,B 83293-510,,ja,exakt,christos,2026-09-24,,angestellte,
 Kataster Ob. Sekr.,5,Katasterobersekretär,,B 31213-516,,,katalog; exakt,berufe_vorschlag,2026-09-23,,beamte,
 Katasterdirekt.,5,Katasterdirektor,,B 73294-615,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
-Kauenwärt.,46,Kauenwärter,,B 34112-501,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,
-Kauenwärter,5,Kauenwärter,,B 34112-501,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,
+Kauenwärt.,46,Kauenwärter,,B 34112-501,,ja,hand,christos,2026-09-25,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,ja
+Kauenwärter,5,Kauenwärter,,B 34112-501,,ja,hand,christos,2026-09-25,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,ja
 Kaufm.,5233,Kaufmann,,B 61203-504,ja,ja,katalog; exakt,christos,2026-09-25,,kaufleute,ja
 Kaufmann,16,Kaufmann,,B 61203-504,,ja,exakt,christos,2026-09-23,,kaufleute,
 Kellermstr.,9,Kellermeister,,B 29193-101,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
@@ -782,14 +782,14 @@ Kesselheizer,14,Kesselheizer,,B 25122-146,,,exakt,berufe_vorschlag,2026-09-23,,a
 Kesselreinig.,9,Kesselreinig.,,B 54142-122,,ja,aehnlich 0.92,christos,2026-09-24,,arbeiter,
 Kesselreiniger,14,Kesselreiniger,,B 54142-122,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Kesselschmied,51,Kesselschmied,,B 34342-504,,ja,exakt,christos,2026-09-23,,arbeiter,
-Kesselwärt.,85,Kesselwärter,,B 25122-108,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Kesselwärt.,85,Kesselwärter,,B 25122-108,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Kesselwärter,15,Kesselwärter,,B 25122-108,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kettenanschläg.,21,Kettenanschläger,,B 21112-135,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,
 Kettenanschläger,12,Kettenanschläger,,B 21112-135,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,
 Kettenführ.,7,Kettenführ.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Kfm,12,Kfm,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Kfm.,1868,Kaufmann,,B 61203-504,ja,ja,katalog; exakt,christos,2026-09-25,,kaufleute,ja
-Kfm. Angest.,134,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Kfm. Angest.,134,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Kfm. Beamt.,13,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Kfm. Grubenbeamt.,5,kaufmännischer Grubenbeamter,,B 21113-527,ja,,hand,claude,2026-09-24,Laufbahn nicht angegeben; Bergbeamte/r,beamte,
 Kinderarzt,6,Kinderarzt,,B 81414-105,,,exakt,berufe_vorschlag,2026-09-23,,freie_berufe,
@@ -801,19 +801,19 @@ Klavierlehrerin,34,Klavierlehrerin,,B 84414-140,,ja,exakt,christos,2026-09-23,,b
 Kleinrentner,6,Kleinrentner,,A 10300-508,,,exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Klempn.,24,Klempner,,B 34202-100,,ja,,christos,2026-09-23,,arbeiter,
 Klempner,556,Klempner,,B 34202-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
-Klempnerei,70,Klempner,gewerbe,B 34202-100,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Klempnermeister,13,Klempnermeister,,B 34293-100,,ja,exakt,christos,2026-09-24,,selbstaendige,
-Klempnermstr.,170,Klempnermeister,,B 34293-100,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Klempnerei,70,Klempner,gewerbe,B 34202-100,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
+Klempnermeister,13,Klempnermeister,,B 34293-100,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
+Klempnermstr.,170,Klempnermeister,,B 34293-100,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Klärmstr.,7,Klärmeister,,B 34393-135,,,katalog; exakt,christos,2026-09-24,hier scheint eine Straße in die falsche Spalte gerutscht zu sein!,angestellte,
 Knappschaftsbeamt.,6,Knappschaftsbeamter,,B 73213-506,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
 Knappschaftsältester,7,Knappschaftsältester,,B 73214-508,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Koch,41,Koch,,B 29302-100,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kohlengroßhdlg.,13,Kohlenhändler,gewerbe,B 62282-504,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Kohlenhdl.,25,Kohlenhändler,,B 62282-504,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
-Kohlenhdlg.,66,Kohlenhändler,gewerbe,B 62282-504,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Kokereiarb.,137,Kokereiarbeiter,,B 21201-106,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Kohlenhdl.,25,Kohlenhändler,,B 62282-504,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
+Kohlenhdlg.,66,Kohlenhändler,gewerbe,B 62282-504,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
+Kokereiarb.,137,Kokereiarbeiter,,B 21201-106,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Kokereiassist.,6,Kokereiassist.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Koksarb.,105,Koksarbeiter,,B 21201-504,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Koksarb.,105,Koksarbeiter,,B 21201-504,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Koksmstr.,27,Koksmeister,,B 21293-500,,ja,,christos,2026-09-23,,angestellte,
 Kolonialw.,7,Kolonialwarenhändler,,B 61282-516,,ja,,christos,2026-09-24,,selbstaendige,
 Kolonialwaren,28,Kolonialwarenhändler,gewerbe,B 61282-516,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -822,8 +822,8 @@ Kolonialwrgesch.,10,Kolonialwarenhändler,gewerbe,B 61282-516,ja,ja,gewerbe; han
 Kolonialwrgroßhdlg.,5,Kolonialwarengroßhändler,gewerbe,B 61212-529,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kolonialwrhdlg.,37,Kolonialwarenhändler,gewerbe,B 61282-516,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kolonnenführ.,15,Kolonnenführer,,,,,hand,claude,2026-09-24,kein branchenoffenes Item (nur Landarbeit),unbestimmt,
-Konditor,173,Konditor,,B 29222-114,,ja,exakt,christos,2026-09-23,,arbeiter,
-Konditorei,117,Konditor,gewerbe,B 29222-114,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Konditor,173,Konditor,,B 29222-114,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
+Konditorei,117,Konditor,gewerbe,B 29222-114,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Konditormstr.,41,Konditormeister,,B 29293-101,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
 Konfitüren,25,Konfitürenhändler,gewerbe,B 62382-550,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Konfitürengesch.,6,Konfitürenhändler,gewerbe,B 62382-550,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -834,15 +834,15 @@ Konrektor i. R.,25,Konrektor,ruhestand,B 84194-107,,ja,exakt,christos,2026-09-24
 Konrektorin,30,Konrektorin,,B 84194-107,,,exakt,berufe_vorschlag,2026-09-24,,unbestimmt,
 Konrektorin i. R.,14,Konrektorin,ruhestand,B 84194-107,,,exakt,berufe_vorschlag,2026-09-24,,ohne_erwerb,
 Konstrukt.,14,Konstrukteur,,B 27223-108,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
-Konstrukteur,90,Konstrukteur,,B 27223-108,,ja,exakt,christos,2026-09-23,,angestellte,
+Konstrukteur,90,Konstrukteur,,B 27223-108,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Konsul,10,Konsul,,B 73294-500,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Konsumvorsteh.,21,Konsumvorsteh.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Konsumvorsteher,6,Konsumvorsteher,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Kontorist,17,Kontorist,,B 71402-155,,ja,exakt,christos,2026-09-23,,angestellte,
 Kontoristin,54,Kontoristin,,B 71402-155,,ja,exakt,christos,2026-09-23,,angestellte,
-Kontroll.,9,Kontrolleur,,B 27312-155,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
+Kontroll.,9,Kontrolleur,,B 27312-155,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Kontrollbeamt.,5,Kontrollbeamt.,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Kontrolleur,63,Kontrolleur,,B 27312-155,,ja,exakt,christos,2026-09-23,,arbeiter,
+Kontrolleur,63,Kontrolleur,,B 27312-155,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Konzertsängerin,7,Konzertsängerin,,B 94124-124,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Korbm.,7,Korbmacher,,B 22352-136,,ja,,christos,2026-09-24,,arbeiter,
 Korbmach.,11,Korbmacher,,B 22352-136,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
@@ -855,9 +855,9 @@ Kraftfahr.,18,Kranfahrer,,B 52532-142,,ja,,christos,2026-09-23,,arbeiter,
 Kraftfahrer,18,Kraftfahrlehrer,,B 84513-118,,ja,,christos,2026-09-23,,beamte,
 Kraftw. Führ,5,Kraftwagenführer,,B 52122-123,,,katalog; exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Kraftw. Führ.,1624,Kraftwagenführer,,B 52122-123,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
-Kraftw. Führer,7,Kraftwagenführer,,B 52122-123,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
-Kraftwagenführ.,19,Kraftwagenführ.,,B 52122-123,,ja,aehnlich 0.94,christos,2026-09-23,,arbeiter,
-Kraftwführ.,179,Kraftwagenführer,,B 52122-123,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Kraftw. Führer,7,Kraftwagenführer,,B 52122-123,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Kraftwagenführ.,19,Kraftwagenführ.,,B 52122-123,,ja,aehnlich 0.94,christos,2026-09-25,,arbeiter,ja
+Kraftwführ.,179,Kraftwagenführer,,B 52122-123,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Kranführ.,311,Kranführer,,B 52532-103,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Kranführer,17,Kranführer,,B 52532-103,,ja,exakt,christos,2026-09-23,,arbeiter,
 Krankenpfleg.,23,Krankenpfleg.,,B 81302-100,,ja,aehnlich 0.92,christos,2026-09-23,,arbeiter,
@@ -868,9 +868,9 @@ Kranmaschin.,6,Kranmaschinist,,B 52532-104,,,katalog; exakt,berufe_vorschlag,202
 Kranmaschinist,22,Kranmaschinist,,B 52532-104,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kriegsinval.,50,Kriegsinvalide,invalide,A 10210-503,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Kriegsinvalide,9,Kriegsinvalide,,A 10210-503,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
-Krim. Assist.,91,Kriminalamtsassistent,,B 53221-500,,ja,,christos,2026-09-23,,beamte,
+Krim. Assist.,91,Kriminalamtsassistent,,B 53221-500,,ja,,christos,2026-09-25,,beamte,ja
 Krim. Beamt.,21,Kriminalbeamter,,B 53222-101,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
-Krim. Betr. Assist.,8,Kriminalbetriebsassistent,,B 53221-500,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
+Krim. Betr. Assist.,8,Kriminalbetriebsassistent,,B 53221-500,,ja,hand,christos,2026-09-25,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,ja
 Krim. Bez. Sekr.,5,Kriminalbezirkssekretär,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Krim. Kommiss.,11,Kriminalkommissar,,B 53223-500,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Krim. Sekr.,43,Kriminalsekretär,,B 53222-101,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
@@ -883,7 +883,7 @@ Kunstmaler,43,Kunstmaler,,B 93323-100,,ja,exakt,christos,2026-09-23,,freie_beruf
 Kunststopferei,14,Kunststopfer,gewerbe,B 28122-114,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kupferschmied,35,Kupferschmied,,B 34342-104,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kurzwr.,27,Kurzwarenhändler,gewerbe,B 62212-510,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Kutscher,259,Kutscher,,B 11342-100,,ja,exakt,christos,2026-09-23,,arbeiter,
+Kutscher,259,Kutscher,,B 11342-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Köchin,5,Köchin,,B 29302-100,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Kötter,14,Kötter,,B 11102-636,,,exakt,berufe_vorschlag,2026-09-24,,selbstaendige,
 Küchenchef,21,Küchenchef,,B 29394-100,,ja,exakt,christos,2026-09-23,,unbestimmt,
@@ -894,18 +894,18 @@ Kürschner,17,Kürschner,,B 28342-107,,ja,exakt,christos,2026-09-23,,arbeiter,
 Kürschnerei,7,Kürschner,gewerbe,B 28342-107,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Kürschnermstr.,8,Kürschnermeister,,B 28393-107,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
 Küster,49,Küster,,B 83382-100,,ja,exakt,christos,2026-09-23,,arbeiter,
-Laborant,113,Laborant,,B 41322-501,,ja,exakt,christos,2026-09-23,,angestellte,
+Laborant,113,Laborant,,B 41322-501,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Laborantin,5,Laborantin,,B 41322-501,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Laborat. Beamt.,14,Laboratoriumsbeamter,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Lackierer,76,Lackierer,,B 22202-500,,ja,exakt,christos,2026-09-23,,arbeiter,
 Lademstr.,27,Lademeister,,B 51393-116,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
 Ladeschaffn.,15,Ladeschaffner,,B 51332-126,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
-Lagerarb.,215,Lagerarbeiter,,B 51311-186,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Lagerarb.,215,Lagerarbeiter,,B 51311-186,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Lagerarbeit.,5,Lagerarbeit.,,B 51311-186,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,arbeiter,
 Lagergeh.,9,Lagerhelfer,,B 51311-188,,ja,,christos,2026-09-24,,arbeiter,
 Lagerhalt.,20,Lagerhalt.,,B 51312-103,,,aehnlich 0.90,berufe_vorschlag,2026-09-23,,arbeiter,
 Lagerhalter,13,Lagerhalter,,B 51312-103,,ja,exakt,christos,2026-09-24,,arbeiter,
-Lagerist,164,Lagerist,,B 51312-133,,ja,exakt,christos,2026-09-23,,arbeiter,
+Lagerist,164,Lagerist,,B 51312-133,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Lagermstr.,20,Lagermeister,,B 51393-117,,ja,,christos,2026-09-23,,angestellte,
 Lagerverw.,7,Lagerverwalter (Warenlager),,B 51312-138,,ja,,christos,2026-09-24,,arbeiter,
 Lagerverwalt.,47,Lagerverwalter,,B 51312-138,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
@@ -918,14 +918,14 @@ Landger. Rat,28,Landgerichtsrat,,B 73154-109,,ja,hand,christos,2026-09-24,Richte
 Landgerichtsrat,6,Landgerichtsrat,,B 73154-109,,ja,hand,christos,2026-09-24,Richter am Landgericht,beamte,
 Landmesser,13,Landmesser,,B 31212-500,,ja,exakt,christos,2026-09-24,,arbeiter,
 Landw.,470,Landwirt,,B 11102-530,,ja,katalog; exakt,christos,2026-09-23,"Prüfen: Item verengt (im Nebenerwerb); Alternative B 11102-100 (Landwirt/in, Junglandwirt/in)",selbstaendige,
-Landw. Arb.,10,landwirtschaftlicher Arbeiter,,B 11101-129,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
-Landw. Geh.,8,landwirtschaftlicher Gehilfe,,B 11101-131,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
+Landw. Arb.,10,landwirtschaftlicher Arbeiter,,B 11101-129,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
+Landw. Geh.,8,landwirtschaftlicher Gehilfe,,B 11101-131,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Landwirt,102,Landwirt,,B 11102-530,,ja,exakt,christos,2026-09-23,,selbstaendige,
 Landwirtin,8,Landwirtin,,B 11102-530,,ja,exakt,christos,2026-09-24,,selbstaendige,
 Laternenwärt.,12,Laternenwärter,,B 34102-527,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Lebensmitt.,8,Lebensmittelhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Lebensmittel,556,Lebensmittelhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
-Lebensmittelgesch.,69,Lebensmittelhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Lebensmittelgesch.,69,Lebensmittelhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Lebensmittelgroßhdlg.,8,Lebensmittelgroßhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Lebensmittelhdlg.,20,Lebensmittelhändler,gewerbe,B 62302-107,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Lederhdl.,9,Lederhändler,,B 62212-511,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
@@ -949,21 +949,21 @@ Linoleumleger,10,Linoleumleger,,B 33102-108,,ja,exakt,christos,2026-09-24,,arbei
 Lithograph,7,Lithograph,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Lohnbuchhalt.,31,Lohnbuchhalt.,,B 72213-166,,ja,aehnlich 0.92,christos,2026-09-23,,angestellte,
 Lok. Führ.,429,Lokomotivführer,,B 52202-101,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
-Lok. Führ. Anwärt.,9,Lokomotivführeranwärter,,B 52202-101,,ja,hand,christos,2026-09-24,Anwärter,beamte,
-Lok. Führ. a. D.,73,Lokomotivführer,ruhestand,B 52202-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
+Lok. Führ. Anwärt.,9,Lokomotivführeranwärter,,B 52202-101,,ja,hand,christos,2026-09-25,Anwärter,beamte,ja
+Lok. Führ. a. D.,73,Lokomotivführer,ruhestand,B 52202-101,,ja,katalog; exakt,christos,2026-09-25,,ohne_erwerb,ja
 Lok. Führ. i. R.,15,Lokomotivführer,ruhestand,B 52202-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
-Lok. Führer,7,Lokomotivführer,,B 52202-101,,ja,katalog; exakt,christos,2026-09-24,,beamte,
+Lok. Führer,7,Lokomotivführer,,B 52202-101,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Lok. Heiz.,21,Bahnheizer,,B 25122-500,,ja,,christos,2026-09-23,,arbeiter,
 Lok. Heizer,11,Bahnheizer,,B 25122-500,,ja,,christos,2026-09-24,,arbeiter,
-Lokomotivführ.,30,Lokomotivführer,,B 52202-101,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Lokomotivführ.,30,Lokomotivführer,,B 52202-101,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Lokomotivführ. a. D.,19,Lokomotivführer,ruhestand,B 52202-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Lokomotivführ. i. R.,5,Lokomotivführer,ruhestand,B 52202-101,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Lokomotivführer,27,Lokomotivführer,,B 52202-101,,ja,exakt,christos,2026-09-23,,beamte,
+Lokomotivführer,27,Lokomotivführer,,B 52202-101,,ja,exakt,christos,2026-09-25,,beamte,ja
 Lokomotivführer a. D.,8,Lokomotivführer,ruhestand,B 52202-101,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Magaz. Verw.,5,Magaz. Verw.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Magaz. Verwalt.,10,Magazinverwalter,,B 51312-141,,ja,,christos,2026-09-24,,angestellte,
 Magazinarb.,54,Magazinarbeiter,,B 51311-606,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Magaziner,59,Magaziner,,B 51312-534,,ja,exakt,christos,2026-09-23,,arbeiter,
+Magaziner,59,Magaziner,,B 51312-534,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Magazingeh.,9,Magazingehilfe,,B 51311-582,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Magazinverw.,7,Magazinverwalter,,B 51312-141,,ja,aehnlich 0.90,christos,2026-09-24,,angestellte,
 Magazinverwalt.,52,Magazinverwalter,,B 51312-141,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
@@ -973,8 +973,8 @@ Maler,460,Maler,,B 33212-135,,ja,exakt,christos,2026-09-25,,unbestimmt,ja
 Malerei,5,Maler,gewerbe,B 33212-135,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Malergesch.,43,Maler,gewerbe,B 33212-135,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Malergeschäft,9,Maler,gewerbe,B 33212-135,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Malermeister,10,Malermeister,,B 33293-115,,ja,exakt,christos,2026-09-24,,selbstaendige,
-Malermstr.,231,Malermeister,,B 33293-115,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Malermeister,10,Malermeister,,B 33293-115,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
+Malermstr.,231,Malermeister,,B 33293-115,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Manufakturwr.,30,Manufakturhändler,gewerbe,B 61282-547,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Markenkontroll.,43,Markenkontrolleur,,B 53122-500,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Markenkontrolleur,7,Markenkontrolleur,,B 53122-500,,ja,exakt,christos,2026-09-24,,arbeiter,
@@ -1030,7 +1030,7 @@ Maurer,2395,Maurer,,B 32122-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Maurermeister,9,Maurermeister,,B 32193-103,,ja,exakt,christos,2026-09-24,,selbstaendige,
 Maurermstr.,51,Maurermeister,,B 32193-103,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
 Maurerpol.,222,Maurerpolier,,B 32193-148,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Maurerpolier,63,Maurerpolier,,B 32193-148,,ja,exakt,christos,2026-09-23,,angestellte,
+Maurerpolier,63,Maurerpolier,,B 32193-148,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Maßgesch.,32,Maßschneider,gewerbe,B 28222-152,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Maßgeschäft,6,Maßschneider,gewerbe,B 28222-152,ja,,gewerbe; hand,claude,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Maßprüf.,19,Maßprüfer,,B 27312-162,,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen",arbeiter,
@@ -1042,25 +1042,25 @@ Mechan.,7,Mechan.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Mechanik.,23,Mechaniker,,B 25102-122,,ja,aehnlich 0.94,christos,2026-09-23,,arbeiter,
 Mechaniker,321,Mechaniker,,B 25102-122,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Mechanikermstr.,23,Mechanikermstr.,,B 25193-131,,ja,aehnlich 0.90,christos,2026-09-23,,selbstaendige,
-Meister,129,Meister,,B 20093-510,,ja,exakt,christos,2026-09-23,,angestellte,
+Meister,129,Meister,,B 20093-510,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Meister a. D.,5,Meister,ruhestand,B 20093-510,,,exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Melker,27,Melker,,B 11212-109,,ja,exakt,christos,2026-09-23,,arbeiter,
 Metallarb.,43,Metallarbeiter,,B 24201-140,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Metteur,7,Metteur,,B 23212-239,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Metzg.,16,Metzger,,B 29232-145,,ja,,christos,2026-09-23,,arbeiter,
 Metzger,518,Metzger,,B 29232-145,,ja,exakt,christos,2026-09-25,,arbeiter,ja
-Metzgerei,199,Metzger,gewerbe,B 29232-145,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Metzgermeister,61,Metzgermeister,,B 29293-163,,ja,exakt,christos,2026-09-23,,selbstaendige,
+Metzgerei,199,Metzger,gewerbe,B 29232-145,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
+Metzgermeister,61,Metzgermeister,,B 29293-163,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Metzgermstr.,471,Metzgermeister,,B 29293-163,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Meßgeh.,21,Meßgehilfe,,B 27311-501,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Milchgesch.,8,Milchhändler,gewerbe,B 61282-119,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Milchgroßhdlg.,7,Milchgroßhändler,gewerbe,B 61282-119,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Milchhandlg.,11,Milchhändler,gewerbe,B 61282-119,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Milchhdl.,317,Milchhändler,,B 61282-119,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
-Milchhdlg.,170,Milchhändler,gewerbe,B 61282-119,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Milchhdlr.,20,Milchhändler,,B 61282-119,,ja,,christos,2026-09-23,,selbstaendige,
-Milchhändl.,8,Milchhändler,,B 61282-119,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
-Milchhändler,15,Milchhändler,,B 61282-119,,ja,exakt,christos,2026-09-23,,selbstaendige,
+Milchhdlg.,170,Milchhändler,gewerbe,B 61282-119,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
+Milchhdlr.,20,Milchhändler,,B 61282-119,,ja,,christos,2026-09-25,,selbstaendige,ja
+Milchhändl.,8,Milchhändler,,B 61282-119,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
+Milchhändler,15,Milchhändler,,B 61282-119,,ja,exakt,christos,2026-09-25,,selbstaendige,ja
 Milchträger,5,Milchträger,,B 29252-505,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Mineralwasser,5,Mineralwasser,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Mineralwasserfabrk.,5,Mineralwasserfabrikant,gewerbe,B 29102-500,ja,,gewerbe; hand,claude,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -1108,7 +1108,7 @@ Ob. Aufseh.,5,Oberaufseher,,B 53123-501,,,katalog; exakt,berufe_vorschlag,2026-0
 Ob. Bahnhofsvorsteh.,5,Oberbahnhofsvorsteher,,B 51593-505,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Ob. Bahnmstr.,5,Oberbahnmeister,,B 32293-503,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Ob. Bahnwärt.,5,Oberbahnwärter,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Ob. Bauarb.,95,Oberbauarbeiter,,B 32103-501,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Ob. Bauarb.,95,Oberbauarbeiter,,B 32103-501,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Ob. Feuerwehrm.,22,Oberfeuerwehrmann,,B 53133-503,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
 Ob. Ger. Vollz.,12,Obergerichtsvollzieher,,B 53233-100,,ja,katalog; aehnlich 0.90,christos,2026-09-24,,beamte,
 Ob. Ger. Vollzieh.,5,Obergerichtsvollzieher,,B 53233-100,,,katalog; aehnlich 0.90,berufe_vorschlag,2026-09-23,Prüfen: Rang fehlt im Item (Gerichtsvollzieher/in statt Obergerichtsvollzieher),beamte,
@@ -1120,7 +1120,7 @@ Ob. Ing. a. D.,9,Oberingenieur,ruhestand,B 20004-501,,ja,katalog; exakt,christos
 Ob. Ingen.,146,Oberingenieur,,B 20004-501,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
 Ob. Ingenieur,23,Oberingenieur,,B 20004-501,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
 Ob. Inspekt.,20,Oberinspektor,,B 73283-575,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Ob. Kellner,62,Oberkellner,,B 63302-103,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Ob. Kellner,62,Oberkellner,,B 63302-103,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Ob. Kesselwärt.,5,Oberkesselwärter,,B 25122-160,,,katalog; exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Ob. Landmesser,11,Oberlandmesser,,B 31214-505,,ja,katalog; aehnlich 0.93,christos,2026-09-24,,unbestimmt,
 Ob. Lehrer,8,Oberlehrer,,B 84124-507,,ja,katalog; exakt,christos,2026-09-24,,beamte,
@@ -1132,10 +1132,10 @@ Ob. Mont.,12,Obermonteur,,B 25112-121,,ja,katalog; exakt,christos,2026-09-24,,ar
 Ob. Monteur,21,Obermonteur,,B 25112-121,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Ob. Pfleger,5,Oberpfleger,,B 81313-507,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Ob. Postinspekt.,16,Oberpostinspektor,,B 51323-507,,ja,hand,christos,2026-09-24,Ober-Stufe ohne Item,beamte,
-Ob. Postschaffn.,59,Oberpostschaffner,,B 51323-519,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Ob. Postschaffn.,59,Oberpostschaffner,,B 51323-519,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Ob. Postschaffn. a. D.,13,Oberpostschaffner,ruhestand,B 51323-519,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Ob. Postschaffner,8,Ob. Postschaffner,,B 51323-519,,ja,aehnlich 0.91,christos,2026-09-24,,beamte,
-Ob. Postsekr.,85,Oberpostsekretär,,B 51663-503,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Ob. Postschaffner,8,Ob. Postschaffner,,B 51323-519,,ja,aehnlich 0.91,christos,2026-09-25,,beamte,ja
+Ob. Postsekr.,85,Oberpostsekretär,,B 51663-503,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Ob. Postsekr. a. D.,7,Oberpostsekretär,ruhestand,B 51663-503,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Ob. Reg. Rat,10,Oberregierungsrat,,B 73284-545,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Ob. Schaffn.,15,Oberschaffner,,B 21113-501,,ja,katalog; exakt,christos,2026-09-23,Prüfen: B 21113-501 gehört zum Berg- und Tagebau; bei Reichsbahn/Straßenbahn falsch,beamte,
@@ -1159,7 +1159,7 @@ Ob. Weichenwärt.,17,Oberweichenwärter,,B 51523-502,,ja,katalog; exakt,christos
 Ob. Zollsekr.,6,Oberzollsekretär,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Ob. Zugschaffn.,6,Oberzugschaffner,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Ob.-Ing.,5,Oberingenieur,,B 20004-501,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Oberbauarb.,17,Oberbauarbeiter,,B 32103-501,,ja,,christos,2026-09-23,,angestellte,
+Oberbauarb.,17,Oberbauarbeiter,,B 32103-501,,ja,,christos,2026-09-25,,angestellte,ja
 Obering.,16,Oberingenieur,,B 20004-501,,ja,,christos,2026-09-23,,angestellte,
 Oberingen.,25,Oberingenieur,,B 20004-501,,ja,,christos,2026-09-23,,angestellte,
 Oberingenieur,5,Oberingenieur,,B 20004-501,,ja,exakt,christos,2026-09-24,,angestellte,
@@ -1171,7 +1171,7 @@ Obermstr. a. D.,15,Obermeister,ruhestand,B 20094-508,,ja,katalog; exakt,christos
 Obersekr.,7,Obersekretär,,B 71403-503,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Obstgesch.,9,Obsthändler,gewerbe,B 62382-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Obstgroßhdlg.,14,Obsthändler,gewerbe,B 62382-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Obsthdl.,22,Obsthändler,,B 62382-121,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
+Obsthdl.,22,Obsthändler,,B 62382-121,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Obsthdlg.,74,Obsthändler,gewerbe,B 62382-121,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Ofenarb.,9,Ofenarbeiter,,B 21001-505,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Ofenbauer,10,Ofenbauer,,B 34222-101,,ja,exakt,christos,2026-09-24,,selbstaendige,
@@ -1184,7 +1184,7 @@ Opernsänger,12,Opernsänger,,B 94124-128,,ja,exakt,christos,2026-09-24,,unbesti
 Optiker,20,Optiker,,B 82522-108,,ja,exakt,christos,2026-09-23,,arbeiter,
 Organisator,7,Organisator,,B 71314-100,,,exakt,berufe_vorschlag,2026-09-23,,unbestimmt,
 Organist,31,Organist,,B 94114-177,,ja,exakt,christos,2026-09-23,,unbestimmt,
-Packer,126,Packer,,B 51311-202,,ja,exakt,christos,2026-09-23,,arbeiter,
+Packer,126,Packer,,B 51311-202,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Packmstr.,12,Packmeister,,B 51393-514,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Papiergroßhdlg.,15,Papiergroßhändler,gewerbe,B 61213-547,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Papierwr.,18,Papierhändler,gewerbe,B 62232-500,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -1192,19 +1192,19 @@ Parkettleg.,7,Parkettleger,,B 33132-100,,ja,katalog; exakt,christos,2026-09-24,,
 Parkettleger,11,Parkettleger,,B 33132-100,,ja,exakt,christos,2026-09-24,,arbeiter,
 Pastor,8,Pastor,,B 83314-532,,ja,exakt,christos,2026-09-24,,beamte,
 Patentanw.,6,Patentanw.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Pens.,66,Pensionär,ruhestand,A 10300-513,,ja,status,christos,2026-09-23,,ohne_erwerb,
+Pens.,66,Pensionär,ruhestand,A 10300-513,,ja,status,christos,2026-09-25,,ohne_erwerb,ja
 Pension,18,Pensionsinhaber,gewerbe,B 63293-135,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Pension.,68,Pensionär,ruhestand,A 10300-513,,ja,status,christos,2026-09-23,,ohne_erwerb,
+Pension.,68,Pensionär,ruhestand,A 10300-513,,ja,status,christos,2026-09-25,,ohne_erwerb,ja
 Pensionär,3686,Pensionär,ruhestand,A 10300-513,,ja,status; exakt,christos,2026-09-25,,ohne_erwerb,ja
 Pensionärin,17,Pensionär,ruhestand,A 10300-513,,ja,status; exakt,christos,2026-09-23,,ohne_erwerb,
 Pfarrer,92,Pfarrer,,B 83314-521,,ja,exakt,christos,2026-09-23,,beamte,
 Pfarrer a. D.,5,Pfarrer,ruhestand,B 83314-521,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Pfarrer i. R.,6,Pfarrer,ruhestand,B 83314-521,,,exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
-Pflasterer,107,Pflasterer,,B 32212-100,,ja,exakt,christos,2026-09-23,,arbeiter,
+Pflasterer,107,Pflasterer,,B 32212-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Pflastermstr.,8,Pflasterermeister,,B 32293-512,,ja,,christos,2026-09-24,,angestellte,
 Pflegerin,6,Pflegerin,,B 73204-516,,,exakt,berufe_vorschlag,2026-09-23,,unbestimmt,
 Pförtn.,8,Pförtner,,B 53112-116,,ja,,christos,2026-09-24,,arbeiter,
-Pförtner,158,Pförtner,,B 53112-116,,ja,exakt,christos,2026-09-23,,arbeiter,
+Pförtner,158,Pförtner,,B 53112-116,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Photogr.,8,Fotograf,,B 23322-110,,ja,,christos,2026-09-24,,arbeiter,
 Photogr. Atelier,8,Fotograf,gewerbe,B 23322-110,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Photograph,91,Fotograf,,B 23322-110,,ja,,christos,2026-09-23,,arbeiter,
@@ -1215,14 +1215,14 @@ Platzarb.,53,Platzarbeiter,,B 34112-500,,ja,katalog; exakt,christos,2026-09-23,,
 Platzmstr.,37,Platzmeister,,B 34193-500,,ja,,christos,2026-09-23,,angestellte,
 Plätterei,5,Plätter,gewerbe,B 54132-144,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Pol. Assist.,11,Polizeiassistent,,B 53211-500,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Pol. Beamt.,180,Polizeibeamter,,B 53212-111,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Pol. Beamt.,180,Polizeibeamter,,B 53212-111,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Pol. Beamt. a. D.,17,Polizeibeamter,ruhestand,B 53212-111,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,ohne_erwerb,
-Pol. Beamter,8,Polizeibeamter,,B 53212-111,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Pol. Beamter,8,Polizeibeamter,,B 53212-111,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Pol. Betr. Assist.,6,Polizeibetriebsassistent,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Pol. Haupt Wachtmstr.,8,Polizeihauptwachtmeister,,B 53213-505,,ja,katalog; exakt,christos,2026-09-24,,beamte,
+Pol. Haupt Wachtmstr.,8,Polizeihauptwachtmeister,,B 53213-505,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Pol. Hauptm.,18,Polizeihauptmann,,B 53213-513,,ja,,christos,2026-09-23,,beamte,
 Pol. Hauptwachtmeister,6,Pol. Hauptwachtmeister,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Pol. Hauptwachtmstr.,259,Polizeihauptwachtmeister,,B 53213-505,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Pol. Hauptwachtmstr.,259,Polizeihauptwachtmeister,,B 53213-505,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Pol. Hauptwachtmstr. a. D.,6,Polizeihauptwachtmeister,ruhestand,B 53213-505,,,katalog; exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Pol. Hauptwachtmstr. i. R.,11,Polizeihauptwachtmeister,ruhestand,B 53213-505,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Pol. Inspekt.,10,Polizeiinspektor,,B 53213-503,,ja,katalog; exakt,christos,2026-09-24,,beamte,
@@ -1233,34 +1233,34 @@ Pol. Mstr.,5,Polizeimeister,,B 53293-502,,ja,,christos,2026-09-24,,beamte,
 Pol. Ob. Leutn.,9,Polizeioberleutnant,,B 53213-518,,ja,,christos,2026-09-24,,beamte,
 Pol. Ob. Meister,5,Polizeiobermeister,,B 53294-505,,ja,,christos,2026-09-24,,beamte,
 Pol. Ob. Sekr.,31,Polizeiobersekretär,,B 71403-503,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
-Pol. Ob. Wachtmstr.,303,Polizeioberwachtmeister,,B 53213-504,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Pol. Ob. Wachtmstr.,303,Polizeioberwachtmeister,,B 53213-504,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Pol. Ob. Wachtmstr. a. D.,15,Polizeioberwachtmeister,ruhestand,B 53213-504,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Pol. Obermstr.,15,Polizeiobermeister,,B 53294-505,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Pol. Oberwachtmstr.,5,Polizeioberwachtmeister,,B 53213-504,,ja,,christos,2026-09-24,,beamte,
+Pol. Oberwachtmstr.,5,Polizeioberwachtmeister,,B 53213-504,,ja,,christos,2026-09-25,,beamte,ja
 Pol. Rat,5,Pol. Rat,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Pol. Sekr.,19,Polizeisekretär,,B 71402-551,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Pol. Wachtmstr.,126,Polizeiwachtmeister,,B 53212-507,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Pol. Wachtmstr.,126,Polizeiwachtmeister,,B 53212-507,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Pol. Wachtmstr. a. D.,16,Polizeiwachtmeister,ruhestand,B 53212-507,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
-Polier,119,Polier,,B 32193-130,,ja,exakt,christos,2026-09-23,,angestellte,
+Polier,119,Polier,,B 32193-130,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Polierer,27,Polierer,,B 21002-531,,ja,exakt,christos,2026-09-23,,arbeiter,
 Polizeimstr.,6,Polizeimeister,,B 53293-502,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
 Polsterei,60,Polsterer,gewerbe,B 28242-101,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Polsterer,197,Polsterer,,B 28242-101,,ja,exakt,christos,2026-09-23,,arbeiter,
+Polsterer,197,Polsterer,,B 28242-101,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Polstermstr.,28,Polsterermeister,,B 28293-148,,ja,,christos,2026-09-23,,selbstaendige,
 Polstermöbel,5,Polstermöbel,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Postamtm.,12,Postamtmann,,B 51662-502,,ja,hand,christos,2026-09-24,,beamte,
 Postangest.,7,Postangestellter,,B 51322-557,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
-Postassist.,108,Postassistent,,B 51322-505,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Postassist.,108,Postassistent,,B 51322-505,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Postassist. a. D.,26,Postassistent,ruhestand,B 51322-505,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Postassist. i. R.,12,Postassistent,ruhestand,B 51322-505,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Postassistentin,9,Postassistentin,,B 51322-505,,ja,exakt,christos,2026-09-24,,beamte,
+Postassistentin,9,Postassistentin,,B 51322-505,,ja,exakt,christos,2026-09-25,,beamte,ja
 Postaushelf.,13,Postaushelf.,,B 51321-502,,ja,aehnlich 0.92,christos,2026-09-24,,arbeiter,
-Postbeamt.,136,Postbeamter,,B 51322-124,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Postbeamt.,136,Postbeamter,,B 51322-124,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Postbeamt. a. D.,7,Postbeamter,ruhestand,B 51322-124,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,ohne_erwerb,
-Postbeamter,9,Postbeamter,,B 51322-124,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
-Postbeamtin,14,Postbeamtin,,B 51322-124,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Postbeamter,9,Postbeamter,,B 51322-124,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
+Postbeamtin,14,Postbeamtin,,B 51322-124,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Postbetr. Arb.,7,Postbetriebsarbeiter,,B 51322-125,,ja,katalog; aehnlich 0.91,christos,2026-09-24,,arbeiter,
-Postbetr. Assist.,16,Postbetriebsassistent,,B 51322-505,,ja,hand,christos,2026-09-24,Postassistent/in zugeordnet,beamte,
+Postbetr. Assist.,16,Postbetriebsassistent,,B 51322-505,,ja,hand,christos,2026-09-25,Postassistent/in zugeordnet,beamte,ja
 Postbetr. Assist. a. D.,5,Postbetriebsassistent,ruhestand,B 51322-505,,ja,hand,christos,2026-09-24,Postassistent/in zugeordnet,ohne_erwerb,
 Postbote,25,Postbote,,B 51322-126,,ja,exakt,christos,2026-09-23,,beamte,
 Postgeh.,5,Postgehilfe,,B 51321-500,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
@@ -1273,13 +1273,13 @@ Postschaffn.,442,Postschaffner,,B 51322-518,,ja,katalog; exakt,christos,2026-09-
 Postschaffn. a. D.,13,Postschaffner,ruhestand,B 51322-518,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Postschaffner,43,Postschaffner,,B 51322-518,,ja,exakt,christos,2026-09-23,,beamte,
 Postsekr.,37,Postsekretär,,B 51662-500,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Prakt. Arzt,21,Arzt,,B 81404-107,,ja,,christos,2026-09-23,,freie_berufe,
+Prakt. Arzt,21,Arzt,,B 81404-107,,ja,,christos,2026-09-25,,freie_berufe,ja
 Praktikant,6,Praktikant,,A 14702-504,,,exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Prediger,12,Prediger,,B 83384-109,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Presseführ.,8,Presseführ.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Presser,90,Presser,,B 20002-549,,ja,exakt,christos,2026-09-23,,arbeiter,
-Privatier,121,Privatier,ruhestand,A 10300-521,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
-Privatiere,5,Privatiere,,A 10300-521,,ja,aehnlich 0.95,christos,2026-09-24,,ohne_erwerb,
+Presser,90,Presser,,B 20002-549,,ja,exakt,christos,2026-09-25,,arbeiter,ja
+Privatier,121,Privatier,ruhestand,A 10300-521,,ja,exakt,christos,2026-09-25,,ohne_erwerb,ja
+Privatiere,5,Privatiere,,A 10300-521,,ja,aehnlich 0.95,christos,2026-09-25,,ohne_erwerb,ja
 Privatsekr.,9,Privatsekretär,,B 71402-166,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Prof.,8,Professor,,B 83314-606,,ja,,christos,2026-09-24,,freie_berufe,
 Professor,18,Professor,,B 84304-559,,ja,exakt,christos,2026-09-23,,freie_berufe,
@@ -1309,26 +1309,26 @@ Rangiermstr.,108,Rangiermeister,,B 51593-137,,ja,katalog; exakt,christos,2026-09
 Rangiermstr. a. D.,20,Rangiermeister,ruhestand,B 51593-137,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
 Rbhn. Amtm.,11,Reichsbahnamtmann,,B 51523-513,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
 Rbhn. Angest.,7,Bahnangestellter,,B 51412-500,,ja,,christos,2026-09-24,,angestellte,
-Rbhn. Arb.,49,Bahnarbeiter,,B 51522-500,,ja,,christos,2026-09-23,,arbeiter,
-Rbhn. Arbeiter,8,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,
+Rbhn. Arb.,49,Bahnarbeiter,,B 51522-500,,ja,,christos,2026-09-25,,arbeiter,ja
+Rbhn. Arbeiter,8,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,ja
 Rbhn. Aspirant,6,Rbhn. Aspirant,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Rbhn. Assist.,89,Eisenbahnsassistent,,B 51522-504,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Assist.,89,Eisenbahnsassistent,,B 51522-504,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Aushelf.,6,Rbhn. Aushelf.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Rbhn. Beamt.,87,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Beamt.,87,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Beamt. a. D.,7,Bahnbeamter (gehobener technischer Dienst),ruhestand,B 51223-105,,ja,,christos,2026-09-24,,ohne_erwerb,
-Rbhn. Bedienst.,125,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-23,,arbeiter,
+Rbhn. Bedienst.,125,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-25,,arbeiter,ja
 Rbhn. Betr. Assist.,52,Reichsbahnbetriebsassistent,,B 51411-502,,ja,katalog; aehnlich 0.91,christos,2026-09-23,,beamte,
 Rbhn. Hilfsbetr. Assist.,6,Reichsbahnhilfsbetriebsassistent,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Rbhn. Insp.,7,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-24,,beamte,
-Rbhn. Inspekt.,63,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Insp.,7,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-25,,beamte,ja
+Rbhn. Inspekt.,63,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Ob. Insp.,6,Reichsbahnoberinspektor,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Rbhn. Ob. Inspekt.,50,Bahnoberinspektor,,B 51594-500,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Ob. Inspekt.,50,Bahnoberinspektor,,B 51594-500,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Ob. Rat,12,Reichsbahnoberrat,,B 51523-511,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
-Rbhn. Ob. Schaffn.,9,Reichsbahnoberschaffner,,B 51412-113,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
-Rbhn. Ob. Sekr.,56,Bahnobersekretär,,B 51223-500,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Ob. Schaffn.,9,Reichsbahnoberschaffner,,B 51412-113,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,ja
+Rbhn. Ob. Sekr.,56,Bahnobersekretär,,B 51223-500,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Ob. Sekr. i. R.,11,Reichsbahnobersekretär,ruhestand,B 51222-109,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
 Rbhn. Rat,17,Reichsbahnrat,,B 51523-511,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
-Rbhn. Schaffn.,37,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-23,,beamte,
+Rbhn. Schaffn.,37,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-25,,beamte,ja
 Rbhn. Sekr.,41,Eisenbahnsekretär,,B 51222-109,,ja,,christos,2026-09-23,,beamte,
 Rbhn. Sekr. a. D.,6,Reichsbahnsekretär,ruhestand,B 51222-109,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
 Rbhn. Zugführ.,7,Bahnzugführer,,B 52202-501,,ja,,christos,2026-09-24,,beamte,
@@ -1342,10 +1342,10 @@ Rechnungsbeamt.,8,Rechnungsbeamter,,B 72213-518,,ja,katalog; exakt,christos,2026
 Rechnungsführ.,8,Rechnungsführer,,B 72213-505,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Rechnungsrat,7,Rechnungsrat,,B 72213-537,,ja,exakt,christos,2026-09-24,,beamte,
 Rechnungsrevisor,5,Rechnungsrevisor,,B 72244-118,,ja,exakt,christos,2026-09-24,,unbestimmt,
-Rechtsanw.,123,Rechtsanwalt,,B 73134-101,,ja,katalog; exakt,christos,2026-09-23,,freie_berufe,
-Rechtsanw. u. Notar,38,Rechtsanwalt u. Notar,,B 73134-101,,ja,hand,christos,2026-09-24,auch Notar; nur ein Item je Zeile,freie_berufe,
-Rechtsanwalt,74,Rechtsanwalt,,B 73134-101,,ja,exakt,christos,2026-09-23,,freie_berufe,
-Rechtsanwalt u. Notar,22,Rechtsanwalt u. Notar,,B 73134-101,,ja,hand,christos,2026-09-24,auch Notar; nur ein Item je Zeile,freie_berufe,
+Rechtsanw.,123,Rechtsanwalt,,B 73134-101,,ja,katalog; exakt,christos,2026-09-25,,freie_berufe,ja
+Rechtsanw. u. Notar,38,Rechtsanwalt u. Notar,,B 73134-101,,ja,hand,christos,2026-09-25,auch Notar; nur ein Item je Zeile,freie_berufe,ja
+Rechtsanwalt,74,Rechtsanwalt,,B 73134-101,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
+Rechtsanwalt u. Notar,22,Rechtsanwalt u. Notar,,B 73134-101,,ja,hand,christos,2026-09-25,auch Notar; nur ein Item je Zeile,freie_berufe,ja
 Rechtsbeistand,5,Rechtsbeistand,,B 73183-101,,,exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Rechtsberater,5,Rechtsberater,,B 73184-149,,,exakt,berufe_vorschlag,2026-09-24,,unbestimmt,
 Redakteur,52,Redakteur,,B 92413-102,,ja,exakt,christos,2026-09-23,,angestellte,
@@ -1361,62 +1361,62 @@ Registrator,21,Registrator,,B 73312-100,,ja,exakt,christos,2026-09-23,,arbeiter,
 Reichsangest.,5,Reichsangest.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Reichsb. Amtm.,20,Bahnamtmann,,B 51523-513,,ja,,christos,2026-09-23,,beamte,
 Reichsb. Anwärt.,7,Bahnanwärter,,B 51522-502,,ja,,christos,2026-09-24,,arbeiter,
-Reichsb. Arb.,71,Bahnarbeiter,,B 51522-500,,ja,,christos,2026-09-23,,arbeiter,
-Reichsb. Arbeiter,9,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,
-Reichsb. Assist.,139,Eisenbahnsassistent,,B 51522-504,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Arb.,71,Bahnarbeiter,,B 51522-500,,ja,,christos,2026-09-25,,arbeiter,ja
+Reichsb. Arbeiter,9,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,ja
+Reichsb. Assist.,139,Eisenbahnsassistent,,B 51522-504,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Assist. a. D.,11,Reichsbahnassistent,ruhestand,B 20001-509,ja,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
-Reichsb. Beamt.,121,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Beamt.,121,Bahnbeamter (gehobener technischer Dienst),,B 51223-105,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Beamt. a. D.,15,Bahnbeamter (gehobener technischer Dienst),ruhestand,B 51223-105,,ja,,christos,2026-09-23,,ohne_erwerb,
-Reichsb. Bedienst.,114,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-23,,arbeiter,
-Reichsb. Betr. Assist.,77,Eisenbahnbetriebsassistent,,B 51522-503,,ja,katalog; aehnlich 0.91,christos,2026-09-23,,beamte,
+Reichsb. Bedienst.,114,Bahnbediensteter,,B 51412-505,,ja,,christos,2026-09-25,,arbeiter,ja
+Reichsb. Betr. Assist.,77,Eisenbahnbetriebsassistent,,B 51522-503,,ja,katalog; aehnlich 0.91,christos,2026-09-25,,beamte,ja
 Reichsb. Ing.,7,Bahningenieur,,B 51523-509,,ja,,christos,2026-09-24,,angestellte,
 Reichsb. Insp.,5,Reichsbahninspektor,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-Reichsb. Inspekt.,42,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Inspekt.,42,Bahninspektor,,B 51593-511,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Inspekt. a. D.,7,Bahninspektor,ruhestand,B 51593-511,,ja,,christos,2026-09-24,,ohne_erwerb,
 Reichsb. Lademstr.,7,Reichsbahnlademeister,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-Reichsb. Lok. Führ.,9,Reichsbahnlokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
-Reichsb. Ob. Inspekt.,75,Bahnoberinspektor,,B 51594-500,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Lok. Führ.,9,Reichsbahnlokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,ja
+Reichsb. Ob. Inspekt.,75,Bahnoberinspektor,,B 51594-500,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Ob. Inspekt. a. D.,7,Bahnoberinspektor,ruhestand,B 51594-500,,ja,,christos,2026-09-24,,ohne_erwerb,
 Reichsb. Ob. Inspekt. i. R.,5,Reichsbahnoberinspektor,ruhestand,,,,,berufe_vorschlag,2026-09-23,,ohne_erwerb,
-Reichsb. Ob. Schaffn.,34,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Ob. Schaffn.,34,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Ob. Schaffn. a. D.,24,Bahnoberschaffner,ruhestand,B 51413-502,,ja,,christos,2026-09-23,,ohne_erwerb,
-Reichsb. Ob. Sekr.,96,Bahnobersekretär,,B 51223-500,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Ob. Sekr.,96,Bahnobersekretär,,B 51223-500,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Ob. Sekr. a. D.,20,Bahnobersekretär,ruhestand,B 51223-500,,ja,,christos,2026-09-23,,ohne_erwerb,
 Reichsb. Ob. Sekr. i. R.,7,Reichsbahnobersekretär,ruhestand,B 51222-109,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
-Reichsb. Schaffn.,104,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Schaffn.,104,Eisenbahnschaffner,,B 51412-113,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Schaffn. a. D.,5,Reichsbahnschaffner,ruhestand,B 51412-113,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
-Reichsb. Schaffner,8,Reichsbahnschaffner,,B 51412-113,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
-Reichsb. Sekr.,77,Eisenbahnsekretär,,B 51222-109,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Schaffner,8,Reichsbahnschaffner,,B 51412-113,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,ja
+Reichsb. Sekr.,77,Eisenbahnsekretär,,B 51222-109,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Sekr. a. D.,30,Eisenbahnsekretär,ruhestand,B 51222-109,,ja,,christos,2026-09-23,,ohne_erwerb,
 Reichsb. Sekr. i. R.,8,Reichsbahnsekretär,ruhestand,B 51222-109,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,ohne_erwerb,
 Reichsb. Wagenmstr.,11,Wagenmeister (Schienenverkehr),,B 51113-101,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,angestellte,
 Reichsb. Werkführ.,5,Reichsbahnwerkführer,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-Reichsb. Zugführ.,27,Zugführer,,B 51493-100,,ja,,christos,2026-09-23,,beamte,
+Reichsb. Zugführ.,27,Zugführer,,B 51493-100,,ja,,christos,2026-09-25,,beamte,ja
 Reichsb. Zugführ. a. D.,5,Reichsbahnzugführer,ruhestand,,,,,berufe_vorschlag,2026-09-23,,ohne_erwerb,
-Reichsbahnarb.,10,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,
-Reichsbk. Beamt.,9,Reichsbankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,
+Reichsbahnarb.,10,Reichsbahnarbeiter,,B 51522-500,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,arbeiter,ja
+Reichsbk. Beamt.,9,Reichsbankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
 Reichsinval.,37,Reichsinvalide,invalide;invalide,A 10300-528,,ja,hand,christos,2026-09-24,Invalidenrentner der Reichsversicherung,ohne_erwerb,
 Reiseinspekt.,8,Reiseinspektor,,B 63113-501,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Reisend.,17,Reisend.,,A 54912-506,,,aehnlich 0.93,berufe_vorschlag,2026-09-23,,arbeiter,
 Reisender,356,Reisender,,A 54912-506,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Reisevertret.,6,Reisevertret.,,B 61123-159,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,angestellte,
 Reklamemaler,5,Reklamemaler,,B 93542-110,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
-Rektor,178,Rektor,,B 84194-516,,ja,hand,christos,2026-09-24,Volksschule angenommen (Schulart in der Vorlage nicht genannt),unbestimmt,
+Rektor,178,Rektor,,B 84194-516,,ja,hand,christos,2026-09-25,Volksschule angenommen (Schulart in der Vorlage nicht genannt),freie_berufe,ja
 Rektor a. D.,21,Rektor,ruhestand,B 84194-516,,ja,hand,christos,2026-09-24,Volksschule angenommen (Schulart in der Vorlage nicht genannt),ohne_erwerb,
 Rektor i. R.,31,Rektor,ruhestand,B 84194-516,,ja,hand,christos,2026-09-24,Volksschule angenommen (Schulart in der Vorlage nicht genannt),ohne_erwerb,
-Rektorin,8,Rektorin,,B 84194-516,,ja,hand,christos,2026-09-24,Volksschule angenommen (Schulart in der Vorlage nicht genannt),unbestimmt,
+Rektorin,8,Rektorin,,B 84194-516,,ja,hand,christos,2026-09-25,Volksschule angenommen (Schulart in der Vorlage nicht genannt),freie_berufe,ja
 Rendant,20,Rendant,,B 72212-528,,ja,exakt,christos,2026-09-23,,arbeiter,
 Rent.,5,Rentner,ruhestand,A 10300-529,,,status,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Rentenempf.,12,Rentner,ruhestand,A 10300-529,,ja,status,christos,2026-09-24,,ohne_erwerb,
-Rentenempfäng.,7,Rentner,,A 10300-529,,ja,,christos,2026-09-24,,ohne_erwerb,
+Rentenempfäng.,7,Rentner,,A 10300-529,,ja,,christos,2026-09-25,,ohne_erwerb,ja
 Rentenempfänger,6,Rentenempfänger,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Rentier,21,Rentier,ruhestand,A 10300-510,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
-Rentn.,120,Rentner,ruhestand,A 10300-529,,ja,status,christos,2026-09-23,,ohne_erwerb,
+Rentn.,120,Rentner,ruhestand,A 10300-529,,ja,status,christos,2026-09-25,,ohne_erwerb,ja
 Rentner,1232,Rentner,ruhestand,A 10300-529,,ja,status; exakt,christos,2026-09-25,,ohne_erwerb,ja
-Rentnerin,210,Rentner,ruhestand,A 10300-529,,ja,status; exakt,christos,2026-09-23,,ohne_erwerb,
-Res. Lok. Führ.,82,Reservelokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-24,Res. = Reserve (Anwärterstufe der Reichsbahn),beamte,
-Res. Lokomotivführ.,8,Reservelokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-24,Res. = Reserve (Anwärterstufe der Reichsbahn),beamte,
-Res. Zugführ.,19,Reservezugführer,,B 51493-100,,ja,hand,christos,2026-09-24,Res. = Reserve,beamte,
+Rentnerin,210,Rentner,ruhestand,A 10300-529,,ja,status; exakt,christos,2026-09-25,,ohne_erwerb,ja
+Res. Lok. Führ.,82,Reservelokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-25,Res. = Reserve (Anwärterstufe der Reichsbahn),beamte,ja
+Res. Lokomotivführ.,8,Reservelokomotivführer,,B 52202-101,,ja,hand,christos,2026-09-25,Res. = Reserve (Anwärterstufe der Reichsbahn),beamte,ja
+Res. Zugführ.,19,Reservezugführer,,B 51493-100,,ja,hand,christos,2026-09-25,Res. = Reserve,beamte,ja
 Restaurant,9,Gastwirt,gewerbe,B 63394-105,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Rev. Beamt.,5,Rev. Beamter,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Reviersteig.,19,Reviersteig.,,B 21113-107,,ja,aehnlich 0.92,christos,2026-09-23,,angestellte,
@@ -1451,7 +1451,7 @@ Sattlerei,22,Sattler,gewerbe,B 28322-100,ja,ja,gewerbe; exakt,christos,2026-09-2
 Sattlermstr.,44,Sattlermeister,,B 28393-104,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
 Schachtaufseh.,6,Schachtaufseh.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Schachthauer,25,Schachthauer,,B 21112-165,,ja,exakt,christos,2026-09-23,,arbeiter,
-Schachtmstr.,155,Schachtmeister,,B 32293-111,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Schachtmstr.,155,Schachtmeister,,B 32293-111,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Schaffn.,42,Schaffner,,B 61313-501,,ja,katalog; exakt,christos,2026-09-23,Prüfen: B 61313-501 gehört zur Immobilienverwaltung; im Verkehr Alternative B 51412-501 (Schaffner/in - allgemein),beamte,
 Schaffner,137,Schaffner,,B 61313-501,,ja,exakt,christos,2026-09-23,,beamte,
 Schankw.,1204,Schankwirt,,B 63394-158,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
@@ -1473,14 +1473,14 @@ Schildermaler,13,Schildermaler,,B 93542-103,,ja,exakt,christos,2026-09-24,,arbei
 Schildermalerei,7,Schildermaler,gewerbe,B 93542-103,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schirrmstr.,8,Schirrmeister,,B 11393-505,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Schleifer,382,Schleifer,,B 21002-501,,ja,exakt,christos,2026-09-25,,arbeiter,ja
-Schlepper,70,Schlepper,,B 51311-604,,ja,exakt,christos,2026-09-23,,arbeiter,
-Schloss.,232,Schlosser,,B 24412-127,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Schlepper,70,Schlepper,,B 51311-604,,ja,exakt,christos,2026-09-25,,arbeiter,ja
+Schloss.,232,Schlosser,,B 24412-127,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Schlosser,7193,Schlosser,,B 24412-127,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Schlosserei,52,Schlosser,gewerbe,B 24412-127,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schlossermeister,6,Schlossermeister,,B 25193-501,,,exakt,berufe_vorschlag,2026-09-23,,selbstaendige,
-Schlossermstr.,164,Schlossermeister,,B 25193-501,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Schlossermstr.,164,Schlossermeister,,B 25193-501,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Schmelz.,5,Schmelz.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Schmelzer,285,Schmelzer,,B 24112-503,,ja,exakt,christos,2026-09-23,,arbeiter,
+Schmelzer,285,Schmelzer,,B 24112-503,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Schmied,1337,Schmied,,B 24412-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Schmiede,7,Schmiede,,B 24412-100,,ja,aehnlich 0.93,christos,2026-09-24,,arbeiter,
 Schmiedemeister,10,Schmiedemeister,,B 24493-101,,ja,exakt,christos,2026-09-24,,selbstaendige,
@@ -1502,7 +1502,7 @@ Schreiber,11,Schreiber,,B 73203-507,,ja,exakt,christos,2026-09-24,,angestellte,
 Schreibstube,8,Schreiber,gewerbe,B 73203-507,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schreibwaren,7,Schreibwarenhändler,gewerbe,B 62232-509,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schreibwarenhdlg.,6,Schreibwarenhändler,gewerbe,B 62232-509,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Schreibwr.,74,Schreibwarenhändler,gewerbe,B 62232-509,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Schreibwr.,74,Schreibwarenhändler,gewerbe,B 62232-509,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Schreibwrhdlg.,6,Schreibwarenhändler,gewerbe,B 62232-509,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schrein.,71,Schreiner,,B 22342-203,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Schreiner,1600,Schreiner,,B 22342-203,,ja,exakt,christos,2026-09-25,,arbeiter,ja
@@ -1512,18 +1512,18 @@ Schreinermstr.,455,Schreinermeister,,B 22393-160,,ja,katalog; exakt,christos,202
 Schreinermstr. a. D.,7,Schreinermeister,ruhestand,B 22393-160,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Schriftleit.,12,Schriftleiter,,B 92413-144,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Schriftleiter,18,Schriftleiter,,B 92413-144,,ja,exakt,christos,2026-09-23,,angestellte,
-Schriftsetz.,93,Schriftsetzer,,B 23212-103,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Schriftsetzer,132,Schriftsetzer,,B 23212-103,,ja,exakt,christos,2026-09-23,,arbeiter,
+Schriftsetz.,93,Schriftsetzer,,B 23212-103,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Schriftsetzer,132,Schriftsetzer,,B 23212-103,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Schriftstell.,7,Schriftsteller,,B 92434-127,,ja,katalog; exakt,christos,2026-09-24,,freie_berufe,
 Schriftsteller,13,Schriftsteller,,B 92434-127,,ja,exakt,christos,2026-09-24,,freie_berufe,
 Schuhgesch.,12,Schuhhändler,gewerbe,B 62212-515,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schuhm.,233,Schuhmacher,,B 28332-101,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Schuhmach.,203,Schuhmacher,,B 28332-101,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Schuhmacher,58,Schuhmacher,,B 28332-101,,ja,exakt,christos,2026-09-23,,arbeiter,
-Schuhmacherei,251,Schuhmacher,gewerbe,B 28332-101,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Schuhmachermstr.,44,Schuhmachermeister,,B 28393-101,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
-Schuhmmeister,8,Schuhmachermeister,,B 28393-101,,ja,,christos,2026-09-24,,selbstaendige,
-Schuhmmstr.,279,Schuhmachermeister,,B 28393-101,,ja,katalog; exakt,christos,2026-09-23,,selbstaendige,
+Schuhmacherei,251,Schuhmacher,gewerbe,B 28332-101,ja,ja,gewerbe; exakt,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
+Schuhmachermstr.,44,Schuhmachermeister,,B 28393-101,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
+Schuhmmeister,8,Schuhmachermeister,,B 28393-101,,ja,,christos,2026-09-25,,selbstaendige,ja
+Schuhmmstr.,279,Schuhmachermeister,,B 28393-101,,ja,katalog; exakt,christos,2026-09-25,,selbstaendige,ja
 Schuhwr.,36,Schuhhändler,gewerbe,B 62212-515,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schuhwrhdlg.,10,Schuhhändler,gewerbe,B 62212-515,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schulhausmstr.,10,Schulhausmeister,,B 34102-102,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
@@ -1532,13 +1532,13 @@ Schweinehdl.,5,Schweinehändler,,B 61282-509,,ja,katalog; exakt,christos,2026-09
 Schweinehdlg.,7,Schweinehändler,gewerbe,B 61282-509,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Schweizer,8,Schweizer,,A 32202-501,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Schweiß.,8,Schweiß.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Schweißer,278,Schweißer,,B 24422-103,,ja,exakt,christos,2026-09-23,,arbeiter,
+Schweißer,278,Schweißer,,B 24422-103,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Schwester,13,Schwester,,A 21400-501,,,exakt,christos,2026-09-24,,unbestimmt,
 Seemann,6,Seemann,,B 51132-142,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Sekr.,10,Sekretär,,B 71402-114,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Sekretär,46,Sekretär,,B 71402-114,,ja,exakt,christos,2026-09-23,,beamte,
 Sekretärin,39,Sekretärin,,B 71402-114,,ja,exakt,christos,2026-09-23,,beamte,
-Setzer,35,Schriftsetzer,,B 23212-103,,ja,hand,christos,2026-09-24,Setzer = Schriftsetzer (Druckgewerbe),arbeiter,
+Setzer,35,Schriftsetzer,,B 23212-103,,ja,hand,christos,2026-09-25,Setzer = Schriftsetzer (Druckgewerbe),arbeiter,ja
 Sortierer,8,Sortierer,,B 51311-216,,ja,exakt,christos,2026-09-24,,arbeiter,
 Sparkassendirekt.,6,Sparkassendirektor,,B 72194-107,,,katalog; exakt,berufe_vorschlag,2026-09-24,,unternehmer,
 Spediteur,27,Spediteur,,B 51623-126,,ja,exakt,christos,2026-09-23,,angestellte,
@@ -1566,13 +1566,13 @@ Stadt-Ob. Sekr.,23,Stadtobersekretär,,B 71403-503,,ja,hand,christos,2026-09-24,
 Stadtamtm.,38,Stadtamtmann,,B 73204-523,,ja,hand,christos,2026-09-24,,beamte,
 Stadtamtmann,11,Stadtamtmann,,B 73204-523,,ja,hand,christos,2026-09-24,,beamte,
 Stadtangest.,9,Stadtangest.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Stadtarb.,150,Stadtarbeiter,,B 70001-500,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Stadtarb.,150,Stadtarbeiter,,B 70001-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Stadtarzt,12,Stadtarzt,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Stadtbauamtm.,9,Stadtbauamtmann,,B 73204-523,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Stadtbaurat,10,Stadtbaurat,,B 31193-509,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Stadtbeamt.,8,Stadtbeamt.,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Stadtinsp.,9,Stadtinspektor,,B 73283-569,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
-Stadtinspekt.,297,Stadtinspektor,,B 31193-535,,ja,katalog; aehnlich 0.90,christos,2026-09-23,Prüfen: Ähnlichkeitstreffer falsch (Stadtbauinspektor/in); allgemeiner Stadtinspektor fehlt in OhdAB,beamte,
+Stadtinspekt.,297,Stadtinspektor,,B 31193-535,,ja,katalog; aehnlich 0.90,christos,2026-09-25,Prüfen: Ähnlichkeitstreffer falsch (Stadtbauinspektor/in); allgemeiner Stadtinspektor fehlt in OhdAB,beamte,ja
 Stadtinspekt. a. D.,6,Stadtinspektor,ruhestand,B 73283-569,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,ohne_erwerb,
 Stadtinspektor,11,Stadtinspektor,,B 73283-569,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Stadtmissionar,5,Stadtmissionar,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -1580,7 +1580,7 @@ Stadtob. Inspekt.,24,Stadtoberinspektor,,B 73283-575,,ja,hand,christos,2026-09-2
 Stadtob. Sekr.,13,Stadtobersekretär,,B 71403-503,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Stadtoberinspekt.,23,Stadtoberinspektor,,B 73283-575,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
 Stadtobersekr.,20,Stadtobersekretär,,B 71403-503,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
-Stadtsekr.,145,Stadtsekretär,,B 73203-520,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Stadtsekr.,145,Stadtsekretär,,B 73203-520,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Stadtsekr. a. D.,10,Stadtsekretär,ruhestand,B 73203-520,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Stahlfahrer,14,Stahlfahrer,,,,,hand,claude,2026-09-24,kein OhdAB-Item; Bedeutung unklar,unbestimmt,
 Stahlprüf.,5,Stahlprüf.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -1591,7 +1591,7 @@ Stationsschaffn.,8,Stationsschaffn.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt
 Steig.,8,Steiger,,B 21193-142,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Steig. a. D.,7,Steiger,ruhestand,B 21193-142,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Steiger,763,Steiger,,B 21193-142,,ja,exakt,christos,2026-09-25,,angestellte,ja
-Steiger a. D.,183,Steiger,ruhestand,B 21193-142,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
+Steiger a. D.,183,Steiger,ruhestand,B 21193-142,,ja,exakt,christos,2026-09-25,,ohne_erwerb,ja
 Steiger i. R.,20,Steiger,ruhestand,B 21193-142,,ja,exakt,christos,2026-09-23,,ohne_erwerb,
 Steindrucker,16,Steindrucker,,B 23412-116,,ja,exakt,christos,2026-09-23,,arbeiter,
 Steinformer,11,Steinformer,,B 21232-163,,ja,exakt,christos,2026-09-24,,arbeiter,
@@ -1599,9 +1599,9 @@ Steinhauer,26,Steinhauer,,B 21212-501,,ja,exakt,christos,2026-09-23,,arbeiter,
 Steinmetz,50,Steinmetz,,B 21232-117,,ja,exakt,christos,2026-09-23,,arbeiter,
 Steinsetz.,10,Steinsetzer,,B 32212-102,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Steinsetzer,40,Steinsetzer,,B 32212-102,,ja,exakt,christos,2026-09-23,,arbeiter,
-Stellm.,36,Stellmacher,,B 22382-104,,ja,,christos,2026-09-23,,arbeiter,
-Stellmach.,88,Stellmacher,,B 22382-104,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Stellmacher,38,Stellmacher,,B 22382-104,,ja,exakt,christos,2026-09-23,,arbeiter,
+Stellm.,36,Stellmacher,,B 22382-104,,ja,,christos,2026-09-25,,arbeiter,ja
+Stellmach.,88,Stellmacher,,B 22382-104,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Stellmacher,38,Stellmacher,,B 22382-104,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Stellmacherei,7,Stellmacher,gewerbe,B 22382-104,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Stellmachermstr.,14,Stellmachermstr.,,B 22393-106,,,aehnlich 0.91,berufe_vorschlag,2026-09-23,,selbstaendige,
 Stellmmstr.,10,Stellmachermeister,,B 22393-106,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
@@ -1621,26 +1621,26 @@ Steuerinspekt.,42,Steuerinspektor,,B 73233-511,,ja,katalog; exakt,christos,2026-
 Steuersekr.,48,Steuersekretär,,B 71402-573,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 Steuersupernumerar,7,Steuersupernumerar,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Steuerwachtmstr.,5,Steuerwachtmeister,,B 73233-571,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
-Stocher,130,Stocher,,B 21201-106,ja,ja,hand,christos,2026-09-24,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Ofenbedienung Kokerei/Gaswerk)",arbeiter,
+Stocher,130,Stocher,,B 21201-106,ja,ja,hand,christos,2026-09-25,"Ruhrgebiets-/Bergbauterminus ohne OhdAB-Item; nächstliegendes Item, Rückmeldung an OhdAB vorgesehen (Ofenbedienung Kokerei/Gaswerk)",arbeiter,ja
 Stoßer,26,Stoßer,,B 24232-306,,ja,exakt,christos,2026-09-23,,arbeiter,
 Strafanst. Ob. Wachtmstr.,12,Strafanstaltsoberwachtmeister,,B 53243-510,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Straßb. Bedienst.,81,Straßenbahnbediensteter,,B 51411-523,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Straßb. Bedienst.,81,Straßenbahnbediensteter,,B 51411-523,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Straßb. Führ.,53,Straßenbahnführer,,B 52132-119,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Straßb. Schaffn.,100,Straßenbahnschaffner,,B 51412-122,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 Straßb. Wagenführ.,19,Straßenbahnwagenführer,,B 52132-119,,ja,hand,christos,2026-09-24,,arbeiter,
 Straßenarb.,8,Straßenarbeiter,,B 32201-103,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
-Straßenb.,9,Straßenbahner,,B 51411-523,,ja,hand,christos,2026-09-24,,arbeiter,
+Straßenb.,9,Straßenbahner,,B 51411-523,,ja,hand,christos,2026-09-25,,arbeiter,ja
 Straßenb. Angest.,7,Straßenbahnangestellter,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-Straßenb. Arb.,11,Straßenbahnarbeiter,,B 51411-523,,ja,hand,christos,2026-09-24,Straßenbahnbedienstete/r,arbeiter,
+Straßenb. Arb.,11,Straßenbahnarbeiter,,B 51411-523,,ja,hand,christos,2026-09-25,Straßenbahnbedienstete/r,arbeiter,ja
 Straßenb. Beamt.,26,Straßenbahnbeamter,,B 51413-509,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Straßenb. Bedienst.,161,Straßenbahnbediensteter,,B 51411-523,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Straßenb. Bedienst.,161,Straßenbahnbediensteter,,B 51411-523,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Straßenb. Führ.,228,Straßenbahnführer,,B 52132-119,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Straßenb. Kontroll.,10,Straßenbahnkontrolleur,,B 27312-155,,ja,hand,christos,2026-09-24,allgemeines Kontrolleur-Item,arbeiter,
+Straßenb. Kontroll.,10,Straßenbahnkontrolleur,,B 27312-155,,ja,hand,christos,2026-09-25,allgemeines Kontrolleur-Item,arbeiter,ja
 Straßenb. Schaffn.,330,Straßenbahnschaffner,,B 51412-122,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Straßenb. Schaffner,14,Straßenbahnschaffner,,B 51412-122,,,katalog; exakt,berufe_vorschlag,2026-09-23,,beamte,
 Straßenb. Wagenführ.,13,Straßenbahnwagenführer,,B 52132-119,,ja,hand,christos,2026-09-24,,arbeiter,
 Straßenbahn.,7,Straßenbahn.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Straßenbahner,39,Straßenbahner,,B 51411-523,,ja,hand,christos,2026-09-24,,arbeiter,
+Straßenbahner,39,Straßenbahner,,B 51411-523,,ja,hand,christos,2026-09-25,,arbeiter,ja
 Straßenbau,5,Straßenbau,,B 32212-101,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,selbstaendige,
 Straßenbauunternehm.,5,Straßenbauunternehm.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Straßenmstr.,23,Straßenmeister,,B 51293-103,,ja,,christos,2026-09-23,,angestellte,
@@ -1651,23 +1651,23 @@ Stuckgesch.,39,Stuckateur,gewerbe,B 33222-100,ja,ja,gewerbe; exakt,christos,2026
 Stuckgeschäft,10,Stuckateur,gewerbe,B 33222-100,ja,,gewerbe; exakt,claude,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Stud. Assess.,28,Studienassessor,,B 84124-580,,ja,katalog; exakt,christos,2026-09-23,,unbestimmt,
 Stud. Assessorin,8,Studienassessorin,,B 84124-580,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
-Stud. Rat,53,Studienrat,,B 84124-508,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Stud. Rat,53,Studienrat,,B 84124-508,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Studienassess.,8,Studienassess.,,B 84124-580,,ja,aehnlich 0.93,christos,2026-09-24,,unbestimmt,
-Studienrat,185,Studienrat,,B 84124-508,,ja,exakt,christos,2026-09-23,,beamte,
+Studienrat,185,Studienrat,,B 84124-508,,ja,exakt,christos,2026-09-25,,beamte,ja
 Studienrat a. D.,6,Studienrat,ruhestand,B 84124-508,,,exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Studienrat i. R.,8,Studienrat,ruhestand,B 84124-508,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
-Studienrätin,27,Studienrätin,,B 84124-508,,ja,exakt,christos,2026-09-23,,beamte,
+Studienrätin,27,Studienrätin,,B 84124-508,,ja,exakt,christos,2026-09-25,,beamte,ja
 Stuhlmstr.,7,Stuhlmeister,,B 28193-132,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Stukkat.,25,Stuckateur,,B 33222-100,,ja,,christos,2026-09-23,,arbeiter,
 Stukkateur,351,Stukkateur,,B 33222-100,,ja,aehnlich 0.90,christos,2026-09-25,,unbestimmt,ja
 Stukkateurmstr.,16,Stuckateurmeister,,B 33293-101,,ja,,christos,2026-09-23,,selbstaendige,
 Städt. Angest.,8,städtischer Angestellter,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-Städt. Arb.,8,Stadtarbeiter,,B 70001-500,,ja,,christos,2026-09-24,,arbeiter,
+Städt. Arb.,8,Stadtarbeiter,,B 70001-500,,ja,,christos,2026-09-25,,arbeiter,ja
 Städt. Beamt.,9,städtischer Beamter,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 Städt. Kammermusiker,5,Städt. Kammermusiker,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Synd. Beamt.,11,Syndikatsbeamter,,B 20003-520,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Syndik. Beamt.,44,Syndikatsbeamter,,B 20003-520,,ja,katalog; exakt,christos,2026-09-23,,beamte,
-Syndikatsbeamt.,148,Syndikatsbeamter,,B 20003-520,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Syndikatsbeamt.,148,Syndikatsbeamter,,B 20003-520,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Syndikatsbeamter,5,Syndikatsbeamter,,B 20003-520,,ja,exakt,christos,2026-09-24,,beamte,
 Syndikatsdirekt.,5,Syndikatsdirekt.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Syndikus,48,Syndikus,,B 73134-106,,ja,hand,christos,2026-09-24,Verbandsjurist; OhdAB nur Syndikus-Anwalt,freie_berufe,
@@ -1676,14 +1676,14 @@ Sänger,10,Sänger,,B 94124-101,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Sängerin,11,Sängerin,,B 94124-101,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Südfrüchte,6,Südfrüchte,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Tabakfabrikate,5,Tabakfabrikate,,B 29201-502,,,aehnlich 0.93,berufe_vorschlag,2026-09-23,,unternehmer,
-Tabakwr.,278,Tabakwarenhändler,,B 62312-500,,ja,katalog; aehnlich 0.91,christos,2026-09-23,Prüfen: Ähnlichkeitstreffer falsch (Backwarenhändler/in); OhdAB kennt keinen Tabakwarenhändler,selbstaendige,
+Tabakwr.,278,Tabakwarenhändler,,B 62312-500,,ja,katalog; aehnlich 0.91,christos,2026-09-25,Prüfen: Ähnlichkeitstreffer falsch (Backwarenhändler/in); OhdAB kennt keinen Tabakwarenhändler,selbstaendige,ja
 Tabakwrgesch.,5,Tabakhändler,gewerbe,B 62382-538,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Tabakwrgroßhdlg.,22,Tabakwarengroßhändler,gewerbe,B 62382-538,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Tafelführ.,16,Tafelführ.,,B 63303-104,,ja,aehnlich 0.91,christos,2026-09-23,,angestellte,
 Tagelöhn.,29,Tagelöhn.,,B 20002-511,,ja,aehnlich 0.90,christos,2026-09-23,,arbeiter,
 Tagelöhner,6,Tagelöhner,,B 20002-511,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
-Tagesarb.,250,Tagesarbeiter,,B 20002-530,,ja,katalog; aehnlich 0.92,christos,2026-09-23,"Prüfen: Ähnlichkeitstreffer B 20002-530 (Tagarbeiter/in) — Schreibweise nah, Bedeutung bestätigen",arbeiter,
-Tagesarbeiter,7,Tagesarbeiter,,B 20002-530,,ja,aehnlich 0.92,christos,2026-09-24,,arbeiter,
+Tagesarb.,250,Tagesarbeiter,,B 20002-530,,ja,katalog; aehnlich 0.92,christos,2026-09-25,"Prüfen: Ähnlichkeitstreffer B 20002-530 (Tagarbeiter/in) — Schreibweise nah, Bedeutung bestätigen",arbeiter,ja
+Tagesarbeiter,7,Tagesarbeiter,,B 20002-530,,ja,aehnlich 0.92,christos,2026-09-25,,arbeiter,ja
 Tankstelle,14,Tankstellenbesitzer,gewerbe,B 62282-112,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Tankwart,9,Tankwart,,B 62282-101,,ja,exakt,christos,2026-09-24,,arbeiter,
 Tanzlehrer,6,Tanzlehrer,,B 84533-107,,,exakt,berufe_vorschlag,2026-09-23,,beamte,
@@ -1700,8 +1700,8 @@ Technik.,47,Techniker,,B 21002-542,,ja,katalog; exakt,christos,2026-09-23,,anges
 Techniker,633,Techniker,,B 21002-542,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Teilhaber,6,Teilhaber,,A 40220-504,,ja,exakt,christos,2026-09-24,,unbestimmt,
 Telefonist,40,Telefonist,,B 71401-102,,,exakt,christos,2026-09-24,,arbeiter,
-Telegr. Arb.,101,Telegrafenarbeiter,,B 26311-500,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Telegr. Arbeit.,10,Telegrafenarbeiter,,B 26311-500,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
+Telegr. Arb.,101,Telegrafenarbeiter,,B 26311-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Telegr. Arbeit.,10,Telegrafenarbeiter,,B 26311-500,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Telegr. Arbeiter,5,Telegrafenarbeiter,,B 26311-500,,,katalog; exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Telegr. Assist.,16,Telegrafenassistent,,B 26311-502,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 Telegr. Aufseh.,7,Telegrafenaufseher,,B 26313-514,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
@@ -1773,10 +1773,10 @@ Versich. Agent,7,Versich. Agent,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Versich. Inspekt.,7,Versicherungsinspektor,,B 72133-105,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 Versich. Vertret.,8,Versicherungsvertreter,,B 72133-111,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Versicherungen,10,Versicherungsagent,gewerbe,B 72133-158,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Vertr.,35,Vertreter,,B 61123-504,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-Vertret.,138,Vertreter,,B 61123-504,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
+Vertr.,35,Vertreter,,B 61123-504,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+Vertret.,138,Vertreter,,B 61123-504,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Vertreter,766,Vertreter,,B 61123-504,,ja,exakt,christos,2026-09-25,,angestellte,ja
-Vertreterin,9,Vertreterin,,B 61123-504,,ja,exakt,christos,2026-09-24,,angestellte,
+Vertreterin,9,Vertreterin,,B 61123-504,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Vertretg.,5,Vertretg.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Vertretung,35,Handelsvertreter,gewerbe,B 61123-106,ja,,gewerbe; hand,claude,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Vertretungen,40,Handelsvertreter,gewerbe,B 61123-106,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -1832,21 +1832,21 @@ Wagenschmiede,7,Wagenschmiede,,B 25222-137,,ja,aehnlich 0.96,christos,2026-09-24
 Wagenwäscher,5,Wagenwäscher,,B 54152-123,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Waldarb.,11,Waldarbeiter,,B 11711-100,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Walzendreher,5,Walzendreher,,B 24232-110,,ja,exakt,christos,2026-09-24,,arbeiter,
-Walzer,142,Walzer,,B 24122-104,,ja,exakt,christos,2026-09-23,,arbeiter,
+Walzer,142,Walzer,,B 24122-104,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Walzmstr.,13,Walzmeister,,B 24193-520,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
 Wanderdekorateur,5,Wanderdekorateur,,B 93222-500,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Waschanst.,5,Waschanstaltsbesitzer,gewerbe,B 54194-500,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Waschkauenwärt.,5,Waschkauenwärt.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Waschmstr.,27,Waschmeister,,B 54193-501,,ja,,christos,2026-09-23,,angestellte,
-Weber,146,Weber,,B 28122-106,,ja,exakt,christos,2026-09-23,,arbeiter,
+Weber,146,Weber,,B 28122-106,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Weberei,5,Weber,gewerbe,B 28122-106,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Webmstr.,5,Webmeister,,B 28193-138,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
-Weichenstell.,94,Weichensteller,,B 51522-121,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
+Weichenstell.,94,Weichensteller,,B 51522-121,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Weichenstell. a. D.,6,Weichensteller,ruhestand,B 51522-121,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Weichensteller,53,Weichensteller,,B 51522-121,,ja,exakt,christos,2026-09-23,,arbeiter,
+Weichensteller,53,Weichensteller,,B 51522-121,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Weichensteller a. D.,6,Weichensteller,ruhestand,B 51522-121,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
-Weichenwärt.,61,Weichenwärter,,B 51522-122,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Weichenwärter,9,Weichenwärter,,B 51522-122,,ja,exakt,christos,2026-09-24,,arbeiter,
+Weichenwärt.,61,Weichenwärter,,B 51522-122,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Weichenwärter,9,Weichenwärter,,B 51522-122,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Weingroßhdlg.,7,Weingroßhändler,gewerbe,B 62382-132,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Weinhdl.,6,Weinhändler,,B 62382-132,,ja,katalog; exakt,christos,2026-09-24,,selbstaendige,
 Weinhdlg.,11,Weinhändler,gewerbe,B 62382-132,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -1862,7 +1862,7 @@ Werkhelfer,9,Werkhelfer,,B 20001-506,,ja,exakt,christos,2026-09-24,,arbeiter,
 Werkmeister,16,Werkmeister,,B 27393-101,,ja,exakt,christos,2026-09-23,,angestellte,
 Werkmeister a. D.,11,Werkmeister,ruhestand,B 27393-101,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Werkmstr.,779,Werkmeister,,B 27393-101,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
-Werkmstr. a. D.,219,Werkmeister,ruhestand,B 27393-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
+Werkmstr. a. D.,219,Werkmeister,ruhestand,B 27393-101,,ja,katalog; exakt,christos,2026-09-25,,ohne_erwerb,ja
 Werkmstr. i. R.,8,Werkmeister,ruhestand,B 27393-101,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Werkzeugdreher,5,Werkzeugdreher,,B 24522-107,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Werkzeugmach.,7,Werkzeugmacher,,B 24522-122,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
@@ -1881,34 +1881,34 @@ Wohnungsaufseh.,5,Wohnungsaufseh.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Wohnungsverwalt.,16,Wohnungsverwalter,,B 61313-144,,,katalog; exakt,berufe_vorschlag,2026-09-24,,angestellte,
 Wollwr.,14,Wollwarenhändler,gewerbe,B 62212-546,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Ww.,6,Witwe,witwe,A 21200-502,,ja,status,christos,2026-09-24,,ohne_erwerb,
-Wächter,195,Wächter,,B 53112-114,,ja,exakt,christos,2026-09-24,,arbeiter,
+Wächter,195,Wächter,,B 53112-114,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Wärmer,28,Wärmer,,,,,hand,claude,2026-09-24,Hütte/Walzwerk: Wärmer am Ofen; kein OhdAB-Item,unbestimmt,
-Wärter,93,Wärter,,B 34112-501,,ja,exakt,christos,2026-09-23,,arbeiter,
+Wärter,93,Wärter,,B 34112-501,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Wäschearb.,15,Wäschearb.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Wäscher,10,Wäscher,,B 54132-502,,ja,exakt,christos,2026-09-24,,arbeiter,
 Wäscherei,30,Wäscher,gewerbe,B 54132-502,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Wäschereibes.,5,Wäschereibesitzer,,B 54194-501,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
-Zahnarzt,129,Zahnarzt,,B 81474-107,,ja,exakt,christos,2026-09-23,,freie_berufe,
-Zahnpraxis,5,Zahnarzt,,B 81474-107,,ja,,christos,2026-09-24,,freie_berufe,
+Zahnarzt,129,Zahnarzt,,B 81474-107,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
+Zahnpraxis,5,Zahnarzt,,B 81474-107,,ja,,christos,2026-09-25,,freie_berufe,ja
 Zahntechn.,38,Zahntechniker,,B 82542-101,,ja,,christos,2026-09-23,,angestellte,
 Zahntechniker,6,Zahntechniker,,B 82542-101,,ja,exakt,christos,2026-09-24,,angestellte,
 Zechenangest.,9,Zechenangest.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Zechenarb.,66,Zechenarbeiter,,B 21112-506,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
-Zechenbeamt.,161,Zechenbeamter,,B 21193-512,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Zechenarb.,66,Zechenarbeiter,,B 21112-506,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
+Zechenbeamt.,161,Zechenbeamter,,B 21193-512,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Zechenbeamt. a. D.,7,Zechenbeamter,ruhestand,B 21193-512,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Zechenbeamter,8,Zechenbeamter,,B 21193-512,,ja,exakt,christos,2026-09-24,,beamte,
+Zechenbeamter,8,Zechenbeamter,,B 21193-512,,ja,exakt,christos,2026-09-25,,beamte,ja
 Zechenbote,5,Zechenbote,,B 51321-560,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Zechenschlosser,5,Zechenschlosser,,B 21112-507,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Zechenschmied,16,Zechenschmied,,B 21113-506,,ja,exakt,christos,2026-09-23,,angestellte,
 Zechenschreiner,6,Zechenschreiner,,B 22342-509,,ja,exakt,christos,2026-09-24,,arbeiter,
-Zeichner,97,Zeichner,,B 27212-500,,ja,exakt,christos,2026-09-23,,angestellte,
+Zeichner,97,Zeichner,,B 27212-500,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Zementeur,41,Zementeur,,B 21222-514,,ja,exakt,christos,2026-09-23,,arbeiter,
 Ziegelarb.,9,Ziegelarbeiter,,B 32101-502,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Ziegeleiarb.,12,Ziegeleiarbeiter,,B 21201-104,,ja,katalog; exakt,christos,2026-09-24,,arbeiter,
 Ziegeleibes.,7,Ziegeleibesitzer,,B 21294-515,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
 Ziegelmstr.,32,Ziegelmeister,,B 21293-136,,ja,,christos,2026-09-23,,angestellte,
 Ziegler,49,Ziegler,,B 21222-200,,ja,exakt,christos,2026-09-23,,arbeiter,
-Zigarren,100,Zigarrenhändler,gewerbe,B 62382-555,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
+Zigarren,100,Zigarrenhändler,gewerbe,B 62382-555,ja,ja,gewerbe; hand,christos,2026-09-25,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,ja
 Zigarrengesch.,41,Zigarrenhändler,gewerbe,B 62382-555,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Zigarrengroßhdlg.,5,Zigarrengrosshändler,gewerbe,B 61213-505,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Zigarrenhdlg.,8,Zigarrenhändler,gewerbe,B 62382-555,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
@@ -1932,16 +1932,16 @@ Zoologische Hdlg.,5,Tierhändler,gewerbe,,,,gewerbe; hand,claude,2026-09-24,Gewe
 Zuckerwr.,5,Zuckerwarenhändler,gewerbe,B 62382-552,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Zugabfertig.,5,Zugabfertig.,,B 51412-125,,,aehnlich 0.92,berufe_vorschlag,2026-09-23,,arbeiter,
 Zugabfertiger,11,Zugabfertiger,,B 51412-125,,ja,exakt,christos,2026-09-24,,arbeiter,
-Zugführ.,60,Zugführer,,B 51493-100,,ja,katalog; exakt,christos,2026-09-23,,beamte,
+Zugführ.,60,Zugführer,,B 51493-100,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
 Zugführ. a. D.,31,Zugführer,ruhestand,B 51493-100,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
-Zugführer,16,Zugführer,,B 51493-100,,ja,exakt,christos,2026-09-23,,beamte,
+Zugführer,16,Zugführer,,B 51493-100,,ja,exakt,christos,2026-09-25,,beamte,ja
 Zugführer a. D.,8,Zugführer,ruhestand,B 51493-100,,ja,exakt,christos,2026-09-24,,ohne_erwerb,
 Zugschaffn.,5,Zugschaffner,,B 51412-126,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
-Zuschläg.,7,Zuschläg.,,B 24412-508,,ja,aehnlich 0.90,christos,2026-09-24,,arbeiter,
-Zuschläger,70,Zuschläger,,B 24412-508,,ja,exakt,christos,2026-09-23,,arbeiter,
+Zuschläg.,7,Zuschläg.,,B 24412-508,,ja,aehnlich 0.90,christos,2026-09-25,,arbeiter,ja
+Zuschläger,70,Zuschläger,,B 24412-508,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Zuschneider,49,Zuschneider,,B 28222-115,,ja,exakt,christos,2026-09-24,,arbeiter,
-kaufm. Angest.,267,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
-kaufm. Angestellt.,5,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-24,,angestellte,
+kaufm. Angest.,267,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
+kaufm. Angestellt.,5,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 kaufm. Beamt.,15,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 kfm. Angest.,548,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 kfm. Angestellt.,14,kaufmännischer Angestellter,,B 71302-123,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
@@ -1949,10 +1949,10 @@ kfm. Beamt.,45,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christos,
 kfm. Grubenbeamt.,13,kaufmännischer Grubenbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-24,Laufbahn nicht angegeben; Bergbeamte/r,beamte,
 mech. Schreinerei,23,Schreiner,gewerbe,B 22342-203,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 o. B.,6,o. B.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-o. G.,106,ohne Gewerbe,,A 10100-501,,ja,hand,christos,2026-09-24,o. G. = ohne Gewerbe,ohne_erwerb,
-prakt. Arzt,81,Arzt,,B 81404-107,,ja,,christos,2026-09-23,,freie_berufe,
+o. G.,106,ohne Gewerbe,,A 10100-501,,ja,hand,christos,2026-09-25,o. G. = ohne Gewerbe,ohne_erwerb,ja
+prakt. Arzt,81,Arzt,,B 81404-107,,ja,,christos,2026-09-25,,freie_berufe,ja
 städt. Angest.,12,städtischer Angestellter,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
-städt. Arbeiter,8,städt. Arbeiter,,B 70001-500,,ja,aehnlich 0.93,christos,2026-09-24,,arbeiter,
+städt. Arbeiter,8,städt. Arbeiter,,B 70001-500,,ja,aehnlich 0.93,christos,2026-09-25,,arbeiter,ja
 städt. Beamt.,7,städtischer Beamter,,,,,,berufe_vorschlag,2026-09-23,,beamte,
 städt. Kammermusiker,11,städt. Kammermusiker,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 techn. Angest.,18,technischer Angestellter,,B 21002-523,,ja,katalog; exakt,christos,2026-09-23,,angestellte,
@@ -1963,9 +1963,9 @@ techn. Lehrerin,21,technische Lehrerin,,B 84214-177,,ja,katalog; exakt,christos,
 techn. Ob. Inspekt.,24,technischer Oberinspektor,,B 73283-582,,,katalog; aehnlich 0.91,berufe_vorschlag,2026-09-23,,beamte,
 techn. Ob. Sekr.,5,technischer Obersekretär,,B 51523-505,,,katalog; aehnlich 0.93,berufe_vorschlag,2026-09-23,,beamte,
 techn. Oberinspekt.,5,technischer Oberinspektor,,B 73283-582,,,katalog; aehnlich 0.91,berufe_vorschlag,2026-09-23,,beamte,
-techn. Rbhn. Inspekt.,12,technischer Reichsbahninspektor,,B 51593-511,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
+techn. Rbhn. Inspekt.,12,technischer Reichsbahninspektor,,B 51593-511,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,ja
 techn. Rbhn. Ob. Sekr.,7,technischer Reichsbahnobersekretär,,B 51523-505,,ja,katalog; aehnlich 0.91,christos,2026-09-24,,beamte,
-techn. Reichsb. Inspekt.,11,technischer Reichsbahninspektor,,B 51593-511,,ja,hand,christos,2026-09-24,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,
+techn. Reichsb. Inspekt.,11,technischer Reichsbahninspektor,,B 51593-511,,ja,hand,christos,2026-09-25,Reichsbahn-Titel ohne OhdAB-Item; Bahn-Item zugeordnet,beamte,ja
 techn. Reichsb. Ob. Sekr.,16,technischer Reichsbahnobersekretär,,B 51523-505,,ja,katalog; aehnlich 0.91,christos,2026-09-23,,beamte,
 techn. Revisor,6,technischer Revisor,,B 25134-116,,,katalog; exakt,berufe_vorschlag,2026-09-23,,unbestimmt,
 techn. Stadt Ob. Inspekt.,13,technischer Stadtoberinspektor,,B 73283-582,,ja,katalog; exakt,christos,2026-09-24,,beamte,
@@ -1974,5 +1974,5 @@ techn. Stadtinspekt.,40,technischer Stadtinspektor,,B 73283-582,ja,ja,katalog; a
 techn. Stadtob. Inspekt.,7,technischer Stadtoberinspektor,,B 73283-582,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 techn. Stadtoberinspekt.,7,technischer Stadtoberinspektor,,B 73283-582,,ja,katalog; exakt,christos,2026-09-24,,beamte,
 techn. Stadtobersekr.,6,technischer Stadtobersekretär,,,,,,berufe_vorschlag,2026-09-23,,beamte,
-techn. Stadtsekr.,10,technischer Stadtsekretär,,B 73203-520,,ja,hand,christos,2026-09-24,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,
-Ärztin,10,Ärztin,,B 81404-107,,ja,exakt,christos,2026-09-24,,freie_berufe,
+techn. Stadtsekr.,10,technischer Stadtsekretär,,B 73203-520,,ja,hand,christos,2026-09-25,Amtstitel ohne OhdAB-Item; Gattungsitem zugeordnet,beamte,ja
+Ärztin,10,Ärztin,,B 81404-107,,ja,exakt,christos,2026-09-25,,freie_berufe,ja
