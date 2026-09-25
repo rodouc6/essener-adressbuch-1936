@@ -76,8 +76,10 @@ export function kennzahlen(einheit, ansicht) {
   for (const [k, v] of Object.entries(z)) if (!inGruppe.has(k)) n_aus += v;
   if (ansicht.daten === "niveau" && !ansicht.unsicher && inGruppe.has("unsicher")) { N -= z.unsicher || 0; n_aus += z.unsicher || 0; for (const g of ansicht.gruppen) if (g.aus.includes("unsicher")) zaehler[g.name] -= z.unsicher || 0; }
   for (const g of ansicht.gruppen) anteile[g.name] = N ? zaehler[g.name] / N : 0;
-  const groesste = ansicht.gruppen.reduce((b, g) => (anteile[g.name] > (b ? anteile[b] : -1) ? g.name : b), null);
-  const dominant = groesste && anteile[groesste] > 0.5 ? groesste : "gemischt";
+  const sortiert = ansicht.gruppen.map((g) => anteile[g.name]).sort((a, b) => b - a);
+  const groesste = ansicht.gruppen.find((g) => anteile[g.name] === sortiert[0])?.name ?? null;
+  // Gleichstand der größten Gruppen ist keine Dominanz
+  const dominant = groesste && sortiert[0] >= 0.4 && (sortiert.length < 2 || sortiert[0] > sortiert[1]) ? groesste : "gemischt";
   const k = ansicht.gruppen.length; let h = 0;
   if (k > 1 && N) for (const g of ansicht.gruppen) { const p = anteile[g.name]; if (p > 0) h -= p * Math.log(p); }
   const mischung = k > 1 && N ? Math.min(1, h / Math.log(k)) : 0;

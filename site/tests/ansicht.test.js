@@ -44,6 +44,9 @@ test("kennzahlen: N, n_aus, Anteile, unter_min, dominant, mischung", () => {
   const eins = kennzahlen({ n_st_arbeiter: 10 }, normalisiere({ daten: "stellung", gruppen: G, mass: "mischung", min_n: 0 }));
   assert.equal(eins.mischung, 0);
   assert.equal(kennzahlen({ n_st_arbeiter: 3, n_st_beamte: 3 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "gemischt");
+  assert.equal(kennzahlen({ n_st_arbeiter: 45, n_st_beamte: 55 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "Bürgertum");
+  assert.equal(kennzahlen({ n_st_arbeiter: 41, n_st_beamte: 59 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "Bürgertum");
+  assert.equal(kennzahlen({ n_st_arbeiter: 59, n_st_beamte: 41 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "Arbeiter");
   assert.equal(kennzahlen({}, a).N, 0); assert.equal(kennzahlen({}, a).wert, 0);
 });
 
