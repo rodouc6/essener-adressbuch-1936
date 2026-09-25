@@ -84,7 +84,7 @@ def test_eintrag_kurz_und_scherben():
                  "beruf": "Dr. Bergm.", "etage": "II", "stand": "Wwe.", "bezug_vorname": "", "bezug_beruf": "",
                  "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "eigentuemer_kanon": "",
                  "kategorie": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "", "gattung": "",
-                 "stellung": "", "stellung_quelle": "", "gruppe": "", "rubrik": "", "gewerbe_gruppe": "", "gewerbe_art": "",
+                 "stellung": "", "stellung_quelle": "", "gruppe": "", "rubrik": "", "gewerbe_gruppe": "", "gewerbe_art": "", "gewerbe_quelle": "",
                  "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
     adressen = gruppiere([e], REGELN)
     sch = baue_scherben(adressen)
@@ -468,11 +468,12 @@ def test_gruppen_gewerbe_zaehlfelder_ebenen_layouts(tmp_path):
     assert (k["1"]["stellung_quelle"], k["2"]["stellung_quelle"], k["3"]["stellung_quelle"]) == ("hand", "vorschlag", "")
     assert (k["2"]["stellung"], k["2"]["gruppe"]) == ("beamte", "B84")                    # Stellung als Vorschlag exportiert, Gruppe = Hauptgruppe
     assert (k["5"]["rubrik"], k["5"]["gewerbe_gruppe"], k["5"]["gewerbe_art"], k["5"]["firma"]) == ("Bäcker", "lebensmittel", "handwerk", "A. Meier, Bäcker")
-    assert (k["6"]["gewerbe_gruppe"], k["6"]["gewerbe_art"]) == ("ungeprueft", "ungeprueft")
+    assert (k["6"]["gewerbe_gruppe"], k["6"]["gewerbe_art"], k["6"]["gewerbe_quelle"]) == ("handel", "handel", "vorschlag")   # Vorschlag exportiert, Quelle gekennzeichnet
+    assert k["5"]["gewerbe_quelle"] == "hand"
     assert k["3"]["stellung"] == "" and k["3"]["gruppe"] == ""                          # ohne geprüften Beruf: leer im Eintrag …
     p1 = punkt_feature(haus1)["properties"]
     assert p1["n_st_arbeiter"] == 1 and p1["n_st_beamte"] == 1 and p1["n_st_unbestimmt"] == 1 and p1["n_stellung_hand"] == 1 and p1["n_gr_B21"] == 1 and p1["n_gr_B84"] == 1 and p1["n_gr_ungeprueft"] == 1   # … aber gezählt als unbestimmt
-    assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_ungeprueft"] == 1 and p1["n_bs_ungeprueft"] == 1
+    assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_handel"] == 1 and p1["n_bs_ungeprueft"] == 1
     lay = baue_layouts(a)
     assert [x["id"] for x in lay["berufe"]["kreise"]] == ["B 21112-100", "B 84124-120"]
     bm = lay["berufe"]["kreise"][0]
@@ -481,7 +482,7 @@ def test_gruppen_gewerbe_zaehlfelder_ebenen_layouts(tmp_path):
     assert lay["gewerbe"]["kreise"][0] == dict(lay["gewerbe"]["kreise"][0], id="Bäcker", n=2, gruppe="lebensmittel", art="handwerk")
     assert lay["eigentuemer"]["kreise"] == []
     kz = baue_kennzahlen(eintraege, a, "2026-09-26")
-    assert kz["stellung_geprueft"] == 50.0 and kz["stellung_vorschlag"] == 25.0 and kz["stellung_unbestimmt"] == 25.0 and "gruppen_geprueft" not in kz and kz["gewerbe_geprueft"] == 66.7
+    assert kz["stellung_geprueft"] == 50.0 and kz["stellung_vorschlag"] == 25.0 and kz["stellung_unbestimmt"] == 25.0 and "gruppen_geprueft" not in kz and kz["gewerbe_geprueft"] == 66.7 and kz["gewerbe_vorschlag"] == 33.3
     aus = tmp_path / "daten"
     schreibe_paket(aus, eintraege, [], [], "2026-09-26", kacheln=False, berufe=list(b.values()), ohdab=o, hauptgruppen=hg, gewerbe=list(gw.values()))
     assert json.loads((aus / "hauptgruppen.json").read_text(encoding="utf-8"))["B21"]["kurz"] == "Bergbau, Glas, Keramik"

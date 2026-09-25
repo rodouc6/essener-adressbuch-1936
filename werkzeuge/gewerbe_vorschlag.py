@@ -1,7 +1,7 @@
 """Gewerberubriken aus Teil III → kuratierung/gewerbe.csv (Teilprojekt 5a, Spec §5.3).
 
 Aufruf: python3 werkzeuge/gewerbe_vorschlag.py [--wurzel PFAD]
-Upsert je Rubrik: geprüfte Zeilen bleiben (betriebe wird nachgeführt), sonst Vorschlag.
+Upsert je Rubrik: entschiedene Zeilen (geprueft=ja oder benannter Bearbeiter) bleiben, betriebe wird nachgeführt; sonst Vorschlag.
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -12,7 +12,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from pipeline.lib.gewerbe import AUTOMATIK, FELDER_GEWERBE, gewerbe_vorschlag, lade_gewerbe, rubrik_von
+from pipeline.lib.gewerbe import AUTOMATIK, FELDER_GEWERBE, entschieden, gewerbe_vorschlag, lade_gewerbe, rubrik_von
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 
@@ -23,7 +23,7 @@ def baue_gewerbe(eintraege: list[dict], alt: list[dict], datum: str) -> list[dic
     out = []
     for rubrik in sorted(betriebe, key=lambda r: (-betriebe[r], r)):
         z = bekannt.get(rubrik)
-        if z and z.get("geprueft") == "ja":
+        if entschieden(z):
             out.append(dict(z, betriebe=str(betriebe[rubrik])))
         else:
             gruppe, art = gewerbe_vorschlag(rubrik)

@@ -12,7 +12,7 @@ from pathlib import Path
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
 from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
-from pipeline.lib.gewerbe import betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
+from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
@@ -119,8 +119,9 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         if e.get("teil") == "III" and e.get("Firmenname"):
             firma, rubrik = rubrik_von(e["Firmenname"])
             if rubrik:
-                g, art = gewerbe_export((gewerbe or {}).get(rubrik))
-                gew = dict(rubrik=rubrik, firma=firma, gruppe=g, art=art, schluessel=betriebsschluessel(e))
+                gz = (gewerbe or {}).get(rubrik)
+                g, art = gewerbe_export(gz)
+                gew = dict(rubrik=rubrik, firma=firma, gruppe=g, art=art, quelle=gewerbe_quelle(gz), schluessel=betriebsschluessel(e))
         # _identitaet: nur identifizierte Eigentümer kommen in Suchindex und Liste; die Kategorie gilt immer.
         e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
                 _beruf=beruf, _gewerbe=gew)
@@ -177,7 +178,7 @@ def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
                 kategorie=e.get("_kategorie", ""), beruf_norm=b.get("beruf", ""), ohdab=b.get("ohdab", ""),
                 niveau=b.get("niveau", ""), status=b.get("status", ""), gattung=b.get("gattung", ""),
                 stellung=b.get("stellung", ""), stellung_quelle=b.get("stellung_quelle", ""), gruppe=b.get("gruppe", ""), rubrik=g.get("rubrik", ""),
-                gewerbe_gruppe=g.get("gruppe", ""), gewerbe_art=g.get("art", ""),
+                gewerbe_gruppe=g.get("gruppe", ""), gewerbe_art=g.get("art", ""), gewerbe_quelle=g.get("quelle", ""),
                 flags=[f for f in FLAGS if e.get(f) == "ja"], merkmale=list(merkmale))
 
 
@@ -372,7 +373,9 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand"), len(teil_i)),
                 stellung_vorschlag=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
                 stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
-                gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"]["gruppe"] != "ungeprueft"), len(teil_iii)))
+                gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "hand"), len(teil_iii)),
+                gewerbe_entschieden=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "claude"), len(teil_iii)),
+                gewerbe_vorschlag=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag"), len(teil_iii)))
 
 
 def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:

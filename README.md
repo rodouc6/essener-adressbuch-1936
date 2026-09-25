@@ -415,16 +415,18 @@ geprüften Beruf zählen als `ungeprueft`. Zählfeld je Einheit: `n_gr_<hauptgru
 Die Rubrik steht nicht in einer eigenen Spalte, sondern als Suffix hinter dem letzten Komma des
 Firmennamens („M. Jäger, Althandlung“ → Firma „M. Jäger“, Rubrik „Althandlung“); ohne Komma keine
 Rubrik. Realer Lauf 2026-09-24: 848 distinkte Rubriken (18.863 Betriebe). Spalten `rubrik,
-betriebe, gruppe, art, geprueft, bearbeiter, datum, hinweis`; `gruppe` = Branche (14 Schlüssel, `pipeline/lib/gewerbe.GRUPPEN`; bis 2026-09-25 mit Teil I geteilt)
-(gleiche 14 Schlüssel, damit Teil I und Teil III vergleichbar sind), `art` (7 Schlüssel,
+betriebe, gruppe, art, geprueft, bearbeiter, datum, hinweis`; `gruppe` = Branche (15 Schlüssel,
+`pipeline/lib/gewerbe.GRUPPEN`, seit 2026-09-25 mit `finanzen_recht`), `art` (7 Schlüssel,
 `pipeline/lib/gewerbe.py`, `ARTEN`): `handwerk, handel, gastgewerbe, dienstleistung, industrie,
 freier_beruf, sonstige`. Vorschlag aus Wortregeln auf der Rubrik:
 `python3 werkzeuge/gewerbe_vorschlag.py`. Handprüfung: `werkzeuge/zuordnung.html?tabelle=gewerbe`
 (Zifferntasten setzen `gruppe`, Umschalt+Ziffer setzt `art`). Realer Lauf: `sonstige` 11,8 % (100
 von 848 Rubriken, unter der 20-%-Vorgabe). Dublettenregel: Betriebe, die unter mehreren Rubriken an
 derselben Adresse mit gleichem Firmennamen stehen (`betriebsschluessel()`: gefalteter Firmenname +
-Straße + Hausnummer + Vorort), zählen je Gruppe nur einmal. Export nur `geprueft=ja` und `gruppe`/
-`art` im Vokabular, sonst `ungeprueft`. Zählfelder je Einheit: `n_gw_<gruppe>`, `n_gwa_<art>`.
+Straße + Hausnummer + Vorort), zählen je Gruppe nur einmal. Export (seit 2026-09-25 wie bei der Stellung):
+jeder Wert im Vokabular wird exportiert, `gewerbe_quelle` = `hand` | `claude` | `vorschlag` kennzeichnet je
+Eintrag die Herkunft; Prinzipien und entschiedene Grenzfälle in `docs/gewerbe.md`. Zählfelder je Einheit:
+`n_gw_<gruppe>`, `n_gwa_<art>`.
 
 ### Zählfelder und Aggregationsebenen (`pipeline/lib/ebenen.py`)
 

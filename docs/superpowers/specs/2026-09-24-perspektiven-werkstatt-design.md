@@ -212,8 +212,12 @@ Betriebszugehörigkeit.
   `handwerk, handel, gastgewerbe, dienstleistung, industrie, freier_beruf, sonstige`.
   Vorschlag über Wortregeln („-handlung“, „-waren“ → handel; „-meister“, „-ei“ → handwerk;
   Schankwirt/Gastwirt → gastgewerbe …). Werkzeug `werkzeuge/gewerbe.html`.
-- Gewerbeformen in Teil I (`status=gewerbe`, 218 Schreibweisen) erhalten dieselbe `gruppe`
-  über `gruppen.csv` (ihr Item ist der Berufsträger).
+- Gewerbeformen in Teil I (`status=gewerbe`, 218 Schreibweisen) tragen wie alle Teil-I-Einträge
+  die OhdAB-Hauptgruppe ihres Items (§5.2, geändert 2026-09-25).
+- Geändert 2026-09-25: `gruppe` ist eine eigene Branchenliste von Teil III (15 Schlüssel, dazu
+  `finanzen_recht`), nicht mehr mit Teil I geteilt; Prinzipien für `gruppe`/`art` und die
+  entschiedenen Grenzfälle stehen in `docs/gewerbe.md`. Export wie bei der Stellung: Vorschlag
+  gilt, `gewerbe_quelle` = `hand` | `claude` | `vorschlag` kennzeichnet.
 - Zählfelder `n_gw_<gruppe>` und `n_gw_art_<art>` je Ebene; Nenner für `dichte` ist
   `n_I` (Teil-I-Einträge) je Einheit.
 

@@ -47,9 +47,10 @@ import { KONFIG, baueModell, fortschritt, liste, rueckgaengig, setzeFeld, setzeG
 
 // Anzeigenamen des Vokabulars — wörtlich wie in pipeline/lib/gewerbe.py (GRUPPEN, ARTEN), damit die Beschriftung der Selects mit der Python-Quelle übereinstimmt.
 const LABEL_GRUPPE = { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau",
-  holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel", handel: "Handel",
-  gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post", verwaltung: "Verwaltung, Polizei, Recht",
-  bildung_kultur_kirche: "Bildung, Kultur, Kirche", gesundheit: "Gesundheit", haus_reinigung: "Haushalt und Reinigung", sonstige: "Sonstige" };
+  holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel und Genussmittel",
+  handel: "Handel (übrige Waren)", gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post",
+  finanzen_recht: "Banken, Versicherungen, Immobilien, Beratung", verwaltung: "Verwaltung, Polizei, Recht",
+  bildung_kultur_kirche: "Bildung, Kultur, Medien, Kirche", gesundheit: "Gesundheit", haus_reinigung: "Haushalt, Reinigung, Körperpflege", sonstige: "Sonstige" };
 const LABEL_ART = { handwerk: "Handwerk", handel: "Handel", gastgewerbe: "Gastgewerbe", dienstleistung: "Dienstleistung",
   industrie: "Industrie", freier_beruf: "Freier Beruf", sonstige: "Sonstige" };
 const LABEL = { gruppe: LABEL_GRUPPE, art: LABEL_ART };
