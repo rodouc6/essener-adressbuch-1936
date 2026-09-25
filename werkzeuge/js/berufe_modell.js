@@ -114,6 +114,23 @@ export function setzeStellung(m, s, klasse) {
   if (!STELLUNGEN.includes(klasse)) return [];
   return aendere(m, s, { stellung: klasse, stellung_geprueft: "ja" });
 }
+// Geschwister für Taste A: Schreibweisen desselben Items ohne Status („a. D.“, „gesch.“ entscheidet die Automatik),
+// mit geprüftem Beruf (sonst sperrt der POST die Berufszuordnung, siehe berufe.html) und noch offener Stellung.
+export function geschwister(m, s) {
+  const z = m.zeilen.get(s);
+  if (!z || !z.ohdab_id) return [];
+  return [...m.zeilen.values()].filter((g) => g !== z && g.ohdab_id === z.ohdab_id && !g.status && g.geprueft === "ja" && g.stellung_geprueft !== "ja");
+}
+// Stellung der Zeile s als geprüft auf sie selbst und alle Geschwister übertragen — ein Undo-Schritt.
+export function setzeStellungAlle(m, s, klasse) {
+  const z = m.zeilen.get(s);
+  if (!z || !STELLUNGEN.includes(klasse)) return [];
+  const ziele = [z, ...geschwister(m, s)].filter((g) => g.stellung !== klasse || g.stellung_geprueft !== "ja");
+  if (!ziele.length) return [];
+  merke(m);
+  for (const g of ziele) Object.assign(g, { stellung: klasse, stellung_geprueft: "ja" });
+  return ziele;
+}
 export function schalteStellungGeprueft(m, s) {
   const z = m.zeilen.get(s); if (!z || !z.stellung) return [];
   return aendere(m, s, { stellung_geprueft: z.stellung_geprueft === "ja" ? "" : "ja" });

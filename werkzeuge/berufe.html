@@ -48,10 +48,12 @@
     <button id="niveau" title="Taste N">Niveau unsicher <kbd>N</kbd></button>
     <select id="stellung" title="Ziffern 1–9"></select>
     <button id="stellung-geprueft" title="Taste T">Stellung geprüft <kbd>T</kbd></button>
+    <button id="stellung-alle" title="Taste A: Stellung auf alle Schreibweisen dieses Items ohne Status übertragen und prüfen">Auch Geschwister <kbd>A</kbd></button>
     <button id="geprueft" title="Taste G">Geprüft <kbd>G</kbd></button>
     <button id="rueck" title="Taste Z">Rückgängig <kbd>Z</kbd></button>
     <button id="katalog" hidden>In Katalog</button>
     <input id="hinweis" placeholder="Hinweis" style="flex:1 1 200px">
+    <span id="geschwister" hidden style="flex-basis:100%;color:#6b7280"></span>
   </div>
   <div id="mitte">
     <div><h4 style="margin:0 0 6px">Vorschlag und Kandidaten <small id="grund"></small></h4><div id="kandidaten"></div>
@@ -61,7 +63,7 @@
 </div>
 <div id="banner"></div>
 <script type="module">
-import { baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, schalteStellungGeprueft, setzeBeruf, setzeGeprueft,
+import { baueModell, fortschritt, geschwister, katalogVorschlag, liste, rueckgaengig, schalteStatus, schalteStellungGeprueft, setzeBeruf, setzeGeprueft, setzeStellungAlle,
          setzeHinweis, setzeNiveauUnsicher, setzeStellung, setzeZuordnung, STELLUNGEN, sucheOhdab, zumSpeichern } from "./js/berufe_modell.js";
 const NIVEAUS = { helfer: "Helfer-/Anlerntätigkeit", fachlich: "Fachliche Tätigkeit", spezialist: "Komplexe Spezialistentätigkeit",
   hochkomplex: "Hoch komplexe Tätigkeit", aufsicht: "Aufsichtskraft", fuehrung: "Führungskraft", keins: "ohne Niveau" };
@@ -230,6 +232,12 @@ function zeichneAktiv() {
   stellungSel.title = stellungSel.disabled ? "Erst den Beruf selbst prüfen (Taste G)" : "Ziffern 1–9";
   stellungBtn.disabled = z.geprueft !== "ja";
   stellungBtn.title = stellungBtn.disabled ? "Erst den Beruf selbst prüfen (Taste G)" : "Taste T";
+  const gw = geschwister(m, aktiv);
+  const alleBtn = document.getElementById("stellung-alle");
+  alleBtn.disabled = z.geprueft !== "ja" || !z.stellung || !gw.length;
+  const gwEl = document.getElementById("geschwister");
+  gwEl.hidden = !gw.length;
+  gwEl.textContent = gw.length ? "Mit A auch: " + gw.map((g) => `${g.schreibweise} (${g.nennungen})`).join(", ") : "";
   document.getElementById("hinweis").value = z.hinweis;
   const kv = katalogVorschlag(m, aktiv);
   document.getElementById("katalog").hidden = !kv;
@@ -296,6 +304,14 @@ document.getElementById("stellung-geprueft").addEventListener("click", () => {
   speichere(schalteStellungGeprueft(m, aktiv));
   if (neuGeprueft) naechsterOffener(vorher, stellungOffen); else zeichne();
 });
+document.getElementById("stellung-alle").addEventListener("click", () => {
+  if (!aktiv) return;
+  const vorher = gefiltert(liste(m));
+  const g = setzeStellungAlle(m, aktiv, m.zeilen.get(aktiv).stellung);
+  if (!g.length) return;
+  speichere(g);
+  naechsterOffener(vorher, stellungOffen);
+});
 document.getElementById("geprueft").addEventListener("click", () => {
   if (!aktiv) return;
   const z = m.zeilen.get(aktiv);
@@ -335,6 +351,7 @@ document.addEventListener("keydown", (ev) => {
   else if (k === "n") document.getElementById("niveau").click();
   else if (k === "s") document.getElementById("status").click();
   else if (k === "t" && !document.getElementById("stellung-geprueft").disabled) document.getElementById("stellung-geprueft").click();
+  else if (k === "a" && !document.getElementById("stellung-alle").disabled) document.getElementById("stellung-alle").click();
   else if (k === "z") document.getElementById("rueck").click();
   else if (ev.key === "ArrowDown") { ev.preventDefault(); naechsteZeile(1); }
   else if (ev.key === "ArrowUp") { ev.preventDefault(); naechsteZeile(-1); }

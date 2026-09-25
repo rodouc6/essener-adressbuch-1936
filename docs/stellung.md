@@ -182,7 +182,12 @@ Die Automatik (`werkzeuge/stellung_vorschlag.py`, `bearbeiter=stellung_vorschlag
 Berufszuordnung bereits gesperrt sind (`geprueft=ja`, anderer Bearbeiter), denn die Stellung ist eine
 eigenständige, bislang ungeprüfte Frage. `stellung_geprueft=ja` setzt ausschließlich der Mensch im
 Berufe-Werkzeug (`werkzeuge/berufe.html`): Auswahl der Klasse über die Zifferntasten `1`–`9` (Reihenfolge
-wie oben), Bestätigung mit Taste `T`, Filter „Stellung offen“ zeigt nur ungeprüfte Zeilen.
+wie oben), Bestätigung mit Taste `T`, Filter „Stellung offen“ zeigt nur ungeprüfte Zeilen. Taste `A` überträgt
+die Stellung auf alle Geschwister-Schreibweisen desselben Items ohne Status mit geprüftem Beruf (die Zeile
+„Mit A auch: …“ zeigt sie vorher an); Statuszeilen und Titelformen wie „Dr.-Ing.“ bleiben getrennte
+Entscheidungen. Begründung (2026-09-25): Von 856 Items der geprüften Schreibweisen tragen nur 104
+unterschiedliche Stellungen, 99 davon allein über den Status — die Granularität der Schreibweise bleibt
+erhalten, die Zahl der Handentscheidungen sinkt um rund 40 %.
 
 ## Exportregel
 

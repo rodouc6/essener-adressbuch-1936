@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { baueModell, fortschritt, katalogVorschlag, liste, rueckgaengig, schalteStatus, setzeBeruf, setzeGeprueft,
-         setzeNiveauUnsicher, setzeStellung, setzeZuordnung, schalteStellungGeprueft, sucheOhdab, uebernehmeKandidat, zumSpeichern } from "../js/berufe_modell.js";
+         geschwister, setzeNiveauUnsicher, setzeStellung, setzeStellungAlle, setzeZuordnung, schalteStellungGeprueft, sucheOhdab, uebernehmeKandidat, zumSpeichern } from "../js/berufe_modell.js";
 
 const O = [
   { ohdab_id: "B 21112-100", norm: "Bergmann/-frau", maennlich: "Bergmann", weiblich: "Bergfrau", niveau: "fachlich", gattung_id: "B 21112", gattung: "Berufe im Berg- und Tagebau" },
@@ -107,4 +107,25 @@ test("Stellung setzen prüft sie; Schalter nimmt die Prüfung zurück", () => {
   setzeStellung(m, "Arbeiter", "arbeiter");
   assert.equal(fortschritt(m).stellungGeprueft, 1);
   assert.equal(Object.keys(zumSpeichern(m.zeilen.get("Bergm."))).includes("stellung_geprueft"), true);
+});
+
+test("Taste A: Stellung auf Geschwister ohne Status mit geprüftem Beruf übertragen, ein Undo-Schritt", () => {
+  const m = baueModell([
+    ...K,
+    { schreibweise: "Bergmann", nennungen: "30", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "ja", vorschlag_grund: "", bearbeiter: "christos", datum: "", hinweis: "", stellung: "unbestimmt", stellung_geprueft: "" },
+    { schreibweise: "Bergm. a. D.", nennungen: "4", beruf: "Bergmann", status: "ruhestand", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "ja", vorschlag_grund: "", bearbeiter: "christos", datum: "", hinweis: "", stellung: "ohne_erwerb", stellung_geprueft: "" },
+    { schreibweise: "Bergmn.", nennungen: "2", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "", vorschlag_grund: "", bearbeiter: "berufe_vorschlag", datum: "", hinweis: "", stellung: "arbeiter", stellung_geprueft: "" },
+    { schreibweise: "Bergarb.", nennungen: "7", beruf: "Bergmann", status: "", ohdab_id: "B 21112-100", niveau_unsicher: "", geprueft: "ja", vorschlag_grund: "", bearbeiter: "christos", datum: "", hinweis: "", stellung: "arbeiter", stellung_geprueft: "ja" },
+  ], O, KAND);
+  m.zeilen.get("Bergm.").geprueft = "ja";
+  assert.deepEqual(geschwister(m, "Bergm.").map((z) => z.schreibweise), ["Bergmann"]);   // ohne Status, geprüft, Stellung offen
+  const g = setzeStellungAlle(m, "Bergm.", "arbeiter");
+  assert.deepEqual(g.map((z) => [z.schreibweise, z.stellung, z.stellung_geprueft]), [["Bergm.", "arbeiter", "ja"], ["Bergmann", "arbeiter", "ja"]]);
+  assert.equal(m.zeilen.get("Bergm. a. D.").stellung, "ohne_erwerb");
+  assert.equal(m.zeilen.get("Bergmn.").stellung_geprueft, "");
+  assert.deepEqual(setzeStellungAlle(m, "Bergm.", "arbeiter"), []);                    // nichts mehr zu tun
+  assert.deepEqual(setzeStellungAlle(m, "Bergm.", "adel"), []);
+  const z = rueckgaengig(m);
+  assert.deepEqual(z.map((x) => x.schreibweise).sort(), ["Bergm.", "Bergmann"]);       // ein Schritt nimmt beide zurück
+  assert.deepEqual(geschwister(m, "Fabrkarb."), []);                                     // ohne Item keine Geschwister
 });

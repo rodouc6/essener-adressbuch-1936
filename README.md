@@ -377,7 +377,9 @@ ohne_erwerb, kaufleute, unbestimmt`) und `stellung_geprueft` (`ja` | leer). Vors
 leer ist — auch bei für die Berufszuordnung bereits gesperrten Zeilen, weil die Stellung eine
 eigene, unabhängig zu prüfende Frage ist. Handprüfung im Berufe-Werkzeug (`werkzeuge/berufe.html`):
 Zifferntasten `1`–`9` wählen die Klasse (Reihenfolge wie im Vokabular), Taste `T` bestätigt
-(`stellung_geprueft=ja`), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export nur, wenn
+(`stellung_geprueft=ja`), Taste `A` überträgt die Stellung zusätzlich auf alle Schreibweisen desselben
+OhdAB-Items ohne Status mit geprüftem Beruf („Ing.“, „Ingen.“, „Ingenieur“ in einem Zug; Statuszeilen wie
+„a. D.“ bleiben außen vor), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export nur, wenn
 Beruf **und** Stellung geprüft sind, sonst `unbestimmt`. Regeln, Beispiele und Grenzfälle:
 `docs/stellung.md`. Für Handwerksberufe ohne Meister-/Gewerbezusatz („Friseur“, „Schneider“) liefert
 `python3 werkzeuge/handwerk_deckung.py` die Entscheidungsgrundlage: Betriebe in Teil III gegen die als
