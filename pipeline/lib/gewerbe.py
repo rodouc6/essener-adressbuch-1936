@@ -4,7 +4,15 @@ from __future__ import annotations
 
 import re
 
-from pipeline.lib.gruppen import GRUPPEN  # noqa: F401 — gleiche Gruppen wie Teil I, damit beide vergleichbar sind
+# Branchen der Teil-III-Rubriken. Bis 2026-09-25 mit Teil I geteilt; die Berufsgruppen sind seither OhdAB-Hauptgruppen
+# (pipeline/lib/gruppen.py), Teil III behält die Branchen, weil die Rubrik hier tatsächlich eine Branche ist (Spec §5.2/5.3).
+GRUPPEN = {
+    "bergbau": "Bergbau und Kokerei", "metall_maschinen": "Metall, Maschinen, Elektro", "bau": "Bau",
+    "holz_moebel": "Holz und Möbel", "textil_bekleidung": "Textil und Bekleidung", "lebensmittel": "Lebensmittel",
+    "handel": "Handel", "gastgewerbe": "Gastgewerbe", "verkehr_bahn_post": "Verkehr, Bahn, Post",
+    "verwaltung": "Verwaltung, Polizei, Recht", "bildung_kultur_kirche": "Bildung, Kultur, Kirche",
+    "gesundheit": "Gesundheit", "haus_reinigung": "Haushalt und Reinigung", "sonstige": "Sonstige",
+}
 from pipeline.lib.berufe import falte_form
 
 ARTEN = {"handwerk": "Handwerk", "handel": "Handel", "gastgewerbe": "Gastgewerbe", "dienstleistung": "Dienstleistung",

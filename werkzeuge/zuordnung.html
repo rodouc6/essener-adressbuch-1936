@@ -45,8 +45,7 @@
 <script type="module">
 import { KONFIG, baueModell, fortschritt, liste, rueckgaengig, setzeFeld, setzeGeprueft, setzeHinweis, zumSpeichern } from "./js/zuordnung_modell.js";
 
-// Anzeigenamen des Vokabulars — wörtlich wie in pipeline/lib/gruppen.py (GRUPPEN) und
-// pipeline/lib/gewerbe.py (ARTEN), damit die Beschriftung der Selects mit der Python-Quelle übereinstimmt.
+// Anzeigenamen des Vokabulars — wörtlich wie in pipeline/lib/gewerbe.py (GRUPPEN, ARTEN), damit die Beschriftung der Selects mit der Python-Quelle übereinstimmt.
 const LABEL_GRUPPE = { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau",
   holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel", handel: "Handel",
   gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post", verwaltung: "Verwaltung, Polizei, Recht",
@@ -90,7 +89,7 @@ function zeigeBanner(text, dauerhaft = false) {
 const tabelle = new URLSearchParams(location.search).get("tabelle");
 const konfig = KONFIG[tabelle];
 if (!konfig) {
-  zeigeBanner("?tabelle=gruppen|gewerbe fehlt oder ist unbekannt", true);
+  zeigeBanner("?tabelle=gewerbe fehlt oder ist unbekannt", true);
   throw new Error("kein Vokabular für ?tabelle=" + tabelle);
 }
 document.title = konfig.titel;
@@ -120,13 +119,13 @@ function sperre(text) {
 
 const [text, belegeText, ohdabText] = await Promise.all([
   fetch(`../kuratierung/${konfig.datei}`).then((r) => { if (!r.ok) throw new Error(`kuratierung/${konfig.datei} fehlt`); return r.text(); }),
-  tabelle === "gruppen" ? fetch("../kuratierung/berufe.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
-  tabelle === "gruppen" ? fetch("../kuratierung/ohdab.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
+  konfig.schluessel === "ohdab_id" ? fetch("../kuratierung/berufe.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
+  konfig.schluessel === "ohdab_id" ? fetch("../kuratierung/ohdab.csv").then((r) => (r.ok ? r.text() : "")) : Promise.resolve(""),
 ]).catch((e) => { zeigeBanner(e.message); throw e; });
 
 const m = baueModell(csvLesen(text), konfig);
 
-// Belege je ohdab_id (nur für tabelle=gruppen): Schreibweisen mit Nennungen und Beruf aus berufe.csv.
+// Belege je ohdab_id: Schreibweisen mit Nennungen und Beruf aus berufe.csv (nur bei Tabellen mit Schlüssel ohdab_id; derzeit keine).
 const belegeNachSchluessel = new Map();
 if (belegeText) {
   for (const b of csvLesen(belegeText)) {
@@ -137,7 +136,7 @@ if (belegeText) {
   }
 }
 
-// Gattung je ohdab_id (nur für tabelle=gruppen): zeigt im Kopf, aus welcher OhdAB-Gattung das Item stammt —
+// Gattung je ohdab_id (nur bei Schlüssel ohdab_id): zeigt im Kopf, aus welcher OhdAB-Gattung das Item stammt —
 // wörtlich wie in berufe.html (dort `${o.gattung}` im Zuordnungsfeld).
 const gattungNachSchluessel = new Map();
 if (ohdabText) {
@@ -172,7 +171,7 @@ function zeichneAktiv() {
   document.getElementById("kopf").style.visibility = "visible";
   document.getElementById("anzeige").textContent = z.anzeige;
   document.getElementById("menge").textContent = `${z.menge} ${z.menge === 1 ? "Beleg" : "Belege"}`;
-  document.getElementById("gattung").textContent = tabelle === "gruppen" ? (gattungNachSchluessel.get(aktiv) || "") : "";
+  document.getElementById("gattung").textContent = konfig.schluessel === "ohdab_id" ? (gattungNachSchluessel.get(aktiv) || "") : "";
   document.getElementById("felder").innerHTML = konfig.felder.map((f) =>
     `<select class="feld" data-feld="${f.name}" title="Ziffern 1–9 (weitere per Auswahl)"><option value="">–</option>` +
     f.vokabular.map((w) => `<option value="${esc(w)}"${w === z[f.name] ? " selected" : ""}>${esc(LABEL[f.name]?.[w] || w)}</option>`).join("") +
@@ -180,7 +179,7 @@ function zeichneAktiv() {
   document.getElementById("geprueft").setAttribute("aria-pressed", z.geprueft === "ja");
   document.getElementById("hinweis").value = z.hinweis;
   const belege = belegeNachSchluessel.get(aktiv) || [];
-  if (tabelle !== "gruppen") {
+  if (konfig.schluessel !== "ohdab_id") {
     document.getElementById("belege").innerHTML = "–";
   } else if (!belege.length) {
     document.getElementById("belege").innerHTML = "<small>keine</small>";

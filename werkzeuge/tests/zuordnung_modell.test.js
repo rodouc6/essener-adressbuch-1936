@@ -11,7 +11,7 @@ test("Konfiguration, Liste nach Menge, Felder mit Vokabular", () => {
   const m = baueModell(Z, KONFIG.gewerbe);
   assert.deepEqual(liste(m).map((z) => z.schluessel), ["Schankwirt", "Bäcker"]);
   assert.deepEqual(KONFIG.gewerbe.felder.map((f) => f.name), ["gruppe", "art"]);
-  assert.equal(KONFIG.gruppen.schluessel, "ohdab_id");
+  assert.equal(KONFIG.gruppen, undefined);                                   // Berufsgruppen sind seit 2026-09-25 OhdAB-Hauptgruppen
   assert.deepEqual(setzeFeld(m, "Bäcker", "art", "adel"), []);              // unbekanntes Vokabular
   assert.deepEqual(setzeFeld(m, "Bäcker", "art", "handel").map((z) => z.art), ["handel"]);
   assert.deepEqual(fortschritt(m), { geprueft: 1, gesamt: 2, mengeGeprueft: 904, mengeGesamt: 1440 });

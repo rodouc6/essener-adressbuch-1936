@@ -46,7 +46,7 @@ Berufszählung 1933 übernahm:
   die Schreibweise ohne Zusatz bei manchen Handwerksberufen Inhaber einschließt (Grenzfälle,
   `docs/stellung_deckung.md`).
 - **Selbständige** umfassen Handwerk, Handel, Gastgewerbe **und Landwirtschaft** — keine eigene Klasse für
-  Landwirte; der Wirtschaftszweig ist die zweite Achse (Berufsgruppen, `kuratierung/gruppen.csv`).
+  Landwirte; das Tätigkeitsfeld ist die zweite Achse (OhdAB-Hauptgruppe, z. B. `B11` Landwirtschaft).
 - **Unternehmer und Leitende** ist eine **bewusste Abweichung** von der Berufszählung, die Direktoren als
   leitende Angestellte und Fabrikanten als Selbständige führt: Inhaber, Fabrikanten, Bauunternehmer,
   Gutsbesitzer sowie Direktoren, Vorstände und Geschäftsführer bilden eine eigene Klasse, weil die Leitfragen
@@ -227,7 +227,7 @@ geprüft, nicht gegen den vollen Text mit Gattung.
   Dienstgrad). Einschränkung: Werkfeuerwehren (Krupp, Zechen) hatten Arbeiter und Angestellte; ihr Anteil an den
   „Feuerwehrm.“ ist der Schreibweise nicht anzusehen.
 - **Pfarrer, Kaplan, Vikar → Beamte**, keine eigene Klasse: öffentlich-rechtliches Dienstverhältnis der Kirchen
-  (Kirchenbeamte), so auch die Berufszählung; der Klerus ist über die Berufsgruppe `bildung_kultur_kirche`
+  (Kirchenbeamte), so auch die Berufszählung; der Klerus ist über die OhdAB-Hauptgruppe `B83` (Erziehung, Soziales, Theologie)
   auswertbar.
 - **Kaufleute bekommen eine eigene Klasse**, statt sie einer Nachbarklasse zuzuschlagen, weil die
   Schreibweise „Kaufmann“ ohne Zusatz nicht erkennen lässt, ob eine selbständige Existenz oder eine

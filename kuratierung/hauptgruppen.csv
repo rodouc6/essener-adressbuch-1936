@@ -1,0 +1,71 @@
+hauptgruppe,bezeichnung,kurz,bereich,quelle
+A10,"Berufslose (Rentenempfänger, Altenteiler, Invaliden)",Berufslose,Personen ohne Erwerbsberuf,OhdAB
+A12,"Inhaftierte, Vaganten",Inhaftierte und Vaganten,Personen ohne Erwerbsberuf,OhdAB
+A13,"Insassen von Anstalten, Kranke und Arbeitsunfähige",Anstaltsinsassen und Arbeitsunfähige,Personen ohne Erwerbsberuf,OhdAB
+A14,Schüler und Studierende,Schüler und Studierende,Personen ohne Erwerbsberuf,OhdAB
+A15,Ordens- und Preisträger,Ordens- und Preisträger,Personen ohne Erwerbsberuf,OhdAB
+A20,Allgemeine Personenbezeichnungen und Titel,Allgemeine Bezeichnungen,Personenbezeichnungen,OhdAB
+A21,Angaben zum Familienstand und zur Verwandtschaft,Familienstand,Personenbezeichnungen,OhdAB
+A30,"Bürger- und Einwohnerrechte, Rechtstitel",Rechtsstellung,Rechtliche und religiöse Stellung,OhdAB
+A32,Religions- und Nationalitätsangaben,Religion und Nationalität,Rechtliche und religiöse Stellung,OhdAB
+A33,"Rollen in Kunst, Literatur und Sage",Fiktionale Rollen,Rechtliche und religiöse Stellung,OhdAB
+A40,"Grund- und Hausbesitzer, Pfründner",Grund- und Hausbesitzer,Besitz und Wohnverhältnis,OhdAB
+A41,Mieter,Mieter,Besitz und Wohnverhältnis,OhdAB
+A42,Schuldner,Schuldner,Besitz und Wohnverhältnis,OhdAB
+A43,Hausarbeit (unbezahlt),Hausarbeit,Besitz und Wohnverhältnis,OhdAB
+A50,Mitgliedschaften (unspezifisch),Mitgliedschaften,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A51,Vereinsmitglieder,Vereinsmitglieder,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A52,"Verbandsmitglieder, Sport",Sport- und Verbandsmitglieder,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A53,Mitglieder von Gesellschaften und Sozietäten,Gesellschaftsmitglieder,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A54,"Entdecker, Freimaurer, Kreative",Entdecker und Kreative,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A55,"Reformer, Verbündete",Reformer,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A56,Parteimitglieder,Parteimitglieder,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A57,"Widerstandskämpfer, Opfer",Widerstand und Opfer,Mitgliedschaften und Zugehörigkeiten,OhdAB
+A61,"Berater, allgemeine Arbeitsbeziehungen",Allgemeine Arbeitsbeziehungen,Arbeitsbeziehungen,OhdAB
+B01,Angehörige der regulären Streitkräfte,Militär,Militär,KldB 2010
+B11,"Land-, Tier- und Forstwirtschaftsberufe",Landwirtschaft,"Land-, Forst- und Tierwirtschaft, Gartenbau",KldB 2010
+B12,Gartenbauberufe und Floristik,Gartenbau,"Land-, Forst- und Tierwirtschaft, Gartenbau",KldB 2010
+B20,Allgemeine Berufe in der Produktion (ohne Branche),Arbeiter und Angestellte ohne Branche,"Rohstoffgewinnung, Produktion und Fertigung",OhdAB
+B21,"Rohstoffgewinnung und -aufbereitung, Glas- und Keramikherstellung und -verarbeitung","Bergbau, Glas, Keramik","Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B22,"Kunststoffherstellung und -verarbeitung, Holzbe- und -verarbeitung",Holz,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B23,"Papier- und Druckberufe, technische Mediengestaltung",Papier und Druck,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B24,"Metallerzeugung, -bearbeitung, Metallbau",Metall,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B25,Maschinen- und Fahrzeugtechnikberufe,Maschinen und Fahrzeuge,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B26,"Mechatronik-, Energie- und Elektroberufe",Elektro und Energie,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B27,"Technische Forschungs-, Entwicklungs-, Konstruktions- und Produktionssteuerungsberufe",Technische Planung und Produktionssteuerung,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B28,Textil- und Lederberufe,Textil und Leder,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B29,Lebensmittelherstellung und -verarbeitung,Lebensmittelherstellung,"Rohstoffgewinnung, Produktion und Fertigung",KldB 2010
+B31,"Bauplanungs-, Architektur- und Vermessungsberufe",Bauplanung und Architektur,"Bau, Architektur, Vermessung und Gebäudetechnik",KldB 2010
+B32,Hoch- und Tiefbauberufe,Hoch- und Tiefbau,"Bau, Architektur, Vermessung und Gebäudetechnik",KldB 2010
+B33,(Innen-)Ausbauberufe,Ausbau,"Bau, Architektur, Vermessung und Gebäudetechnik",KldB 2010
+B34,Gebäude- und versorgungstechnische Berufe,Gebäude- und Versorgungstechnik,"Bau, Architektur, Vermessung und Gebäudetechnik",KldB 2010
+B40,Naturwissenschaften (allgemein),Naturwissenschaften allgemein,"Naturwissenschaft, Geografie und Informatik",OhdAB
+B41,"Mathematik-, Biologie-, Chemie- und Physikberufe",Chemie und Naturwissenschaften,"Naturwissenschaft, Geografie und Informatik",KldB 2010
+B42,"Geologie-, Geografie- und Umweltschutzberufe",Geologie und Geografie,"Naturwissenschaft, Geografie und Informatik",KldB 2010
+B43,"Informatik-, Informations- und Kommunikationstechnologieberufe",Informatik,"Naturwissenschaft, Geografie und Informatik",KldB 2010
+B50,"Verkehr, Logistik und Sicherheit (allgemein)",Verkehr allgemein,"Verkehr, Logistik, Schutz und Sicherheit",OhdAB
+B51,Verkehrs- und Logistikberufe (außer Fahrzeugführung),"Verkehr, Bahn, Post, Lager","Verkehr, Logistik, Schutz und Sicherheit",KldB 2010
+B52,Führer von Fahrzeug- und Transportgeräten,Fahrzeugführer,"Verkehr, Logistik, Schutz und Sicherheit",KldB 2010
+B53,"Schutz-, Sicherheits- und Überwachungsberufe","Polizei, Justizvollzug, Wachdienst","Verkehr, Logistik, Schutz und Sicherheit",KldB 2010
+B54,Reinigungsberufe,Reinigung,"Verkehr, Logistik, Schutz und Sicherheit",KldB 2010
+B60,Handel und Verkauf (allgemein),Handel allgemein,"Kaufmännische Dienstleistungen, Handel, Vertrieb, Gastgewerbe",OhdAB
+B61,"Einkaufs-, Vertriebs- und Handelsberufe",Kaufleute und Handel,"Kaufmännische Dienstleistungen, Handel, Vertrieb, Gastgewerbe",KldB 2010
+B62,Verkaufsberufe,Verkauf und Einzelhandel,"Kaufmännische Dienstleistungen, Handel, Vertrieb, Gastgewerbe",KldB 2010
+B63,"Tourismus-, Hotel- und Gaststättenberufe",Gastgewerbe,"Kaufmännische Dienstleistungen, Handel, Vertrieb, Gastgewerbe",KldB 2010
+B64,Zeremonial- und Hofwesen,Hofwesen,"Kaufmännische Dienstleistungen, Handel, Vertrieb, Gastgewerbe",OhdAB
+B70,Verwaltung (allgemein),Verwaltung allgemein,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",OhdAB
+B71,Berufe in Unternehmensführung und -organisation,Büro und Unternehmensführung,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",KldB 2010
+B72,"Finanzdienstleistungen, Rechnungswesen und Steuerberatung",Buchhaltung und Bank,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",KldB 2010
+B73,Berufe in Recht und Verwaltung,Recht und öffentliche Verwaltung,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",KldB 2010
+B74,Kirchliche Verwaltung,Kirchliche Verwaltung,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",OhdAB
+B75,Adel und Herrschaft,Adel und Herrschaft,"Unternehmensorganisation, Buchhaltung, Recht und Verwaltung",OhdAB
+B80,"Sozial-, Gesundheits- und Erziehungswesen (allgemein)",Gesundheit und Soziales allgemein,"Gesundheit, Soziales, Lehre und Erziehung",OhdAB
+B81,Medizinische Gesundheitsberufe,Medizin und Pflege,"Gesundheit, Soziales, Lehre und Erziehung",KldB 2010
+B82,"Nichtmedizinische Gesundheits-, Körperpflege- und Wellnessberufe, Medizintechnik","Körperpflege (Friseure, Bestatter)","Gesundheit, Soziales, Lehre und Erziehung",KldB 2010
+B83,"Erziehung, soziale und hauswirtschaftliche Berufe, Theologie","Erziehung, Soziales, Kirche","Gesundheit, Soziales, Lehre und Erziehung",KldB 2010
+B84,Lehrende und ausbildende Berufe,Lehrer,"Gesundheit, Soziales, Lehre und Erziehung",KldB 2010
+B90,Wissenschaft und Kunst (allgemein),Wissenschaft und Kunst allgemein,"Geisteswissenschaften, Kultur und Gestaltung",OhdAB
+B91,"Sprach-, literatur-, geistes-, gesellschafts- und wirtschaftswissenschaftliche Berufe",Geistes- und Gesellschaftswissenschaften,"Geisteswissenschaften, Kultur und Gestaltung",KldB 2010
+B92,"Werbung, Marketing, kaufmännische und redaktionelle Medienberufe",Presse und Werbung,"Geisteswissenschaften, Kultur und Gestaltung",KldB 2010
+B93,"Produktdesign, Kunsthandwerk",Kunsthandwerk,"Geisteswissenschaften, Kultur und Gestaltung",KldB 2010
+B94,Darstellende und unterhaltende Berufe,"Musik, Theater, Sport","Geisteswissenschaften, Kultur und Gestaltung",KldB 2010

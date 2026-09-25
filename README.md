@@ -243,6 +243,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `startseite.json` | Beispielpunkte aus `kuratierung/startseite_beispiele.csv` (adress_id, eintrag_id; nur hausgenau) mit Titel, Zeile und Koordinaten — derzeit von der Startseite nicht genutzt (Entscheidung 2026-09-21: ruhiger, abgedunkelter Planhintergrund `site/bilder/startplan-1935-*.{webp,jpg}` ohne Punkte) |
 | `faksimile.json` | Seite (`I-333`) → Bildnummer im DigiBib-Viewer, aus `kuratierung/faksimile_seiten.csv` (erzeugt von `werkzeuge/faksimile_mets.py` aus der METS-Datei des Digitalisats; II-170/171 fehlen im Digitalisat) |
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum, dazu Abdeckung Stellung/Gruppen/Gewerbe und `strassen_mit_linie` (Teilprojekt 5a) |
+| `hauptgruppen.json` | Bezeichnungen der OhdAB-Hauptgruppen (`{B21: {bezeichnung, kurz, bereich}}`) aus `kuratierung/hauptgruppen.csv` — Beschriftung der Gruppenachse in Perspektiven und Werkstatt |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
 | `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
@@ -395,26 +396,26 @@ Teil III, dazu Berufsgruppen, Aggregationsebenen und Bubble-Layouts als Vorstufe
 Perspektiven und Werkstatt (Teilprojekt 5b/5c, noch nicht gebaut). Spec:
 `docs/superpowers/specs/2026-09-24-perspektiven-werkstatt-design.md`.
 
-### Berufsgruppen (`kuratierung/gruppen.csv`)
+### Berufsgruppen = OhdAB-Hauptgruppen (`kuratierung/hauptgruppen.csv`)
 
-Eine Zeile je OhdAB-Item, das in geprüften Zeilen von `berufe.csv` vorkommt (Spalten `ohdab_id, norm, nennungen, gruppe,
-geprueft, bearbeiter, datum, hinweis`). Vokabular `gruppe` (14 Schlüssel, `pipeline/lib/gruppen.py`,
-`GRUPPEN`): `bergbau, metall_maschinen, bau, holz_moebel, textil_bekleidung, lebensmittel, handel,
-gastgewerbe, verkehr_bahn_post, verwaltung, bildung_kultur_kirche, gesundheit, haus_reinigung,
-sonstige`. Vorschlag aus Gattungstext + Normbezeichnung: `python3 werkzeuge/gruppen_vorschlag.py`.
-Handprüfung: `werkzeuge/zuordnung.html?tabelle=gruppen` (Zifferntasten 1–9 setzen das Feld `gruppe`,
-Taste `G` bestätigt `geprueft=ja`, Taste `Z` macht rückgängig). Grenze: der Arbeitgeber steht nicht
-im Beruf — „Schlosser“ zählt gleich, ob bei Krupp oder auf der Zeche; Gruppen sind
-Tätigkeitsbranchen, keine Betriebszugehörigkeit. Realer Lauf 2026-09-24: 856 Items, `sonstige`
-15,2 % (130 Items, unter der 20-%-Vorgabe). Export nur `geprueft=ja`, sonst `ungeprueft`. Zählfeld je
-Einheit: `n_gr_<gruppe>`.
+Seit 2026-09-25 gibt es keine handkuratierten Branchen mehr (die 14 Gruppen in `gruppen.csv` samt
+Vorschlag und Handprüfung sind entfallen — die Berufsbezeichnung nennt die Tätigkeit, nicht den
+Betrieb, und selbst gezogene Grenzen erzeugten Verlegenheitszuordnungen; Spec §5.2). Die Gruppe eines
+Eintrags ist seine OhdAB-Hauptgruppe (KldB-2010-Hierarchie, `gattung_id[:4]`, Schlüssel ohne
+Leerzeichen wie `B21`; `pipeline/lib/gruppen.py`: `hauptgruppe()`, `gruppe3()`). Branchenlose
+Sammelitems liegen in `B20`, Berufslose in `A10`. `kuratierung/hauptgruppen.csv` liefert nur die
+Bezeichnungen (`hauptgruppe, bezeichnung, kurz, bereich, quelle` — amtliche KldB-Bezeichnung, eigene
+Kurzform; Quelle `KldB 2010` oder `OhdAB` für deren Zusatzgruppen); der Export bricht ab, wenn eine
+Hauptgruppe des OhdAB-Schnappschusses fehlt, und schreibt `site/daten/hauptgruppen.json`. Einträge ohne
+geprüften Beruf zählen als `ungeprueft`. Zählfeld je Einheit: `n_gr_<hauptgruppe>`. Gröbere Gruppen
+(„Industrie“ = B21 + B24 + B25 + …) bilden Kapitel und Nutzer in Perspektiven/Werkstatt.
 
 ### Gewerberubriken Teil III (`kuratierung/gewerbe.csv`)
 
 Die Rubrik steht nicht in einer eigenen Spalte, sondern als Suffix hinter dem letzten Komma des
 Firmennamens („M. Jäger, Althandlung“ → Firma „M. Jäger“, Rubrik „Althandlung“); ohne Komma keine
 Rubrik. Realer Lauf 2026-09-24: 848 distinkte Rubriken (18.863 Betriebe). Spalten `rubrik,
-betriebe, gruppe, art, geprueft, bearbeiter, datum, hinweis`; `gruppe` wie bei den Berufsgruppen
+betriebe, gruppe, art, geprueft, bearbeiter, datum, hinweis`; `gruppe` = Branche (14 Schlüssel, `pipeline/lib/gewerbe.GRUPPEN`; bis 2026-09-25 mit Teil I geteilt)
 (gleiche 14 Schlüssel, damit Teil I und Teil III vergleichbar sind), `art` (7 Schlüssel,
 `pipeline/lib/gewerbe.py`, `ARTEN`): `handwerk, handel, gastgewerbe, dienstleistung, industrie,
 freier_beruf, sonstige`. Vorschlag aus Wortregeln auf der Rubrik:
@@ -489,7 +490,7 @@ Straßen (99,2 %) haben eine Linie.
 ### Kennzahlen (`site/daten/kennzahlen.json`)
 
 Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (handgeprüft),
-`stellung_vorschlag`, `stellung_unbestimmt`, `gruppen_geprueft`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`) und
+`stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25) und
 `strassen_mit_linie` (Zahl). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
 100.0`, `gruppen_geprueft: 0.0`, `gewerbe_geprueft: 0.0` — die Handprüfung von Stellung, Gruppen und
 Gewerbe hat zu diesem Zeitpunkt noch nicht begonnen (precision first: 0,0 % ist hier der korrekte
@@ -501,7 +502,6 @@ Ablauf des gesamten Teilprojekts 5a:
 ```text
 python3 werkzeuge/stellung_vorschlag.py        # Stellung je Schreibweise vorschlagen → berufe.html (Ziffern, T)
 python3 werkzeuge/handwerk_deckung.py          # Deckung Teil III ↔ Teil I je Handwerksfamilie → docs/stellung_deckung.md, Kennzahl im Werkzeug
-python3 werkzeuge/gruppen_vorschlag.py         # Berufsgruppen je Item → zuordnung.html?tabelle=gruppen
 python3 werkzeuge/gewerbe_vorschlag.py         # Rubriken Teil III → zuordnung.html?tabelle=gewerbe
 python3 werkzeuge/osm_strassen_laden.py        # Straßenlinien (Overpass) → build/osm_strassen.json
 python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Kennzahlen

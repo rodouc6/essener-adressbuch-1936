@@ -27,9 +27,9 @@ Liefert das Projektverzeichnis statisch aus und nimmt entgegen:
 - POST /kuratierung/berufe_abkuerzungen.csv — eine Zeile ({"zeile": {kurz,lang,status,beleg}}) für
   den Abkürzungskatalog; 400 bei fehlendem kurz/lang oder unbekanntem Status, 409 bei vorhandenem
   kurz.
-- POST /kuratierung/gruppen.csv, /kuratierung/gewerbe.csv — mehrere Zeilen ({"zeilen": [...]}) des
-  generischen Zuordnungswerkzeugs (werkzeuge/zuordnung.html); ersetzt nach Schlüssel `ohdab_id` bzw.
-  `rubrik`, setzt bearbeiter=christos und datum. 400 bei unbekanntem Schlüssel, unbekanntem
+- POST /kuratierung/gewerbe.csv — mehrere Zeilen ({"zeilen": [...]}) des generischen
+  Zuordnungswerkzeugs (werkzeuge/zuordnung.html); ersetzt nach Schlüssel `rubrik`, setzt
+  bearbeiter=christos und datum. (gruppen.csv entfiel 2026-09-25: Berufsgruppen = OhdAB-Hauptgruppen.) 400 bei unbekanntem Schlüssel, unbekanntem
   Vokabular (gruppe/art), geprueft ∉ {ja, leer} oder geprueft=ja mit leerem Feld.
 - GET /reverse?lat=&lon= — Reverse-Geocoding über das lokale Nominatim (NOMINATIM_URL),
   liefert dessen JSON-Antwort weiter (Stadtteil-Vorschlag im Sichtungswerkzeug).
@@ -53,8 +53,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from pipeline.lib.berufe import FELDER_KURATIERUNG as FELDER_BERUFE, STATUS as STATUS_BERUFE, lade_ohdab
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe
 from pipeline.lib.eigentuemer import FELDER_KURATIERUNG, IDENTITAETEN, KATEGORIEN, lade_kuratierung
-from pipeline.lib.gewerbe import ARTEN, FELDER_GEWERBE, lade_gewerbe
-from pipeline.lib.gruppen import FELDER_GRUPPEN, GRUPPEN, lade_gruppen
+from pipeline.lib.gewerbe import ARTEN, FELDER_GEWERBE, lade_gewerbe, GRUPPEN
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 from pipeline.lib.stellung import STELLUNGEN
 
@@ -176,7 +175,6 @@ def pruefe_berufe(z: dict, bekannt: set[str], ohdab: set[str]) -> str:
 
 
 ZUORDNUNGEN = {
-    "gruppen": dict(felder=FELDER_GRUPPEN, schluessel="ohdab_id", lade=lade_gruppen, vokabular={"gruppe": GRUPPEN}),
     "gewerbe": dict(felder=FELDER_GEWERBE, schluessel="rubrik", lade=lade_gewerbe, vokabular={"gruppe": GRUPPEN, "art": ARTEN}),
 }
 
@@ -301,7 +299,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self._berufe()
         if self.path == "/kuratierung/berufe_abkuerzungen.csv":
             return self._berufe_katalog()
-        z = re.fullmatch(r"/kuratierung/(gruppen|gewerbe)\.csv", self.path)
+        z = re.fullmatch(r"/kuratierung/(gewerbe)\.csv", self.path)
         if z:
             return self._zuordnung(z.group(1))
         k = _KURATIERUNG.match(self.path)
@@ -438,7 +436,7 @@ class Handler(SimpleHTTPRequestHandler):
 def main(port: int) -> None:
     srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print(f"http://localhost:{port}/werkzeuge/pruefung.html  ·  /werkzeuge/sichtung.html  ·  /werkzeuge/eigentuemer.html  ·  "
-          "/werkzeuge/zuordnung.html?tabelle=gruppen  (Strg+C beendet)")
+          "/werkzeuge/zuordnung.html?tabelle=gewerbe  (Strg+C beendet)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

@@ -13,7 +13,7 @@ from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as be
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
 from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
 from pipeline.lib.gewerbe import betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
-from pipeline.lib.gruppen import gruppe_export, lade_gruppen
+from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.stellung import STELLUNGEN
@@ -84,9 +84,9 @@ def _besitz(eintraege: list[dict]) -> str:
 
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
              berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None,
-             gruppen: dict[str, dict] | None = None, gewerbe: dict[str, dict] | None = None) -> dict[str, dict]:
+             gewerbe: dict[str, dict] | None = None) -> dict[str, dict]:
     """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale, (Teil II) geprüfter Eigentümer,
-    Berufszuordnung (mit Berufsgruppe) und Gewerbezuordnung (Teil III) angehängt; `besitz` je Adresse =
+    Berufszuordnung (mit OhdAB-Hauptgruppe als `gruppe`, Spec §5.2) und Gewerbezuordnung (Teil III) angehängt; `besitz` je Adresse =
     Kategorie | gemischt | ungeprueft (Spec §6.1), `niveau`/`n_niveau` je Adresse aus den Berufszuordnungen
     (Spec §6.2)."""
     adressen: dict[str, dict] = {}
@@ -114,7 +114,7 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                 sicher = identitaet_sicher(z)
         beruf = berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None
         if beruf:
-            beruf["gruppe"] = gruppe_export((gruppen or {}).get(beruf["ohdab"]))
+            beruf["gruppe"] = hauptgruppe(beruf["gattung_id"])
         gew = None
         if e.get("teil") == "III" and e.get("Firmenname"):
             firma, rubrik = rubrik_von(e["Firmenname"])
@@ -372,7 +372,6 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand"), len(teil_i)),
                 stellung_vorschlag=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
                 stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
-                gruppen_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"]["gruppe"] != "ungeprueft"), len(teil_i)),
                 gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"]["gruppe"] != "ungeprueft"), len(teil_iii)))
 
 
@@ -522,16 +521,21 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    datum: str, kacheln: bool = True, faksimile: list[dict] | None = None,
                    beispiele: list[dict] | None = None, themen: Path | None = None,
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
-                   ohdab: dict[str, dict] | None = None, gruppen: list[dict] | None = None,
+                   ohdab: dict[str, dict] | None = None, hauptgruppen: list[dict] | None = None,
                    gewerbe: list[dict] | None = None, osm_linien: dict | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
+    hg = lade_hauptgruppen(hauptgruppen or [])
+    if ohdab:
+        fehlt = fehlende_bezeichnungen(ohdab, hg)
+        if fehlt:
+            raise ValueError(f"kuratierung/hauptgruppen.csv: Bezeichnung fehlt für {sorted(fehlt)}")
+    _json(ausgabe / "hauptgruppen.json", {k: dict(bezeichnung=v["bezeichnung"], kurz=v["kurz"], bereich=v["bereich"]) for k, v in hg.items()})
     if themen is not None:
         schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln, lade_kuratierung(eigentuemer or []),
-                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {},
-                         gruppen=lade_gruppen(gruppen or []), gewerbe=lade_gewerbe(gewerbe or []))
+                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {}, gewerbe=lade_gewerbe(gewerbe or []))
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)

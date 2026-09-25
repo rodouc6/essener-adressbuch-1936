@@ -1,11 +1,9 @@
-// werkzeuge/js/zuordnung_modell.js — Zustand des generischen Zuordnungswerkzeugs (Gruppen je OhdAB-Item, Gewerbe je
-// Rubrik): eine Zeile je Schlüssel, ein oder zwei Felder mit festem Vokabular, geprüft-Schalter. Ohne DOM (node:test).
+// werkzeuge/js/zuordnung_modell.js — Zustand des generischen Zuordnungswerkzeugs (Gewerbe je Rubrik; die Tabelle
+// „gruppen“ entfiel 2026-09-25, Berufsgruppen sind OhdAB-Hauptgruppen): eine Zeile je Schlüssel, ein oder zwei Felder mit festem Vokabular, geprüft-Schalter. Ohne DOM (node:test).
 const GRUPPEN = ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "lebensmittel", "handel", "gastgewerbe",
   "verkehr_bahn_post", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"];
 const ARTEN = ["handwerk", "handel", "gastgewerbe", "dienstleistung", "industrie", "freier_beruf", "sonstige"];
 export const KONFIG = {
-  gruppen: { datei: "gruppen.csv", schluessel: "ohdab_id", anzeige: "norm", menge: "nennungen", titel: "Berufsgruppen je OhdAB-Item",
-    felder: [{ name: "gruppe", vokabular: GRUPPEN }] },
   gewerbe: { datei: "gewerbe.csv", schluessel: "rubrik", anzeige: "rubrik", menge: "betriebe", titel: "Gewerberubriken (Teil III)",
     felder: [{ name: "gruppe", vokabular: GRUPPEN }, { name: "art", vokabular: ARTEN }] },
 };

@@ -64,6 +64,7 @@ erfundenen Gewichten; keine neuen Bibliotheken außer Scrollama (lokal in `site/
 | Score | kein vordefinierter Sozialscore; stattdessen Klassifikation „Soziale Stellung“ (7 Klassen + Kaufleute + unbestimmt); „arm/reich“ ist Nutzergruppierung in der Werkstatt |
 | Kaufleute | eigene sichtbare Gruppe; Nutzer können sie probeweise Angestellten oder Selbständigen zuschlagen |
 | Teil III | wird vierter Datenkern; Rubrik aus dem Firmenname-Suffix, 849 Rubriken zu Gruppe/Art kuratiert |
+| Berufsgruppen | (2026-09-25) keine eigenen Branchen mehr; Gruppe = OhdAB-Hauptgruppe, gröbere Gruppen bilden Kapitel und Nutzer (§5.2) |
 | Flächen | Straßenlinien (OSM, heutige Führung, gekennzeichnet) und Hexraster; Gebäudepolygone später als gekennzeichnetes Experiment |
 | Rechnen | Pipeline zählt je Ebene, Browser addiert; keine Datenbank im Browser |
 | Bibliotheken | Scrollama lokal; sonst Vanilla JS, MapLibre, PMTiles |
@@ -168,18 +169,37 @@ Betrieb vs. selbständiger Meister (Schreibweise entscheidet: „Bäckermstr.“
 Titel (Angestellte), Kaufleute (eigene Klasse), Gewerbeformen (Selbständige, Niveau bleibt
 unsicher).
 
-### 5.2 Berufsgruppen / Branche (`kuratierung/gruppen.csv`)
+### 5.2 Berufsgruppen = OhdAB-Hauptgruppen (geändert 2026-09-25)
 
-Spalten `ohdab_id, norm, nennungen, gruppe, geprueft, bearbeiter, datum, hinweis`. Gruppen
-(erste Liste, im Werkzeug erweiterbar): `bergbau`, `metall_maschinen`, `bau`, `holz_moebel`,
-`textil_bekleidung`, `lebensmittel`, `handel`, `gastgewerbe`, `verkehr_bahn_post`,
-`verwaltung`, `bildung_kultur_kirche`, `gesundheit`, `haus_reinigung`, `sonstige`.
-Vorschlag aus Gattungstext (OhdAB-Gattungen sind bereits branchennah), Handprüfung in einem
-kleinen Werkzeug `werkzeuge/gruppen.html` nach dem Muster von `berufe.html`. Nur 1.004 Items
-(die in `berufe.csv` vorkommen). Zählfeld `n_gr_<gruppe>`.
+Ursprünglich vorgesehen waren 14 handkuratierte Branchen (`kuratierung/gruppen.csv`,
+Vorschlagsregeln, Handprüfung von 856 Items). Nach den ersten Handentscheidungen verworfen:
+Die Berufsbezeichnung nennt die Tätigkeit, nicht den Betrieb („Angestellte/r“, „Schlosser“,
+„Arbeiter“ gibt es in jeder Branche), und die selbst gezogenen Grenzen erzeugten
+Verlegenheitszuordnungen (Friseur und Gärtner unter „Haushalt und Reinigung“, Klempner und
+Architekt unter „Bau“, Lebensmittelhändler unter „Lebensmittel“). Jede Handprüfung hätte nur
+die eigene Willkür bestätigt.
+
+Stattdessen trägt die OhdAB selbst die Gruppenachse: ihre Hierarchie (KldB 2010) Bereich
+(1-stellig) → **Hauptgruppe** (2-stellig, `gattung_id[:4]`, z. B. `B 21`) → Gruppe
+(3-stellig) → Gattung (5-stellig). Sie ist extern dokumentiert, reproduzierbar und braucht
+keine Handprüfung. Die Gruppe eines Eintrags ist seine Hauptgruppe; Schlüssel ohne Leerzeichen
+(`B21`), Zählfeld `n_gr_B21` je Ebene; Einträge ohne geprüften Beruf zählen weiter als
+`n_gr_ungeprueft`. Die branchenlosen Sammelitems liegen in `B20` („allgemeine Berufe in der
+Produktion“), Berufslose in `A10` — beides bleibt als eigene Gruppe sichtbar statt einer
+Branche zugeschlagen zu werden. `kuratierung/hauptgruppen.csv` liefert nur die Bezeichnungen
+(amtliche KldB-Bezeichnung, eigene Kurzform, Quelle); der Export schreibt sie als
+`site/daten/hauptgruppen.json`.
+
+Perspektiven und Werkstatt bilden gröbere Gruppen aus Hauptgruppen („Industrie“ = B21 + B24 +
+B25 + B26 + B28 + B29 …) oder feinere aus einzelnen Berufsnormen — als sichtbare Kapitel- bzw.
+Nutzerentscheidung, nicht als Datenwahrheit (§7.1). Teil III behält seine 14 Branchengruppen
+(§5.3): Dort ist die Rubrik tatsächlich eine Branche. Ein Vergleich Teil I ↔ Teil III auf
+Gruppenebene war ohnehin unsauber (Tätigkeit gegen Betrieb); er bleibt über Normen, 3-stellige
+Gruppen und den Adressabgleich (§10) möglich.
 
 Grenze (in Doku und Über-Seite): der Arbeitgeber steht nicht im Beruf; „Schlosser“ kann bei
-Krupp oder auf der Zeche arbeiten. Gruppen sind Tätigkeitsbranchen, keine Betriebszugehörigkeit.
+Krupp oder auf der Zeche arbeiten. Hauptgruppen sind Tätigkeitsfelder, keine
+Betriebszugehörigkeit.
 
 ### 5.3 Gewerberubriken Teil III (`kuratierung/gewerbe.csv`)
 
@@ -286,7 +306,11 @@ Startseite: Kachel „Perspektiven“; Über-Seite: Absatz.
 2. **Gruppen**: Klassenliste mit Zählung; Gruppen bilden (Klasse anklicken → aktuelle Gruppe),
    benennen, Farbe (Okabe-Ito-Palette, freie Farbe); Suche nach Berufsnormen, Gattungen,
    Rubriken zum Hinzufügen; Schalter „Kaufleute zählen als …“, „Unsichere einbeziehen“;
-   Standardgruppen je Datenkern als Startpunkt (aus den Themen).
+   Standardgruppen je Datenkern als Startpunkt (aus den Themen). Für `daten=gruppe` zwei
+   Ausgangspunkte (Entscheidung 2026-09-25): die OhdAB-Hauptgruppen, die Nutzer zu gröberen
+   Gruppen nach eigener Fragestellung zusammenfassen, oder die Liste der Berufsnormen
+   (sortiert nach Nennungen, wie in der Handprüfung), aus der Nutzer eigene Gruppen bauen;
+   beides mischbar (eine Gruppe darf Hauptgruppen und einzelne Normen enthalten).
 3. **Darstellung**: Form, Maß, Bezugsgruppe, `min_n`-Regler, Farbskala für Anteile
    (sequenziell) und Mischung.
 4. **Export**: CSV der aggregierten Tabelle (Kopf: Quelle, Stand, Ansicht-JSON als Kommentar-
