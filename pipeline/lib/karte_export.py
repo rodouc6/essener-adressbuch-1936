@@ -16,6 +16,7 @@ from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_exp
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
+from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_kapitel
 from pipeline.lib.stadtteile import Stadtteile
 from pipeline.lib.stellung import STELLUNGEN
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -531,7 +532,7 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
                    ohdab: dict[str, dict] | None = None, hauptgruppen: list[dict] | None = None,
                    gewerbe: list[dict] | None = None, osm_linien: dict | None = None,
-                   stadtteile: "Stadtteile | None" = None) -> dict:
+                   stadtteile: "Stadtteile | None" = None, perspektiven: Path | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     hg = lade_hauptgruppen(hauptgruppen or [])
@@ -590,4 +591,13 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
     kennzahlen["strassen_mit_linie"] = len(sf)
     _json(ausgabe / "kennzahlen.json", kennzahlen)
+    if perspektiven is not None:
+        ks = lade_kapitel(perspektiven)
+        for k in ks:
+            fehler = pruefe_kapitel(k)
+            if fehler:
+                raise ValueError("kuratierung/perspektiven: " + "; ".join(fehler))
+        _json(ausgabe / "perspektiven" / "index.json", kapitel_index(ks))
+        for k in ks:
+            _json(ausgabe / "perspektiven" / f"{k['id']}.json", k)
     return kennzahlen

@@ -48,10 +48,11 @@ else:
     print("build/osm_stadtteile.json fehlt — Stadtteil bleibt der Straßen-Stadtteil (werkzeuge/osm_stadtteile_laden.py)", file=sys.stderr)
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
-for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
+for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout", "perspektiven"):
     shutil.rmtree(ziel / unter, ignore_errors=True)
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
                    themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab,
-                   hauptgruppen=hauptgruppen, gewerbe=gewerbe, osm_linien=osm_linien, stadtteile=stadtteile)
+                   hauptgruppen=hauptgruppen, gewerbe=gewerbe, osm_linien=osm_linien, stadtteile=stadtteile,
+                   perspektiven=W / "kuratierung" / "perspektiven")
 print(json.dumps(k, ensure_ascii=False, indent=1))

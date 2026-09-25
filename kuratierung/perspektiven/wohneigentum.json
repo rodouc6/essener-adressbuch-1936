@@ -1,0 +1,27 @@
+{
+  "id": "wohneigentum", "reihenfolge": 1,
+  "titel": "Wohneigentum 1936", "untertitel": "privat, industriell, genossenschaftlich, städtisch, kirchlich",
+  "freigegeben": false,
+  "einleitung": "Platzhaltertext: Teil II des Adressbuchs nennt zu jedem Haus den Eigentümer. Geprüft sind bisher die Körperschaften ab fünf Häusern und die größten Privatpersonen — das ist ein Ausschnitt, kein Gesamtbild.",
+  "quellen": ["Adreßbuch Essen 1936, Teil II (Häuserbuch)", "Eigentümer-Kuratierung kuratierung/eigentuemer.csv"],
+  "grenzen": "Von {adressen} verorteten Adressen tragen {besitz_geprueft} eine geprüfte Besitzklasse ({besitz_geprueft_prozent} %). Alle Anteile beziehen sich auf diese geprüften Adressen; die Karte zeigt heutige Stadtteilgrenzen. Erhebungsstand ist der Lauf des Jahres 1936; die Namen H–J fehlen in der Vorlage (Teil I), Teil II ist davon nicht betroffen.",
+  "schritte": [
+    {"id": "anteile", "text": "Platzhaltertext: Wie verteilen sich die geprüften Häuser auf die Besitzklassen?", "beschreibung": "Ein Balken mit acht farbigen Segmenten und einem grauen Segment „ungeprüft“.", "hervorheben": [],
+     "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "balken", "gruppen": [
+        {"name": "Privatpersonen", "aus": ["privatperson"], "farbe": "#d97706"}, {"name": "Stadt und Staat", "aus": ["stadt_staat"], "farbe": "#1d4ed8"},
+        {"name": "Bergbau", "aus": ["bergbau"], "farbe": "#111827"}, {"name": "Industrie", "aus": ["industrie"], "farbe": "#b91c1c"},
+        {"name": "Genossenschaft und Siedlung", "aus": ["genossenschaft_siedlung"], "farbe": "#15803d"}, {"name": "Kirche und Stiftung", "aus": ["kirche_stiftung"], "farbe": "#7c3aed"},
+        {"name": "Bank und Versicherung", "aus": ["bank_versicherung"], "farbe": "#0e7490"}, {"name": "Sonstige", "aus": ["sonstige", "gemischt"], "farbe": "#6b7280"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Privatpersonen", "min_n": 0, "filter": {}, "karte": null}},
+    {"id": "eigentuemer", "text": "Platzhaltertext: Die 101 geprüften Körperschaften und Großeigentümer als Kreise, Fläche nach Häuserzahl.", "beschreibung": "Bubbles der Eigentümer, gefärbt nach Klasse, gepackt je Klasse.", "hervorheben": ["Fried. Krupp AG", "Stadt Essen"],
+     "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "bubbles", "gruppen": "wie:anteile", "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Privatpersonen", "min_n": 0, "filter": {}, "karte": null}},
+    {"id": "rangliste", "text": "Platzhaltertext: Die fünfzehn größten Eigentümer.", "beschreibung": "Rangliste mit Häuserzahl je Eigentümer.", "hervorheben": [],
+     "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "rangliste", "gruppen": "wie:anteile", "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Privatpersonen", "min_n": 0, "filter": {"top": 15}, "karte": null}},
+    {"id": "karte-werkswohnungen", "text": "Platzhaltertext: Wo besaßen Zechen und Werke die Häuser?", "beschreibung": "Stadtteilkarte: Anteil Bergbau + Industrie an den geprüften Adressen; Stadtteile unter 50 geprüften Adressen grau.", "hervorheben": ["Karnap", "Altenessen-Nord"],
+     "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [{"name": "Zechen und Werke", "aus": ["bergbau", "industrie"], "farbe": "#111827"}, {"name": "übrige geprüfte", "aus": ["privatperson", "stadt_staat", "genossenschaft_siedlung", "kirche_stiftung", "bank_versicherung", "sonstige", "gemischt"], "farbe": "#c8c8c8"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Zechen und Werke", "min_n": 50, "filter": {}, "karte": null}},
+    {"id": "karte-genossenschaften", "text": "Platzhaltertext: Genossenschaften und Siedlungsgesellschaften.", "beschreibung": "Stadtteilkarte: Anteil Genossenschaft/Siedlung an den geprüften Adressen.", "hervorheben": ["Margaretenhöhe"],
+     "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [{"name": "Genossenschaft und Siedlung", "aus": ["genossenschaft_siedlung"], "farbe": "#15803d"}, {"name": "übrige geprüfte", "aus": ["privatperson", "stadt_staat", "bergbau", "industrie", "kirche_stiftung", "bank_versicherung", "sonstige", "gemischt"], "farbe": "#c8c8c8"}],
+       "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Genossenschaft und Siedlung", "min_n": 50, "filter": {}, "karte": null}}
+  ]
+}

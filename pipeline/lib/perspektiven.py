@@ -1,0 +1,67 @@
+"""Kapitel der Perspektiven-Seite (Spec §6.2): Schema prüfen, laden, Index bauen. Inhalte: kuratierung/perspektiven/*.json."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+DATEN = ("stellung", "gruppe", "niveau", "besitz", "gewerbe")
+EBENEN = ("adresse", "strasse", "stadtteil", "hex")
+FORMEN = ("karte", "stadtteilkarte", "bubbles", "balken", "multiples", "rangliste")
+MASSE = ("anteil", "dominant", "mischung", "dichte")
+KAUFLEUTE = ("unbestimmt", "angestellte", "selbstaendige")
+PFLICHT = ("id", "reihenfolge", "titel", "untertitel", "freigegeben", "einleitung", "schritte", "grenzen", "quellen")
+PFLICHT_SCHRITT = ("id", "text", "ansicht", "hervorheben", "beschreibung")
+PFLICHT_ANSICHT = ("daten", "ebene", "form", "gruppen", "kaufleute", "unsicher", "mass", "bezug", "min_n", "filter", "karte")
+
+
+def pruefe_ansicht(a: dict, wo: str) -> list[str]:
+    f = [f"{wo}: Ansicht ohne Feld {p!r}" for p in PFLICHT_ANSICHT if p not in a]
+    if f:
+        return f
+    if a["daten"] not in DATEN: f.append(f"{wo}: daten {a['daten']!r} unbekannt")
+    if a["ebene"] not in EBENEN: f.append(f"{wo}: ebene {a['ebene']!r} unbekannt")
+    if a["form"] not in FORMEN: f.append(f"{wo}: form {a['form']!r} unbekannt")
+    if a["mass"] not in MASSE: f.append(f"{wo}: mass {a['mass']!r} unbekannt")
+    if a["kaufleute"] not in KAUFLEUTE: f.append(f"{wo}: kaufleute {a['kaufleute']!r} unbekannt")
+    if a["mass"] == "dichte" and a["daten"] != "gewerbe": f.append(f"{wo}: mass dichte nur mit daten gewerbe")
+    namen = [g.get("name") for g in a["gruppen"]]
+    if len(set(namen)) != len(namen): f.append(f"{wo}: Gruppenname doppelt")
+    for g in a["gruppen"]:
+        if not g.get("name") or not isinstance(g.get("aus"), list) or not g.get("farbe"): f.append(f"{wo}: Gruppe unvollständig {g!r}")
+    if a["mass"] in ("anteil", "dichte") and a["bezug"] not in namen: f.append(f"{wo}: bezug {a['bezug']!r} ist keine Gruppe")
+    if not isinstance(a["min_n"], int) or a["min_n"] < 0: f.append(f"{wo}: min_n muss ganze Zahl ≥ 0 sein")
+    return f
+
+
+def pruefe_kapitel(k: dict) -> list[str]:
+    f = [f"Kapitel ohne Feld {p!r}" for p in PFLICHT if p not in k]
+    if "schritte" not in k:
+        return f
+    ids = [s.get("id") for s in k["schritte"]]
+    if len(set(ids)) != len(ids): f.append("Schritt-id doppelt")
+    for s in k["schritte"]:
+        wo = f"Schritt {s.get('id')!r}"
+        f += [f"{wo}: ohne Feld {p!r}" for p in PFLICHT_SCHRITT if p not in s]
+        if "ansicht" in s: f += pruefe_ansicht(s["ansicht"], wo)
+    return f
+
+
+def _loese_gruppen_auf(k: dict) -> dict:
+    """Löst die Kurzform `"gruppen": "wie:<schritt-id>"` auf: kopiert die Gruppenliste des Schritts mit
+    dieser id (tiefe Kopie, damit spätere Änderungen sich nicht gegenseitig beeinflussen). Unbekannte
+    Schritt-id → KeyError (bewusst laut, statt eine leere Liste zu erfinden)."""
+    nach_id = {s["id"]: s for s in k.get("schritte", []) if "id" in s}
+    for s in k.get("schritte", []):
+        g = s.get("ansicht", {}).get("gruppen")
+        if isinstance(g, str) and g.startswith("wie:"):
+            s["ansicht"]["gruppen"] = json.loads(json.dumps(nach_id[g[4:]]["ansicht"]["gruppen"]))
+    return k
+
+
+def lade_kapitel(ordner: Path | str) -> list[dict]:
+    ks = [_loese_gruppen_auf(json.loads(p.read_text(encoding="utf-8"))) for p in sorted(Path(ordner).glob("*.json"))]
+    return sorted(ks, key=lambda k: (k.get("reihenfolge", 999), k.get("id", "")))
+
+
+def kapitel_index(kapitel: list[dict]) -> list[dict]:
+    return [{"id": k["id"], "titel": k["titel"], "untertitel": k["untertitel"], "freigegeben": bool(k["freigegeben"]), "reihenfolge": k["reihenfolge"]} for k in kapitel]

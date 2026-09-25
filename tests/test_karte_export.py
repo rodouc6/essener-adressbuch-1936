@@ -368,6 +368,26 @@ def test_schreibe_paket_mit_eigentuemer(tmp_path):
     assert (tmp_path / "suche" / "eigentuemer" / "st.json").exists()
 
 
+def test_schreibe_paket_mit_perspektiven(tmp_path):
+    from tests.test_perspektiven import GUT
+    q = tmp_path / "q"; q.mkdir()
+    (q / "wohneigentum.json").write_text(json.dumps(GUT), encoding="utf-8")
+    aus = tmp_path / "out"
+    schreibe_paket(aus, [_v(id="1", teil="I")], [], [], "2026-09-22", kacheln=False, perspektiven=q)
+    index = json.loads((aus / "perspektiven" / "index.json").read_text(encoding="utf-8"))
+    assert index == [{"id": "wohneigentum", "titel": "Wohneigentum 1936", "untertitel": GUT["untertitel"], "freigegeben": False, "reihenfolge": 1}]
+    assert json.loads((aus / "perspektiven" / "wohneigentum.json").read_text(encoding="utf-8"))["id"] == "wohneigentum"
+
+
+def test_schreibe_paket_mit_ungueltigem_perspektiven_kapitel_wirft(tmp_path):
+    from tests.test_perspektiven import GUT
+    q = tmp_path / "q"; q.mkdir()
+    ungueltig = dict(GUT); del ungueltig["titel"]
+    (q / "wohneigentum.json").write_text(json.dumps(ungueltig), encoding="utf-8")
+    with pytest.raises(ValueError):
+        schreibe_paket(tmp_path / "out", [_v(id="1", teil="I")], [], [], "2026-09-22", kacheln=False, perspektiven=q)
+
+
 def test_gruppiere_stadtteil_schreibweise_und_identitaet():
     from pipeline.lib.eigentuemer import lade_kuratierung
     kur = lade_kuratierung([
