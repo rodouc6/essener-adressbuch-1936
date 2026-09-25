@@ -111,7 +111,10 @@ def stellung_vorschlag(zeile: dict, item: dict | None, regeln: list[Regel]) -> t
     if _OHNE_ERWERB.search(_norm(item)):
         return "ohne_erwerb", "erwerbsquelle"
     if _STRASSENBAHN.search(_titel(zeile, item)):
-        return "arbeiter", "strassenbahn"
+        if re.search(r"beamt", _titel(zeile, item), re.I):
+            return UNBESTIMMT, "strassenbahn beamter"     # Selbstbezeichnung „Beamter“ bei einer Privatbahn — offen
+        if not _ANGESTELLTE.search(_titel(zeile, item)):   # „Straßenb. Angest.“ bleibt Angestellter (Regel 9)
+            return "arbeiter", "strassenbahn"
     if _DIENSTPOSTEN.search(_norm(item)):
         return UNBESTIMMT, "dienstposten"
     if _UNTERNEHMER.search(text):

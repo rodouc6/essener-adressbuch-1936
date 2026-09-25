@@ -138,6 +138,8 @@ def test_verkehr_und_kirche_2026_09_25():
     assert stellung_vorschlag(zeile("Straßenb. Schaffn."), item("Straßenbahnschaffner/in", "fachlich", g, "B 51522"), REGELN) == ("arbeiter", "strassenbahn")
     assert stellung_vorschlag(zeile("Straßenb. Führ."), item("Straßenbahnführer/in", "fachlich", g, "B 51522"), REGELN) == ("arbeiter", "strassenbahn")
     assert stellung_vorschlag(zeile("Schaffner"), item("Schaffner/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
+    assert stellung_vorschlag(zeile("Straßenb. Beamt.", beruf="Straßenbahnbeamter"), item("Straßenbahnbeamter/-beamtin", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "strassenbahn beamter")
+    assert stellung_vorschlag(zeile("Straßenb. Angest.", beruf="Straßenbahnangestellter"), item("Straßenbahnangestellte/r", "fachlich", g, "B 51522"), REGELN) == ("angestellte", "angestellte")
     assert stellung_vorschlag(zeile("Reichsb. Schaffn."), item("Eisenbahnschaffner/in", "fachlich", g, "B 51522"), REGELN) == ("beamte", "beamte")
     assert stellung_vorschlag(zeile("Weichenwärt."), item("Weichenwärter/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
     assert stellung_vorschlag(zeile("Eisenbahner"), item("Eisenbahner/in", "fachlich", g, "B 51522"), REGELN) == ("unbestimmt", "dienstposten")
