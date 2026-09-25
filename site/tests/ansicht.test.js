@@ -11,6 +11,8 @@ test("normalisiere füllt Standard, min_n je Ebene, Farben und eindeutige Namen"
   assert.deepEqual(a.gruppen.map((g) => g.name), ["A", "A 2"]);
   assert.equal(a.gruppen[0].farbe, "#e69f00"); assert.equal(a.gruppen[1].farbe, "#56b4e9");
   assert.deepEqual(normalisiere({}), STANDARD_ANSICHT);
+  // Farben aus der URL dürfen nicht aus dem SVG-Attribut ausbrechen.
+  assert.equal(normalisiere({ gruppen: [{ name: "A", aus: ["x"], farbe: '#fff" onclick="x' }] }).gruppen[0].farbe, "#e69f00");
 });
 
 test("kodiere/dekodiere Rundreise, Standardwerte fallen weg, Unsinn → Standard", () => {

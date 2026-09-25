@@ -29,7 +29,10 @@ export function normalisiere(obj) {
     let name = String(g.name || `Gruppe ${i + 1}`); let n = 2;
     while (namen.has(name)) name = `${String(g.name || `Gruppe ${i + 1}`)} ${n++}`;
     namen.add(name);
-    gruppen.push({ name, aus: g.aus.map(String), farbe: typeof g.farbe === "string" && g.farbe ? g.farbe : OKABE_ITO[gruppen.length % OKABE_ITO.length] });
+    // Nur echte Hex-Farben übernehmen: Ansichten kommen aus der URL, und die Farbe landet in
+    // SVG-Attributen. Alles andere fällt auf die Okabe-Ito-Reihe zurück.
+    const farbe = typeof g.farbe === "string" && /^#[0-9a-f]{3,8}$/i.test(g.farbe) ? g.farbe : OKABE_ITO[gruppen.length % OKABE_ITO.length];
+    gruppen.push({ name, aus: g.aus.map(String), farbe });
   }
   const min_n = Number.isInteger(o.min_n) && o.min_n >= 0 ? o.min_n : MIN_N[ebene];
   return {

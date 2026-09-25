@@ -29,13 +29,16 @@ export function zeige(ansicht, daten, optionen = {}) {
   const teile = [svgKopf(breite, hoehe)];
   if (optionen.titel) teile.push(`<text x="8" y="18" class="titel">${esc(optionen.titel)}</text>`);
   for (const k of kreise) {
-    const farbe = farbeJeSchluessel.get(k[feld]) || GRAU;
     const n = Number(k.n) || 0;
-    if (farbe === GRAU && !farbeJeSchluessel.has(k[feld])) n_aus += n; else N += n;
-    if (n < ansicht.min_n) unter_min += 1;
+    const inGruppe = farbeJeSchluessel.has(k[feld]);
+    const unterMin = n < ansicht.min_n;
+    // Gleiche Grau-Regel wie überall: zu wenige Nennungen werden nie eingefärbt.
+    const farbe = unterMin || !inGruppe ? GRAU : farbeJeSchluessel.get(k[feld]);
+    if (inGruppe) N += n; else n_aus += n;
+    if (unterMin) unter_min += 1;
     const istHervor = hervor.has(k.id);
     const rand = istHervor ? ' stroke="#111" stroke-width="2"' : "";
-    teile.push(`<circle class="${einheitKlasse(istHervor, false)}" data-id="${esc(k.id)}" cx="${r2(p.x(k.x))}" cy="${r2(p.y(k.y))}" r="${r2(Math.max(1, k.r * p.s))}" fill="${farbe}"${rand}>`
+    teile.push(`<circle class="${einheitKlasse(istHervor, unterMin)}" data-id="${esc(k.id)}" cx="${r2(p.x(k.x))}" cy="${r2(p.y(k.y))}" r="${r2(Math.max(1, k.r * p.s))}" fill="${esc(farbe)}"${rand}>`
       + `<title>${esc(k.id)}: ${formatZahl(n)}</title></circle>`);
   }
   teile.push("</svg>");

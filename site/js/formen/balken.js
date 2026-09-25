@@ -1,7 +1,7 @@
 // site/js/formen/balken.js — Gesamtbalken (ein Balken für alle Einheiten) oder ein Balken je Einheit.
 // Die Segmente sind proportional zu N + n_aus; das letzte Segment ist immer grau „ausgeschlossen“.
-import { werteJeEinheit, zusammenfassung, filterEinheiten } from "../daten_ebenen.js";
-import { esc, formatProzent, formatZahl, GRAU, hinweisText, einheitKlasse, r2, svgKopf } from "./skalen.js";
+import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
+import { esc, formatProzent, formatZahl, GRAU, einheitKlasse, r2, svgKopf, zahlenZeile } from "./skalen.js";
 
 const RAND = 8;
 const ZEILE = 26;
@@ -22,7 +22,7 @@ function balkenZeile(segs, x, y, breite, hoehe, summe, jeEinheit) {
     const b = summe > 0 ? (seg.wert / summe) * breite : i === segs.length - 1 ? breite : 0;
     if (b <= 0) continue;
     const kopf = jeEinheit ? `<rect class="segment"` : `<rect class="einheit" data-id="${esc(seg.id)}"`;
-    teile.push(`${kopf} x="${r2(px)}" y="${r2(y)}" width="${r2(b)}" height="${r2(hoehe)}" fill="${seg.farbe}"><title>${esc(seg.id)}: ${formatZahl(seg.wert)}</title></rect>`);
+    teile.push(`${kopf} x="${r2(px)}" y="${r2(y)}" width="${r2(b)}" height="${r2(hoehe)}" fill="${esc(seg.farbe)}"><title>${esc(seg.id)}: ${formatZahl(seg.wert)}</title></rect>`);
     px += b;
   }
   return teile.join("");
@@ -33,8 +33,8 @@ export function zeige(ansicht, daten, optionen = {}) {
   const hoehe = optionen.hoehe || 200;
   const hervor = new Set(optionen.hervorheben || []);
   const alle = werteJeEinheit(ansicht, daten);
-  const zahlen = { ...zusammenfassung(alle), hinweis: "" };
-  zahlen.hinweis = hinweisText(zahlen);
+  const werte = filterEinheiten(alle, ansicht.filter);
+  const zahlen = zahlenZeile(werte, alle);
   const legende = [...ansicht.gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: g.name })),
     { name: "ausgeschlossen", farbe: GRAU, text: "unbestimmt/ungeprüft" }];
   const teile = [svgKopf(breite, hoehe)];
@@ -42,7 +42,6 @@ export function zeige(ansicht, daten, optionen = {}) {
   const oben = optionen.titel ? 30 : RAND;
 
   if (ansicht.filter && ansicht.filter.je_einheit) {
-    const werte = filterEinheiten(alle, ansicht.filter);
     const nachRang = werte.every((w) => Number.isFinite(w.rang_nord));
     const sortiert = [...werte].sort((a, b) => (nachRang ? a.rang_nord - b.rang_nord
       : (typeof b.wert === "number" ? b.wert : 0) - (typeof a.wert === "number" ? a.wert : 0)));
@@ -54,7 +53,7 @@ export function zeige(ansicht, daten, optionen = {}) {
       const h = Math.max(4, zeile - 4);
       const klasse = einheitKlasse(hervor.has(w.id), w.unter_min);
       const inhalt = w.unter_min
-        ? `<rect class="segment unter-min" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(balkenBreite)}" height="${r2(h)}" fill="${GRAU}"></rect>`
+        ? `<rect class="segment" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(balkenBreite)}" height="${r2(h)}" fill="${GRAU}"></rect>`
           + `<text x="${r2(beschriftung + 6)}" y="${r2(y + h - 4)}" class="hinweis">unter ${formatZahl(ansicht.min_n)} Nennungen</text>`
         : balkenZeile(segmente(ansicht, w.zaehler, w.n_aus), beschriftung, y, balkenBreite, h, w.N + w.n_aus, true);
       teile.push(`<g class="${klasse}" data-id="${esc(w.id)}">`
@@ -64,9 +63,9 @@ export function zeige(ansicht, daten, optionen = {}) {
     return { svg: teile.join(""), legende, zahlen };
   }
 
-  // Gesamtbalken: Summen je Gruppe über alle Einheiten.
+  // Gesamtbalken: Summen je Gruppe über die gezeichneten Einheiten.
   const zaehler = {};
-  for (const g of ansicht.gruppen) zaehler[g.name] = alle.reduce((s, w) => s + (w.zaehler[g.name] || 0), 0);
+  for (const g of ansicht.gruppen) zaehler[g.name] = werte.reduce((s, w) => s + (w.zaehler[g.name] || 0), 0);
   const summe = zahlen.N + zahlen.n_aus;
   const h = Math.max(16, Math.min(48, hoehe - oben - 40));
   teile.push(balkenZeile(segmente(ansicht, zaehler, zahlen.n_aus), RAND, oben, breite - 2 * RAND, h, summe, false));

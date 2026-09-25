@@ -1,7 +1,7 @@
 // site/js/formen/stadtteilkarte.js — Choroplethenkarte der heutigen Stadtteilgrenzen (OSM).
 // Einfache Plattkarte mit Breitengrad-Korrektur; für das Stadtgebiet genau genug.
-import { werteJeEinheit, zusammenfassung, filterEinheiten } from "../daten_ebenen.js";
-import { esc, farbeAnteil, formatZahl, GRAU, hinweisText, einheitKlasse, leer, r2, SEQUENZ, skaliere, STUFEN_TEXT, svgKopf } from "./skalen.js";
+import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
+import { esc, farbeAnteil, formatZahl, GRAU, einheitKlasse, leer, r2, SEQUENZ, skaliere, STUFEN_TEXT, svgKopf, zahlenZeile } from "./skalen.js";
 
 const COS = Math.cos((51.45 * Math.PI) / 180);
 const ringe = (geom) => (!geom ? [] : geom.type === "MultiPolygon" ? geom.coordinates.flat() : geom.type === "Polygon" ? geom.coordinates : []);
@@ -13,9 +13,9 @@ export function zeige(ansicht, daten, optionen = {}) {
   const hoehe = optionen.hoehe || 500;
   const hervor = new Set(optionen.hervorheben || []);
 
-  const werte = filterEinheiten(werteJeEinheit(ansicht, daten), ansicht.filter);
-  const zahlen = { ...zusammenfassung(werte), hinweis: "" };
-  zahlen.hinweis = `${hinweisText(zahlen)} · heutige Stadtteilgrenzen (OSM)`;
+  const alle = werteJeEinheit(ansicht, daten);
+  const werte = filterEinheiten(alle, ansicht.filter);
+  const zahlen = zahlenZeile(werte, alle, " · heutige Stadtteilgrenzen (OSM)");
   const jeId = new Map(werte.map((w) => [w.id, w]));
   const maxDichte = Math.max(0, ...werte.filter((w) => !w.unter_min && typeof w.wert === "number").map((w) => w.wert));
 
@@ -36,7 +36,7 @@ export function zeige(ansicht, daten, optionen = {}) {
     if (!d) continue;
     const istHervor = hervor.has(id);
     const rand = istHervor ? ' stroke="#111" stroke-width="2"' : ' stroke="#fff" stroke-width="0.5"';
-    teile.push(`<path class="${einheitKlasse(istHervor, !w || w.unter_min)}" data-id="${esc(id)}" d="${d}" fill="${fuellung(w, ansicht, maxDichte)}"${rand}><title>${esc(id)}</title></path>`);
+    teile.push(`<path class="${einheitKlasse(istHervor, !w || w.unter_min)}" data-id="${esc(id)}" d="${d}" fill="${esc(fuellung(w, ansicht, maxDichte))}"${rand}><title>${esc(id)}</title></path>`);
   }
   teile.push("</svg>");
   return { svg: teile.join(""), legende: legendeBauen(ansicht), zahlen };

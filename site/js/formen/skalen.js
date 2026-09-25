@@ -10,10 +10,19 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&a
 export const hinweisText = (z) => `${formatZahl(z.N)} Nennungen einbezogen, ${formatZahl(z.n_aus)} ausgeschlossen (unbestimmt, ungeprüft)`;
 export function svgKopf(b, h) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${b} ${h}" width="${b}" height="${h}" role="img">`; }
 
-// Klassen einer Einheit. Reihenfolge fest: erst "einheit", dann der Zustand. Hervorhebung geht
-// vor "unter-min", damit angeklickte Einheiten eindeutig erkennbar bleiben; die graue Darstellung
-// unter min_n markieren die Formen zusätzlich am inneren Element.
-export const einheitKlasse = (hervor, unterMin) => (hervor ? "einheit hervorgehoben" : unterMin ? "einheit unter-min" : "einheit");
+// Klassen einer Einheit, additiv und in fester Reihenfolge: "einheit", dann "unter-min",
+// dann "hervorgehoben". Beide Zustände können zugleich gelten (eine angeklickte Einheit unter
+// min_n), deshalb darf keiner den anderen verdrängen.
+export const einheitKlasse = (hervor, unterMin) => `einheit${unterMin ? " unter-min" : ""}${hervor ? " hervorgehoben" : ""}`;
+
+// Zahlenzeile einer Form. N, n_aus und einheiten beziehen sich auf die tatsächlich gezeichnete
+// (gefilterte) Menge; unter_min dagegen auf die vollständige Ebene, weil `filterEinheiten` mit
+// `top` genau die Einheiten unter der Schwelle entfernt — sie sollen trotzdem ausgewiesen werden.
+export function zahlenZeile(gezeichnet, alle, zusatz = "") {
+  const z = { N: gezeichnet.reduce((s, w) => s + w.N, 0), n_aus: gezeichnet.reduce((s, w) => s + w.n_aus, 0),
+    unter_min: alle.filter((w) => w.unter_min).length, einheiten: gezeichnet.length };
+  return { ...z, hinweis: hinweisText(z) + zusatz };
+}
 
 // Runden auf zwei Nachkommastellen — hält die SVG-Zeichenketten kurz und deterministisch.
 export const r2 = (v) => Math.round((Number(v) || 0) * 100) / 100;

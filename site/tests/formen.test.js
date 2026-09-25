@@ -43,6 +43,9 @@ test("rangliste: sortiert nach Wert, unter min_n ans Ende und grau, hervorheben"
   assert.match(r.svg, /class="einheit hervorgehoben"[^>]*data-id="Südviertel"|data-id="Südviertel"[^>]*class="einheit[^"]*hervorgehoben/);
   assert.match(r.svg, /unter-min/);
   assert.equal(r.zahlen.unter_min, 1);
+  // Gefiltert: N/n_aus/einheiten zur gezeichneten Menge, unter_min weiterhin zur ganzen Ebene.
+  const t = rangliste.zeige({ ...a, filter: { top: 1 } }, daten, { breite: 600, hoehe: 300 });
+  assert.equal(t.zahlen.einheiten, 1); assert.equal(t.zahlen.unter_min, 1);
 });
 
 test("stadtteilkarte: Pfade je Polygon, Farbe nach Anteil, grau unter min_n", () => {
