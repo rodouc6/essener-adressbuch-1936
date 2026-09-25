@@ -1,0 +1,82 @@
+/* site/css/perspektiven.css — Perspektiven-Seite: Scrollytelling in zwei Spalten (Text links,
+   klebende Grafik rechts), Detailkasten und die Grenzen-Abschnitte. Ergänzt css/stil.css; die
+   dort für die Kartenseite gesetzten festen Positionen von .logo, .legende und .zahlen werden
+   hier bewusst zurückgenommen. */
+
+.perspektiven { line-height: 1.55; }
+.perspektiven .kopf { position: sticky; top: 0; z-index: 6; background: var(--papier); padding: 8px 16px; gap: 16px; }
+.perspektiven .kopf .logo { position: static; box-shadow: none; background: none; padding: 0; }
+.perspektiven .kopf nav { font-size: 14px; color: var(--grau); }
+
+.perspektiven main { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+.einleitung { max-width: 720px; margin: 24px auto 8px; }
+.einleitung h1 { font-size: 30px; margin: 0 0 8px; }
+.inhaltsverzeichnis { margin: 16px 0 0; padding-left: 20px; }
+.inhaltsverzeichnis li { margin: 4px 0; }
+.inhaltsverzeichnis small { color: var(--grau); }
+
+.kapitel { margin: 56px 0; border-top: 1px solid var(--rand); padding-top: 24px; scroll-margin-top: 56px; }
+.kapitel > header { max-width: 720px; margin: 0 auto 24px; }
+.kapitel > header h2 { font-size: 24px; margin: 0; }
+.kapitel > header .untertitel { color: var(--grau); margin: 2px 0 12px; }
+
+/* Zwei Spalten: links die Schritte zum Lesen, rechts die klebende Grafik. */
+.scrolly { display: grid; grid-template-columns: 40% 60%; gap: 24px; align-items: start; }
+.scrolly .schritte { order: 1; }
+.scrolly .grafik { order: 2; position: sticky; top: 64px; height: calc(100vh - 96px); display: flex; flex-direction: column; justify-content: center; }
+
+.grafik .svg { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.grafik .svg svg { max-width: 100%; max-height: 100%; height: auto; }
+.perspektiven .grafik .legende { position: static; box-shadow: none; background: none; max-width: none; padding: 8px 0 0;
+  display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; }
+.legende span i { width: 12px; height: 12px; display: inline-block; margin-right: 4px; border-radius: 2px; vertical-align: -1px; }
+.legende span small { color: var(--grau); }
+.perspektiven .grafik .zahlen { display: block; margin: 6px 0 0; font-size: 12px; color: var(--grau); }
+
+/* Beschriftungen innerhalb der erzeugten SVGs (Klassen aus site/js/formen/*). */
+.grafik svg .titel { font-size: 13px; font-weight: 600; fill: var(--text); }
+.grafik svg .name { font-size: 11px; fill: var(--text); }
+.grafik svg .wert { font-size: 11px; fill: var(--grau); }
+.grafik svg .hinweis { font-size: 10px; fill: var(--grau); }
+.grafik svg .balken, .grafik svg .segment { stroke: #fff; stroke-width: .5; }
+.grafik svg .einheit { cursor: pointer; }
+.grafik svg .einheit.unter-min { opacity: .55; }
+.grafik svg .einheit.unter-min .name, .grafik svg .einheit.unter-min .wert { fill: var(--grau); }
+.grafik svg .einheit.hervorgehoben { stroke: var(--text); stroke-width: 1.5; }
+.grafik svg .einheit.hervorgehoben .name { font-weight: 700; }
+
+.schritt { min-height: 60vh; padding: 16px; opacity: .45; transition: opacity .3s ease; }
+.schritt.aktiv { opacity: 1; }
+.schritt:focus-visible { outline: 2px solid var(--blau); outline-offset: 2px; }
+.schritt p { margin: 0 0 8px; }
+.schritt .links { font-size: 13px; }
+
+.grenzen { max-width: 720px; margin: 32px auto 0; background: #fff7e0; border-left: 3px solid #d4a017; padding: 10px 14px; }
+.grenzen h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin: 0 0 6px; }
+.grenzen p { margin: 0 0 6px; font-size: 14px; }
+.grenzen .quellen { font-size: 12px; color: var(--grau); margin: 0; }
+
+.detail { position: fixed; right: 16px; bottom: 16px; background: #fff; border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2); padding: 12px 16px; max-width: 320px; z-index: 5; font-size: 13px; }
+.detail h4 { margin: 0 24px 6px 0; font-size: 15px; }
+.detail p { margin: 2px 0; }
+.detail .schliessen { position: absolute; top: 4px; right: 6px; border: 0; background: none; cursor: pointer;
+  font-size: 15px; min-width: 32px; min-height: 32px; color: var(--grau); }
+
+.perspektiven .leer { max-width: 720px; margin: 32px auto; color: var(--grau); }
+
+/* Formwechsel zwischen den Schritten: nur Positionen und Farben, höchstens 800 ms. */
+.svg.wechsel circle, .svg.wechsel path, .svg.wechsel rect { transition: all .8s ease; }
+@media (prefers-reduced-motion: reduce) { .svg.wechsel * { transition: none; } .schritt { transition: none; } }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Schmale Schirme: eine Spalte, die Grafik klebt oben, die Schritte laufen halbdeckend darüber. */
+@media (max-width: 899px) {
+  .scrolly { display: block; }
+  .scrolly .grafik { position: sticky; top: 0; height: 55vh; z-index: 0; padding-top: 8px; background: var(--papier); }
+  .scrolly .schritte { position: relative; z-index: 1; }
+  .schritt { min-height: 50vh; background: rgba(250,248,243,.92); border-radius: 8px; margin: 0 0 8px; }
+  .detail { left: 16px; right: 16px; max-width: none; }
+}
