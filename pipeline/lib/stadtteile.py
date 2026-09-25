@@ -47,11 +47,23 @@ def punkt_in_ring(lon: float, lat: float, ring: list[list[float]]) -> bool:
 
 class Stadtteile:
     def __init__(self, daten: dict, abgleich: dict[str, str]):
+        """Ein leerer `abgleich` ({}) bedeutet: keine Abgleichtabelle vorhanden, OSM-Namen bleiben
+        unverändert. Ist `abgleich` nicht leer, muss jeder OSM-Name aus `daten` darin vorkommen — fehlt
+        einer, ist das ein neuer oder umbenannter OSM-Stadtteil, der zuerst kuratiert werden muss
+        (ValueError statt stillem Durchreichen). `lade_stadtteile` übergibt immer die CSV, im echten
+        Pipeline-Lauf ist der Abgleich also strikt."""
         self.stand, self.quelle = daten.get("stand", ""), daten.get("quelle", "")
+        rohdaten = daten.get("stadtteile", {})
+        if abgleich:
+            unbekannt = sorted(n for n in rohdaten if n not in abgleich)
+            if unbekannt:
+                raise ValueError(f"OSM-Name(n) nicht in kuratierung/stadtteile_osm.csv: {', '.join(unbekannt)}")
         self._polys: dict[str, list[list[list[float]]]] = {}
-        for osm_name, ringe in daten.get("stadtteile", {}).items():
-            name = abgleich.get(osm_name, osm_name)
+        for osm_name, ringe in rohdaten.items():
+            name = abgleich.get(osm_name, osm_name) if abgleich else osm_name
             if name:                                  # leer = gehörte 1936 nicht zu Essen
+                if not ringe:
+                    raise ValueError(f"Stadtteil {name!r} ohne Ring")
                 self._polys.setdefault(name, []).extend(ringe)
         self._bbox = {n: (min(p[0] for r in rs for p in r), min(p[1] for r in rs for p in r),
                           max(p[0] for r in rs for p in r), max(p[1] for r in rs for p in r)) for n, rs in self._polys.items()}

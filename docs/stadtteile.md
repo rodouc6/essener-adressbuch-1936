@@ -17,7 +17,9 @@ letzten Laufs von `osm_stadtteile_laden.py`).
   (`pipeline/lib/stadtteile.py`) verkettet diese Wege über gemeinsame Endpunkte — unabhängig davon, in
   welcher Richtung ein Weg in OSM gespeichert ist — bis jeder Ring geschlossen ist (erster Punkt = letzter
   Punkt). `inner`-Ringe (Enklaven) werden bewusst **nicht** ausgeschnitten; in Essen hat kein Stadtteil
-  eine Enklave, daher ist das ohne Auswirkung.
+  eine Enklave, daher ist das ohne Auswirkung. Diese Annahme wird bei jedem Abruf geprüft: `stadtteile_aus`
+  (`werkzeuge/osm_stadtteile_laden.py`) zählt `inner`-Mitglieder je Relation und gibt bei einem Fund eine
+  Warnung mit Relationsname auf stderr aus, statt die Annahme unbeobachtet stehen zu lassen.
 - **Punkt-in-Polygon**: `punkt_in_ring` verwendet die Strahlmethode (even-odd-Regel) auf den
   Ringkoordinaten. Punkte exakt auf einer Kante werden nicht sicher erkannt — für Adressen (die nie exakt
   auf einer Grenzlinie liegen) unerheblich.
@@ -30,6 +32,14 @@ letzten Laufs von `osm_stadtteile_laden.py`).
 `kuratierung/stadtteile_osm.csv` (Spalten `osm_name,name,hinweis`) bildet den heutigen OSM-Namen auf den im
 Projekt verwendeten Namen ab. Ein leerer `name` bedeutet: Der Stadtteil gehörte 1936 nicht zu Essen und wird
 nicht zugeordnet (`Stadtteile.zuordnen` liefert dann `None`).
+
+Taucht bei einem Abruf ein OSM-Name auf, der nicht in dieser CSV steht (neue oder umbenannte Relation),
+bricht `Stadtteile.__init__` mit einem `ValueError` ab, der den unbekannten Namen nennt — das erzwingt eine
+manuelle Kuratierung, statt den Namen still unverändert durchzureichen. Diese Prüfung greift nur, wenn eine
+Abgleichtabelle übergeben wird; ein leerer Abgleich (`{}`, z. B. für Tests ohne CSV) lässt alle Namen
+unverändert. `lade_stadtteile` übergibt immer die CSV, im echten Pipeline-Lauf ist der Abgleich also strikt.
+Ebenso bricht `Stadtteile.__init__` ab, wenn ein einzubeziehender Stadtteil ganz ohne Ring ankäme (z. B. eine
+Relation ohne `outer`-Wege) — auch das wird nicht still übernommen.
 
 | osm_name | name | Hinweis |
 |---|---|---|

@@ -23,13 +23,20 @@ KOPF = {"User-Agent": "essener-adressbuch-1936 (Forschungsprojekt; Kontakt siehe
 
 
 def stadtteile_aus(osm_json: dict) -> dict[str, list]:
+    """Wandelt die Overpass-Relationen in Ringe um. Prüft nebenbei die Annahme aus docs/stadtteile.md,
+    dass keine Essener Relation `inner`-Mitglieder (Enklaven) hat — falls doch, Warnung auf stderr mit
+    Relationsname, damit das bei jedem Abruf auffällt statt still ignoriert zu werden."""
     out = {}
     for el in osm_json.get("elements", []):
         if el.get("type") != "relation":
             continue
         name = (el.get("tags", {}).get("name") or "").strip()
-        if name:
-            out[name] = ringe_aus_relation(el.get("members", []))
+        if not name:
+            continue
+        innen = sum(1 for m in el.get("members", []) if m.get("role") == "inner")
+        if innen:
+            print(f"WARNUNG: Relation {name!r} hat {innen} inner-Mitglied(er) — Enklave nicht ausgeschnitten (docs/stadtteile.md)", file=sys.stderr)
+        out[name] = ringe_aus_relation(el.get("members", []))
     return dict(sorted(out.items()))
 
 

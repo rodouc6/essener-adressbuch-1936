@@ -59,3 +59,34 @@ def test_stadtteile_aus_overpass_json():
     osm = {"elements": [{"type": "relation", "tags": {"name": "Stadtkern"}, "members": MEMBERS}, {"type": "way", "id": 1}]}
     st = stadtteile_aus(osm)
     assert list(st) == ["Stadtkern"] and len(st["Stadtkern"]) == 1 and st["Stadtkern"][0][0] == st["Stadtkern"][0][-1]
+
+
+def test_stadtteile_aus_overpass_json_warnt_bei_inner_mitglied(capsys):
+    from werkzeuge.osm_stadtteile_laden import stadtteile_aus
+    m = MEMBERS + [dict(W([(0.5, 0.5), (1, 0.5), (1, 1), (0.5, 0.5)]), role="inner")]
+    osm = {"elements": [{"type": "relation", "tags": {"name": "Stadtkern"}, "members": m}]}
+    stadtteile_aus(osm)
+    fehler = capsys.readouterr().err
+    assert "Stadtkern" in fehler and "inner" in fehler
+
+
+def test_stadtteile_ohne_ring_ist_fehler():
+    daten = {"stand": "d", "quelle": "OSM", "stadtteile": {"Leer": []}}
+    with pytest.raises(ValueError, match="Leer.*ohne Ring"):
+        Stadtteile(daten, {})
+
+
+def test_stadtteile_unbekannter_osm_name_ist_fehler():
+    daten = {"stand": "d", "quelle": "OSM", "stadtteile": {
+        "Stadtkern": [[[7, 51], [7.1, 51], [7.1, 51.1], [7, 51.1], [7, 51]]],
+        "Neubau": [[[7, 51], [7.1, 51], [7.1, 51.1], [7, 51.1], [7, 51]]]}}
+    with pytest.raises(ValueError, match="Neubau"):
+        Stadtteile(daten, {"Stadtkern": "Stadtkern"})
+
+
+def test_stadtteile_leerer_abgleich_laesst_namen_unveraendert():
+    daten = {"stand": "d", "quelle": "OSM", "stadtteile": {
+        "Kray": [[[7.0, 51.4], [7.1, 51.4], [7.1, 51.5], [7.0, 51.5], [7.0, 51.4]]]}}
+    st = Stadtteile(daten, {})
+    assert st.namen == ["Kray"]
+    assert st.zuordnen(51.45, 7.05) == "Kray"
