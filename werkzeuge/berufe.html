@@ -43,6 +43,7 @@
     <h2><span id="schreibweise"></span> <small id="nennungen"></small></h2>
     <input id="beruf" title="Aufgelöste Bezeichnung (Enter)">
     <span id="zuordnung"></span>
+    <span id="deckung" hidden style="flex-basis:100%;color:#92400e" title="build/handwerk_deckung.json — werkzeuge/handwerk_deckung.py; Erklärung in docs/stellung_deckung.md"></span>
     <button id="status" title="Taste S">Status: <span id="status-text">–</span> <kbd>S</kbd></button>
     <button id="niveau" title="Taste N">Niveau unsicher <kbd>N</kbd></button>
     <select id="stellung" title="Ziffern 1–9"></select>
@@ -134,13 +135,24 @@ function sperre(text) {
   zeigeBanner(text + " — Seite neu laden; die letzten Änderungen wurden nicht gespeichert.", true);
 }
 
-const [kText, oText, belege, kandidaten, faksimile] = await Promise.all([
+const [kText, oText, belege, kandidaten, faksimile, deckung] = await Promise.all([
   fetch("../kuratierung/berufe.csv").then((r) => { if (!r.ok) throw new Error("kuratierung/berufe.csv fehlt — zuerst werkzeuge/berufe_vorschlag.py ausführen"); return r.text(); }),
   fetch("../kuratierung/ohdab.csv").then((r) => { if (!r.ok) throw new Error("kuratierung/ohdab.csv fehlt — zuerst werkzeuge/ohdab_laden.py ausführen"); return r.text(); }),
   fetch("../build/berufe_belege.json").then((r) => r.ok ? r.json() : {}),
   fetch("../build/berufe_kandidaten.json").then((r) => r.ok ? r.json() : {}),
   fetch("../site/daten/faksimile.json").then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+  fetch("../build/handwerk_deckung.json").then((r) => r.ok ? r.json() : { familien: {}, schreibweisen: {} }).catch(() => ({ familien: {}, schreibweisen: {} })),
 ]).catch((e) => { zeigeBanner(e.message); throw e; });
+
+// Deckungszeile (Weg 3, docs/stellung.md): für Schreibweisen ohne Meister-/Gewerbezusatz, zu deren Berufsfamilie
+// Teil III Betriebe kennt — Lücke = Betriebe, die kein als Inhaber gekennzeichneter Eintrag erklärt.
+function deckungText(schreibweise) {
+  const f = deckung.familien[deckung.schreibweisen[schreibweise]];
+  if (!f) return "";
+  const quote = f.quote === null ? "–" : `${Math.round(f.quote * 100)} %`;
+  const empf = f.empfehlung === "unbestimmt" ? "→ unbestimmt lassen (Adressabgleich Teil I ↔ III)" : f.empfehlung === "arbeiter" ? "→ Arbeiter vertretbar" : "";
+  return `Teil III: ${f.betriebe} Betriebe (${f.rubriken.join(", ")}) · Inhaber in Teil I: ${f.inhaber} · Lücke ${f.luecke} bei ${f.offen} offenen Nennungen der Familie = ${quote} ${empf}`;
+}
 function digibibUrl(seite) {
   const bild = faksimile[seite];
   return bild ? `${DIGIBIB}${bild}/` : DIGIBIB;
@@ -198,6 +210,9 @@ function zeichneAktiv() {
   document.getElementById("beruf").value = z.beruf;
   const o = z.ohdab_id ? m.ohdab.get(z.ohdab_id) : null;
   document.getElementById("zuordnung").textContent = o ? `${o.ohdab_id} · ${o.maennlich || o.norm}${o.weiblich ? "/" + o.weiblich : ""} · ${NIVEAUS[o.niveau] || o.niveau} · ${o.gattung}` : "keine Zuordnung";
+  const d = document.getElementById("deckung");
+  d.textContent = deckungText(z.schreibweise);
+  d.hidden = !d.textContent;
   document.getElementById("status-text").textContent = STATUS_TEXT[z.status.split(";")[0]] || z.status;
   document.getElementById("niveau").setAttribute("aria-pressed", z.niveau_unsicher === "ja");
   document.getElementById("geprueft").setAttribute("aria-pressed", z.geprueft === "ja");

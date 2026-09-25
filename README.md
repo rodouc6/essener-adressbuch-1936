@@ -379,7 +379,10 @@ eigene, unabhängig zu prüfende Frage ist. Handprüfung im Berufe-Werkzeug (`we
 Zifferntasten `1`–`9` wählen die Klasse (Reihenfolge wie im Vokabular), Taste `T` bestätigt
 (`stellung_geprueft=ja`), Checkbox „Stellung offen“ filtert auf ungeprüfte Zeilen. Export nur, wenn
 Beruf **und** Stellung geprüft sind, sonst `unbestimmt`. Regeln, Beispiele und Grenzfälle:
-`docs/stellung.md`.
+`docs/stellung.md`. Für Handwerksberufe ohne Meister-/Gewerbezusatz („Friseur“, „Schneider“) liefert
+`python3 werkzeuge/handwerk_deckung.py` die Entscheidungsgrundlage: Betriebe in Teil III gegen die als
+Inhaber gekennzeichneten Einträge in Teil I je Berufsfamilie (`docs/stellung_deckung.md`,
+`build/handwerk_deckung.json` → Kennzahl-Zeile im Werkzeug).
 
 ## Datenkerne für Perspektiven und Werkstatt (Teilprojekt 5a)
 
@@ -493,6 +496,7 @@ Ablauf des gesamten Teilprojekts 5a:
 
 ```text
 python3 werkzeuge/stellung_vorschlag.py        # Stellung je Schreibweise vorschlagen → berufe.html (Ziffern, T)
+python3 werkzeuge/handwerk_deckung.py          # Deckung Teil III ↔ Teil I je Handwerksfamilie → docs/stellung_deckung.md, Kennzahl im Werkzeug
 python3 werkzeuge/gruppen_vorschlag.py         # Berufsgruppen je Item → zuordnung.html?tabelle=gruppen
 python3 werkzeuge/gewerbe_vorschlag.py         # Rubriken Teil III → zuordnung.html?tabelle=gewerbe
 python3 werkzeuge/osm_strassen_laden.py        # Straßenlinien (Overpass) → build/osm_strassen.json

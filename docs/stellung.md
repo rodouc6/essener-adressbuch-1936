@@ -161,9 +161,16 @@ geprüft, nicht gegen den vollen Text mit Gattung.
   laufen nach Niveau als `arbeiter`, sind aber oft Betriebsinhaber.** Beleg: „Friseur“ 724 Einträge in
   Teil I, dazu nur ~300 als Geschäft/Meister gekennzeichnet („Friseurgesch.“ 246, „Friseurmstr.“ 30,
   Salons 24) — Teil III zählt aber 657 Friseurbetriebe. Der Meisterzwang für Neugründungen galt erst ab
-  1935, Altinhaber ohne Titel blieben. Bei der Handprüfung solche Schreibweisen daher als `unbestimmt`
-  belassen; auflösen kann das nur der Abgleich Teil I ↔ Teil III über Name + Adresse (Spec §10,
-  für 5b vorgezogen).
+  1935, Altinhaber ohne Titel blieben. Die Unschärfe ist je Beruf sehr verschieden: Bei Bäckern,
+  Metzgern, Schlossern, Maurern erklären die gekennzeichneten Inhaber alle Betriebe von Teil III (ohne
+  Zusatz = Arbeiter tragfähig); bei Uhrmachern, Schuhmachern, Malern, Friseuren fehlt der Zusatz
+  systematisch. **Entscheidung (Weg 3, 2026-09-25):** je Berufsfamilie datengestützt — Quote
+  „unerklärte Betriebe / offene Nennungen“ unter 10 % → `arbeiter` bestätigen, sonst `unbestimmt`, bis der
+  Abgleich Teil I ↔ Teil III über Name + Adresse (Spec §10, für 5b vorgezogen) pro Person entscheidet.
+  Tabelle mit allen Zahlen und getroffenen Rubriken: `docs/stellung_deckung.md`
+  (`werkzeuge/handwerk_deckung.py`, nach jeder Prüfrunde neu erzeugen); das Werkzeug blendet die Kennzahl
+  bei betroffenen Schreibweisen ein. Nach außen heißt die Klasse deshalb „Arbeiter/Gehilfen (nach
+  Schreibung)“.
 - **Kaufleute bekommen eine eigene Klasse**, statt sie einer Nachbarklasse zuzuschlagen, weil die
   Schreibweise „Kaufmann“ ohne Zusatz nicht erkennen lässt, ob eine selbständige Existenz oder eine
   angestellte Stellung gemeint ist (siehe Kaufleute-Experiment unten).
