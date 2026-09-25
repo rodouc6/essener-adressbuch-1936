@@ -16,6 +16,7 @@ from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_exp
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
+from pipeline.lib.stadtteile import Stadtteile
 from pipeline.lib.stellung import STELLUNGEN
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
 
@@ -84,11 +85,12 @@ def _besitz(eintraege: list[dict]) -> str:
 
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
              berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None,
-             gewerbe: dict[str, dict] | None = None) -> dict[str, dict]:
+             gewerbe: dict[str, dict] | None = None, stadtteile: "Stadtteile | None" = None) -> dict[str, dict]:
     """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale, (Teil II) geprüfter Eigentümer,
     Berufszuordnung (mit OhdAB-Hauptgruppe als `gruppe`, Spec §5.2) und Gewerbezuordnung (Teil III) angehängt; `besitz` je Adresse =
     Kategorie | gemischt | ungeprueft (Spec §6.1), `niveau`/`n_niveau` je Adresse aus den Berufszuordnungen
-    (Spec §6.2)."""
+    (Spec §6.2). `stadtteil` ist der Polygontreffer aus `stadtteile.zuordnen` (heutige Grenzen), sonst der
+    bisherige Straßen-Stadtteil; `stadtteil_quelle` sagt, welcher Fall zutraf (Spec §5.4a)."""
     adressen: dict[str, dict] = {}
     eigentuemer = eigentuemer or {}
     berufe = berufe or {}
@@ -99,8 +101,10 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         aid = adress_id(e)
         a = adressen.get(aid)
         if a is None:
+            strassen_st = e.get("stadtteil", "") or e.get("Vorort", "")
+            poly = stadtteile.zuordnen(float(e["lat"]), float(e["lon"])) if stadtteile else None
             a = adressen[aid] = dict(id=aid, lat=float(e["lat"]), lon=float(e["lon"]), stufe=_stufe(e),
-                                    stadtteil=e.get("stadtteil", "") or e.get("Vorort", ""),
+                                    stadtteil=poly or strassen_st, stadtteil_quelle="polygon" if poly else ("strasse" if strassen_st else ""),
                                     strasse_heute=e.get("strasse_heute", ""), hausnr=e.get("hausnr", ""),
                                     hausnr_zusatz=e.get("hausnr_zusatz", ""), historisch=_historisch(e),
                                     nummer_unsicher=e.get("nummer_unsicher", "nein"), eintraege=[])
@@ -375,7 +379,8 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
                 gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "hand"), len(teil_iii)),
                 gewerbe_entschieden=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "claude"), len(teil_iii)),
-                gewerbe_vorschlag=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag"), len(teil_iii)))
+                gewerbe_vorschlag=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag"), len(teil_iii)),
+                stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)))
 
 
 def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
@@ -525,7 +530,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    beispiele: list[dict] | None = None, themen: Path | None = None,
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
                    ohdab: dict[str, dict] | None = None, hauptgruppen: list[dict] | None = None,
-                   gewerbe: list[dict] | None = None, osm_linien: dict | None = None) -> dict:
+                   gewerbe: list[dict] | None = None, osm_linien: dict | None = None,
+                   stadtteile: "Stadtteile | None" = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     hg = lade_hauptgruppen(hauptgruppen or [])
@@ -538,7 +544,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     adressen = gruppiere(eintraege, regeln, lade_kuratierung(eigentuemer or []),
-                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {}, gewerbe=lade_gewerbe(gewerbe or []))
+                         berufe=lade_berufe(berufe or []), ohdab=ohdab or {}, gewerbe=lade_gewerbe(gewerbe or []),
+                         stadtteile=stadtteile)
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
@@ -546,6 +553,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     sf = strassen_features(strassen_agg, osm_linien or {})
     _json(ausgabe / "strassen.geojson", {"type": "FeatureCollection", "features": sf})
     _json(ausgabe / "hex.geojson", {"type": "FeatureCollection", "features": hex_features(aggregiere(adressen, "hex"))})
+    if stadtteile:
+        _json(ausgabe / "stadtteile.geojson", stadtteile.geojson())
     if kacheln:
         subprocess.run(tippecanoe_befehl(ausgabe, ausgabe / "adressen.pmtiles"), check=True)
     for name, inhalt in baue_scherben(adressen).items():

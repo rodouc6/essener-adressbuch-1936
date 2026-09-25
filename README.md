@@ -248,6 +248,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
 | `strassen.geojson`, `hex.geojson` | Straßenlinien (heutige OSM-Führung) und Hex-Polygone, auch als Layer `strassen`/`hex` in `adressen.pmtiles` |
+| `stadtteile.geojson` | Heutige OSM-Stadtteilgrenzen (`Stadtteile.geojson()`), je Feature `id` (Name), `quelle`, `stand` — nicht die Stadtteilgrenzen von 1936, siehe `docs/stadtteile.md` |
 
 ### URL-Parameter (`karte.html?…`)
 
@@ -489,11 +490,26 @@ Abrufs: `docs/osm_strassen.md`. `strassen_features()` verknüpft nur heutige Str
 gezählt (`kennzahlen.json` → `strassen_mit_linie`). Realer Lauf 2026-09-24: 1.999 von 2.016 heutigen
 Straßen (99,2 %) haben eine Linie.
 
+### Stadtteil je Adresse (`pipeline/lib/stadtteile.py`, `site/daten/stadtteile.geojson`)
+
+Bislang trug jede Adresse den (teils mehrdeutigen, `;`-getrennten) Straßen-Stadtteil aus
+`build/eintraege.csv`. Seit dem Polygonabgleich ordnet `karte_export.gruppiere` jede Adresse per
+Punkt-in-Polygon-Test (`Stadtteile.zuordnen`) genau einem der **heutigen** OSM-Stadtteile zu (ODbL,
+© OpenStreetMap-Mitwirkende — nicht die Stadtteilgrenzen von 1936, siehe `docs/stadtteile.md`); nur
+wenn eine Adresse außerhalb aller Polygone liegt, bleibt der bisherige Straßen-Stadtteil als
+Fallback. Das Feld `stadtteil_quelle` (`polygon` | `strasse` | ``) unterscheidet die beiden Fälle je
+Adresse; die Kennzahl `stadtteil_polygon` nennt den Prozentanteil der verorteten Adressen mit
+Polygontreffer. `site/daten/stadtteile.geojson` (aus `Stadtteile.geojson()`) trägt die Polygone
+selbst, je Feature mit `id` (Stadtteilname), `quelle` und `stand` (Abrufdatum) — für Kartenanzeige
+und Perspektiven. Grundlage: `python3 werkzeuge/osm_stadtteile_laden.py` → `build/osm_stadtteile.json`
+(nicht versioniert), Namensabgleich `kuratierung/stadtteile_osm.csv`.
+
 ### Kennzahlen (`site/daten/kennzahlen.json`)
 
 Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (handgeprüft),
-`stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25) und
-`strassen_mit_linie` (Zahl). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
+`stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft` (Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25),
+`strassen_mit_linie` (Zahl) und `stadtteil_polygon` (Prozentanteil der verorteten Adressen mit Polygontreffer,
+s. o.). Stand 2026-09-24: `stellung_geprueft: 0.0`, `stellung_unbestimmt:
 100.0`, `gruppen_geprueft: 0.0`, `gewerbe_geprueft: 0.0` — die Handprüfung von Stellung, Gruppen und
 Gewerbe hat zu diesem Zeitpunkt noch nicht begonnen (precision first: 0,0 % ist hier der korrekte
 Wert, kein Fehler). Nach der ersten Handprüfungsrunde ändern sich diese Werte mit dem nächsten Lauf
@@ -506,7 +522,8 @@ python3 werkzeuge/stellung_vorschlag.py        # Stellung je Schreibweise vorsch
 python3 werkzeuge/handwerk_deckung.py          # Deckung Teil III ↔ Teil I je Handwerksfamilie → docs/stellung_deckung.md, Kennzahl im Werkzeug
 python3 werkzeuge/gewerbe_vorschlag.py         # Rubriken Teil III → zuordnung.html?tabelle=gewerbe
 python3 werkzeuge/osm_strassen_laden.py        # Straßenlinien (Overpass) → build/osm_strassen.json
-python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Kennzahlen
+python3 werkzeuge/osm_stadtteile_laden.py      # Stadtteilgrenzen (Overpass) → build/osm_stadtteile.json
+python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Stadtteile, Kennzahlen
 ```
 
 ## Dokumentation

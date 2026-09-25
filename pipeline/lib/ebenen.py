@@ -97,9 +97,11 @@ def aggregiere(adressen: dict[str, dict], ebene: str) -> list[dict]:
     """Summen der Zählfelder je Einheit; Straße: id = Schlüssel, name, stadtteil (häufigster); Stadtteil: id = Name,
     lat/lon (Mittel), rang_nord (1 = nördlichster); Hex: id, lat/lon der Zellmitte. Sortiert nach id.
 
-    Stadtteil-Ebene: Adressen ohne Stadtteil werden nicht verworfen, sondern unter der Einheit id="ohne_stadtteil"
-    mitgezählt (lat/lon-Mittel wie sonst), damit die Summe der Einheiten stets der Summe der Adressen entspricht.
-    Diese Einheit bekommt kein rang_nord, sodass Nord-Süd-Reihungen sie ignorieren können."""
+    Stadtteil-Ebene: `a["stadtteil"]` ist seit dem Polygonabgleich (Task 2, `karte_export.gruppiere`) je Adresse
+    genau ein Name — keine `;`-Kombination mehrerer Straßen-Stadtteile mehr. Adressen ohne Stadtteil werden nicht
+    verworfen, sondern unter der Einheit id="ohne_stadtteil" mitgezählt (lat/lon-Mittel wie sonst), damit die
+    Summe der Einheiten stets der Summe der Adressen entspricht. Diese Einheit bekommt kein rang_nord, sodass
+    Nord-Süd-Reihungen sie ignorieren können."""
     if ebene not in EBENEN:
         raise ValueError(f"unbekannte Ebene {ebene!r}")
     einheiten: dict[str, dict] = {}

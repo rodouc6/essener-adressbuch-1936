@@ -64,6 +64,15 @@ machen, dass es sich um heutige OSM-Grenzen handelt (ODbL, © OpenStreetMap-Mitw
 Stadtteilgrenzen von 1936. `Stadtteile.geojson()` trägt `quelle` und `stand` in die Feature-Properties ein,
 damit diese Angabe mit den Daten mitgeführt wird.
 
+## Auswirkung auf den Export (Task 2)
+
+Seit `karte_export.gruppiere` den Polygontreffer (`Stadtteile.zuordnen`) einträgt, ist `stadtteil` je Adresse
+genau ein Name (`stadtteil_quelle` = `polygon`), statt wie zuvor teils eine `;`-Liste der Straßen-Stadtteile
+aus `build/eintraege.csv` (Fallback, `stadtteil_quelle` = `strasse`, wenn kein Polygontreffer vorliegt, z. B.
+außerhalb aller Ringe). Der bestehende Kartenfilter `["==", ["get", "stadtteil"], z.stadtteil]` in
+`site/js/karte.js` trifft dadurch ohne Codeänderung genau einen Stadtteil statt versehentlich mehrere
+kombinierte Namen zu verfehlen.
+
 ## Abruf wiederholen
 
 ```bash

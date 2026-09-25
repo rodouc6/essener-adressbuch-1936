@@ -14,6 +14,7 @@ from pipeline.lib.berufe import lade_ohdab
 from pipeline.lib.io import lies_csv, projektwurzel
 from pipeline.lib.karte_export import schreibe_paket
 from pipeline.lib.merkmale import lade_regeln
+from pipeline.lib.stadtteile import lade_stadtteile
 
 W = projektwurzel()
 kacheln = "--ohne-kacheln" not in sys.argv
@@ -39,6 +40,12 @@ if osm_pfad.exists():
 else:
     osm_linien = {}
     print("build/osm_strassen.json fehlt — Straßenschicht bleibt leer (werkzeuge/osm_strassen_laden.py)", file=sys.stderr)
+st_pfad = W / "build" / "osm_stadtteile.json"
+if st_pfad.exists():
+    stadtteile = lade_stadtteile(st_pfad, W / "kuratierung" / "stadtteile_osm.csv")
+else:
+    stadtteile = None
+    print("build/osm_stadtteile.json fehlt — Stadtteil bleibt der Straßen-Stadtteil (werkzeuge/osm_stadtteile_laden.py)", file=sys.stderr)
 ziel = W / "site" / "daten"
 # Alte Scherben und Indexdateien entfernen, damit keine verwaisten Dateien bleiben.
 for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
@@ -46,5 +53,5 @@ for unter in ("haus", "suche", "adressen", "themen", "ebenen", "layout"):
 k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W / "kuratierung" / "merkmale"),
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
                    themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab,
-                   hauptgruppen=hauptgruppen, gewerbe=gewerbe, osm_linien=osm_linien)
+                   hauptgruppen=hauptgruppen, gewerbe=gewerbe, osm_linien=osm_linien, stadtteile=stadtteile)
 print(json.dumps(k, ensure_ascii=False, indent=1))

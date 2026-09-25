@@ -509,3 +509,26 @@ def test_gruppiere_ordnet_teil_iii_keinen_beruf_zu(tmp_path):
     assert eintrag_kurz(eintrag, [])["beruf_norm"] == ""
     roh, _ = baue_berufsindex(a)
     assert [x[1] for x in roh] == ["Bergm."]
+
+
+def test_stadtteil_je_adresse_aus_polygon(tmp_path):
+    from pipeline.lib.stadtteile import Stadtteile
+    from pipeline.lib.karte_export import baue_kennzahlen, gruppiere, schreibe_paket
+    from pipeline.lib.ebenen import aggregiere
+    st = Stadtteile({"stand": "d", "quelle": "OSM", "stadtteile": {"Kray": [[[7.0, 51.4], [7.1, 51.4], [7.1, 51.5], [7.0, 51.5], [7.0, 51.4]]]}}, {})
+    basis = dict(stufe="haus", strasse_norm="x", strasse_roh="X", Vorort="", lastname="N", firstname="", page="I-1", strasse_heute="X-Straße", schl_nr="00001", teil="I")
+    e1 = dict(basis, id="1", lat="51.45", lon="7.05", hausnr="1", stadtteil="Kray; Steele")      # im Polygon → Kray
+    e2 = dict(basis, id="2", lat="51.60", lon="7.05", hausnr="2", stadtteil="Kray; Steele")      # außerhalb → Straßen-Stadtteil bleibt
+    a = gruppiere([e1, e2], [], None, stadtteile=st)
+    by = {x["hausnr"]: x for x in a.values()}
+    assert (by["1"]["stadtteil"], by["1"]["stadtteil_quelle"]) == ("Kray", "polygon")
+    assert (by["2"]["stadtteil"], by["2"]["stadtteil_quelle"]) == ("Kray; Steele", "strasse")
+    assert baue_kennzahlen([e1, e2], a, "2026-09-26")["stadtteil_polygon"] == 50.0
+    ids = [u["id"] for u in aggregiere(a, "stadtteil")]
+    assert ids == ["Kray", "Kray; Steele"]
+    aus = tmp_path / "daten"
+    schreibe_paket(aus, [e1, e2], [], [], "2026-09-26", kacheln=False, stadtteile=st, hauptgruppen=[])
+    g = json.loads((aus / "stadtteile.geojson").read_text(encoding="utf-8"))
+    assert g["features"][0]["properties"]["id"] == "Kray"
+    ohne = gruppiere([e1], [], None)
+    assert list(ohne.values())[0]["stadtteil_quelle"] == "strasse"
