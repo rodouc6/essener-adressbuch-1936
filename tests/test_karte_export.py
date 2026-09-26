@@ -83,7 +83,7 @@ def test_eintrag_kurz_und_scherben():
     assert k == {"id": "7", "teil": "I", "seite": "I-551", "name": "Sepeur", "vorname": "Wilh.",
                  "beruf": "Dr. Bergm.", "etage": "II", "stand": "Wwe.", "bezug_vorname": "", "bezug_beruf": "",
                  "firma": "", "eigentuemer": "", "verwalter": "", "wohnort": "", "eigentuemer_kanon": "",
-                 "kategorie": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "", "gattung": "",
+                 "kategorie": "", "pruefung": "", "beruf_norm": "", "ohdab": "", "niveau": "", "status": "", "gattung": "",
                  "stellung": "", "stellung_quelle": "", "gruppe": "", "rubrik": "", "gewerbe_gruppe": "", "gewerbe_art": "", "gewerbe_quelle": "",
                  "flags": ["nummer_unsicher"], "merkmale": ["akademiker"]}
     adressen = gruppiere([e], REGELN)
@@ -320,14 +320,40 @@ def test_gruppiere_besitz():
     a = gruppiere(e, [], lade_kuratierung(EIG))
     by = {x["hausnr"]: x for x in a.values()}
     assert by["1"]["besitz"] == "industrie" and by["2"]["besitz"] == "gemischt"
-    assert by["3"]["besitz"] == "ungeprueft" and by["4"]["besitz"] == "ungeprueft"
+    assert (by["1"]["besitz_pruefung"], by["2"]["besitz_pruefung"]) == ("hand", "hand")
+    assert by["3"]["besitz"] == "ungeprueft" and by["3"]["besitz_pruefung"] == ""
+    # Person ohne Kuratierungszeile: Regel Person → Privatperson, als solche gekennzeichnet
+    assert (by["4"]["besitz"], by["4"]["besitz_quelle"], by["4"]["besitz_pruefung"]) == ("privatperson", "eintrag", "regel")
     k = eintrag_kurz(by["1"]["eintraege"][0], [])
-    assert k["eigentuemer_kanon"] == "Fried. Krupp AG" and k["kategorie"] == "industrie"
+    assert k["eigentuemer_kanon"] == "Fried. Krupp AG" and k["kategorie"] == "industrie" and k["pruefung"] == "hand"
     assert eintrag_kurz(by["3"]["eintraege"][0], [])["eigentuemer_kanon"] == ""
-    assert eintrag_kurz(by["4"]["eintraege"][1], [])["kategorie"] == ""           # Teil I: nie
+    k4 = eintrag_kurz(next(x for x in by["4"]["eintraege"] if x["teil"] == "II"), [])
+    assert (k4["kategorie"], k4["pruefung"], k4["eigentuemer_kanon"]) == ("privatperson", "regel", "")
+    assert eintrag_kurz(next(x for x in by["4"]["eintraege"] if x["teil"] == "I"), [])["kategorie"] == ""   # Teil I: nie
     assert punkt_feature(by["2"])["properties"]["besitz"] == "gemischt"
-    # ohne Tabelle: alles ungeprüft
-    assert all(x["besitz"] == "ungeprueft" for x in gruppiere(e, []).values())
+    assert punkt_feature(by["4"])["properties"]["besitz_pruefung"] == "regel" and punkt_feature(by["4"])["properties"]["n_besitz_regel"] == 1
+    assert "n_besitz_regel" not in punkt_feature(by["1"])["properties"]
+    # ohne Tabelle: nur die Regel greift
+    ohne = {x["hausnr"]: x["besitz"] for x in gruppiere(e, []).values()}
+    assert ohne == {"1": "ungeprueft", "2": "ungeprueft", "3": "ungeprueft", "4": "privatperson"}
+
+
+def test_regel_person_privatperson_firmen_ausgenommen_spanne_und_kennzahl():
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    e = [_v(id="1", teil="II", hausnr="1", lastname="Korn", firstname="Gebr."),                 # Firma trotz Personenfeld → keine Regel
+         _v(id="2", teil="II", hausnr="3", lastname="Schee gen. Halfmann", firstname="M."),    # Hofname → Person
+         _v(id="3", teil="II", hausnr="10", hausnr_bis="14", lastname="Meier", firstname="K."),  # Spanne einer Regel-Person
+         _v(id="4", teil="I", hausnr="12"),
+         _v(id="5", teil="II", hausnr="20", lastname="Müller", firstname="F.", **{"Firmenname": ""}),
+         _v(id="6", teil="II", hausnr="20", **{"Firmenname": "Stadt Essen"})]                  # Hand + Regel an einer Adresse → gemischt, hand
+    a = gruppiere(e, [], lade_kuratierung(EIG))
+    by = {x["hausnr"]: x for x in a.values()}
+    assert by["1"]["besitz"] == "ungeprueft"
+    assert (by["3"]["besitz"], by["3"]["besitz_pruefung"]) == ("privatperson", "regel")
+    assert (by["12"]["besitz"], by["12"]["besitz_quelle"], by["12"]["besitz_pruefung"], by["12"]["besitz_eigentuemer"]) == ("privatperson", "spanne", "regel", "")
+    assert (by["20"]["besitz"], by["20"]["besitz_pruefung"]) == ("gemischt", "hand")
+    kz = baue_kennzahlen(e, a, "2026-09-26")
+    assert (kz["besitz_geprueft"], kz["besitz_regel"], kz["eigentuemer_geprueft"]) == (4, 3, 1)   # Regel-Personen zählen nicht als identifizierte Eigentümer
 
 
 def test_gruppiere_besitz_aus_hausnummernspanne():
@@ -381,7 +407,7 @@ def test_gruppiere_besitz_aus_hausnummernspanne():
     assert by[L, "10"]["besitz"] == "ungeprueft"
     assert (by[L, "2"]["besitz"], by[L, "2"]["besitz_quelle"]) == ("industrie", "eintrag")
     assert (by[L, "6"]["besitz"], by[L, "6"]["besitz_quelle"]) == ("stadt_staat", "eintrag")
-    assert (by[L, "8"]["besitz"], by[L, "8"]["besitz_quelle"], by[L, "8"]["besitz_spanne"]) == ("ungeprueft", "", "")
+    assert (by[L, "8"]["besitz"], by[L, "8"]["besitz_quelle"], by[L, "8"]["besitz_pruefung"]) == ("privatperson", "eintrag", "regel")   # eigene Zeile (Regel) schlägt die Spanne
     assert (by[B, "2"]["besitz"], by[B, "2"]["besitz_quelle"]) == ("stadt_staat", "spanne")
     assert (by[B, "3"]["besitz"], by[B, "3"]["besitz_quelle"]) == ("stadt_staat", "spanne")
     assert (by[B, "4"]["besitz"], by[B, "4"]["besitz_quelle"]) == ("industrie", "eintrag")
@@ -397,8 +423,8 @@ def test_gruppiere_besitz_aus_hausnummernspanne():
     krupp_ids = [x["id"] for x in a.values() if x["besitz"] == "industrie" and x["strasse_heute"] == L]
     assert scherben["fr"]["Fried. Krupp AG"] == sorted([[i, 1] for i in krupp_ids] + [[by[B, n]["id"], 1] for n in ("4", "11")])
     kz = baue_kennzahlen(e, a, "2026-09-26")
-    # geprüft: 16 eindeutige + B6 gemischt; Spanne: L4, L4a, L12a, L16b, B2, B3, B6, B11; Nummer: L20 (Grenzstr.)
-    assert (kz["besitz_geprueft"], kz["besitz_spanne"], kz["besitz_nummer"]) == (17, 8, 1)
+    # geprüft: 16 eindeutige + B6 gemischt + L8 (Regel-Person); Spanne: L4, L4a, L12a, L16b, B2, B3, B6, B11; Nummer: L20 (Grenzstr.)
+    assert (kz["besitz_geprueft"], kz["besitz_spanne"], kz["besitz_nummer"], kz["besitz_regel"]) == (18, 8, 1, 1)
     krupp = next(k for k in baue_layouts(a)["eigentuemer"]["kreise"] if k["id"] == "Fried. Krupp AG")
     assert krupp["n"] == 9
 
@@ -566,7 +592,8 @@ def test_gruppen_gewerbe_zaehlfelder_ebenen_layouts(tmp_path):
     assert k["3"]["stellung"] == "" and k["3"]["gruppe"] == ""                          # ohne geprüften Beruf: leer im Eintrag …
     p1 = punkt_feature(haus1)["properties"]
     assert p1["n_st_arbeiter"] == 1 and p1["n_st_beamte"] == 1 and p1["n_st_unbestimmt"] == 1 and p1["n_stellung_hand"] == 1 and p1["n_gr_B21"] == 1 and p1["n_gr_B84"] == 1 and p1["n_gr_ungeprueft"] == 1   # … aber gezählt als unbestimmt
-    assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_handel"] == 1 and p1["n_bs_ungeprueft"] == 1
+    # Teil-II-Zeile „N“ ohne Firmenname: Regel Person → Privatperson, als Regel gezählt
+    assert p1["n_gw_lebensmittel"] == 2 and p1["n_gwa_handwerk"] == 2 and p1["n_gw_handel"] == 1 and p1["n_bs_privatperson"] == 1 and p1["n_besitz_regel"] == 1
     lay = baue_layouts(a)
     assert [x["id"] for x in lay["berufe"]["kreise"]] == ["B 21112-100", "B 84124-120"]
     bm = lay["berufe"]["kreise"][0]

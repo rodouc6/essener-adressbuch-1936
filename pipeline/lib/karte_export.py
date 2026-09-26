@@ -11,7 +11,7 @@ from pathlib import Path
 
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
-from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
+from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, person_nach_regel, schreibweise_von
 from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
@@ -77,11 +77,15 @@ def _stufe(e: dict) -> str:
     return "stadtplan" if e.get("herkunft") == "stadtplan_1935" else e["stufe"]
 
 
-def _besitz(eintraege: list[dict]) -> str:
-    kats = {e["_kategorie"] for e in eintraege if e.get("teil") == "II" and e.get("_kategorie")}
+def _besitz(eintraege: list[dict]) -> tuple[str, str]:
+    """(Besitzklasse, Prüfung) aus den eigenen Teil-II-Zeilen: Kategorie | gemischt | ungeprueft und
+    hand | regel | "" — `regel`, wenn alle beteiligten Zeilen nur über die Regel Person → Privatperson
+    klassifiziert sind (person_nach_regel), damit die Seite diesen Anteil ausweisen kann."""
+    zeilen = [e for e in eintraege if e.get("teil") == "II" and e.get("_kategorie")]
+    kats = {e["_kategorie"] for e in zeilen}
     if not kats:
-        return "ungeprueft"
-    return kats.pop() if len(kats) == 1 else "gemischt"
+        return "ungeprueft", ""
+    return (kats.pop() if len(kats) == 1 else "gemischt"), ("regel" if all(e.get("_pruefung") == "regel" for e in zeilen) else "hand")
 
 
 def _kuratiert(e: dict, eigentuemer: dict[str, dict]) -> dict | None:
@@ -90,6 +94,17 @@ def _kuratiert(e: dict, eigentuemer: dict[str, dict]) -> dict | None:
     s, _ = schreibweise_von(e)
     z = eigentuemer.get(mit_stadtteil(s, e)) or eigentuemer.get(s)
     return z if z and z.get("geprueft") == "ja" and z.get("kategorie") else None
+
+
+def _zuordnung(e: dict, eigentuemer: dict[str, dict]) -> dict | None:
+    """Eigentümerzuordnung eines Teil-II-Eintrags: Handprüfung (Kuratierungszeile) vor Regel
+    (Person → Privatperson, ohne Namen und Identität); None, wenn keines greift."""
+    z = _kuratiert(e, eigentuemer)
+    if z:
+        return dict(eigentuemer=z["eigentuemer"], kategorie=z["kategorie"], identitaet=identitaet_sicher(z), pruefung="hand")
+    if person_nach_regel(e):
+        return dict(eigentuemer="", kategorie="privatperson", identitaet=False, pruefung="regel")
+    return None
 
 
 def _strassenschluessel(e: dict) -> str:
@@ -106,14 +121,12 @@ def hausnummernspannen(eintraege: list[dict], eigentuemer: dict[str, dict]) -> d
     for e in eintraege:
         spanne = hausnummernspanne(e) if e.get("teil") == "II" else None
         strasse = _strassenschluessel(e)
-        z = _kuratiert(e, eigentuemer) if spanne and strasse else None
+        z = _zuordnung(e, eigentuemer) if spanne and strasse else None
         if not z:
             continue
         von, bis, seite = spanne
         text = f"{_historisch(dict(e, hausnr=f'{von}–{e['hausnr_bis']}', hausnr_zusatz=''))} · {schreibweise_von(e)[0]}"
-        spannen[strasse].append(dict(von=von, bis=bis, seite=seite,
-                                     eigentuemer=z["eigentuemer"], kategorie=z["kategorie"],
-                                     identitaet=identitaet_sicher(z), text=text))
+        spannen[strasse].append(dict(z, von=von, bis=bis, seite=seite, text=text))
     return dict(spannen)
 
 
@@ -128,6 +141,7 @@ def _uebernimm_besitz(a: dict, treffer: list[dict], quelle: str) -> None:
     namen = {t["eigentuemer"] for t in treffer}
     a["besitz"] = kats.pop() if len(kats) == 1 else "gemischt"
     a["besitz_quelle"] = quelle
+    a["besitz_pruefung"] = "regel" if all(t.get("pruefung") == "regel" for t in treffer) else "hand"
     a["besitz_spanne"] = " | ".join(t["text"] for t in treffer)
     a["besitz_eigentuemer"] = namen.pop() if len(namen) == 1 and a["besitz"] != "gemischt" and all(t["identitaet"] for t in treffer) else ""
 
@@ -143,7 +157,7 @@ def hausnummern_mit_besitz(adressen: dict[str, dict]) -> dict[tuple[str, str, st
         zeilen = [e for e in a["eintraege"] if e.get("teil") == "II" and e.get("_kategorie")]
         namen = {e["_eigentuemer"] for e in zeilen}
         nummern[(_strassenschluessel(a["eintraege"][0]), a["hausnr"], a["hausnr_zusatz"])].append(dict(
-            kategorie=a["besitz"], eigentuemer=namen.pop() if len(namen) == 1 else "",
+            kategorie=a["besitz"], eigentuemer=namen.pop() if len(namen) == 1 else "", pruefung=a["besitz_pruefung"],
             identitaet=all(e.get("_identitaet") for e in zeilen),
             text=f"{a['historisch']} · {' | '.join(sorted({schreibweise_von(e)[0] for e in zeilen}))}"))
     return dict(nummern)
@@ -198,12 +212,11 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                                     strasse_heute=e.get("strasse_heute", ""), hausnr=e.get("hausnr", ""),
                                     hausnr_zusatz=e.get("hausnr_zusatz", ""), historisch=_historisch(e),
                                     nummer_unsicher=e.get("nummer_unsicher", "nein"), eintraege=[])
-        kanon, kat, sicher = "", "", False
+        kanon, kat, sicher, pruefung = "", "", False, ""
         if e.get("teil") == "II":
-            z = _kuratiert(e, eigentuemer)
+            z = _zuordnung(e, eigentuemer)
             if z:
-                kanon, kat = z["eigentuemer"], z["kategorie"]
-                sicher = identitaet_sicher(z)
+                kanon, kat, sicher, pruefung = z["eigentuemer"], z["kategorie"], z["identitaet"], z["pruefung"]
         beruf = berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None
         if beruf:
             beruf["gruppe"] = hauptgruppe(beruf["gattung_id"])
@@ -215,12 +228,12 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                 g, art = gewerbe_export(gz)
                 gew = dict(rubrik=rubrik, firma=firma, gruppe=g, art=art, quelle=gewerbe_quelle(gz), schluessel=betriebsschluessel(e))
         # _identitaet: nur identifizierte Eigentümer kommen in Suchindex und Liste; die Kategorie gilt immer.
-        e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
+        e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher, _pruefung=pruefung,
                 _beruf=beruf, _gewerbe=gew)
         a["eintraege"].append(e)
     for a in adressen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
-        a["besitz"] = _besitz(a["eintraege"])
+        a["besitz"], a["besitz_pruefung"] = _besitz(a["eintraege"])
         a["besitz_quelle"] = "eintrag" if a["besitz"] != "ungeprueft" else ""
         a["besitz_spanne"] = ""
         a["besitz_eigentuemer"] = ""
@@ -258,7 +271,7 @@ def punkt_feature(a: dict) -> dict:
     p = dict(id=a["id"], stufe=a["stufe"], stadtteil=a["stadtteil"], strasse_heute=a["strasse_heute"],
              hausnr=a["hausnr"] + (a["hausnr_zusatz"] or ""), historisch=a["historisch"],
              nummer_unsicher=a["nummer_unsicher"], besitz=a.get("besitz", "ungeprueft"),
-             besitz_quelle=a.get("besitz_quelle", ""), besitz_spanne=a.get("besitz_spanne", ""),
+             besitz_quelle=a.get("besitz_quelle", ""), besitz_spanne=a.get("besitz_spanne", ""), besitz_pruefung=a.get("besitz_pruefung", ""),
              niveau=a.get("niveau", "ungeprueft"), n_I=0, n_II=0, n_III=0)
     merkmale: dict[str, int] = defaultdict(int)
     for e in a["eintraege"]:
@@ -279,7 +292,7 @@ def eintrag_kurz(e: dict, merkmale: list[str]) -> dict:
                 bezug_beruf=e.get("Beruf Bezugsperson", ""), firma=e.get("Firmenname", ""),
                 eigentuemer=e.get("Eigentümer", ""), verwalter=e.get("Verwalter", ""),
                 wohnort=e.get("abweichender Wohnort", ""), eigentuemer_kanon=e.get("_eigentuemer", ""),
-                kategorie=e.get("_kategorie", ""), beruf_norm=b.get("beruf", ""), ohdab=b.get("ohdab", ""),
+                kategorie=e.get("_kategorie", ""), pruefung=e.get("_pruefung", ""), beruf_norm=b.get("beruf", ""), ohdab=b.get("ohdab", ""),
                 niveau=b.get("niveau", ""), status=b.get("status", ""), gattung=b.get("gattung", ""),
                 stellung=b.get("stellung", ""), stellung_quelle=b.get("stellung_quelle", ""), gruppe=b.get("gruppe", ""), rubrik=g.get("rubrik", ""),
                 gewerbe_gruppe=g.get("gruppe", ""), gewerbe_art=g.get("art", ""), gewerbe_quelle=g.get("quelle", ""),
@@ -476,6 +489,7 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
                 besitz_spanne=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "spanne"),
                 besitz_nummer=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "nummer"),
+                besitz_regel=sum(1 for a in adressen.values() if a.get("besitz_pruefung") == "regel"),
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),

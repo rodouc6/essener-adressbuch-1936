@@ -3,6 +3,7 @@
 // Text des Detailkastens. Ohne DOM, damit node:test alles prüfen kann.
 import { kodiere } from "./ansicht.js";
 import { formatProzent, formatZahl } from "./formen/skalen.js";
+import { regelText } from "./formen/balken.js";
 
 // Ohne ?vorschau=1 zeigt die Seite nur freigegebene Kapitel; in der Vorschau alle, damit
 // unfertige Kapitel gelesen werden können, ohne sie zu veröffentlichen.
@@ -83,6 +84,24 @@ export function detailText(einheit, ansicht) {
     .sort((a, b) => (e.anteile?.[b.name] || 0) - (e.anteile?.[a.name] || 0));
   const zeilen = [`${formatZahl(e.N)} Nennungen einbezogen, ${formatZahl(e.n_aus)} ausgeschlossen`];
   for (const g of gruppen) zeilen.push(`${g.name} ${formatProzent(e.anteile?.[g.name] || 0)} (${formatZahl(e.zaehler[g.name])})`);
+  // Besitz: Privatpersonen sind zum Teil nur per Regel klassifiziert — das gehört sichtbar dazu.
+  if (ansicht?.daten === "besitz" && e.regel > 0) zeilen.push(regelText(e.regel));
   if (e.unter_min) zeilen.push(`unter ${formatZahl(ansicht?.min_n)} Nennungen — Anteil nicht belastbar`);
   return { titel: String(e.name || e.id || ""), zeilen };
+}
+
+// Detailkasten zu einem angeklickten Segment des Gesamtbalkens: die Gruppe über alle gezeichneten
+// Einheiten (Summe, Anteil an den einbezogenen Nennungen), bei Besitz mit dem Regel-Anteil der
+// Privatpersonen. `null`, wenn der Name weder Gruppe noch „ausgeschlossen“ ist.
+export function detailTextGruppe(name, werte, ansicht) {
+  const g = (ansicht?.gruppen || []).find((x) => x.name === name);
+  if (!g && name !== "ausgeschlossen") return null;
+  const N = werte.reduce((s, w) => s + (w.N || 0), 0);
+  const n_aus = werte.reduce((s, w) => s + (w.n_aus || 0), 0);
+  if (!g) return { titel: "ausgeschlossen", zeilen: [`${formatZahl(n_aus)} Nennungen ausgeschlossen (unbestimmt, ungeprüft), ${formatZahl(N)} einbezogen`] };
+  const z = werte.reduce((s, w) => s + (w.zaehler?.[name] || 0), 0);
+  const zeilen = [`${formatZahl(z)} von ${formatZahl(N)} einbezogenen Nennungen (${formatProzent(N ? z / N : 0)})`];
+  const regel = werte.reduce((s, w) => s + (w.regel || 0), 0);
+  if (ansicht?.daten === "besitz" && g.aus.includes("privatperson") && regel > 0) zeilen.push(regelText(regel));
+  return { titel: name, zeilen };
 }

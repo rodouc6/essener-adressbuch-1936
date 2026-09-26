@@ -4,13 +4,13 @@
 // Browsercode; alles Prüfbare steht in perspektiven_modell.js.
 import { Lader } from "./daten.js";
 import { normalisiere } from "./ansicht.js";
-import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
+import { filterEinheiten, ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
 import { esc, nennerText } from "./formen/skalen.js";
 import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
-import { detailText, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import { detailText, detailTextGruppe, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles };
 const lader = new Lader();
@@ -136,8 +136,9 @@ function zahlenText(r, ansicht) {
 
 // Detailkasten zu einer angeklickten Einheit: Name, Nennungen, Anteile je Gruppe, Hinweis unter min_n.
 function zeigeDetail(id, werte, ansicht, titelFallback) {
+  // Einheit (Stadtteil, Straße …) oder — beim Gesamtbalken — ein Gruppensegment über alle Einheiten.
   const w = werte.find((x) => x.id === id);
-  const d = w ? detailText(w, ansicht) : { titel: titelFallback || id, zeilen: [] };
+  const d = w ? detailText(w, ansicht) : (detailTextGruppe(id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: titelFallback || id, zeilen: [] });
   const box = document.getElementById("detail");
   box.innerHTML = `<button class="schliessen" type="button" aria-label="Schließen">✕</button><h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
     + (ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(id)}">Auf der Karte zeigen</a></p>` : "");

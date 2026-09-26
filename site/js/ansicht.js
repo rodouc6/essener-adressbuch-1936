@@ -102,7 +102,10 @@ export function kennzahlen(einheit, ansicht) {
   // Gruppen. Bei `dichte` ist der Zähler genau das, was gemessen wird — ihn zu schwellen hieße,
   // gerade die dünn besetzten Branchen auszublenden, statt eine dünne Grundlage zu kennzeichnen.
   const unter_min = ansicht.mass === "dichte" ? nI < ansicht.min_n : N < ansicht.min_n;
-  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte };
+  // Transparenz bei Besitz: wie viele Adressen der Einheit nur per Regel (Person → Privatperson) klassifiziert
+  // sind — die Seite weist das an den Privatpersonen aus, statt sie als handgeprüft erscheinen zu lassen.
+  const regel = ansicht.daten === "besitz" ? (einheit?.n_besitz_regel || 0) : 0;
+  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte, regel };
 }
 
 export function standardGruppen(daten, hauptgruppen = {}) {

@@ -11,7 +11,7 @@ import * as bubbles from "../js/formen/bubbles.js";
 
 const Q = (x, y) => ({ type: "Feature", properties: { id: "", quelle: "OSM", stand: "d" }, geometry: { type: "MultiPolygon", coordinates: [[[[x, y], [x + 0.1, y], [x + 0.1, y + 0.1], [x, y + 0.1], [x, y]]]] } });
 const D = {
-  "daten/ebenen/stadtteile.json": [{ id: "Katernberg", lat: 51.5, lon: 7.05, adressen: 40, n_I: 100, n_st_arbeiter: 70, n_st_beamte: 5, n_st_unbestimmt: 25, rang_nord: 1, n_bs_bergbau: 20, n_bs_privatperson: 10, n_bs_ungeprueft: 10 },
+  "daten/ebenen/stadtteile.json": [{ id: "Katernberg", lat: 51.5, lon: 7.05, adressen: 40, n_I: 100, n_st_arbeiter: 70, n_st_beamte: 5, n_st_unbestimmt: 25, rang_nord: 1, n_bs_bergbau: 20, n_bs_privatperson: 10, n_bs_ungeprueft: 10, n_besitz_regel: 7 },
                                    { id: "Südviertel", lat: 51.44, lon: 7.01, adressen: 30, n_I: 60, n_st_arbeiter: 10, n_st_beamte: 20, n_st_unbestimmt: 30, rang_nord: 2, n_bs_privatperson: 5, n_bs_ungeprueft: 25 }],
   "daten/stadtteile.geojson": { type: "FeatureCollection", features: [{ ...Q(7.0, 51.45), properties: { id: "Katernberg" } }, { ...Q(7.0, 51.4), properties: { id: "Südviertel" } }] },
   "daten/layout/eigentuemer.json": { kreise: [{ id: "Stadt Essen", n: 969, gruppe: "stadt_staat", r: 60, x: 0, y: 0 }, { id: "Fried. Krupp AG", n: 559, gruppe: "industrie", r: 45, x: 120, y: 0 }, { id: "X", n: 5, gruppe: "sonstige", r: 4, x: 0, y: 80 }], gruppen: [{ gruppe: "stadt_staat", x: 0, y: 0, r: 70 }] },
@@ -79,6 +79,16 @@ test("Legende nach Maß: dichte in absoluten Stufen, mischung als Mischungsgrad"
     assert.equal(l[0].text, "Mischung 0,0–0,2");
     assert.equal(l.at(-1).name, "unter 50 Nennungen");
   }
+});
+
+test("balken bei Besitz: Hover-Text der Privatpersonen nennt den Regel-Anteil", () => {
+  const a = normalisiere({ daten: "besitz", ebene: "stadtteil", form: "balken", gruppen: [{ name: "Privatpersonen", aus: ["privatperson"], farbe: "#d97706" }, { name: "Bergbau", aus: ["bergbau"], farbe: "#111827" }], min_n: 0 });
+  const r = balken.zeige(a, daten, { breite: 600, hoehe: 200 });
+  assert.match(r.svg, /<title>Privatpersonen: 15, davon 7 per Regel klassifiziert \(Person ohne Firmenname → Privatperson, keine Handprüfung\)<\/title>/);
+  assert.match(r.svg, /<title>Bergbau: 20<\/title>/);
+  const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 200 });
+  assert.match(je.svg, /Privatpersonen: 10, davon 7 per Regel/);
+  assert.match(je.svg, /<title>Privatpersonen: 5<\/title>/);           // Südviertel ohne Regel-Anteil
 });
 
 test("balken je_einheit: der Wert des Maßes steht neben dem Balken", () => {

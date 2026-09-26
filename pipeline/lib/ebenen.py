@@ -79,6 +79,8 @@ def zaehlfelder(a: dict) -> dict[str, int]:
                 gesehen.add((g["schluessel"], "a:" + g["art"]))
                 n["n_gwa_" + g["art"]] += 1
     n["n_bs_" + a.get("besitz", "ungeprueft")] += 1
+    if a.get("besitz_pruefung") == "regel":      # nur per Regel Person → Privatperson klassifiziert (kein n_bs_-Präfix: keine Klasse)
+        n["n_besitz_regel"] += 1
     return {k: v for k, v in n.items() if v}
 
 

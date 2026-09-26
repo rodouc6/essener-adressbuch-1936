@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalisiere } from "../js/ansicht.js";
-import { detailText, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
+import { detailText, detailTextGruppe, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
 
 test("zeichenflaeche zieht Legende und Zahlenzeile ab und hält Mindestmaße", () => {
   assert.deepEqual(zeichenflaeche(800, 700, 90), { breite: 800, hoehe: 610 });
@@ -36,4 +36,20 @@ test("detailText", () => {
   const d = detailText({ id: "Katernberg", name: "Katernberg", N: 30, n_aus: 5, unter_min: true, anteile: { Arbeiter: 1 }, zaehler: { Arbeiter: 30 } }, a);
   assert.equal(d.titel, "Katernberg");
   assert.deepEqual(d.zeilen, ["30 Nennungen einbezogen, 5 ausgeschlossen", "Arbeiter 100 % (30)", "unter 50 Nennungen — Anteil nicht belastbar"]);
+  // Besitz: Regel-Anteil der Privatpersonen wird genannt
+  const b = normalisiere({ daten: "besitz", gruppen: [{ name: "Privatpersonen", aus: ["privatperson"] }, { name: "Stadt", aus: ["stadt_staat"] }], min_n: 0 });
+  const e = { id: "Kray", name: "Kray", N: 40, n_aus: 60, unter_min: false, anteile: { Privatpersonen: 0.75, Stadt: 0.25 }, zaehler: { Privatpersonen: 30, Stadt: 10 }, regel: 12 };
+  assert.deepEqual(detailText(e, b).zeilen, ["40 Nennungen einbezogen, 60 ausgeschlossen", "Privatpersonen 75 % (30)", "Stadt 25 % (10)",
+    "davon 12 per Regel klassifiziert (Person ohne Firmenname → Privatperson, keine Handprüfung)"]);
+  assert.ok(!detailText({ ...e, regel: 0 }, b).zeilen.some((z) => /Regel/.test(z)));
+});
+
+test("detailTextGruppe: Segment des Gesamtbalkens über alle Einheiten, Regel-Anteil bei Privatpersonen", () => {
+  const b = normalisiere({ daten: "besitz", gruppen: [{ name: "Privatpersonen", aus: ["privatperson"] }, { name: "Stadt", aus: ["stadt_staat"] }], min_n: 0 });
+  const werte = [{ N: 40, n_aus: 60, zaehler: { Privatpersonen: 30, Stadt: 10 }, regel: 12 }, { N: 10, n_aus: 5, zaehler: { Privatpersonen: 0, Stadt: 10 }, regel: 0 }];
+  assert.deepEqual(detailTextGruppe("Privatpersonen", werte, b), { titel: "Privatpersonen", zeilen: ["30 von 50 einbezogenen Nennungen (60 %)",
+    "davon 12 per Regel klassifiziert (Person ohne Firmenname → Privatperson, keine Handprüfung)"] });
+  assert.deepEqual(detailTextGruppe("Stadt", werte, b).zeilen, ["20 von 50 einbezogenen Nennungen (40 %)"]);
+  assert.deepEqual(detailTextGruppe("ausgeschlossen", werte, b).zeilen, ["65 Nennungen ausgeschlossen (unbestimmt, ungeprüft), 50 einbezogen"]);
+  assert.equal(detailTextGruppe("Katernberg", werte, b), null);
 });

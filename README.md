@@ -226,7 +226,13 @@ Teil-II-Zeile des einen Objekts gilt dann auch für das andere. Rangfolge: eigen
 ungeprüfter) > gleiche Hausnummer > Spanne; sich widersprechende Belege ergeben `gemischt`. Punktattribute
 `besitz_quelle` (`eintrag` | `nummer` | `spanne` | leer) und `besitz_spanne` (Wortlaut des Belegs, in der
 Hausansicht sichtbar); Kennzahlen `besitz_spanne`, `besitz_nummer`. Häuser aus Spannen und Nummerntreffern
-zählen in Eigentümerindex und Bubble-Layout mit. Vorher hing die Zeile nur an der ersten Nummer —
+zählen in Eigentümerindex und Bubble-Layout mit.
+Regel Person → Privatperson (2026-09-26, `eigentuemer.person_nach_regel`): Ein Teil-II-Eintrag ohne
+Firmenname gilt ohne Kuratierungszeile als `privatperson` (Ausnahme: Firmenmuster wie „Gebr.“, „& “,
+„Söhne“; Stichprobe von 100 Schreibweisen ohne Fehlklassifikation) — ohne Namen und Identität, also weder im
+Suchindex noch in den Bubbles. Kennzeichnung: Eintrag `pruefung` hand|regel, Adresse `besitz_pruefung`
+(hand | regel — `regel` nur, wenn alle Belege der Adresse Regel-Personen sind), Zählfeld `n_besitz_regel`,
+Kennzahl `besitz_regel`; Hausansicht, Balken-Hover und Detailkasten der Perspektiven nennen den Anteil. Vorher hing die Zeile nur an der ersten Nummer —
 ≈22.000 Adressen blieben „ungeprüft“, Einzelhäuser (Privatpersonen) waren gegenüber Siedlungen und
 Werkswohnungen deutlich überzeichnet. Tests: `node --test werkzeuge/tests/`
 (`werkzeuge/package.json` mit `type: module`).

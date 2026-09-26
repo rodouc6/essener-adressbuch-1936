@@ -79,7 +79,7 @@ erst nach dieser Auflösung, sieht also nur noch echte Gruppenlisten.
 Der Text in `grenzen` erklärt am Kapitelende Reichweite und Lücken der zugrunde liegenden Daten. Er darf
 folgende Platzhalter enthalten, die die Seite beim Rendern aus `site/daten/kennzahlen.json` einsetzt:
 
-- `{adressen}`, `{besitz_geprueft}`, `{besitz_spanne}`, `{besitz_nummer}`, `{berufe_geprueft}`, `{stellung_geprueft}`, `{stellung_vorschlag}`,
+- `{adressen}`, `{besitz_geprueft}`, `{besitz_spanne}`, `{besitz_nummer}`, `{besitz_regel}`, `{berufe_geprueft}`, `{stellung_geprueft}`, `{stellung_vorschlag}`,
   `{stellung_unbestimmt}`, `{gewerbe_geprueft}`, `{gewerbe_entschieden}`, `{gewerbe_vorschlag}`,
   `{stadtteil_polygon}`, `{stand}` — jeweils der gleichnamige Wert aus `kennzahlen.json`.
 - `{besitz_geprueft_prozent}` — `besitz_geprueft / adressen`, auf eine Nachkommastelle gerundet (analog

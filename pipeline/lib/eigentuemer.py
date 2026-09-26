@@ -70,6 +70,18 @@ def identitaet_sicher(z: dict) -> bool:
     return z.get("art") != "person" or (z.get("identitaet") or "").strip() == "sicher"
 
 
+# Regel Person → Privatperson (Entscheidung 2026-09-26): Ein Teil-II-Eintrag ohne Firmenname, mit Nachnamen,
+# gilt ohne Handprüfung als Privatperson — in unserem Schema kann eine Person nichts anderes sein. Ausgenommen
+# sind Namen, die eine Firma verraten („Korn, Gebr.“); „gen.“-Namen (Hofnamen) sind Personen. Stichprobe von
+# 100 Schreibweisen ohne Fehlklassifikation. Die Identität bleibt unbelegt (kein Suchindex, keine Bubble).
+_FIRMENMUSTER = re.compile(r"\bGebr\b|Gebrüder|\s&\s|\bu\. Co\b|\bNachf\b|Söhne", re.I)
+
+
+def person_nach_regel(e: dict) -> bool:
+    s, art = schreibweise_von(e)
+    return art == "person" and not _FIRMENMUSTER.search(s)
+
+
 def hausnummernspanne(e: dict) -> tuple[int, int, int | None] | None:
     """(von, bis, seite) einer Teil-II-Zeile mit Hausnummernspanne, sonst None. Das Häuserbuch druckt einen
     Eigentümer vieler aufeinanderfolgender Häuser einmal am Anfang der Straßenseite („2—84 E. …“, Faksimile

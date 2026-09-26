@@ -50,6 +50,11 @@ test("kennzahlen: N, n_aus, Anteile, unter_min, dominant, mischung", () => {
   assert.equal(kennzahlen({ n_st_arbeiter: 41, n_st_beamte: 59 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "Bürgertum");
   assert.equal(kennzahlen({ n_st_arbeiter: 59, n_st_beamte: 41 }, normalisiere({ daten: "stellung", gruppen: G, mass: "dominant", min_n: 0 })).wert, "Arbeiter");
   assert.equal(kennzahlen({}, a).N, 0); assert.equal(kennzahlen({}, a).wert, 0);
+  // regel: nur bei Besitz, aus n_besitz_regel der Einheit
+  const b = normalisiere({ daten: "besitz", gruppen: [{ name: "Privat", aus: ["privatperson"] }], min_n: 0 });
+  assert.equal(kennzahlen({ n_bs_privatperson: 10, n_besitz_regel: 7 }, b).regel, 7);
+  assert.equal(kennzahlen({ n_bs_privatperson: 10 }, b).regel, 0);
+  assert.equal(kennzahlen({ n_st_arbeiter: 10, n_besitz_regel: 7 }, a).regel, 0);
 });
 
 test("dichte nur für gewerbe: Betriebe je 1.000 Teil-I-Einträge", () => {

@@ -32,6 +32,12 @@ test("hausHtml nennt die Herkunft einer Besitzklasse aus einer Hausnummernspanne
   assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /laut Häuserbuch/);
 });
 
+test("hausHtml nennt bei Regel-Klassifikation die Regel statt eines Namens", () => {
+  const e = [{ id: "9", teil: "II", seite: "II-1", name: "Schmidt", vorname: "W.", firma: "", eigentuemer: "Eigentümer", eigentuemer_kanon: "", kategorie: "privatperson", pruefung: "regel", flags: [], merkmale: [] }];
+  const h = hausHtml(EIG, e);
+  assert.match(h, /Zugeordnet<\/span> Privatperson.* \(Regel: Person ohne Firmenname → Privatperson, keine Handprüfung\)/);
+});
+
 test("popupHtml kompakt zeigt höchstens drei Namen", () => {
   const h = popupHtml(EIG, E, true);
   assert.match(h, /alle 3 im Detail/);
