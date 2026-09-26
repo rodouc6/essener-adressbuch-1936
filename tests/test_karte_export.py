@@ -353,10 +353,27 @@ def test_gruppiere_besitz_aus_hausnummernspanne():
             **{"Firmenname": "Fried. Krupp A.G."}),
          _v(id="10", teil="I", strasse_heute="Bochumer Straße", hausnr="11"),
          _v(id="p", teil="II", strasse_heute="Bochumer Straße", hausnr="13", hausnr_bis="15", **{"Firmenname": "Bauverein GmbH"}),  # ungeprüft: keine Spanne
-         _v(id="11", teil="I", strasse_heute="Bochumer Straße", hausnr="15")]
+         _v(id="11", teil="I", strasse_heute="Bochumer Straße", hausnr="15"),
+         # Buchstaben am Ende: „12–12a“ meint Haus und Anbau, „14–16b“ reicht bis 16b (gerade Seite)
+         _v(id="q", teil="II", hausnr="12", hausnr_bis="12a", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="12", teil="I", hausnr="12", hausnr_zusatz="a"),
+         _v(id="r", teil="II", hausnr="14", hausnr_bis="16b", **{"Firmenname": "Stadt Essen"}),
+         _v(id="13", teil="I", hausnr="16", hausnr_zusatz="b"),
+         _v(id="14", teil="I", hausnr="15"),
+         _v(id="u", teil="II", hausnr="40", hausnr_bis="4", **{"Firmenname": "Stadt Essen"}),   # verdreht (Erfassungsfehler): keine Spanne
+         _v(id="15", teil="I", hausnr="30"),
+         # gleiche Straße und Nummer, aber anderes Adressobjekt (Buchschreibung „Grenzstraße“ statt „Grenzstr.“):
+         # die Teil-II-Zeile gilt für dasselbe Haus
+         _v(id="t", teil="II", hausnr="20", strasse_roh="Grenzstraße", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="16", teil="I", hausnr="20")]
     a = gruppiere(e, [], lade_kuratierung(EIG))
-    by = {(x["strasse_heute"], x["hausnr"] + x["hausnr_zusatz"]): x for x in a.values()}
+    by = {(x["strasse_heute"], x["hausnr"] + x["hausnr_zusatz"]): x for x in a.values() if x["historisch"].startswith(("Grenzstr.", "Bochumer"))}
     L, B = "Lattenkamp", "Bochumer Straße"
+    assert (by[L, "12a"]["besitz"], by[L, "12a"]["besitz_quelle"], by[L, "12a"]["besitz_spanne"]) == ("industrie", "spanne", "Grenzstr. 12–12a, Katernberg · Fried. Krupp A.G.")
+    assert (by[L, "16b"]["besitz"], by[L, "16b"]["besitz_quelle"]) == ("stadt_staat", "spanne")
+    assert by[L, "15"]["besitz"] == "ungeprueft" and by[L, "30"]["besitz"] == "ungeprueft"
+    assert (by[L, "20"]["besitz"], by[L, "20"]["besitz_quelle"], by[L, "20"]["besitz_eigentuemer"]) == ("industrie", "nummer", "Fried. Krupp AG")
+    assert by[L, "20"]["besitz_spanne"] == "Grenzstraße 20, Katernberg · Fried. Krupp A.G."
     assert (by[L, "4"]["besitz"], by[L, "4"]["besitz_quelle"]) == ("industrie", "spanne")
     assert by[L, "4"]["besitz_spanne"] == "Grenzstr. 2–8, Katernberg · Fried. Krupp A.G." and by[L, "4"]["besitz_eigentuemer"] == "Fried. Krupp AG"
     assert (by[L, "4a"]["besitz"], by[L, "4a"]["besitz_quelle"]) == ("industrie", "spanne")
@@ -375,12 +392,15 @@ def test_gruppiere_besitz_aus_hausnummernspanne():
     assert punkt_feature(by[L, "4"])["properties"]["besitz_spanne"].startswith("Grenzstr. 2–8")
     # Häuser aus Spannen zählen für Index, Kennzahlen und Bubbles wie eigene Einträge
     liste, scherben = baue_eigentuemerindex(a)
-    assert [x[1:3] for x in liste] == [["Fried. Krupp AG", 5], ["Stadt Essen", 4]]       # Krupp: L2, L4, L4a, B4, B11; Stadt: L6, B1, B2, B3
-    assert scherben["fr"]["Fried. Krupp AG"] == sorted([[by[L, n]["id"], 1] for n in ("2", "4", "4a")] + [[by[B, n]["id"], 1] for n in ("4", "11")])
+    # Krupp: L2, L4, L4a, L12, L12a, L20 (beide Objekte), B4, B11; Stadt: L6, L14, L16b, L40, B1, B2, B3
+    assert [x[1:3] for x in liste] == [["Fried. Krupp AG", 9], ["Stadt Essen", 7]]
+    krupp_ids = [x["id"] for x in a.values() if x["besitz"] == "industrie" and x["strasse_heute"] == L]
+    assert scherben["fr"]["Fried. Krupp AG"] == sorted([[i, 1] for i in krupp_ids] + [[by[B, n]["id"], 1] for n in ("4", "11")])
     kz = baue_kennzahlen(e, a, "2026-09-26")
-    assert (kz["besitz_geprueft"], kz["besitz_spanne"]) == (10, 6)                       # geprüft: 9 eindeutige + B6 gemischt; Spanne: L4, L4a, B2, B3, B6, B11
+    # geprüft: 16 eindeutige + B6 gemischt; Spanne: L4, L4a, L12a, L16b, B2, B3, B6, B11; Nummer: L20 (Grenzstr.)
+    assert (kz["besitz_geprueft"], kz["besitz_spanne"], kz["besitz_nummer"]) == (17, 8, 1)
     krupp = next(k for k in baue_layouts(a)["eigentuemer"]["kreise"] if k["id"] == "Fried. Krupp AG")
-    assert krupp["n"] == 5
+    assert krupp["n"] == 9
 
 
 def test_eigentuemerindex_und_kennzahlen():

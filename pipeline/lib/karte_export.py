@@ -104,37 +104,77 @@ def hausnummernspannen(eintraege: list[dict], eigentuemer: dict[str, dict]) -> d
     Eigentümer; auch nicht verortete Zeilen zählen, der Treffer läuft über Straße und Nummer."""
     spannen: dict[str, list[dict]] = defaultdict(list)
     for e in eintraege:
-        if e.get("teil") != "II" or not (e.get("hausnr") or "").isdigit() or not (e.get("hausnr_bis") or "").isdigit():
+        # Das Ende darf einen Buchstaben tragen („1—31a“, „37—37A“ = Haus und Anbau): es zählt die Zahl,
+        # Adressen mit Zusatz liegen unter ihrer Nummer. Verdrehte Spannen („40—4“, Erfassungsfehler) gelten nicht.
+        bis_m = re.match(r"\d+", e.get("hausnr_bis") or "")
+        if e.get("teil") != "II" or not (e.get("hausnr") or "").isdigit() or not bis_m:
             continue
         strasse = _strassenschluessel(e)
         z = _kuratiert(e, eigentuemer) if strasse else None
-        von, bis = int(e["hausnr"]), int(e["hausnr_bis"])
-        if not z or bis <= von:
+        von, bis = int(e["hausnr"]), int(bis_m.group(0))
+        if not z or bis < von:
             continue
-        text = f"{_historisch(dict(e, hausnr=f'{von}–{bis}', hausnr_zusatz=''))} · {schreibweise_von(e)[0]}"
+        text = f"{_historisch(dict(e, hausnr=f'{von}–{e['hausnr_bis']}', hausnr_zusatz=''))} · {schreibweise_von(e)[0]}"
         spannen[strasse].append(dict(von=von, bis=bis, seite=von % 2 if (bis - von) % 2 == 0 else None,
                                      eigentuemer=z["eigentuemer"], kategorie=z["kategorie"],
                                      identitaet=identitaet_sicher(z), text=text))
     return dict(spannen)
 
 
+def _hat_teil_ii(a: dict) -> bool:
+    return any(e.get("teil") == "II" for e in a["eintraege"])
+
+
+def _uebernimm_besitz(a: dict, treffer: list[dict], quelle: str) -> None:
+    """Klasse aus fremden Belegen (Spanne oder gleiche Hausnummer): verschiedene Kategorien → gemischt; der
+    Eigentümername wird nur übernommen, wenn alle Belege denselben identifizierten Eigentümer nennen."""
+    kats = {t["kategorie"] for t in treffer}
+    namen = {t["eigentuemer"] for t in treffer}
+    a["besitz"] = kats.pop() if len(kats) == 1 else "gemischt"
+    a["besitz_quelle"] = quelle
+    a["besitz_spanne"] = " | ".join(t["text"] for t in treffer)
+    a["besitz_eigentuemer"] = namen.pop() if len(namen) == 1 and a["besitz"] != "gemischt" and all(t["identitaet"] for t in treffer) else ""
+
+
+def hausnummern_mit_besitz(adressen: dict[str, dict]) -> dict[tuple[str, str, str], list[dict]]:
+    """(Straße, Nummer, Zusatz) → Belege der Adressobjekte mit eigener geprüfter Teil-II-Zeile. Dieselbe
+    Hausnummer wird zu mehreren Adressobjekten, wenn Teil I und Teil II die Straße verschieden schreiben
+    („Baumstr.“/„Baumstraße“, Vorort): die Teil-II-Zeile gilt trotzdem für dasselbe Haus."""
+    nummern: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
+    for a in adressen.values():
+        if a["besitz"] == "ungeprueft" or not _hat_teil_ii(a) or not a["eintraege"]:
+            continue
+        zeilen = [e for e in a["eintraege"] if e.get("teil") == "II" and e.get("_kategorie")]
+        namen = {e["_eigentuemer"] for e in zeilen}
+        nummern[(_strassenschluessel(a["eintraege"][0]), a["hausnr"], a["hausnr_zusatz"])].append(dict(
+            kategorie=a["besitz"], eigentuemer=namen.pop() if len(namen) == 1 else "",
+            identitaet=all(e.get("_identitaet") for e in zeilen),
+            text=f"{a['historisch']} · {' | '.join(sorted({schreibweise_von(e)[0] for e in zeilen}))}"))
+    return dict(nummern)
+
+
+def _besitz_aus_nummer(a: dict, nummern: dict[tuple[str, str, str], list[dict]]) -> None:
+    """Besitzklasse einer Adresse ohne eigenen Teil-II-Eintrag von einem anderen Adressobjekt derselben
+    Straße, Nummer und desselben Zusatzes."""
+    if _hat_teil_ii(a) or not a["eintraege"]:
+        return
+    treffer = nummern.get((_strassenschluessel(a["eintraege"][0]), a["hausnr"], a["hausnr_zusatz"]))
+    if treffer:
+        _uebernimm_besitz(a, treffer, "nummer")
+
+
 def _besitz_aus_spanne(a: dict, spannen: dict[str, list[dict]]) -> None:
     """Besitzklasse einer Adresse ohne eigenen Teil-II-Eintrag aus den Spannen ihrer Straße. Ein eigener
-    Eintrag gewinnt immer — auch ein ungeprüfter, denn er ist die genauere Angabe. Verschiedene Kategorien
-    in überlappenden Spannen → gemischt; der Eigentümername wird nur bei genau einem übernommen."""
-    if any(e.get("teil") == "II" for e in a["eintraege"]) or not (a.get("hausnr") or "").isdigit():
+    Eintrag gewinnt immer — auch ein ungeprüfter, denn er ist die genauere Angabe; ebenso die Zeile eines
+    anderen Adressobjekts derselben Nummer (_besitz_aus_nummer). Verschiedene Kategorien in überlappenden
+    Spannen → gemischt."""
+    if _hat_teil_ii(a) or a["besitz"] != "ungeprueft" or not (a.get("hausnr") or "").isdigit():
         return
     n = int(a["hausnr"])
     strasse = _strassenschluessel(a["eintraege"][0]) if a["eintraege"] else ""
     treffer = [s for s in spannen.get(strasse, []) if s["von"] <= n <= s["bis"] and s["seite"] in (None, n % 2)]
-    if not treffer:
-        return
-    kats = {s["kategorie"] for s in treffer}
-    namen = {s["eigentuemer"] for s in treffer}
-    a["besitz"] = kats.pop() if len(kats) == 1 else "gemischt"
-    a["besitz_quelle"] = "spanne"
-    a["besitz_spanne"] = " | ".join(s["text"] for s in treffer)
-    a["besitz_eigentuemer"] = namen.pop() if len(namen) == 1 and a["besitz"] != "gemischt" and treffer[0]["identitaet"] else ""
+    if treffer:
+        _uebernimm_besitz(a, treffer, "spanne")
 
 
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
@@ -182,17 +222,21 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
                 _beruf=beruf, _gewerbe=gew)
         a["eintraege"].append(e)
-    # Zweiter Durchgang: Hausnummernspannen aus Teil II („2—84 E. …“) auf die Häuser dazwischen übertragen.
-    # besitz_quelle sagt je Adresse, woher die Klasse kommt: eintrag | spanne | "" (ungeprüft).
-    spannen = hausnummernspannen(eintraege, eigentuemer)
     for a in adressen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
         a["besitz"] = _besitz(a["eintraege"])
         a["besitz_quelle"] = "eintrag" if a["besitz"] != "ungeprueft" else ""
         a["besitz_spanne"] = ""
         a["besitz_eigentuemer"] = ""
-        _besitz_aus_spanne(a, spannen)
         a["niveau"], a["n_niveau"] = _niveau(a["eintraege"])
+    # Zweiter Durchgang für Adressen ohne eigene Teil-II-Zeile, in dieser Rangfolge: die Zeile eines anderen
+    # Adressobjekts derselben Hausnummer, dann Hausnummernspannen („2—84 E. …“) der Straße. besitz_quelle
+    # sagt je Adresse, woher die Klasse kommt: eintrag | nummer | spanne | "" (ungeprüft).
+    nummern = hausnummern_mit_besitz(adressen)
+    spannen = hausnummernspannen(eintraege, eigentuemer)
+    for a in adressen.values():
+        _besitz_aus_nummer(a, nummern)
+        _besitz_aus_spanne(a, spannen)
     return adressen
 
 
@@ -435,6 +479,7 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 adressen=len(adressen), stand=datum,
                 besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
                 besitz_spanne=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "spanne"),
+                besitz_nummer=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "nummer"),
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),

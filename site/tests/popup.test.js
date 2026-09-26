@@ -28,7 +28,8 @@ test("popupHtml: heutige und historische Adresse, Präzision, Namen ohne Seiten"
 test("hausHtml nennt die Herkunft einer Besitzklasse aus einer Hausnummernspanne", () => {
   const h = hausHtml({ ...EIG, besitz: "kirche_stiftung", besitz_quelle: "spanne", besitz_spanne: "Sommerburgstr. 2–84 · Frau-Margarete-Krupp-Stiftung" }, E);
   assert.match(h, /Hausnummernspanne\): Sommerburgstr\. 2–84 · Frau-Margarete-Krupp-Stiftung · /);
-  assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /Hausnummernspanne/);
+  assert.match(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "nummer", besitz_spanne: "Grenzstraße 20 · Fried. Krupp A.G." }, E), /gleiche Hausnummer, andere Schreibung\): Grenzstraße 20 · Fried\. Krupp A\.G\. · /);
+  assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /laut Häuserbuch/);
 });
 
 test("popupHtml kompakt zeigt höchstens drei Namen", () => {

@@ -219,10 +219,14 @@ Hausnummernspannen (2026-09-26): Das Häuserbuch druckt einen Eigentümer vieler
 einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“, danach die Häuser nur mit
 Bewohnern; Faksimile II-335). Der Parser liefert dafür `hausnr`/`hausnr_bis`; `karte_export.gruppiere`
 überträgt die geprüfte Klasse auf alle Adressen der Spanne derselben Straße (`schl_nr`), bei gleicher Parität
-von Anfang und Ende nur auf diese Straßenseite. Ein eigener Teil-II-Eintrag der Adresse gewinnt immer; sich
-widersprechende Spannen ergeben `gemischt`. Punktattribute `besitz_quelle` (`eintrag` | `spanne` | leer) und
-`besitz_spanne` (Wortlaut der Spannenzeile, in der Hausansicht sichtbar); Kennzahl `besitz_spanne`. Häuser
-aus Spannen zählen in Eigentümerindex und Bubble-Layout mit. Vorher hing die Zeile nur an der ersten Nummer —
+von Anfang und Ende nur auf diese Straßenseite; ein Buchstabe am Ende („1—31a“, „37—37A“ = Haus und Anbau)
+zählt als seine Zahl, verdrehte Spannen („40—4“) gelten nicht. Dieselbe Hausnummer wird zu zwei
+Adressobjekten, wenn Teil I und II die Straße verschieden schreiben („Baumstr.“/„Baumstraße“, Vorort): die
+Teil-II-Zeile des einen Objekts gilt dann auch für das andere. Rangfolge: eigener Teil-II-Eintrag (auch ein
+ungeprüfter) > gleiche Hausnummer > Spanne; sich widersprechende Belege ergeben `gemischt`. Punktattribute
+`besitz_quelle` (`eintrag` | `nummer` | `spanne` | leer) und `besitz_spanne` (Wortlaut des Belegs, in der
+Hausansicht sichtbar); Kennzahlen `besitz_spanne`, `besitz_nummer`. Häuser aus Spannen und Nummerntreffern
+zählen in Eigentümerindex und Bubble-Layout mit. Vorher hing die Zeile nur an der ersten Nummer —
 ≈22.000 Adressen blieben „ungeprüft“, Einzelhäuser (Privatpersonen) waren gegenüber Siedlungen und
 Werkswohnungen deutlich überzeichnet. Tests: `node --test werkzeuge/tests/`
 (`werkzeuge/package.json` mit `type: module`).

@@ -24,6 +24,7 @@ function quelleHtml(seite, bild) {
   return `<div class="quelle">Seite ${esc(seite)} · ${link}</div>`;
 }
 
+const BESITZ_HERKUNFT = { spanne: "Hausnummernspanne", nummer: "gleiche Hausnummer, andere Schreibung" };
 const FLAGTEXT = { nummer_unsicher: "Hausnummer unsicher (Straße neu gezählt)", zeitlich_abweichend: "Straßenname zeitlich abweichend belegt", mehrdeutig: "Zuordnung mehrdeutig" };
 
 export function heutigeAdresse(eig) {
@@ -80,9 +81,10 @@ export function hausHtml(eig, eintraege, faksimile = null) {
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
     (eig.nummer_unsicher === "ja" ? `<div class="flag">${FLAGTEXT.nummer_unsicher}</div>` : "") +
-    // Besitzklasse aus einer Hausnummernspanne des Häuserbuchs („2—84 E. …“): die Adresse hat keine eigene
-    // Teil-II-Zeile, die Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
-    (eig.besitz_quelle === "spanne" ? `<div class="hist">Eigentümer laut Häuserbuch (Hausnummernspanne): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
+    // Besitzklasse aus einer Hausnummernspanne des Häuserbuchs („2—84 E. …“) oder von der Teil-II-Zeile
+    // eines anderen Adressobjekts derselben Nummer: die Adresse hat keine eigene Teil-II-Zeile, die
+    // Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
+    (BESITZ_HERKUNFT[eig.besitz_quelle] ? `<div class="hist">Eigentümer laut Häuserbuch (${BESITZ_HERKUNFT[eig.besitz_quelle]}): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
     `</div>${gruppen}`;
 }
 
