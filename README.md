@@ -214,7 +214,17 @@ Eigentümer“ aber nur mit `identitaet=sicher`. Schreibweisen aus `kuratierung/
 (Kirchengemeinden ohne Zusatz) führt die Automatik je Stadtteil als eigene, immer prüfpflichtige Schreibweise
 „Kath. Kirchengem. ‹Katernberg›“; der Export sucht zuerst diese, dann die einfache Schreibweise. Auf der Karte
 zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
-„Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL). Tests: `node --test werkzeuge/tests/`
+„Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL).
+Hausnummernspannen (2026-09-26): Das Häuserbuch druckt einen Eigentümer vieler aufeinanderfolgender Häuser
+einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“, danach die Häuser nur mit
+Bewohnern; Faksimile II-335). Der Parser liefert dafür `hausnr`/`hausnr_bis`; `karte_export.gruppiere`
+überträgt die geprüfte Klasse auf alle Adressen der Spanne derselben Straße (`schl_nr`), bei gleicher Parität
+von Anfang und Ende nur auf diese Straßenseite. Ein eigener Teil-II-Eintrag der Adresse gewinnt immer; sich
+widersprechende Spannen ergeben `gemischt`. Punktattribute `besitz_quelle` (`eintrag` | `spanne` | leer) und
+`besitz_spanne` (Wortlaut der Spannenzeile, in der Hausansicht sichtbar); Kennzahl `besitz_spanne`. Häuser
+aus Spannen zählen in Eigentümerindex und Bubble-Layout mit. Vorher hing die Zeile nur an der ersten Nummer —
+≈22.000 Adressen blieben „ungeprüft“, Einzelhäuser (Privatpersonen) waren gegenüber Siedlungen und
+Werkswohnungen deutlich überzeichnet. Tests: `node --test werkzeuge/tests/`
 (`werkzeuge/package.json` mit `type: module`).
 
 Tests:

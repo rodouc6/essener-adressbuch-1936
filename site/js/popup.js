@@ -80,6 +80,9 @@ export function hausHtml(eig, eintraege, faksimile = null) {
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
     (eig.nummer_unsicher === "ja" ? `<div class="flag">${FLAGTEXT.nummer_unsicher}</div>` : "") +
+    // Besitzklasse aus einer Hausnummernspanne des Häuserbuchs („2—84 E. …“): die Adresse hat keine eigene
+    // Teil-II-Zeile, die Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
+    (eig.besitz_quelle === "spanne" ? `<div class="hist">Eigentümer laut Häuserbuch (Hausnummernspanne): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
     `</div>${gruppen}`;
 }
 

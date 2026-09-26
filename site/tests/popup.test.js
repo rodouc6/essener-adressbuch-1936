@@ -25,6 +25,12 @@ test("popupHtml: heutige und historische Adresse, Präzision, Namen ohne Seiten"
   assert.doesNotMatch(h, /I-551/);
 });
 
+test("hausHtml nennt die Herkunft einer Besitzklasse aus einer Hausnummernspanne", () => {
+  const h = hausHtml({ ...EIG, besitz: "kirche_stiftung", besitz_quelle: "spanne", besitz_spanne: "Sommerburgstr. 2–84 · Frau-Margarete-Krupp-Stiftung" }, E);
+  assert.match(h, /Hausnummernspanne\): Sommerburgstr\. 2–84 · Frau-Margarete-Krupp-Stiftung · /);
+  assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /Hausnummernspanne/);
+});
+
 test("popupHtml kompakt zeigt höchstens drei Namen", () => {
   const h = popupHtml(EIG, E, true);
   assert.match(h, /alle 3 im Detail/);

@@ -330,6 +330,59 @@ def test_gruppiere_besitz():
     assert all(x["besitz"] == "ungeprueft" for x in gruppiere(e, []).values())
 
 
+def test_gruppiere_besitz_aus_hausnummernspanne():
+    # Das Häuserbuch druckt „2—8 E. Fried. Krupp A.G.“ einmal am Anfang der Straßenseite; die Häuser 4, 6, 8
+    # folgen nur mit Bewohnern. Gleiche Parität von Anfang und Ende = eine Straßenseite (Faksimile II-335).
+    from pipeline.lib.eigentuemer import lade_kuratierung
+    from pipeline.lib.karte_export import baue_layouts
+    e = [_v(id="s", teil="II", hausnr="2", hausnr_bis="8", **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="1", teil="I", hausnr="4"),                                       # in der Spanne
+         _v(id="2", teil="I", hausnr="4", hausnr_zusatz="a"),                    # 4a zählt zu 4
+         _v(id="3", teil="I", hausnr="5"),                                       # andere Straßenseite
+         _v(id="4", teil="I", hausnr="10"),                                      # außerhalb
+         _v(id="5", teil="II", hausnr="6", **{"Firmenname": "Stadt Essen"}),     # eigener Eintrag gewinnt
+         _v(id="6", teil="II", hausnr="8", lastname="Schmidt", firstname="W."),  # eigener, ungeprüfter Eintrag: bleibt ungeprüft
+         # gemischte Spanne 1–6 (beide Seiten) und 4–8 (gerade) mit anderer Kategorie → Nr. 6 gemischt
+         _v(id="m", teil="II", strasse_heute="Bochumer Straße", hausnr="1", hausnr_bis="6", **{"Firmenname": "Stadt Essen"}),
+         _v(id="n", teil="II", strasse_heute="Bochumer Straße", hausnr="4", hausnr_bis="8", **{"Firmenname": "Fried. Krupp AG."}),
+         _v(id="7", teil="I", strasse_heute="Bochumer Straße", hausnr="2"),
+         _v(id="8", teil="I", strasse_heute="Bochumer Straße", hausnr="3"),
+         _v(id="9", teil="I", strasse_heute="Bochumer Straße", hausnr="6"),
+         # nicht verortete Spannenzeile wirkt trotzdem: Treffer läuft über Straße und Nummer, nicht über Koordinaten
+         _v(id="o", teil="II", strasse_heute="Bochumer Straße", hausnr="9", hausnr_bis="11", stufe="offen", lat="", lon="",
+            **{"Firmenname": "Fried. Krupp A.G."}),
+         _v(id="10", teil="I", strasse_heute="Bochumer Straße", hausnr="11"),
+         _v(id="p", teil="II", strasse_heute="Bochumer Straße", hausnr="13", hausnr_bis="15", **{"Firmenname": "Bauverein GmbH"}),  # ungeprüft: keine Spanne
+         _v(id="11", teil="I", strasse_heute="Bochumer Straße", hausnr="15")]
+    a = gruppiere(e, [], lade_kuratierung(EIG))
+    by = {(x["strasse_heute"], x["hausnr"] + x["hausnr_zusatz"]): x for x in a.values()}
+    L, B = "Lattenkamp", "Bochumer Straße"
+    assert (by[L, "4"]["besitz"], by[L, "4"]["besitz_quelle"]) == ("industrie", "spanne")
+    assert by[L, "4"]["besitz_spanne"] == "Grenzstr. 2–8, Katernberg · Fried. Krupp A.G." and by[L, "4"]["besitz_eigentuemer"] == "Fried. Krupp AG"
+    assert (by[L, "4a"]["besitz"], by[L, "4a"]["besitz_quelle"]) == ("industrie", "spanne")
+    assert (by[L, "5"]["besitz"], by[L, "5"]["besitz_quelle"]) == ("ungeprueft", "")
+    assert by[L, "10"]["besitz"] == "ungeprueft"
+    assert (by[L, "2"]["besitz"], by[L, "2"]["besitz_quelle"]) == ("industrie", "eintrag")
+    assert (by[L, "6"]["besitz"], by[L, "6"]["besitz_quelle"]) == ("stadt_staat", "eintrag")
+    assert (by[L, "8"]["besitz"], by[L, "8"]["besitz_quelle"], by[L, "8"]["besitz_spanne"]) == ("ungeprueft", "", "")
+    assert (by[B, "2"]["besitz"], by[B, "2"]["besitz_quelle"]) == ("stadt_staat", "spanne")
+    assert (by[B, "3"]["besitz"], by[B, "3"]["besitz_quelle"]) == ("stadt_staat", "spanne")
+    assert (by[B, "4"]["besitz"], by[B, "4"]["besitz_quelle"]) == ("industrie", "eintrag")
+    assert (by[B, "6"]["besitz"], by[B, "6"]["besitz_quelle"], by[B, "6"]["besitz_eigentuemer"]) == ("gemischt", "spanne", "")
+    assert (by[B, "11"]["besitz"], by[B, "11"]["besitz_quelle"]) == ("industrie", "spanne")
+    assert (by[B, "15"]["besitz"], by[B, "15"]["besitz_quelle"]) == ("ungeprueft", "")
+    assert punkt_feature(by[L, "4"])["properties"]["besitz_quelle"] == "spanne"
+    assert punkt_feature(by[L, "4"])["properties"]["besitz_spanne"].startswith("Grenzstr. 2–8")
+    # Häuser aus Spannen zählen für Index, Kennzahlen und Bubbles wie eigene Einträge
+    liste, scherben = baue_eigentuemerindex(a)
+    assert [x[1:3] for x in liste] == [["Fried. Krupp AG", 5], ["Stadt Essen", 4]]       # Krupp: L2, L4, L4a, B4, B11; Stadt: L6, B1, B2, B3
+    assert scherben["fr"]["Fried. Krupp AG"] == sorted([[by[L, n]["id"], 1] for n in ("2", "4", "4a")] + [[by[B, n]["id"], 1] for n in ("4", "11")])
+    kz = baue_kennzahlen(e, a, "2026-09-26")
+    assert (kz["besitz_geprueft"], kz["besitz_spanne"]) == (10, 6)                       # geprüft: 9 eindeutige + B6 gemischt; Spanne: L4, L4a, B2, B3, B6, B11
+    krupp = next(k for k in baue_layouts(a)["eigentuemer"]["kreise"] if k["id"] == "Fried. Krupp AG")
+    assert krupp["n"] == 5
+
+
 def test_eigentuemerindex_und_kennzahlen():
     from pipeline.lib.eigentuemer import lade_kuratierung
     e = [_v(id="1", teil="II", hausnr="1", **{"Firmenname": "Fried. Krupp A.G."}),

@@ -84,6 +84,59 @@ def _besitz(eintraege: list[dict]) -> str:
     return kats.pop() if len(kats) == 1 else "gemischt"
 
 
+def _kuratiert(e: dict, eigentuemer: dict[str, dict]) -> dict | None:
+    """Geprüfte Kuratierungszeile zu einem Teil-II-Eintrag: zuerst die stadtteilgenaue Schreibweise
+    („… ‹Katernberg›“), sonst die einfache; nur mit geprueft=ja und Kategorie."""
+    s, _ = schreibweise_von(e)
+    z = eigentuemer.get(mit_stadtteil(s, e)) or eigentuemer.get(s)
+    return z if z and z.get("geprueft") == "ja" and z.get("kategorie") else None
+
+
+def _strassenschluessel(e: dict) -> str:
+    return (e.get("schl_nr") or e.get("strasse_heute") or "").strip()
+
+
+def hausnummernspannen(eintraege: list[dict], eigentuemer: dict[str, dict]) -> dict[str, list[dict]]:
+    """Teil-II-Zeilen mit Hausnummernspanne je Straße. Das Häuserbuch druckt einen Eigentümer vieler
+    aufeinanderfolgender Häuser einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“,
+    Faksimile II-335); die Häuser dazwischen folgen nur mit Bewohnern. Gleiche Parität von Anfang und Ende
+    heißt eine Straßenseite (2—84: nur gerade), sonst gelten alle Nummern dazwischen (2—9). Nur geprüfte
+    Eigentümer; auch nicht verortete Zeilen zählen, der Treffer läuft über Straße und Nummer."""
+    spannen: dict[str, list[dict]] = defaultdict(list)
+    for e in eintraege:
+        if e.get("teil") != "II" or not (e.get("hausnr") or "").isdigit() or not (e.get("hausnr_bis") or "").isdigit():
+            continue
+        strasse = _strassenschluessel(e)
+        z = _kuratiert(e, eigentuemer) if strasse else None
+        von, bis = int(e["hausnr"]), int(e["hausnr_bis"])
+        if not z or bis <= von:
+            continue
+        text = f"{_historisch(dict(e, hausnr=f'{von}–{bis}', hausnr_zusatz=''))} · {schreibweise_von(e)[0]}"
+        spannen[strasse].append(dict(von=von, bis=bis, seite=von % 2 if (bis - von) % 2 == 0 else None,
+                                     eigentuemer=z["eigentuemer"], kategorie=z["kategorie"],
+                                     identitaet=identitaet_sicher(z), text=text))
+    return dict(spannen)
+
+
+def _besitz_aus_spanne(a: dict, spannen: dict[str, list[dict]]) -> None:
+    """Besitzklasse einer Adresse ohne eigenen Teil-II-Eintrag aus den Spannen ihrer Straße. Ein eigener
+    Eintrag gewinnt immer — auch ein ungeprüfter, denn er ist die genauere Angabe. Verschiedene Kategorien
+    in überlappenden Spannen → gemischt; der Eigentümername wird nur bei genau einem übernommen."""
+    if any(e.get("teil") == "II" for e in a["eintraege"]) or not (a.get("hausnr") or "").isdigit():
+        return
+    n = int(a["hausnr"])
+    strasse = _strassenschluessel(a["eintraege"][0]) if a["eintraege"] else ""
+    treffer = [s for s in spannen.get(strasse, []) if s["von"] <= n <= s["bis"] and s["seite"] in (None, n % 2)]
+    if not treffer:
+        return
+    kats = {s["kategorie"] for s in treffer}
+    namen = {s["eigentuemer"] for s in treffer}
+    a["besitz"] = kats.pop() if len(kats) == 1 else "gemischt"
+    a["besitz_quelle"] = "spanne"
+    a["besitz_spanne"] = " | ".join(s["text"] for s in treffer)
+    a["besitz_eigentuemer"] = namen.pop() if len(namen) == 1 and a["besitz"] != "gemischt" and treffer[0]["identitaet"] else ""
+
+
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
              berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None,
              gewerbe: dict[str, dict] | None = None, stadtteile: "Stadtteile | None" = None) -> dict[str, dict]:
@@ -111,10 +164,8 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
                                     nummer_unsicher=e.get("nummer_unsicher", "nein"), eintraege=[])
         kanon, kat, sicher = "", "", False
         if e.get("teil") == "II":
-            s, _ = schreibweise_von(e)
-            # zuerst die stadtteilgenaue Schreibweise („… ‹Katernberg›“), sonst die einfache
-            z = eigentuemer.get(mit_stadtteil(s, e)) or eigentuemer.get(s)
-            if z and z.get("geprueft") == "ja" and z.get("kategorie"):
+            z = _kuratiert(e, eigentuemer)
+            if z:
                 kanon, kat = z["eigentuemer"], z["kategorie"]
                 sicher = identitaet_sicher(z)
         beruf = berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None
@@ -131,9 +182,16 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         e = dict(e, _merkmale=merkmale_fuer(e, regeln), _eigentuemer=kanon, _kategorie=kat, _identitaet=sicher,
                 _beruf=beruf, _gewerbe=gew)
         a["eintraege"].append(e)
+    # Zweiter Durchgang: Hausnummernspannen aus Teil II („2—84 E. …“) auf die Häuser dazwischen übertragen.
+    # besitz_quelle sagt je Adresse, woher die Klasse kommt: eintrag | spanne | "" (ungeprüft).
+    spannen = hausnummernspannen(eintraege, eigentuemer)
     for a in adressen.values():
         a["eintraege"] = sortiere_eintraege(a["eintraege"])
         a["besitz"] = _besitz(a["eintraege"])
+        a["besitz_quelle"] = "eintrag" if a["besitz"] != "ungeprueft" else ""
+        a["besitz_spanne"] = ""
+        a["besitz_eigentuemer"] = ""
+        _besitz_aus_spanne(a, spannen)
         a["niveau"], a["n_niveau"] = _niveau(a["eintraege"])
     return adressen
 
@@ -160,6 +218,7 @@ def punkt_feature(a: dict) -> dict:
     p = dict(id=a["id"], stufe=a["stufe"], stadtteil=a["stadtteil"], strasse_heute=a["strasse_heute"],
              hausnr=a["hausnr"] + (a["hausnr_zusatz"] or ""), historisch=a["historisch"],
              nummer_unsicher=a["nummer_unsicher"], besitz=a.get("besitz", "ungeprueft"),
+             besitz_quelle=a.get("besitz_quelle", ""), besitz_spanne=a.get("besitz_spanne", ""),
              niveau=a.get("niveau", "ungeprueft"), n_I=0, n_II=0, n_III=0)
     merkmale: dict[str, int] = defaultdict(int)
     for e in a["eintraege"]:
@@ -329,6 +388,9 @@ def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[s
             if e.get("_eigentuemer") and e.get("_identitaet"):
                 zaehler[e["_eigentuemer"]][a["id"]] += 1
                 kategorien[e["_eigentuemer"]].add(e["_kategorie"])
+        if a.get("besitz_eigentuemer"):      # Haus aus einer Hausnummernspanne (ohne eigene Teil-II-Zeile)
+            zaehler[a["besitz_eigentuemer"]][a["id"]] += 1
+            kategorien[a["besitz_eigentuemer"]].add(a["besitz"])
     kategorie = {n: (k.pop() if len(k) == 1 else "gemischt") for n, k in kategorien.items()}
     liste = sorted([[falte(n), n, len(z), kategorie[n]] for n, z in zaehler.items()], key=lambda x: (-x[2], x[0]))
     scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
@@ -372,6 +434,7 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
                 adressen=len(adressen), stand=datum,
                 besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
+                besitz_spanne=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "spanne"),
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),
@@ -408,6 +471,9 @@ def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
                 betriebe.add((g["schluessel"], g["rubrik"]))
                 r = rub.setdefault(g["rubrik"], dict(id=g["rubrik"], n=0, gruppe=g["gruppe"], art=g["art"]))
                 r["n"] += 1
+        if a.get("besitz_eigentuemer"):      # Haus aus einer Hausnummernspanne zählt zur Fläche des Eigentümers
+            x = eig.setdefault(a["besitz_eigentuemer"], dict(id=a["besitz_eigentuemer"], n=0, gruppe=a["besitz"], haeuser=set()))
+            x["haeuser"].add(a["id"])
     for x in eig.values():
         x["n"] = len(x.pop("haeuser"))
     for n in normen.values():
