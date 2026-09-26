@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalisiere } from "../js/ansicht.js";
-import { detailText, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel } from "../js/perspektiven_modell.js";
+import { detailText, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
+
+test("zeichenflaeche zieht Legende und Zahlenzeile ab und hält Mindestmaße", () => {
+  assert.deepEqual(zeichenflaeche(800, 700, 90), { breite: 800, hoehe: 610 });
+  assert.deepEqual(zeichenflaeche(390, 480, 300), { breite: 390, hoehe: 240 });   // Mindesthöhe
+  assert.deepEqual(zeichenflaeche(0, 0), { breite: 600, hoehe: 500 });            // ohne Messung
+});
 
 test("sichtbareKapitel nur freigegebene, mit vorschau alle", () => {
   const i = [{ id: "a", freigegeben: true }, { id: "b", freigegeben: false }];

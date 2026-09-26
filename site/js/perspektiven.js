@@ -10,7 +10,7 @@ import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
-import { detailText, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel } from "./perspektiven_modell.js";
+import { detailText, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles };
 const lader = new Lader();
@@ -72,7 +72,7 @@ function kapitelHtml(k) {
     + `<div class="scrolly">`
     // Nur Bild und Legende sind für Hilfsmittel verborgen (die Beschreibung steht je Schritt in
     // .sr-only); die Zahlenzeile bleibt lesbar, weil jeder Schritt seine Grundlage nennen muss.
-    + `<div class="grafik"><div class="svg" aria-hidden="true"></div><div class="legende" aria-hidden="true"></div><div class="zahlen"></div></div>`
+    + `<div class="grafik"><div class="buehne"><div class="svg" aria-hidden="true"></div><div class="legende" aria-hidden="true"></div><div class="zahlen"></div></div></div>`
     + `<div class="schritte">${schritte}</div>`
     + `</div>`
     + `<section class="grenzen"><h3>Was die Zahlen zeigen – und was nicht</h3>`
@@ -92,29 +92,40 @@ function zeichne(sec, schritt) {
   const ansicht = normalisiere(schritt.ansicht);
   if (schritt.ansicht && schritt.ansicht.form === "multiples") ansicht.filter = { ...ansicht.filter, je_einheit: true };
   const form = FORMEN[formFuer(ansicht)];
-  const grafik = sec.querySelector(".grafik");
-  const breite = grafik.clientWidth || 600, hoehe = Math.max(320, Math.min(grafik.clientHeight || 500, 700));
-  const r = form.zeige(ansicht, daten, { breite, hoehe, hervorheben: schritt.hervorheben || [], titel: schritt.beschreibung });
+  const buehne = sec.querySelector(".buehne");
+  const svg = buehne.querySelector(".svg");
+  const legende = buehne.querySelector(".legende");
+  const zahlen = buehne.querySelector(".zahlen");
+  const optionen = { hervorheben: schritt.hervorheben || [], titel: schritt.beschreibung };
+  // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Legende und Zahlenzeile übrig lässt —
+  // und deren Höhe kennt man erst, wenn die Legende dieses Schritts steht. Der erste Durchgang
+  // liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest der Bühne.
+  const vorab = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
+  legende.innerHTML = legendeHtml(vorab.legende);
+  zahlen.textContent = zahlenText(vorab, ansicht);
+  const r = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   // Schrittwechsel als Überblendung des bleibenden Behälters: Übergänge auf den SVG-Knoten selbst
   // liefen nie, weil innerHTML sie alle ersetzt. Bei reduzierter Bewegung wird hart getauscht.
-  const svg = grafik.querySelector(".svg");
   svg.innerHTML = r.svg;
   if (!reduziert) {
     svg.classList.add("blass");
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
-  grafik.querySelector(".legende").innerHTML = r.legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
-  // Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
-  // gezeichnet sind (eine Rangliste zeigt nie alle) und wie viele unter min_n grau bleiben.
-  // Ohne bekannte Gesamtzahl (Formen, die nicht über eine Ebene gehen) wird keine erfunden.
-  const gezeichnet = Number.isInteger(r.zahlen.einheiten_gesamt)
-    ? `${r.zahlen.einheiten} von ${r.zahlen.einheiten_gesamt} Einheiten gezeichnet`
-    : `${r.zahlen.einheiten} Einheiten gezeichnet`;
-  grafik.querySelector(".zahlen").textContent = `${r.zahlen.hinweis} · ${gezeichnet}`
-    + ` · ${r.zahlen.unter_min} unter ${ansicht.min_n} ${nennerText(ansicht)} (grau, nicht eingefärbt)`;
   svg.setAttribute("aria-label", schritt.beschreibung || "");
   const werte = werteJeEinheit(ansicht, daten);
   svg.querySelectorAll(".einheit").forEach((el) => el.addEventListener("click", () => zeigeDetail(el.dataset.id, werte, ansicht, el.querySelector("title")?.textContent)));
+}
+
+const legendeHtml = (legende) => legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
+
+// Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
+// gezeichnet sind (eine Rangliste zeigt nie alle) und wie viele unter min_n grau bleiben.
+// Ohne bekannte Gesamtzahl (Formen, die nicht über eine Ebene gehen) wird keine erfunden.
+function zahlenText(r, ansicht) {
+  const gezeichnet = Number.isInteger(r.zahlen.einheiten_gesamt)
+    ? `${r.zahlen.einheiten} von ${r.zahlen.einheiten_gesamt} Einheiten gezeichnet`
+    : `${r.zahlen.einheiten} Einheiten gezeichnet`;
+  return `${r.zahlen.hinweis} · ${gezeichnet} · ${r.zahlen.unter_min} unter ${ansicht.min_n} ${nennerText(ansicht)} (grau, nicht eingefärbt)`;
 }
 
 // Detailkasten zu einer angeklickten Einheit: Name, Nennungen, Anteile je Gruppe, Hinweis unter min_n.
@@ -142,7 +153,8 @@ function bindeKapitel(sec, k) {
   if (window.scrollama) {
     const sc = window.scrollama();
     sc.setup({ step: `#${sec.id} .schritt`, offset: 0.6 }).onStepEnter((r) => zeigeSchritt(r.element));
-    addEventListener("resize", () => sc.resize());
+    // Nach einer Größenänderung (Drehen des Handys) muss die Bühne neu vermessen werden.
+    addEventListener("resize", () => { sc.resize(); zeigeSchritt(sec.querySelector(".schritt.aktiv")); });
   }
   zeigeSchritt(sec.querySelector(".schritt"));
 }

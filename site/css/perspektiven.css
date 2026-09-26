@@ -1,10 +1,12 @@
-/* site/css/perspektiven.css — Perspektiven-Seite: Scrollytelling in zwei Spalten (Text links,
-   klebende Grafik rechts), Detailkasten und die Grenzen-Abschnitte. Ergänzt css/stil.css; die
-   dort für die Kartenseite gesetzten festen Positionen von .logo, .legende und .zahlen werden
-   hier bewusst zurückgenommen. */
+/* site/css/perspektiven.css — Perspektiven-Seite als Scrollytelling nach dem Muster großer
+   Datenjournalismus-Stücke: die Grafik ist der Bildschirm (klebend, volle Höhe, randlos), die
+   Schritte sind schmale Karten, die an ihr vorbeilaufen — auf breiten Schirmen in einer rechten
+   Spalte neben der Bühne, auf schmalen als Karten über dem unteren Teil. Zwischen zwei Karten
+   liegt ein voller Bildschirm Scrollweg. Ergänzt css/stil.css; die dort für die Kartenseite
+   gesetzten festen Positionen von .logo, .legende und .zahlen werden hier zurückgenommen. */
 
 .perspektiven { line-height: 1.55; }
-.perspektiven .kopf { position: sticky; top: 0; z-index: 6; background: var(--papier); padding: 8px 16px; gap: 16px; }
+.perspektiven .kopf { position: static; background: var(--papier); padding: 8px 16px; gap: 16px; }
 .perspektiven .kopf .logo { position: static; box-shadow: none; background: none; padding: 0; }
 .perspektiven .kopf nav { font-size: 14px; color: var(--grau); }
 
@@ -15,43 +17,56 @@
 .inhaltsverzeichnis li { margin: 4px 0; }
 .inhaltsverzeichnis small { color: var(--grau); }
 
-.kapitel { margin: 56px 0; border-top: 1px solid var(--rand); padding-top: 24px; scroll-margin-top: 56px; }
+.kapitel { margin: 56px 0; border-top: 1px solid var(--rand); padding-top: 24px; scroll-margin-top: 16px; }
 .kapitel > header { max-width: 720px; margin: 0 auto 24px; }
 .kapitel > header h2 { font-size: 24px; margin: 0; }
 .kapitel > header .untertitel { color: var(--grau); margin: 2px 0 12px; }
 
-/* Zwei Spalten: links die Schritte zum Lesen, rechts die klebende Grafik. */
-/* minmax(0, …) statt 40%/60%: sonst wächst eine breite Grafik über ihre Spalte hinaus, weil
-   Grid-Spalten voreingestellt min-content-breit bleiben. */
-.scrolly { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 24px; align-items: start; }
-.scrolly .schritte { order: 1; }
-.scrolly .grafik { order: 2; position: sticky; top: 64px; height: calc(100vh - 96px); display: flex; flex-direction: column; justify-content: center; }
+/* Scrolly: randlos über die volle Fensterbreite, egal wie breit main ist. */
+.scrolly { position: relative; width: 100vw; margin-left: calc(50% - 50vw); }
 
-.grafik .svg { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
-.grafik .svg svg { max-width: 100%; max-height: 100%; height: auto; }
-.perspektiven .grafik .legende { position: static; box-shadow: none; background: none; max-width: none; padding: 8px 0 0;
-  display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; }
-.legende span i { width: 12px; height: 12px; display: inline-block; margin-right: 4px; border-radius: 2px; vertical-align: -1px; }
+/* Die Bühne klebt einen ganzen Bildschirm lang; alles Weitere läuft darüber. 100lvh statt 100vh,
+   damit die Adressleiste auf dem Handy nicht bei jedem Scrollen die Höhe springen lässt. */
+.scrolly .grafik { position: sticky; top: 0; height: 100vh; height: 100lvh; z-index: 0; overflow: hidden; }
+/* Zeichenbereich: links 60 % — rechts laufen die Karten, dort liegt nichts Wichtiges. */
+.buehne { position: absolute; left: 0; top: 0; width: 60%; height: 100%; box-sizing: border-box; padding: 16px 24px 12px;
+  display: flex; flex-direction: column; }
+.buehne .svg { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.buehne .svg svg { max-width: 100%; max-height: 100%; height: auto; }
+.perspektiven .buehne .legende { position: static; box-shadow: none; background: none; max-width: none; padding: 8px 0 0;
+  display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12px; line-height: 1.3; }
+.legende span i { width: 11px; height: 11px; display: inline-block; margin-right: 4px; border-radius: 2px; vertical-align: -1px; }
 .legende span small { color: var(--grau); }
-.perspektiven .grafik .zahlen { display: block; margin: 6px 0 0; font-size: 12px; color: var(--grau); }
+.perspektiven .buehne .zahlen { display: block; margin: 5px 0 0; font-size: 12px; color: var(--grau); line-height: 1.3; }
 
 /* Beschriftungen innerhalb der erzeugten SVGs (Klassen aus site/js/formen/*). */
-.grafik svg .titel { font-size: 13px; font-weight: 600; fill: var(--text); }
-.grafik svg .name { font-size: 11px; fill: var(--text); }
-.grafik svg .wert { font-size: 11px; fill: var(--grau); }
-.grafik svg .hinweis { font-size: 10px; fill: var(--grau); }
-.grafik svg .balken, .grafik svg .segment { stroke: #fff; stroke-width: .5; }
-.grafik svg .einheit { cursor: pointer; }
-.grafik svg .einheit.unter-min { opacity: .55; }
-.grafik svg .einheit.unter-min .name, .grafik svg .einheit.unter-min .wert { fill: var(--grau); }
-.grafik svg .einheit.hervorgehoben { stroke: var(--text); stroke-width: 1.5; }
-.grafik svg .einheit.hervorgehoben .name { font-weight: 700; }
+.buehne svg .titel { font-size: 13px; font-weight: 600; fill: var(--text); }
+.buehne svg .name { font-size: 11px; fill: var(--text); }
+.buehne svg .wert { font-size: 11px; fill: var(--grau); }
+.buehne svg .hinweis { font-size: 10px; fill: var(--grau); }
+.buehne svg .balken, .buehne svg .segment { stroke: #fff; stroke-width: .5; }
+.buehne svg .einheit { cursor: pointer; }
+.buehne svg .einheit.unter-min { opacity: .55; }
+.buehne svg .einheit.unter-min .name, .buehne svg .einheit.unter-min .wert { fill: var(--grau); }
+.buehne svg .einheit.hervorgehoben { stroke: var(--text); stroke-width: 1.5; }
+.buehne svg .einheit.hervorgehoben .name { font-weight: 700; }
 
-.schritt { min-height: 60vh; padding: 16px; opacity: .45; transition: opacity .3s ease; }
+/* Die Karten: beginnen oben auf der Bühne (negativer Rand hebt sie über die klebende Grafik),
+   rechte Spalte, ein Bildschirm Abstand zwischen zwei Karten. Die Hülle lässt Klicks durch
+   (pointer-events), damit die Grafik hinter ihr anklickbar bleibt; nur die Karte selbst fängt sie. */
+.scrolly .schritte { position: relative; z-index: 2; pointer-events: none; margin-top: -100vh; margin-top: -100lvh;
+  padding: 12vh 24px 30vh calc(60% + 24px); box-sizing: border-box; }
+.schritt { pointer-events: auto; max-width: 32em; padding: 16px 20px; border-radius: 12px;
+  background: rgba(250, 248, 243, .94); box-shadow: 0 5px 16px rgba(0,0,0,.08), 0 3px 8px rgba(0,0,0,.1);
+  opacity: .7; transition: opacity .3s ease; font-size: 17px; }
+@supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+  .schritt { background: rgba(250, 248, 243, .8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+}
+.schritt + .schritt { margin-top: 90vh; }
 .schritt.aktiv { opacity: 1; }
 .schritt:focus-visible { outline: 2px solid var(--blau); outline-offset: 2px; }
 .schritt p { margin: 0 0 8px; }
-.schritt .links { font-size: 13px; }
+.schritt .links { font-size: 13px; margin: 0; }
 
 .grenzen { max-width: 720px; margin: 32px auto 0; background: #fff7e0; border-left: 3px solid #d4a017; padding: 10px 14px; }
 .grenzen h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin: 0 0 6px; }
@@ -69,22 +84,25 @@
 
 /* Formwechsel zwischen den Schritten: Überblendung des bleibenden Behälters (der Inhalt wird
    komplett ersetzt, Übergänge auf den einzelnen Formen könnten also gar nicht laufen). 400 ms. */
-.grafik .svg { transition: opacity .4s ease; }
-.grafik .svg.blass { opacity: 0; }
+.buehne .svg { transition: opacity .4s ease; }
+.buehne .svg.blass { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .grafik .svg { transition: none; }
-  .grafik .svg.blass { opacity: 1; }
+  .buehne .svg { transition: none; }
+  .buehne .svg.blass { opacity: 1; }
   .schritt { transition: none; }
 }
 
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
-/* Schmale Schirme: eine Spalte, die Grafik klebt oben, die Schritte laufen halbdeckend darüber. */
+/* Schmale Schirme: die Bühne nimmt die oberen 62 % des Bildschirms, die Karten laufen darunter
+   herein und über den unteren Teil; die Zeichenfläche selbst bleibt frei. */
 @media (max-width: 899px) {
-  .scrolly { display: block; }
-  .scrolly .grafik { position: sticky; top: 0; height: 55vh; z-index: 0; padding-top: 8px; background: var(--papier); }
-  .scrolly .schritte { position: relative; z-index: 1; }
-  .schritt { min-height: 50vh; background: rgba(250,248,243,.92); border-radius: 8px; margin: 0 0 8px; }
+  .buehne { width: 100%; height: 62%; padding: 10px 12px 6px; }
+  .perspektiven .buehne .legende { font-size: 11px; gap: 2px 10px; }
+  .perspektiven .buehne .zahlen { font-size: 11px; }
+  .scrolly .schritte { padding: 64vh 12px 40vh; padding-top: 64lvh; }
+  .schritt { max-width: none; font-size: 16px; padding: 14px 16px; }
+  .schritt + .schritt { margin-top: 80vh; }
   .detail { left: 16px; right: 16px; max-width: none; }
 }

@@ -532,8 +532,13 @@ python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Sta
 ## Perspektiven (Teilprojekt 5b)
 
 Scrollytelling-Seite `site/perspektiven.html`: Einleitung, Inhaltsverzeichnis, Kapitel untereinander,
-je Kapitel eine sticky Grafikfläche neben/hinter Textkarten (Scrollama 3.2.0, lokal in
-`site/vendor/scrollama.js`, kein CDN — Datenschutz und Reproduzierbarkeit, s. `site/vendor/README.md`).
+je Kapitel eine klebende Bühne über die volle Fensterhöhe und -breite, an der die Schritte als
+schmale Karten vorbeilaufen — auf breiten Schirmen in der rechten Spalte (das Bild nutzt die linken
+60 %), auf schmalen über dem unteren Drittel (das Bild nutzt die oberen 62 %); zwischen zwei Karten
+liegt ein Bildschirm Scrollweg (Scrollama 3.2.0, lokal in `site/vendor/scrollama.js`, kein CDN —
+Datenschutz und Reproduzierbarkeit, s. `site/vendor/README.md`). Das Bild bekommt, was Legende und
+Zahlenzeile auf der Bühne übrig lassen (`zeichenflaeche` in `perspektiven_modell.js`); die Rangliste
+teilt sich bei vielen Zeilen in zwei Spalten oder wächst und wird herunterskaliert.
 Nur Kapitel mit `freigegeben: true` erscheinen; alle Kapitel (auch unfreigegebene) sind mit
 `?vorschau=1` sichtbar, damit der Projektleiter Text und Ansicht im echten Seitenkontext prüfen kann,
 ohne sie zu veröffentlichen — dieser Parameter steht deshalb an keiner öffentlichen Stelle (Startseite,

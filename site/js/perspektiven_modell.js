@@ -62,6 +62,17 @@ export function formFuer(ansicht) {
   return "balken";
 }
 
+// Größe der Zeichenfläche einer Form aus dem gemessenen Platz der Bühne: was Legende und
+// Zahlenzeile brauchen, geht ab; unter den Mindestmaßen wird nicht mehr geschrumpft, damit die
+// Formen lesbar bleiben (die Seite skaliert das SVG dann herunter). Ohne Messwerte (0) gelten
+// Standardmaße.
+export const FLAECHE_MIN = { breite: 280, hoehe: 240 };
+export function zeichenflaeche(buehneBreite, buehneHoehe, unterbau = 0) {
+  const b = Math.floor(Number(buehneBreite) || 0) || 600;
+  const h = Math.floor((Number(buehneHoehe) || 0) - (Number(unterbau) || 0)) || 500;
+  return { breite: Math.max(FLAECHE_MIN.breite, b), hoehe: Math.max(FLAECHE_MIN.hoehe, h) };
+}
+
 // Text des Detailkastens zu einer angeklickten Einheit. Genannt werden immer die einbezogenen
 // und die ausgeschlossenen Nennungen; Gruppen ohne Nennung bleiben weg. Liegt die Einheit unter
 // min_n, steht das als letzte Zeile da — der Anteil ist dann nicht belastbar.

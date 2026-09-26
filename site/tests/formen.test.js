@@ -48,6 +48,20 @@ test("rangliste: sortiert nach Wert, unter min_n ans Ende und grau, hervorheben"
   assert.equal(t.zahlen.einheiten, 1); assert.equal(t.zahlen.unter_min, 1); assert.equal(t.zahlen.einheiten_gesamt, 2);
 });
 
+test("rangliste: zwei Spalten, wenn 48 Zeilen nicht lesbar untereinander passen", () => {
+  assert.deepEqual(rangliste.spaltenWahl(48, 390, 450).spalten, 1);      // Handy: zu schmal für zwei Spalten → eine, Fläche wächst
+  assert.deepEqual(rangliste.spaltenWahl(48, 700, 450).spalten, 2);      // Tablet quer: zwei Spalten
+  assert.ok(rangliste.spaltenWahl(48, 700, 450).zeile >= 13);
+  assert.deepEqual(rangliste.spaltenWahl(15, 700, 450), { spalten: 1, zeile: 28 });
+  const st = Array.from({ length: 48 }, (_, i) => ({ id: `S${i}`, lat: 51.4, lon: 7, adressen: 10, n_I: 200, n_st_arbeiter: 100 + i, n_st_beamte: 50, rang_nord: i }));
+  const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "rangliste", gruppen: G, bezug: "Arbeiter", min_n: 0 });
+  const zwei = rangliste.zeige(a, { ...daten, stadtteile: st }, { breite: 700, hoehe: 450 });
+  assert.equal((zwei.svg.match(/<g data-id=/g) || []).length, 48);
+  assert.match(zwei.svg, /<text x="35[0-9.]*" /);                          // zweite Spalte beginnt rechts der Mitte
+  const eins = rangliste.zeige(a, { ...daten, stadtteile: st }, { breite: 390, hoehe: 450 });
+  assert.match(eins.svg, /viewBox="0 0 390 (6[0-9]{2}|7[0-9]{2})"/);       // eine Spalte: 48 × 13 px → die Fläche wächst
+});
+
 test("Legende nach Maß: dichte in absoluten Stufen, mischung als Mischungsgrad", () => {
   // Bei dichte darf keine Prozentstufe in der Legende stehen — gezeigt wird „je 1.000“.
   const d = normalisiere({ daten: "gewerbe", ebene: "stadtteil", form: "rangliste", mass: "dichte",
