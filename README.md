@@ -606,6 +606,13 @@ Gewerbezuordnung ist an `stellung_quelle`/`gewerbe_quelle` erkennbar (`hand` vs.
 Kapiteltexte sind, solange `freigegeben: false` gilt, ausdrücklich Platzhalter und nicht redaktionell
 geprüft.
 
+Der Detailkasten folgt dem Zeiger: Schweben über einer Einheit (Balkensegment, Stadtteil, Kreis,
+Ranglistenzeile) zeigt ihn flüchtig und hebt die Einheit hervor, ein Klick stellt ihn fest (dann erst
+mit Schließknopf und Kartenlink). Schweben über einer anderen Einheit, Schließen oder ein
+Schrittwechsel löst die Feststellung wieder. Die Logik steht als `detailZustand` in
+`perspektiven_modell.js` (geprüft), das Verdrahten in `perspektiven.js`; Geräte ohne echten Zeiger
+(`(hover: hover) and (pointer: fine)`) bekommen nur den Klickweg, weil dort kein „Verlassen“ käme.
+
 **Ruling:** Die im Spec (§4.2) skizzierte Migration der Themen (`kuratierung/themen/`) auf das
 Ansicht-Format ist **nicht** Teil von 5b — `themen.js` bleibt unverändert. Sie gehört zu Teilprojekt 5c,
 sobald die Werkstatt Standardgruppen aus den Themen lesen soll.

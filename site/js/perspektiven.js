@@ -10,12 +10,18 @@ import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
-import { detailText, detailTextGruppe, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import { detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles };
 const lader = new Lader();
 const vorschau = new URLSearchParams(location.search).get("vorschau") === "1";
 const reduziert = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Nur Geräte mit echtem Zeiger bekommen die Schwebe-Anzeige; auf dem Touchscreen bliebe der Kasten
+// sonst nach jeder Berührung offen, ohne dass ein „Verlassen“ je käme.
+const schweben = matchMedia("(hover: hover) and (pointer: fine)").matches;
+let detail = DETAIL_ZU;
+// Die gerade gezeichnete Ansicht: ihre Werte füllen den Detailkasten, ihr SVG trägt die Hervorhebung.
+let gezeigt = { werte: [], ansicht: null, svg: null };
 
 // Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, ab vier Ziffern.
 const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei" };
@@ -88,8 +94,8 @@ function kapitelHtml(k) {
 function zeichne(sec, schritt) {
   if (!schritt) return;
   // Der Detailkasten gehört zur vorigen Ansicht; stehen bliebe er mit Zahlen, die zur neuen
-  // Grafik nicht mehr passen.
-  document.getElementById("detail").hidden = true;
+  // Grafik nicht mehr passen — auch dann, wenn er festgestellt war.
+  melde("schrittwechsel");
   const ansicht = normalisiere(schritt.ansicht);
   if (schritt.ansicht && schritt.ansicht.form === "multiples") ansicht.filter = { ...ansicht.filter, je_einheit: true };
   const form = FORMEN[formFuer(ansicht)];
@@ -114,8 +120,14 @@ function zeichne(sec, schritt) {
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
   svg.setAttribute("aria-label", schritt.beschreibung || "");
-  const werte = werteJeEinheit(ansicht, daten);
-  svg.querySelectorAll(".einheit").forEach((el) => el.addEventListener("click", () => zeigeDetail(el.dataset.id, werte, ansicht, el.querySelector("title")?.textContent)));
+  gezeigt = { werte: werteJeEinheit(ansicht, daten), ansicht, svg };
+  svg.querySelectorAll(".einheit").forEach((el) => {
+    const titel = el.querySelector("title")?.textContent;
+    el.addEventListener("click", () => melde("klick", el.dataset.id, titel));
+    if (!schweben) return;
+    el.addEventListener("mouseenter", () => melde("schweben", el.dataset.id, titel));
+    el.addEventListener("mouseleave", () => melde("verlassen", el.dataset.id, titel));
+  });
 }
 
 // Funktionsdeklaration, kein const: seiteAufbauen läuft schon beim Top-Level-await, also bevor
@@ -134,16 +146,34 @@ function zahlenText(r, ansicht) {
   return `${r.zahlen.hinweis} · ${gezeichnet} · ${r.zahlen.unter_min} unter ${ansicht.min_n} ${nennerText(ansicht)} (grau, nicht eingefärbt)`;
 }
 
-// Detailkasten zu einer angeklickten Einheit: Name, Nennungen, Anteile je Gruppe, Hinweis unter min_n.
-function zeigeDetail(id, werte, ansicht, titelFallback) {
-  // Einheit (Stadtteil, Straße …) oder — beim Gesamtbalken — ein Gruppensegment über alle Einheiten.
-  const w = werte.find((x) => x.id === id);
-  const d = w ? detailText(w, ansicht) : (detailTextGruppe(id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: titelFallback || id, zeilen: [] });
+// Ein Ereignis an einer Einheit (Schweben, Verlassen, Klick) oder an der Seite (Schließen,
+// Schrittwechsel) fortschreiben und den Detailkasten neu zeichnen.
+function melde(ereignis, id = null, titelFallback = "") {
+  detail = detailZustand(detail, ereignis, id);
+  // Die Einheit, über der der Zeiger steht (oder die festgestellt ist), hebt sich im Bild ab.
+  gezeigt.svg?.querySelectorAll(".einheit").forEach((el) =>
+    el.classList.toggle("angesehen", detail.sichtbar && el.dataset.id === detail.id));
+  zeichneDetail(titelFallback);
+}
+
+// Detailkasten zur Einheit unter dem Zeiger: Name, Nennungen, Anteile je Gruppe, Hinweis unter
+// min_n. Festgestellt (angeklickt) trägt er den Schließknopf und den Kartenlink; flüchtig
+// (schwebend) bleibt er knapp — dort führt kein Klick hin, ohne den Zeiger wegzunehmen.
+function zeichneDetail(titelFallback = "") {
   const box = document.getElementById("detail");
-  box.innerHTML = `<button class="schliessen" type="button" aria-label="Schließen">✕</button><h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
-    + (ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(id)}">Auf der Karte zeigen</a></p>` : "");
+  const { werte, ansicht } = gezeigt;
+  box.classList.toggle("fest", detail.fest);
+  if (!detail.sichtbar || !ansicht) { box.hidden = true; box.innerHTML = ""; return; }
+  // Einheit (Stadtteil, Straße …) oder — beim Gesamtbalken — ein Gruppensegment über alle Einheiten.
+  const w = werte.find((x) => x.id === detail.id);
+  const d = w ? detailText(w, ansicht)
+    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: titelFallback || detail.id, zeilen: [] });
+  box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
+    + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
+    + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "")
+    + (detail.fest ? "" : `<p class="wink">Klicken hält die Angaben fest.</p>`);
   box.hidden = false;
-  box.querySelector(".schliessen").onclick = () => { box.hidden = true; };
+  if (detail.fest) box.querySelector(".schliessen").onclick = () => melde("schliessen");
 }
 
 // Verbindet die Schritte eines Kapitels mit der Grafik: Scrollama beim Scrollen, Fokus für die

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalisiere } from "../js/ansicht.js";
-import { detailText, detailTextGruppe, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
+import { detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
 
 test("zeichenflaeche zieht Legende und Zahlenzeile ab und hält Mindestmaße", () => {
   assert.deepEqual(zeichenflaeche(800, 700, 90), { breite: 800, hoehe: 610 });
@@ -52,4 +52,22 @@ test("detailTextGruppe: Segment des Gesamtbalkens über alle Einheiten, Regel-An
   assert.deepEqual(detailTextGruppe("Stadt", werte, b).zeilen, ["20 von 50 einbezogenen Nennungen (40 %)"]);
   assert.deepEqual(detailTextGruppe("ausgeschlossen", werte, b).zeilen, ["65 Nennungen ausgeschlossen (unbestimmt, ungeprüft), 50 einbezogen"]);
   assert.equal(detailTextGruppe("Katernberg", werte, b), null);
+});
+
+test("detailZustand: schweben flüchtig, Klick stellt fest, Schrittwechsel räumt weg", () => {
+  // Schweben zeigt flüchtig; das Verlassen räumt wieder weg.
+  const a = detailZustand(DETAIL_ZU, "schweben", "Borbeck");
+  assert.deepEqual(a, { id: "Borbeck", sichtbar: true, fest: false });
+  assert.deepEqual(detailZustand(a, "verlassen", "Borbeck"), DETAIL_ZU);
+  // Ein Klick stellt fest: das Verlassen lässt den Kasten stehen, erneutes Schweben derselben
+  // Einheit auch — erst eine andere Einheit, Schließen oder ein Schrittwechsel löst ihn.
+  const f = detailZustand(a, "klick", "Borbeck");
+  assert.deepEqual(f, { id: "Borbeck", sichtbar: true, fest: true });
+  assert.deepEqual(detailZustand(f, "verlassen", "Borbeck"), f);
+  assert.deepEqual(detailZustand(f, "schweben", "Borbeck"), f);
+  assert.deepEqual(detailZustand(f, "schweben", "Karnap"), { id: "Karnap", sichtbar: true, fest: false });
+  assert.deepEqual(detailZustand(f, "schliessen"), DETAIL_ZU);
+  assert.deepEqual(detailZustand(f, "schrittwechsel"), DETAIL_ZU);
+  // Unbekanntes Ereignis lässt den Zustand, wie er ist.
+  assert.deepEqual(detailZustand(f, "wackeln", "Karnap"), f);
 });

@@ -51,6 +51,12 @@
 .buehne svg .einheit.unter-min .name, .buehne svg .einheit.unter-min .wert { fill: var(--grau); }
 .buehne svg .einheit.hervorgehoben { stroke: var(--text); stroke-width: 1.5; }
 .buehne svg .einheit.hervorgehoben .name { font-weight: 700; }
+/* Zeiger über einer Einheit: sie bekommt den Rahmen, alle übrigen treten zurück. */
+.buehne svg .einheit { transition: opacity .15s ease; }
+.buehne svg:has(.einheit.angesehen) .einheit:not(.angesehen) { opacity: .4; }
+.buehne svg .einheit.angesehen { stroke: var(--text); stroke-width: 1.5; }
+.buehne svg .einheit.angesehen .name { font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .buehne svg .einheit { transition: none; } }
 
 /* Die Karten: beginnen oben auf der Bühne (negativer Rand hebt sie über die klebende Grafik),
    rechte Spalte, ein Bildschirm Abstand zwischen zwei Karten. Die Hülle lässt Klicks durch
@@ -80,6 +86,9 @@
 .detail p { margin: 2px 0; }
 .detail .schliessen { position: absolute; top: 4px; right: 6px; border: 0; background: none; cursor: pointer;
   font-size: 15px; min-width: 32px; min-height: 32px; color: var(--grau); }
+/* Flüchtig (der Zeiger schwebt nur): der Kasten fängt keine Zeigerereignisse und nennt den Klick. */
+.detail:not(.fest) { pointer-events: none; }
+.detail .wink { margin-top: 6px; color: var(--grau); font-size: 12px; }
 
 .perspektiven .leer { max-width: 720px; margin: 32px auto; color: var(--grau); }
 
