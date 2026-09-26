@@ -35,7 +35,9 @@ export function zeige(ansicht, daten, optionen = {}) {
     const d = ringe(f.geometry).map((ring) => ring.map(([lon, lat], i) => `${i ? "L" : "M"}${r2(p.x(lon * COS))} ${r2(p.y(lat))}`).join("") + "Z").join("");
     if (!d) continue;
     const istHervor = hervor.has(id);
-    const rand = istHervor ? ' stroke="#111" stroke-width="2"' : ' stroke="#fff" stroke-width="0.5"';
+    // Dunkler Rand: die hellste Stufe (#f7fbff) und Grau heben sich vom Papierhintergrund sonst
+    // kaum ab — die äußeren Stadtteile wären ohne Kontur unsichtbar.
+    const rand = istHervor ? ' stroke="#111" stroke-width="2"' : ' stroke="#555" stroke-width="0.6"';
     // Nichts unter min_n und nichts ohne Werte wird eingefärbt (farbeNachMass, gemeinsame Regel).
     teile.push(`<path class="${einheitKlasse(istHervor, !w || w.unter_min)}" data-id="${esc(id)}" d="${d}" fill="${esc(farbeNachMass(w, ansicht, maxDichte))}"${rand}><title>${esc(id)}</title></path>`);
   }
