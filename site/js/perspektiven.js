@@ -72,7 +72,8 @@ function kapitelHtml(k) {
     + `<div class="scrolly">`
     // Nur Bild und Legende sind für Hilfsmittel verborgen (die Beschreibung steht je Schritt in
     // .sr-only); die Zahlenzeile bleibt lesbar, weil jeder Schritt seine Grundlage nennen muss.
-    + `<div class="grafik"><div class="buehne"><div class="svg" aria-hidden="true"></div><div class="legende" aria-hidden="true"></div><div class="zahlen"></div></div></div>`
+    // Die Überschrift des Bildes steht als HTML über dem SVG, damit sie umbrechen kann.
+    + `<div class="grafik"><div class="buehne"><div class="titel" aria-hidden="true"></div><div class="svg" aria-hidden="true"></div><div class="legende" aria-hidden="true"></div><div class="zahlen"></div></div></div>`
     + `<div class="schritte">${schritte}</div>`
     + `</div>`
     + `<section class="grenzen"><h3>Was die Zahlen zeigen – und was nicht</h3>`
@@ -96,10 +97,11 @@ function zeichne(sec, schritt) {
   const svg = buehne.querySelector(".svg");
   const legende = buehne.querySelector(".legende");
   const zahlen = buehne.querySelector(".zahlen");
-  const optionen = { hervorheben: schritt.hervorheben || [], titel: schritt.beschreibung };
-  // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Legende und Zahlenzeile übrig lässt —
-  // und deren Höhe kennt man erst, wenn die Legende dieses Schritts steht. Der erste Durchgang
-  // liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest der Bühne.
+  const optionen = { hervorheben: schritt.hervorheben || [] };
+  buehne.querySelector(".titel").textContent = schritt.beschreibung || "";
+  // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Überschrift, Legende und Zahlenzeile
+  // übrig lässt — und deren Höhe kennt man erst, wenn die Legende dieses Schritts steht. Der
+  // erste Durchgang liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest.
   const vorab = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   legende.innerHTML = legendeHtml(vorab.legende);
   zahlen.textContent = zahlenText(vorab, ansicht);
