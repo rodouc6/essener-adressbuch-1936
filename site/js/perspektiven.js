@@ -116,7 +116,11 @@ function zeichne(sec, schritt) {
   svg.querySelectorAll(".einheit").forEach((el) => el.addEventListener("click", () => zeigeDetail(el.dataset.id, werte, ansicht, el.querySelector("title")?.textContent)));
 }
 
-const legendeHtml = (legende) => legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
+// Funktionsdeklaration, kein const: seiteAufbauen läuft schon beim Top-Level-await, also bevor
+// spätere const-Zuweisungen des Moduls initialisiert wären.
+function legendeHtml(legende) {
+  return legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
+}
 
 // Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
 // gezeichnet sind (eine Rangliste zeigt nie alle) und wie viele unter min_n grau bleiben.
