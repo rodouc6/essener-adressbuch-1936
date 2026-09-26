@@ -5,6 +5,8 @@ Der Eigentümername steht in Teil II bei Körperschaften in `Firmenname`, bei Pe
 """
 from __future__ import annotations
 
+import re
+
 KATEGORIEN = {
     "stadt_staat": "Stadt/Staat/Reich",
     "bergbau": "Bergbau",
@@ -66,3 +68,28 @@ def lade_stadtteil_liste(zeilen: list[dict]) -> frozenset[str]:
 def identitaet_sicher(z: dict) -> bool:
     """Körperschaften gelten als identifiziert; Personen nur mit identitaet=sicher."""
     return z.get("art") != "person" or (z.get("identitaet") or "").strip() == "sicher"
+
+
+def hausnummernspanne(e: dict) -> tuple[int, int, int | None] | None:
+    """(von, bis, seite) einer Teil-II-Zeile mit Hausnummernspanne, sonst None. Das Häuserbuch druckt einen
+    Eigentümer vieler aufeinanderfolgender Häuser einmal am Anfang der Straßenseite („2—84 E. …“, Faksimile
+    II-335). Gleiche Parität von Anfang und Ende heißt eine Straßenseite (seite = 0 gerade, 1 ungerade), sonst
+    gelten alle Nummern dazwischen (None). Ein Buchstabe am Ende („1—31a“, „37—37A“ = Haus und Anbau) zählt
+    als seine Zahl; verdrehte Spannen („40—4“, Erfassungsfehler) gelten nicht."""
+    von_s, bis_s = (e.get("hausnr") or "").strip(), (e.get("hausnr_bis") or "").strip()
+    m = re.match(r"\d+", bis_s)
+    if not von_s.isdigit() or not m:
+        return None
+    von, bis = int(von_s), int(m.group(0))
+    if bis < von:
+        return None
+    return von, bis, (von % 2 if (bis - von) % 2 == 0 else None)
+
+
+def haeuser_der_zeile(e: dict) -> int:
+    """Wie viele Häuser eine Teil-II-Zeile meint: 1, bei einer Spanne die Nummern der Straßenseite."""
+    s = hausnummernspanne(e)
+    if s is None:
+        return 1
+    von, bis, seite = s
+    return (bis - von) // 2 + 1 if seite is not None else bis - von + 1

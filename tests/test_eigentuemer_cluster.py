@@ -127,6 +127,9 @@ def test_sammle_trennt_und_belegt():
     k, p, belege = sammle(e)
     assert k == {"Stadt Essen": 3} and p == {"Schmidt, Wilh.": 1}
     assert [b["id"] for b in belege["Stadt Essen"]] == ["1", "2", "5"]
+    # Spannenzeile „2—84“ (gerade Seite) zählt 42 Häuser, der Beleg nennt die Spanne
+    k2, _, b2 = sammle([_z(id="6", Firmenname="Krupp-Stiftung", hausnr="2", hausnr_bis="84"), _z(id="7", Firmenname="Krupp-Stiftung", hausnr="1", hausnr_bis="4")])
+    assert k2 == {"Krupp-Stiftung": 42 + 4} and b2["Krupp-Stiftung"][0]["adresse"] == "Grenzstr. 2–84"
     assert belege["Stadt Essen"][0] == dict(id="1", adresse="Grenzstr. 1", stadtteil="Katernberg", verwalter="", seite="II-001", lat=51.49, lon=7.06, stufe="haus")
     assert belege["Stadt Essen"][2]["lat"] is None
 

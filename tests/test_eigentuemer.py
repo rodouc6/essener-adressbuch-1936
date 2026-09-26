@@ -38,3 +38,15 @@ def test_stadtteil_aufteilung_und_identitaet():
     assert identitaet_sicher({"art": "koerperschaft"}) is True
     assert identitaet_sicher({"art": "person", "identitaet": ""}) is False
     assert identitaet_sicher({"art": "person", "identitaet": "sicher"}) is True
+
+
+def test_hausnummernspanne_und_haeuser_der_zeile():
+    from pipeline.lib.eigentuemer import haeuser_der_zeile, hausnummernspanne
+    assert hausnummernspanne(dict(hausnr="2", hausnr_bis="84")) == (2, 84, 0)          # gerade Seite
+    assert hausnummernspanne(dict(hausnr="1", hausnr_bis="9")) == (1, 9, 1)            # ungerade Seite
+    assert hausnummernspanne(dict(hausnr="2", hausnr_bis="9")) == (2, 9, None)         # beide Seiten
+    assert hausnummernspanne(dict(hausnr="1", hausnr_bis="31a")) == (1, 31, 1)         # Buchstabe zählt als Zahl
+    assert hausnummernspanne(dict(hausnr="37", hausnr_bis="37A")) == (37, 37, 1)       # Haus und Anbau
+    assert hausnummernspanne(dict(hausnr="40", hausnr_bis="4")) is None                # verdreht
+    assert hausnummernspanne(dict(hausnr="12", hausnr_bis="")) is None and hausnummernspanne({}) is None
+    assert [haeuser_der_zeile(dict(hausnr=a, hausnr_bis=b)) for a, b in (("2", "84"), ("2", "9"), ("37", "37A"), ("5", ""), ("40", "4"))] == [42, 8, 1, 1, 1]

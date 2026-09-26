@@ -11,7 +11,7 @@ from pathlib import Path
 
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
-from pipeline.lib.eigentuemer import identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
+from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, schreibweise_von
 from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
@@ -104,18 +104,14 @@ def hausnummernspannen(eintraege: list[dict], eigentuemer: dict[str, dict]) -> d
     Eigentümer; auch nicht verortete Zeilen zählen, der Treffer läuft über Straße und Nummer."""
     spannen: dict[str, list[dict]] = defaultdict(list)
     for e in eintraege:
-        # Das Ende darf einen Buchstaben tragen („1—31a“, „37—37A“ = Haus und Anbau): es zählt die Zahl,
-        # Adressen mit Zusatz liegen unter ihrer Nummer. Verdrehte Spannen („40—4“, Erfassungsfehler) gelten nicht.
-        bis_m = re.match(r"\d+", e.get("hausnr_bis") or "")
-        if e.get("teil") != "II" or not (e.get("hausnr") or "").isdigit() or not bis_m:
-            continue
+        spanne = hausnummernspanne(e) if e.get("teil") == "II" else None
         strasse = _strassenschluessel(e)
-        z = _kuratiert(e, eigentuemer) if strasse else None
-        von, bis = int(e["hausnr"]), int(bis_m.group(0))
-        if not z or bis < von:
+        z = _kuratiert(e, eigentuemer) if spanne and strasse else None
+        if not z:
             continue
+        von, bis, seite = spanne
         text = f"{_historisch(dict(e, hausnr=f'{von}–{e['hausnr_bis']}', hausnr_zusatz=''))} · {schreibweise_von(e)[0]}"
-        spannen[strasse].append(dict(von=von, bis=bis, seite=von % 2 if (bis - von) % 2 == 0 else None,
+        spannen[strasse].append(dict(von=von, bis=bis, seite=seite,
                                      eigentuemer=z["eigentuemer"], kategorie=z["kategorie"],
                                      identitaet=identitaet_sicher(z), text=text))
     return dict(spannen)

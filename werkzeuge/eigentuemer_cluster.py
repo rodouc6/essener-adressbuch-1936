@@ -18,8 +18,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.lib.eigentuemer import (AUTOMATIK, FELDER_KURATIERUNG, STADTTEIL_AUF, gesperrt, lade_kuratierung,
-                                      lade_stadtteil_liste, schreibweise_von)
+from pipeline.lib.eigentuemer import (AUTOMATIK, FELDER_KURATIERUNG, STADTTEIL_AUF, gesperrt, haeuser_der_zeile,
+                                      hausnummernspanne, lade_kuratierung, lade_stadtteil_liste, schreibweise_von)
 from pipeline.lib.io import lies_csv, projektwurzel, schreib_csv
 
 # Rechtsformen: Buchschreibungen wie „A.G.“, „A. G.“, „A.-G.“, „AG.“, „A. -G.“ → ein Token.
@@ -239,7 +239,9 @@ def _zahl(v: str):
 
 
 def sammle(eintraege: list[dict], nach_stadtteil: frozenset[str] = frozenset()) -> tuple[dict[str, int], dict[str, int], dict[str, list[dict]]]:
-    """Teil-II-Zeilen → (Zähler Körperschaften, Zähler Personen, Belege je Schreibweise, Spec §3.2)."""
+    """Teil-II-Zeilen → (Zähler Körperschaften, Zähler Personen, Belege je Schreibweise, Spec §3.2). Gezählt
+    werden Häuser, nicht Zeilen: eine Spannenzeile „2—84“ zählt 42 (haeuser_der_zeile), damit Eigentümer
+    ganzer Siedlungen in Reihenfolge und Prüfpflicht nicht hinter Einzelhausbesitzern verschwinden."""
     koerper: dict[str, int] = defaultdict(int)
     personen: dict[str, int] = defaultdict(int)
     belege: dict[str, list[dict]] = defaultdict(list)
@@ -249,8 +251,10 @@ def sammle(eintraege: list[dict], nach_stadtteil: frozenset[str] = frozenset()) 
         s, art = schreibweise_von(e, nach_stadtteil)
         if not s:
             continue
-        (koerper if art == "koerperschaft" else personen)[s] += 1
+        (koerper if art == "koerperschaft" else personen)[s] += haeuser_der_zeile(e)
         nr = ((e.get("hausnr") or "") + (e.get("hausnr_zusatz") or "")).strip()
+        if hausnummernspanne(e):
+            nr = f"{e['hausnr']}–{e['hausnr_bis']}"
         belege[s].append(dict(id=e.get("id", ""), adresse=" ".join(x for x in (e.get("strasse_roh", ""), nr) if x),
                               stadtteil=e.get("stadtteil", "") or e.get("Vorort", ""), verwalter=e.get("Verwalter", ""),
                               seite=e.get("page", ""), lat=_zahl(e.get("lat")), lon=_zahl(e.get("lon")), stufe=e.get("stufe", "")))
