@@ -32,6 +32,10 @@ export function zechePopupHtml(p) {
 // Grau der Einheiten ohne Farbe (unter min_n oder gar nicht in den Ebenendaten) — wie GRAU in formen/skalen.js.
 const GRAU_KARTE = "#c8c8c8";
 
+// Weißer Rand um jeden Adresspunkt (Spec 2026-09-28 §4): in der Stadtansicht keiner (sonst weiße
+// Flecken), ab Straßenzoom sichtbar — trennt überlappende Punkte und hält den Kontrast auf Liberty.
+const HALO = ["interpolate", ["linear"], ["zoom"], 12, 0, 14, 1, 16, 1.6];
+
 const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", false] };
 const LEERER_STIL = { version: 8, sources: {}, layers: [] };
 
@@ -108,10 +112,12 @@ export class Karte {
     e.push({ id: "hex-flaeche", type: "fill", source: "adressen", "source-layer": "hex", layout: { visibility: "none" },
              paint: { "fill-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE], "fill-opacity": 0.6 } });
     e.push({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
-             filter: ["==", ["get", "stufe"], "haus"], paint: { "circle-stroke-width": 0 } });
+             filter: ["==", ["get", "stufe"], "haus"],
+             paint: { "circle-stroke-color": "#fff", "circle-stroke-width": HALO } });
     e.push({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
              filter: ["!=", ["get", "stufe"], "haus"],
-             layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true } });
+             layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
+             paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } });
     e.push({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
              filter: ["==", ["get", "id"], ""],
              paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
@@ -243,6 +249,7 @@ export class Karte {
     const basis = this.ansicht && this.ansicht.ebene !== "adresse" ? 0.15 : 0.9;
     const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], basis, Math.min(basis, 0.25)] : basis;
     this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
+    this.map.setPaintProperty("adressen-haus", "circle-stroke-opacity", d);
     this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);
   }
 
