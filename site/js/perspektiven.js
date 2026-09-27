@@ -191,7 +191,7 @@ function melde(ereignis, id = null, zeile = "", rechteck = null) {
   // Die Einheit, über der der Zeiger steht (oder die festgestellt ist), hebt sich im Bild ab.
   gezeigt.svg?.querySelectorAll(".einheit").forEach((el) =>
     el.classList.toggle("angesehen", detail.sichtbar && el.dataset.id === detail.id));
-  zeichneDetail(zeile);
+  zeichneDetail();
 }
 
 // Detailkasten zur Einheit unter dem Zeiger: Name, Nennungen, Anteile je Gruppe, Hinweis unter
@@ -221,7 +221,7 @@ function ladeHerkunft(name) {
   lader.herkunft(name).then((h) => {
     herkunft.set(name, h || null);
     if (!h) console.warn(`Herkunft ${name}: nicht geladen (alter Export?)`);
-    if (herkunftAktuell(detail, name, herkunftDatei(kontextVon(detail.id, gezeigt.ansicht)))) zeichneDetail(detailZeile);
+    if (herkunftAktuell(detail, name, herkunftDatei(kontextVon(detail.id, gezeigt.ansicht)))) zeichneDetail();
   }).catch((e) => { herkunft.set(name, null); console.warn(`Herkunft ${name}:`, e); });
 }
 
@@ -253,7 +253,9 @@ function tabelleHtml(t) {
     + `<p class="beleg">${esc(t.hinweis)}${bild}</p></details>`;
 }
 
-function zeichneDetail(zeile = "") {
+// Die Zahlenzeile eines Kreises kommt aus detailZeile — der Zeile der Einheit, die der Kasten zeigt, nicht der
+// zuletzt überschwebten (festgestellt gewinnt, auch für den Text).
+function zeichneDetail() {
   const box = document.getElementById("detail");
   const { werte, ansicht } = gezeigt;
   box.classList.toggle("fest", detail.fest);
@@ -263,7 +265,7 @@ function zeichneDetail(zeile = "") {
   const w = werte.find((x) => x.id === detail.id);
   const d = gezeigt.trichter ? (w ? detailTextStufe(w) : { titel: detail.id, zeilen: [] })
     : w ? detailText(w, ansicht)
-    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
+    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: detailZeile ? [detailZeile] : [] });
   const kontext = kontextVon(detail.id, ansicht);
   const karte = detail.fest ? karteHtml(herkunftLink(kontext)) : "";
   box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
