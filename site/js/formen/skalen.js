@@ -97,3 +97,14 @@ export function skaliere({ minX, maxX, minY, maxY }, breite, hoehe, spiegelY = f
 
 // Leeres Ergebnis mit erklärendem Hinweis — jede Form liefert dieselbe Struktur.
 export const leer = (hinweis) => ({ svg: "", legende: [], zahlen: { N: 0, n_aus: 0, unter_min: 0, einheiten: 0, einheiten_gesamt: 0, hinweis } });
+
+// Schraffur für Anteile, die nicht von Hand geprüft sind (Regel, Vorschlag): ein diagonales Muster in
+// der Farbe des Segments. Die id enthält den Kennzahl-Schlüssel, damit mehrere Bühnen auf einer Seite
+// (ein Kapitel je Bühne) sich nicht die Muster überschreiben.
+export const schraffurId = (schluessel) => `schraffur-${String(schluessel).replace(/[^\w-]/g, "_")}`;
+export function schraffurDefs(muster) {
+  if (!muster.length) return "";
+  return "<defs>" + muster.map(({ id, farbe }) =>
+    `<pattern id="${esc(id)}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">`
+    + `<rect width="6" height="6" fill="#fff"/><rect width="3" height="6" fill="${esc(farbe)}"/></pattern>`).join("") + "</defs>";
+}

@@ -8,6 +8,7 @@ import * as balken from "../js/formen/balken.js";
 import * as rangliste from "../js/formen/rangliste.js";
 import * as stadtteilkarte from "../js/formen/stadtteilkarte.js";
 import * as bubbles from "../js/formen/bubbles.js";
+import * as trichter from "../js/formen/trichter.js";
 
 const Q = (x, y) => ({ type: "Feature", properties: { id: "", quelle: "OSM", stand: "d" }, geometry: { type: "MultiPolygon", coordinates: [[[[x, y], [x + 0.1, y], [x + 0.1, y + 0.1], [x, y + 0.1], [x, y]]]] } });
 const D = {
@@ -122,4 +123,48 @@ test("bubbles: Kreise aus dem Layout, Farbe nach Gruppe, hervorheben, Skalierung
   assert.match(r.svg, /hervorgehoben/);
   assert.equal(r.zahlen.einheiten, 3); assert.equal(r.zahlen.einheiten_gesamt, 3);
   assert.equal(bubbles.zeige({ ...a, daten: "niveau" }, daten, { breite: 400, hoehe: 400 }).svg, "");   // kein Layout für niveau → leer
+});
+
+const KZ = { eintraege: 1000, verortet: 800, adressen: 300, stufe_haus: 500, stufe_strasse: 300, stand: "2026-09-27" };
+const T = { daten: "kennzahlen", form: "trichter",
+  stufen: [{ name: "Zeilen", aus: "eintraege", farbe: "#94a3b8" },
+           { name: "verortet", aus: "verortet", farbe: "#1d4ed8", segmente: [
+             { name: "hausgenau", aus: "stufe_haus", farbe: "#1d4ed8" },
+             { name: "straßengenau", aus: "stufe_strasse", farbe: "#60a5fa", muster: "schraffur" }] },
+           { name: "Adressen", aus: "adressen", farbe: "#1d4ed8" }],
+  erklaerungen: { verortet: "Zeilen mit Punkt auf der Karte." } };
+
+test("trichter: Breiten proportional zur ersten Stufe, Segmente, Schraffur, Einheiten", () => {
+  const r = trichter.zeige(T, { kennzahlen: KZ }, { breite: 600, hoehe: 300 });
+  assert.match(r.svg, /^<svg/);
+  // Stufe ohne Segmente ist selbst die Einheit; Stufe mit Segmenten trägt die Segmente als Einheiten
+  assert.match(r.svg, /class="einheit" data-id="eintraege"/);
+  assert.match(r.svg, /class="einheit" data-id="stufe_haus"/);
+  assert.match(r.svg, /class="einheit" data-id="stufe_strasse"/);
+  assert.ok(!/data-id="verortet"/.test(r.svg), "Stufe mit Segmenten ist keine eigene Einheit");
+  // Breiten: verortet = 80 % der Zeilen, hausgenau 5/8 davon
+  const b = (id) => Number(r.svg.match(new RegExp(`data-id="${id}"[^>]*width="([\\d.]+)"`))[1]);
+  assert.ok(Math.abs(b("stufe_haus") / b("eintraege") - 0.5) < 0.01);
+  assert.ok(Math.abs(b("stufe_strasse") / b("eintraege") - 0.3) < 0.01);
+  assert.match(r.svg, /<pattern id="schraffur-stufe_strasse"/); assert.match(r.svg, /fill="url\(#schraffur-stufe_strasse\)"/);
+  assert.match(r.svg, /800 von 1\.000 \(80 %\)/); assert.match(r.svg, /300 von 1\.000 \(30 %\)/);
+  assert.deepEqual(r.zahlen, { N: 1000, n_aus: 0, unter_min: 0, einheiten: 4, hinweis: "Stand 2026-09-27" });
+  assert.deepEqual(r.legende.map((l) => [l.name, l.muster || ""]), [["hausgenau", ""], ["straßengenau", "schraffur"]]);
+  const v = r.werte.find((w) => w.id === "stufe_strasse");
+  assert.deepEqual([v.name, v.wert, v.basis, v.basisName, v.muster], ["straßengenau", 300, 1000, "Zeilen", "schraffur"]);
+  assert.equal(r.werte.find((w) => w.id === "eintraege").erklaerung, "");
+});
+
+test("trichter: fehlende Kennzahl, erste Stufe 0 und übergroße Segmente brechen nichts", () => {
+  // Review Focus 1: alter Export ohne Schlüssel → „—“, Breite 0, kein NaN
+  const alt = trichter.zeige(T, { kennzahlen: { eintraege: 1000 } }, { breite: 600, hoehe: 300 });
+  assert.ok(!/NaN/.test(alt.svg)); assert.match(alt.svg, /—/);
+  assert.equal(alt.werte.find((w) => w.id === "adressen").wert, null);
+  // Review Focus 2: erste Stufe 0
+  const leer = trichter.zeige(T, { kennzahlen: { eintraege: 0, verortet: 0, adressen: 0, stufe_haus: 0, stufe_strasse: 0 } }, { breite: 600, hoehe: 300 });
+  assert.ok(!/NaN/.test(leer.svg)); assert.match(leer.svg, /0 von 0 \(0 %\)/);
+  // Review Focus 3: Segmente größer als die Stufe → auf die Stufenbreite begrenzt
+  const gross = trichter.zeige(T, { kennzahlen: { ...KZ, stufe_haus: 900, stufe_strasse: 900 } }, { breite: 600, hoehe: 300 });
+  const b = (svg, id) => Number(svg.match(new RegExp(`data-id="${id}"[^>]*width="([\\d.]+)"`))[1]);
+  assert.ok(b(gross.svg, "stufe_haus") + b(gross.svg, "stufe_strasse") <= b(gross.svg, "eintraege") * 0.8 + 0.01);
 });
