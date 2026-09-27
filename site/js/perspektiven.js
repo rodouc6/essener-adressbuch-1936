@@ -10,9 +10,11 @@ import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
-import { detailLage, detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import * as trichter from "./formen/trichter.js";
+import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
-const FORMEN = { balken, rangliste, stadtteilkarte, bubbles };
+const FORMEN = { balken, rangliste, stadtteilkarte, bubbles, trichter };
+const istTrichter = (a) => !!a && (a.form === "trichter" || a.daten === "kennzahlen");
 const lader = new Lader();
 const vorschau = new URLSearchParams(location.search).get("vorschau") === "1";
 const reduziert = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,7 +27,9 @@ let detail = DETAIL_ZU;
 // Rechteck der Einheit, an der der Kasten zuletzt aufgegangen ist; festgestellt bleibt er dort.
 let anker = null;
 // Die gerade gezeichnete Ansicht: ihre Werte füllen den Detailkasten, ihr SVG trägt die Hervorhebung.
-let gezeigt = { werte: [], ansicht: null, svg: null };
+let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "" };
+// Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
+let sichtbar = [];
 
 // Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, ab vier Ziffern.
 const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei" };
@@ -43,6 +47,7 @@ try {
 async function seiteAufbauen() {
   daten = await ladeEbenen(lader);
   const index = sichtbareKapitel((await lader.perspektivenIndex()) || [], vorschau);
+  sichtbar = index;
   // Die Einleitung zählt, was wirklich sichtbar ist — „Drei Blicke“ wäre falsch, sobald ein
   // Kapitel nicht freigegeben ist.
   const n = index.length;
@@ -73,12 +78,17 @@ async function seiteAufbauen() {
 // Jeder Schritt bekommt tabindex, damit er auch ohne Maus und ohne Scrollen erreichbar ist.
 function kapitelHtml(k) {
   const schritte = (Array.isArray(k.schritte) ? k.schritte : []).map((s) => {
+    const kopf = `<article class="schritt" id="s-${esc(k.id)}-${esc(s.id)}" data-schritt="${esc(s.id)}" tabindex="0"><p>${esc(s.text)}</p><p class="sr-only">${esc(s.beschreibung || "")}</p>`;
+    // Trichter zeigen Kennzahlen, keine Einheiten der Karte — Karten- und Werkstattlink ergäben nichts.
+    if (istTrichter(s.ansicht)) return `${kopf}</article>`;
     const a = normalisiere(s.ansicht);
-    return `<article class="schritt" data-schritt="${esc(s.id)}" tabindex="0"><p>${esc(s.text)}</p><p class="sr-only">${esc(s.beschreibung || "")}</p>`
-      + `<p class="links"><a href="${esc(linkKarte(a))}">Auf der Karte öffnen</a> · <a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen</a></p></article>`;
+    return `${kopf}<p class="links"><a href="${esc(linkKarte(a))}">Auf der Karte öffnen</a> · <a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen</a></p></article>`;
   }).join("");
   const quellen = (Array.isArray(k.quellen) ? k.quellen : []).map((q) => esc(q)).join(" · ");
-  return `<header><h2>${esc(k.titel)}</h2><p class="untertitel">${esc(k.untertitel || "")}</p><p>${esc(k.einleitung || "")}</p></header>`
+  const link = datenbasisLink(k, sichtbar);
+  const datenbasis = k.datenbasis
+    ? `<p class="datenbasis">${esc(fuellePlatzhalter(k.datenbasis, daten.kennzahlen))}${link ? ` <a href="${esc(link)}">Datenbasis ›</a>` : ""}</p>` : "";
+  return `<header><h2>${esc(k.titel)}</h2><p class="untertitel">${esc(k.untertitel || "")}</p>${datenbasis}<p>${esc(k.einleitung || "")}</p></header>`
     + `<div class="scrolly">`
     // Nur Bild und Legende sind für Hilfsmittel verborgen (die Beschreibung steht je Schritt in
     // .sr-only); die Zahlenzeile bleibt lesbar, weil jeder Schritt seine Grundlage nennen muss.
@@ -95,26 +105,28 @@ function kapitelHtml(k) {
 // Zeichnet die Ansicht eines Schritts in die Grafik des Kapitels. Die Form „multiples“ ist die
 // Balkenform mit einem Balken je Einheit; fehlt das Flag in der kuratierten Ansicht, wird es hier
 // gesetzt, damit nicht versehentlich ein Gesamtbalken erscheint.
-function zeichne(sec, schritt) {
+function zeichne(sec, schritt, k) {
   if (!schritt) return;
   // Der Detailkasten gehört zur vorigen Ansicht; stehen bliebe er mit Zahlen, die zur neuen
   // Grafik nicht mehr passen — auch dann, wenn er festgestellt war.
   melde("schrittwechsel");
-  const ansicht = normalisiere(schritt.ansicht);
-  if (schritt.ansicht && schritt.ansicht.form === "multiples") ansicht.filter = { ...ansicht.filter, je_einheit: true };
+  // Trichter (Kapitel 0) zeichnen Kennzahlen, keine Ebenen-Ansicht: kein normalisiere, keine Einheiten.
+  const trichterSchritt = istTrichter(schritt.ansicht);
+  const ansicht = trichterSchritt ? schritt.ansicht : normalisiere(schritt.ansicht);
+  if (!trichterSchritt && schritt.ansicht && schritt.ansicht.form === "multiples") ansicht.filter = { ...ansicht.filter, je_einheit: true };
   const form = FORMEN[formFuer(ansicht)];
   const buehne = sec.querySelector(".buehne");
   const svg = buehne.querySelector(".svg");
   const legende = buehne.querySelector(".legende");
   const zahlen = buehne.querySelector(".zahlen");
-  const optionen = { hervorheben: schritt.hervorheben || [] };
+  const optionen = { hervorheben: schritt.hervorheben || [], ausschlussText: (k && k.ausschluss) || "" };
   buehne.querySelector(".titel").textContent = schritt.beschreibung || "";
   // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Überschrift, Legende und Zahlenzeile
   // übrig lässt — und deren Höhe kennt man erst, wenn die Legende dieses Schritts steht. Der
   // erste Durchgang liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest.
   const vorab = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   legende.innerHTML = legendeHtml(vorab.legende);
-  zahlen.textContent = zahlenText(vorab, ansicht);
+  zahlen.textContent = trichterSchritt ? vorab.zahlen.hinweis : zahlenText(vorab, ansicht);
   const r = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   // Schrittwechsel als Überblendung des bleibenden Behälters: Übergänge auf den SVG-Knoten selbst
   // liefen nie, weil innerHTML sie alle ersetzt. Bei reduzierter Bewegung wird hart getauscht.
@@ -124,7 +136,7 @@ function zeichne(sec, schritt) {
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
   svg.setAttribute("aria-label", schritt.beschreibung || "");
-  gezeigt = { werte: werteJeEinheit(ansicht, daten), ansicht, svg };
+  gezeigt = { werte: trichterSchritt ? r.werte : werteJeEinheit(ansicht, daten), ansicht, svg, trichter: trichterSchritt, ausschluss: optionen.ausschlussText };
   svg.querySelectorAll(".einheit").forEach((el) => {
     const zeile = el.dataset.zeile || "";
     el.addEventListener("click", () => melde("klick", el.dataset.id, zeile, el.getBoundingClientRect()));
@@ -137,7 +149,10 @@ function zeichne(sec, schritt) {
 // Funktionsdeklaration, kein const: seiteAufbauen läuft schon beim Top-Level-await, also bevor
 // spätere const-Zuweisungen des Moduls initialisiert wären.
 function legendeHtml(legende) {
-  return legende.map((l) => `<span><i style="background:${esc(l.farbe)}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`).join("");
+  return legende.map((l) => {
+    const stil = l.muster === "schraffur" ? `background: repeating-linear-gradient(45deg, ${esc(l.farbe)} 0 3px, #fff 3px 6px)` : `background:${esc(l.farbe)}`;
+    return `<span><i style="${stil}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`;
+  }).join("");
 }
 
 // Präzision: jeder Schritt nennt den Hinweis der Form, wie viele Einheiten der Ebene überhaupt
@@ -172,8 +187,9 @@ function zeichneDetail(zeile = "") {
   // Einheit (Stadtteil, Straße …), beim Gesamtbalken ein Gruppensegment über alle Einheiten, bei
   // Bubbles ein Kreis (Eigentümer, Beruf), dessen Zeile die Form selbst mitgibt (data-zeile).
   const w = werte.find((x) => x.id === detail.id);
-  const d = w ? detailText(w, ansicht)
-    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
+  const d = gezeigt.trichter ? (w ? detailTextStufe(w) : { titel: detail.id, zeilen: [] })
+    : w ? detailText(w, ansicht)
+    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
   box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
     + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
     + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "")
@@ -196,7 +212,7 @@ function bindeKapitel(sec, k) {
     if (!el) return;
     sec.querySelectorAll(".schritt").forEach((e) => e.classList.remove("aktiv"));
     el.classList.add("aktiv");
-    zeichne(sec, schritte[el.dataset.schritt]);
+    zeichne(sec, schritte[el.dataset.schritt], k);
   };
   sec.querySelectorAll(".schritt").forEach((el) => el.addEventListener("focus", () => zeigeSchritt(el)));
   if (window.scrollama) {
