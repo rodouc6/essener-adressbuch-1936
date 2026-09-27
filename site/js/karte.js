@@ -36,7 +36,7 @@ const GRAU_KARTE = "#c8c8c8";
 // Flecken), ab Straßenzoom sichtbar — trennt überlappende Punkte und hält den Kontrast auf Liberty.
 const HALO = ["interpolate", ["linear"], ["zoom"], 12, 0, 14, 1, 16, 1.6];
 
-const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", false] };
+const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", true] };
 const LEERER_STIL = { version: 8, sources: {}, layers: [] };
 
 export class Karte {
@@ -122,9 +122,9 @@ export class Karte {
              filter: ["==", ["get", "id"], ""],
              paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
     e.push({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
-             layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.6, "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
+             layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.7, "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
                        "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
-             paint: { "text-halo-color": "#fff", "text-halo-width": 1.5 } });
+             paint: { "icon-color": "#111", "icon-halo-color": "#fff", "icon-halo-width": 1.5, "text-halo-color": "#fff", "text-halo-width": 1.5 } });
     return e;
   }
 
