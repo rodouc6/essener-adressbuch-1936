@@ -65,7 +65,7 @@ export function zeige(ansicht, daten, optionen = {}) {
     const anteil = max > 0 ? Math.min(1, laengenWert(w, ansicht) / max) : 0;
     const istHervor = hervor.has(w.id);
     teile.push(`<g data-id="${esc(w.id)}" class="${einheitKlasse(istHervor, w.unter_min)}">`
-      + `<text x="${r2(x0)}" y="${r2(y + h - 2)}" class="name"${istHervor ? ' font-weight="bold"' : ""}>${esc(w.name)}</text>`
+      + `<text x="${r2(x0)}" y="${r2(y + h - 2)}" class="name">${esc(w.name)}</text>`
       + `<rect class="balken" x="${r2(x0 + beschriftung)}" y="${r2(y)}" width="${r2(anteil * balkenBreite)}" height="${r2(h)}" fill="${esc(farbeNachMass(w, ansicht, maxDichte))}"></rect>`
       + `<text x="${r2(x0 + beschriftung + balkenBreite + 6)}" y="${r2(y + h - 2)}" class="wert">${esc(w.unter_min ? `unter ${formatZahl(ansicht.min_n)} ${nennerText(ansicht)}` : wertText(w, ansicht))}</text>`
       + "</g>");

@@ -41,6 +41,7 @@ test("rangliste: sortiert nach Wert, unter min_n ans Ende und grau, hervorheben"
   const ids = [...r.svg.matchAll(/data-id="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ids, ["Katernberg", "Südviertel"]);
   assert.match(r.svg, /class="einheit hervorgehoben"[^>]*data-id="Südviertel"|data-id="Südviertel"[^>]*class="einheit[^"]*hervorgehoben/);
+  assert.ok(!/font-weight/.test(r.svg), "Hervorhebung nur per Klasse, kein Inline-Gewicht");
   assert.match(r.svg, /unter-min/);
   assert.equal(r.zahlen.unter_min, 1);
   // Gefiltert: N/n_aus/einheiten zur gezeichneten Menge, unter_min weiterhin zur ganzen Ebene.

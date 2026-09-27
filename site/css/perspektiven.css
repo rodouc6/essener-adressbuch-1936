@@ -49,13 +49,17 @@
 .buehne svg .einheit { cursor: pointer; }
 .buehne svg .einheit.unter-min { opacity: .55; }
 .buehne svg .einheit.unter-min .name, .buehne svg .einheit.unter-min .wert { fill: var(--grau); }
-.buehne svg .einheit.hervorgehoben { stroke: var(--text); stroke-width: 1.5; }
-.buehne svg .einheit.hervorgehoben .name { font-weight: 700; }
+/* Rahmen nur auf die Formen, nicht auf die Gruppe: ein stroke auf <g> vererbt sich auf den Text und
+   lässt Name und Wert wie Extrafett aussehen. */
+.buehne svg .einheit.hervorgehoben:is(rect, circle, path),
+.buehne svg g.einheit.hervorgehoben :is(rect, circle, path) { stroke: var(--text); stroke-width: 1.5; }
+.buehne svg .einheit.hervorgehoben .name { font-weight: 600; }
 /* Zeiger über einer Einheit: sie bekommt den Rahmen, alle übrigen treten zurück. */
 .buehne svg .einheit { transition: opacity .15s ease; }
 .buehne svg:has(.einheit.angesehen) .einheit:not(.angesehen) { opacity: .4; }
-.buehne svg .einheit.angesehen { stroke: var(--text); stroke-width: 1.5; }
-.buehne svg .einheit.angesehen .name { font-weight: 700; }
+.buehne svg .einheit.angesehen:is(rect, circle, path),
+.buehne svg g.einheit.angesehen :is(rect, circle, path) { stroke: var(--text); stroke-width: 1.5; }
+.buehne svg .einheit.angesehen .name { font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .buehne svg .einheit { transition: none; } }
 
 /* Die Karten: beginnen oben auf der Bühne (negativer Rand hebt sie über die klebende Grafik),
