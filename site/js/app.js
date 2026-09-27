@@ -264,7 +264,7 @@ async function klickPunkt(id, lngLat) {
     const [eig, eintraege] = await Promise.all([eigVon(id), lader.scherbe(id)]);
     if (!eig || !eintraege) return;
     karte.setzeAuswahl(id);
-    karte.zeigePopup(lngLat, popupHtml(eig, eintraege, mobil()));
+    karte.zeigePopup(lngLat, popupHtml(eig, eintraege, mobil(), zustand.ebene));
     const el = karte.popup.getElement();
     el.querySelectorAll("[data-eintrag]").forEach((n) => n.addEventListener("click", () => oeffneHaus(id, n.dataset.eintrag)));
     el.querySelectorAll("[data-mehr]").forEach((n) => n.addEventListener("click", () => oeffneHaus(id, null)));

@@ -52,9 +52,15 @@ const TOOLTIP_ROH = "Schreibung im Buch, Beruf noch nicht zugeordnet";
 
 function personName(e) { return [e.name, e.vorname].filter(Boolean).join(", "); }
 
+// Teil III: das Firmenfeld endet im Datenpaket auf „, <Rubrik>“ — die Rubrik steht als Zusatz, also hier abschneiden.
+function firmaOhneRubrik(e) {
+  const suffix = e.rubrik ? `, ${e.rubrik}` : "";
+  return suffix && e.firma && e.firma.endsWith(suffix) ? e.firma.slice(0, -suffix.length) : e.firma || "";
+}
+
 function popupName(e) {
   if (e.teil === "II") return e.eigentuemer_kanon || e.firma || personName(e);
-  return (e.teil === "III" ? e.firma : "") || personName(e) || e.firma || "";
+  return (e.teil === "III" ? firmaOhneRubrik(e) : "") || personName(e) || e.firma || "";
 }
 
 // Zusatz hinter dem Namen, bereits als HTML: Einwohner Beruf (nur Norm; sonst Buchschreibung kursiv)
@@ -93,7 +99,7 @@ export function popupHtml(eig, eintraege, kompakt, ebenen = TEILE) {
   const teile = TEILE.map((t) => teilHtml(t, eintraege.filter((e) => e.teil === t), max, hervor.has(t))).join("");
   return `<div class="popup-kopf"><b>${esc(heutigeAdresse(eig))}</b>` +
     (eig.strasse_heute ? `<div class="hist">${esc(eig.historisch)} im Buch</div>` : "") +
-    `<div class="kenn">${kenn}</div></div>${teile}` +
+    `<div class="kennzeile">${kenn}</div></div>${teile}` +
     `<div class="pmehr" data-mehr="1">Haus im Detail ›</div>`;
 }
 
