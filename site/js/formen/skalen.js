@@ -30,7 +30,7 @@ export function zahlenZeile(gezeichnet, alle, zusatz = "") {
 export function nennerText(ansicht) {
   if (!ansicht) return "Nennungen";
   if (ansicht.mass === "dichte") return "Teil-I-Einträgen";
-  return ansicht.daten === "besitz" ? "geprüften Adressen" : "Nennungen";
+  return ansicht.daten === "besitz" ? "Adressen mit Besitzklasse" : "Nennungen";
 }
 
 // Eine Nachkommastelle mit deutschem Komma — für kleine Dichte- und Mischungswerte.
