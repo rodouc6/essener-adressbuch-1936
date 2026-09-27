@@ -16,7 +16,7 @@ from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_exp
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
-from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_kapitel, pruefe_kennzahlen_bezug
+from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_datenbasis_bezug, pruefe_kapitel, pruefe_kennzahlen_bezug
 from pipeline.lib.stadtteile import Stadtteile
 from pipeline.lib.stellung import STELLUNGEN
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -511,7 +511,7 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stellung_vorschlag=_prozent(st_vorschlag, len(teil_i)),
                 stellung_unbestimmt=_prozent(st_unbestimmt, len(teil_i)),
                 teil_i_n=len(teil_i), beruf_geprueft_n=len(mit_beruf),
-                stellung_hand_n=st_hand, stellung_vorschlag_n=st_vorschlag, stellung_unbestimmt_n=st_unbestimmt,
+                stellung_bestimmt_n=st_hand + st_vorschlag, stellung_hand_n=st_hand, stellung_vorschlag_n=st_vorschlag, stellung_unbestimmt_n=st_unbestimmt,
                 gewerbe_geprueft=_prozent(gw_hand, len(teil_iii)),
                 gewerbe_entschieden=_prozent(gw_claude, len(teil_iii)),
                 gewerbe_vorschlag=_prozent(gw_regel, len(teil_iii)),
@@ -735,6 +735,9 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
             fehler = pruefe_kapitel(k) + pruefe_kennzahlen_bezug(k, kennzahlen)
             if fehler:
                 raise ValueError("kuratierung/perspektiven: " + "; ".join(fehler))
+        fehler = pruefe_datenbasis_bezug(ks)
+        if fehler:
+            raise ValueError("kuratierung/perspektiven: " + "; ".join(fehler))
         _json(ausgabe / "perspektiven" / "index.json", kapitel_index(ks))
         for k in ks:
             _json(ausgabe / "perspektiven" / f"{k['id']}.json", k)

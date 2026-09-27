@@ -82,17 +82,25 @@ erst nach dieser Auflösung, sieht also nur noch echte Gruppenlisten.
 
 Kapitel 0 „Die Datenbasis“ zeichnet keine Ebenen, sondern Kennzahlen aus `site/daten/kennzahlen.json`.
 Die Ansicht trägt statt `gruppen` eine Liste `stufen`, jede mit `name`, `aus` (Schlüssel in kennzahlen.json),
-`farbe`, optional `segmente` (gleiche Felder, keine weitere Verschachtelung) und `muster: "schraffur"` für
-Anteile, die nicht von Hand geprüft sind; `erklaerungen` ordnet Schlüsseln den Text des Detailkastens zu.
+`farbe`, optional `segmente` (gleiche Felder, keine weitere Verschachtelung), `muster: "schraffur"` für
+Anteile, die nicht von Hand geprüft sind, und `ohne_anteil: true` für Stufen, die keine Teilmenge der ersten
+sind (Adressen gegenüber Zeilen: nur die Zahl, kein „x von y“); `erklaerungen` ordnet Schlüsseln den Text des
+Detailkastens zu. Jede Stufe und jedes Segment ist eine Einheit (`data-id` = `aus`), auch eine Stufe mit
+Segmenten (als blasser Grund darunter); `aus` muss deshalb je Ansicht eindeutig sein.
 `daten: kennzahlen` ist nur mit `form: trichter` zulässig und umgekehrt; `ebene`, `mass`, `bezug`, `min_n`,
 `kaufleute`, `unsicher`, `filter`, `karte` entfallen. `pruefe_ansicht` prüft Struktur und Namen; ob jeder
-`aus`-Schlüssel existiert, prüft der Export (`pruefe_kennzahlen_bezug`) und bricht sonst mit `ValueError` ab.
+`aus`-Schlüssel existiert, prüft der Export (`pruefe_kennzahlen_bezug`) und bricht sonst mit `ValueError` ab;
+ebenso muss `datenbasis_schritt` jedes Fachkapitels eine Schritt-id von Kapitel 0 sein (`pruefe_datenbasis_bezug`).
 Die Form (`site/js/formen/trichter.js`) zeichnet Stufen als Balken untereinander, Breite proportional zur
 ersten Stufe, Beschriftung „x von y (z %)“; Segmente teilen ihre Stufe und sind auf deren Breite begrenzt.
 Fehlt eine Kennzahl (alter Export), zeigt die Stufe „—“. Trichter-Schritte haben keinen Karten- und
 Werkstattlink. Absolute Kennzahlen dafür: `eintraege`, `eintraege_I/II/III`, `stufe_haus/strasse/stadtplan/offen`,
 `besitz_hand`, `teil_i_n`, `beruf_geprueft_n`, `stellung_hand_n/vorschlag_n/unbestimmt_n`, `betriebe_n`,
-`gewerbe_hand_n/claude_n/regel_n`. Prüfblatt für die Zahlen der Kapiteltexte: `python3 werkzeuge/perspektiven_zahlen.py`.
+`stellung_bestimmt_n`, `gewerbe_hand_n/claude_n/regel_n`. Die Balkenform schraffiert bei `daten: besitz` den
+Regel-Anteil der Privatpersonen (Person ohne Firmenname → Privatperson) mit demselben Muster. Prüfblatt für die
+Zahlen der Kapiteltexte: `python3 werkzeuge/perspektiven_zahlen.py` — **vor jeder Freigabe erneut laufen lassen**,
+denn die in Prosa genannten Zahlen („über siebzig Prozent“, „fast viertausend“) veralten beim nächsten
+Pipelinelauf lautlos.
 
 ## Platzhalter in `grenzen` und `datenbasis`
 

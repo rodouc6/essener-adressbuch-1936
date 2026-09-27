@@ -30,6 +30,7 @@ def pruefe_trichter(a: dict, wo: str) -> list[str]:
         return [f"{wo}: trichter ohne stufen"]
     f: list[str] = []
     namen: list = []
+    schluessel: list = []
     for s in stufen:
         segmente = s.get("segmente", []) if isinstance(s, dict) else []
         if not isinstance(segmente, list):
@@ -39,8 +40,11 @@ def pruefe_trichter(a: dict, wo: str) -> list[str]:
                 f.append(f"{wo}: Stufe unvollständig {x!r}")
                 continue
             if x.get("muster") is not None and x["muster"] not in MUSTER: f.append(f"{wo}: muster {x['muster']!r} unbekannt")
-            namen.append(x["name"])
+            if "ohne_anteil" in x and not isinstance(x["ohne_anteil"], bool): f.append(f"{wo}: ohne_anteil muss true/false sein")
+            namen.append(x["name"]); schluessel.append(x["aus"])
     if len(set(namen)) != len(namen): f.append(f"{wo}: Stufenname doppelt")
+    # Jede Stufe und jedes Segment ist eine Einheit mit data-id = aus; doppelte aus fänden im Detailkasten nur die erste.
+    if len(set(schluessel)) != len(schluessel): f.append(f"{wo}: aus doppelt")
     if not isinstance(a.get("erklaerungen", {}), dict): f.append(f"{wo}: erklaerungen muss ein Objekt sein")
     return f
 
@@ -95,6 +99,20 @@ def stufen_schluessel(k: dict) -> list[str]:
             out.append(st.get("aus", ""))
             out += [x.get("aus", "") for x in st.get("segmente", []) or []]
     return out
+
+
+def pruefe_datenbasis_bezug(kapitel: list[dict]) -> list[str]:
+    """`datenbasis_schritt` eines Fachkapitels muss eine Schritt-id von Kapitel `datenbasis` sein — sonst zeigte
+    der Link „Datenbasis ›“ ins Leere (gleiche Fehlerklasse wie ein unsichtbares Kapitel 0)."""
+    k0 = next((k for k in kapitel if k.get("id") == "datenbasis"), None)
+    fach = [k for k in kapitel if k.get("datenbasis_schritt")]
+    if not fach:
+        return []
+    if k0 is None:
+        return []      # ohne Kapitel 0 rendert die Seite den Link gar nicht (datenbasisLink)
+    ids = {s.get("id") for s in k0.get("schritte", [])}
+    return [f"Kapitel {k['id']!r}: datenbasis_schritt {k['datenbasis_schritt']!r} ist kein Schritt von Kapitel 'datenbasis'"
+            for k in fach if k["datenbasis_schritt"] not in ids]
 
 
 def pruefe_kennzahlen_bezug(k: dict, kennzahlen: dict) -> list[str]:

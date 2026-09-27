@@ -536,12 +536,12 @@ seit 2026-09-27 ohne die handgeprüft-unbestimmten, damit die drei Stellung-Ante
 `strassen_mit_linie` (Zahl) und `stadtteil_polygon` (Prozentanteil der verorteten Adressen mit Polygontreffer,
 s. o.). Stand 2026-09-25 (Lauf nach der ersten Handprüfungsrunde): `stellung_geprueft: 73.0` (nach der Korrektur 71,2),
 `stellung_vorschlag: 6.2`, `stellung_unbestimmt: 22.6`, `gewerbe_geprueft: 68.1`, `gewerbe_entschieden: 20.2`,
-`gewerbe_vorschlag: 11.7`, `besitz_geprueft: 7546`, `stadtteil_polygon: 100.0`, `adressen: 70316`. Diese Werte
+`gewerbe_vorschlag: 11.7`, `besitz_geprueft: 7546` (nach den Hausnummernspannen und der Regel vom 26.9. 64439), `stadtteil_polygon: 100.0`, `adressen: 70316`. Diese Werte
 ändern sich mit jeder weiteren Handprüfungsrunde beim nächsten Lauf von `pipeline/06_karte_export.py`.
 
 Seit 2026-09-27 zusätzlich absolute Zähler für die Trichter von Kapitel 0 der Schlaglichter: `eintraege`,
 `eintraege_I/II/III`, `stufe_haus/strasse/stadtplan/offen`, `besitz_hand` (= `besitz_geprueft − besitz_regel`),
-`teil_i_n`, `beruf_geprueft_n`, `stellung_hand_n/vorschlag_n/unbestimmt_n` (Summe = `teil_i_n`), `betriebe_n`,
+`teil_i_n`, `beruf_geprueft_n`, `stellung_bestimmt_n` (= hand + vorschlag), `stellung_hand_n/vorschlag_n/unbestimmt_n` (Summe = `teil_i_n`), `betriebe_n`,
 `gewerbe_hand_n/claude_n/regel_n` (Summe = `betriebe_n`). Wortlaut: `besitz_geprueft` heißt nach außen
 „Adressen mit Besitzklasse“; „von Hand geprüft“ ist nur `besitz_hand`. Prüfblatt für die Zahlen in den
 Kapiteltexten: `python3 werkzeuge/perspektiven_zahlen.py`.

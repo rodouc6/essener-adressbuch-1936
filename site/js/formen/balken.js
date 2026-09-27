@@ -1,7 +1,7 @@
 // site/js/formen/balken.js — Gesamtbalken (ein Balken für alle Einheiten) oder ein Balken je Einheit.
 // Die Segmente sind proportional zu N + n_aus; das letzte Segment ist immer grau „ausgeschlossen“.
 import { werteJeEinheit, filterEinheiten } from "../daten_ebenen.js";
-import { esc, formatProzent, formatZahl, GRAU, einheitKlasse, nennerText, r2, svgKopf, zahlenZeile } from "./skalen.js";
+import { esc, formatProzent, formatZahl, GRAU, einheitKlasse, nennerText, r2, schraffurDefs, schraffurId, svgKopf, zahlenZeile } from "./skalen.js";
 
 const RAND = 8;
 const ZEILE = 26;
@@ -29,7 +29,10 @@ export const regelText = (n) => `davon ${formatZahl(n)} per Regel klassifiziert 
 
 // Ein Balken mit Segmenten. `id` ist gesetzt, wenn der ganze Balken eine Einheit ist (je_einheit);
 // dann tragen die Segmente selbst kein data-id, damit jede Einheit genau einmal anklickbar ist.
-function balkenZeile(segs, x, y, breite, hoehe, summe, jeEinheit) {
+// Der Regel-Anteil eines Segments (Besitz: Person ohne Firmenname → Privatperson) wird als eigener,
+// schraffierter Teil gezeichnet — dieselbe Einheit, damit Hover und Klick beide Teile treffen; `muster`
+// sammelt die Schraffuren für die <defs> des SVG.
+function balkenZeile(segs, x, y, breite, hoehe, summe, jeEinheit, muster = []) {
   let px = x;
   const teile = [];
   for (const [i, seg] of segs.entries()) {
@@ -37,7 +40,13 @@ function balkenZeile(segs, x, y, breite, hoehe, summe, jeEinheit) {
     if (b <= 0) continue;
     const kopf = jeEinheit ? `<rect class="segment"` : `<rect class="einheit" data-id="${esc(seg.id)}"`;
     const titel = `${seg.id === "ausgeschlossen" && seg.text ? seg.text : seg.id}: ${formatZahl(seg.wert)}${seg.regel > 0 ? `, ${regelText(seg.regel)}` : ""}`;
-    teile.push(`${kopf} x="${r2(px)}" y="${r2(y)}" width="${r2(b)}" height="${r2(hoehe)}" fill="${esc(seg.farbe)}"><title>${esc(titel)}</title></rect>`);
+    const regelB = seg.regel > 0 && seg.wert > 0 ? Math.min(b, (seg.regel / seg.wert) * b) : 0;
+    if (b - regelB > 0) teile.push(`${kopf} x="${r2(px)}" y="${r2(y)}" width="${r2(b - regelB)}" height="${r2(hoehe)}" fill="${esc(seg.farbe)}"><title>${esc(titel)}</title></rect>`);
+    if (regelB > 0) {
+      const id = schraffurId(seg.id);
+      if (!muster.some((m) => m.id === id)) muster.push({ id, farbe: seg.farbe });
+      teile.push(`${kopf} x="${r2(px + b - regelB)}" y="${r2(y)}" width="${r2(regelB)}" height="${r2(hoehe)}" fill="url(#${id})"><title>${esc(titel)}</title></rect>`);
+    }
     px += b;
   }
   return teile.join("");
@@ -53,6 +62,11 @@ export function zeige(ansicht, daten, optionen = {}) {
   const zahlen = zahlenZeile(werte, alle);
   const legende = [...ansicht.gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: g.name })),
     { name: "ausgeschlossen", farbe: GRAU, text: ausschluss || "unbestimmt/ungeprüft" }];
+  // Besitz: der Regel-Anteil ist schraffiert, die Legende sagt das an der Gruppe mit den Privatpersonen.
+  const regelGesamt = alle.reduce((s, w) => s + (w.regel || 0), 0);
+  const privat = ansicht.gruppen.find((g) => g.aus.includes("privatperson"));
+  if (regelGesamt > 0 && privat) legende.push({ name: "per Regel klassifiziert", farbe: privat.farbe, muster: "schraffur", text: "schraffiert: per Regel Person ohne Firmenname → Privatperson, keine Handprüfung" });
+  const muster = [];
   const teile = [svgKopf(breite, hoehe)];
   if (optionen.titel) teile.push(`<text x="${RAND}" y="18" class="titel">${esc(optionen.titel)}</text>`);
   const oben = optionen.titel ? 30 : RAND;
@@ -71,12 +85,13 @@ export function zeige(ansicht, daten, optionen = {}) {
       const inhalt = w.unter_min
         ? `<rect class="segment" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(balkenBreite)}" height="${r2(h)}" fill="${GRAU}"></rect>`
           + `<text x="${r2(beschriftung + 6)}" y="${r2(y + h - 4)}" class="hinweis">unter ${formatZahl(ansicht.min_n)} ${nennerText(ansicht)}</text>`
-        : balkenZeile(segmente(ansicht, w.zaehler, w.n_aus, w.regel, ausschluss), beschriftung, y, balkenBreite, h, w.N + w.n_aus, true)
+        : balkenZeile(segmente(ansicht, w.zaehler, w.n_aus, w.regel, ausschluss), beschriftung, y, balkenBreite, h, w.N + w.n_aus, true, muster)
           + `<text x="${r2(beschriftung + balkenBreite + 6)}" y="${r2(y + h - 4)}" class="wert">${esc(wertText(w, ansicht))}</text>`;
       teile.push(`<g class="${klasse}" data-id="${esc(w.id)}">`
         + `<text x="${RAND}" y="${r2(y + h - 4)}" class="name">${esc(w.name)}</text>${inhalt}</g>`);
     }
     teile.push("</svg>");
+    teile.splice(1, 0, schraffurDefs(muster));
     return { svg: teile.join(""), legende, zahlen };
   }
 
@@ -86,7 +101,7 @@ export function zeige(ansicht, daten, optionen = {}) {
   const summe = zahlen.N + zahlen.n_aus;
   const regel = werte.reduce((s, w) => s + (w.regel || 0), 0);
   const h = Math.max(16, Math.min(48, hoehe - oben - 40));
-  teile.push(balkenZeile(segmente(ansicht, zaehler, zahlen.n_aus, regel, ausschluss), RAND, oben, breite - 2 * RAND, h, summe, false));
+  teile.push(balkenZeile(segmente(ansicht, zaehler, zahlen.n_aus, regel, ausschluss), RAND, oben, breite - 2 * RAND, h, summe, false, muster));
   let x = RAND;
   for (const seg of segmente(ansicht, zaehler, zahlen.n_aus, 0, ausschluss)) {
     const b = summe > 0 ? (seg.wert / summe) * (breite - 2 * RAND) : 0;
@@ -94,5 +109,6 @@ export function zeige(ansicht, daten, optionen = {}) {
     x += b;
   }
   teile.push("</svg>");
+  teile.splice(1, 0, schraffurDefs(muster));
   return { svg: teile.join(""), legende, zahlen };
 }

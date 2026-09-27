@@ -150,14 +150,16 @@ test("trichter: Breiten proportional zur ersten Stufe, Segmente, Schraffur, Einh
   assert.match(r.svg, /class="einheit" data-id="eintraege"/);
   assert.match(r.svg, /class="einheit" data-id="stufe_haus"/);
   assert.match(r.svg, /class="einheit" data-id="stufe_strasse"/);
-  assert.ok(!/data-id="verortet"/.test(r.svg), "Stufe mit Segmenten ist keine eigene Einheit");
+  // Stufe mit Segmenten ist selbst eine Einheit (Grund unter den Segmenten), damit ihr Erklärtext erreichbar bleibt
+  assert.match(r.svg, /class="einheit grund" data-id="verortet"/);
+  assert.equal(r.werte.find((w) => w.id === "verortet").erklaerung, "Zeilen mit Punkt auf der Karte.");
   // Breiten: verortet = 80 % der Zeilen, hausgenau 5/8 davon
   const b = (id) => Number(r.svg.match(new RegExp(`data-id="${id}"[^>]*width="([\\d.]+)"`))[1]);
   assert.ok(Math.abs(b("stufe_haus") / b("eintraege") - 0.5) < 0.01);
   assert.ok(Math.abs(b("stufe_strasse") / b("eintraege") - 0.3) < 0.01);
   assert.match(r.svg, /<pattern id="schraffur-stufe_strasse"/); assert.match(r.svg, /fill="url\(#schraffur-stufe_strasse\)"/);
   assert.match(r.svg, /800 von 1\.000 \(80 %\)/); assert.match(r.svg, /300 von 1\.000 \(30 %\)/);
-  assert.deepEqual(r.zahlen, { N: 1000, n_aus: 0, unter_min: 0, einheiten: 4, hinweis: "Stand 2026-09-27" });
+  assert.deepEqual(r.zahlen, { N: 1000, n_aus: 0, unter_min: 0, einheiten: 5, hinweis: "Stand 2026-09-27" });
   assert.deepEqual(r.legende.map((l) => [l.name, l.muster || ""]), [["hausgenau", ""], ["straßengenau", "schraffur"]]);
   const v = r.werte.find((w) => w.id === "stufe_strasse");
   assert.deepEqual([v.name, v.wert, v.basis, v.basisName, v.muster], ["straßengenau", 300, 1000, "Zeilen", "schraffur"]);
@@ -176,4 +178,28 @@ test("trichter: fehlende Kennzahl, erste Stufe 0 und übergroße Segmente breche
   const gross = trichter.zeige(T, { kennzahlen: { ...KZ, stufe_haus: 900, stufe_strasse: 900 } }, { breite: 600, hoehe: 300 });
   const b = (svg, id) => Number(svg.match(new RegExp(`data-id="${id}"[^>]*width="([\\d.]+)"`))[1]);
   assert.ok(b(gross.svg, "stufe_haus") + b(gross.svg, "stufe_strasse") <= b(gross.svg, "eintraege") * 0.8 + 0.01);
+});
+
+test("trichter: fehlende erste Stufe nennt keinen erfundenen Nenner; ohne_anteil zeigt nur die Zahl", () => {
+  // alter Export: `eintraege` (neu) fehlt, `verortet`/`adressen` (alt) sind da → nie „von 0 (0 %)“
+  const alt = trichter.zeige(T, { kennzahlen: { verortet: 800, adressen: 300 } }, { breite: 600, hoehe: 300 });
+  assert.ok(!/von 0/.test(alt.svg)); assert.match(alt.svg, />800</); assert.match(alt.svg, />—</);
+  const a = { ...T, stufen: [T.stufen[0], { name: "Adressen", aus: "adressen", farbe: "#000", ohne_anteil: true }] };
+  const r = trichter.zeige(a, { kennzahlen: KZ }, { breite: 600, hoehe: 300 });
+  assert.match(r.svg, />300</); assert.ok(!/300 von/.test(r.svg));
+  assert.equal(r.werte.find((w) => w.id === "adressen").ohne_anteil, true);
+});
+
+test("balken: Regel-Anteil der Privatpersonen schraffiert, Legende nennt die Schraffur", () => {
+  const P = [{ name: "Privat", aus: ["privatperson"], farbe: "#d97706" }, { name: "Bergbau", aus: ["bergbau"], farbe: "#111" }];
+  const a = normalisiere({ daten: "besitz", ebene: "stadtteil", form: "balken", gruppen: P, bezug: "Privat", min_n: 0 });
+  const r = balken.zeige(a, daten, { breite: 600, hoehe: 200 });
+  // Privat 10 + 5 = 15, davon 7 per Regel (Katernberg) → ein voller und ein schraffierter Teil, beide Einheit „Privat“
+  assert.equal((r.svg.match(/data-id="Privat"/g) || []).length, 2);
+  assert.match(r.svg, /<pattern id="schraffur-Privat"/); assert.match(r.svg, /fill="url\(#schraffur-Privat\)"/);
+  const b = [...r.svg.matchAll(/data-id="Privat"[^>]*width="([\d.]+)"/g)].map((m) => Number(m[1]));
+  assert.ok(Math.abs(b[1] / (b[0] + b[1]) - 7 / 15) < 0.01, "schraffierter Teil = Regel-Anteil");
+  assert.ok(r.legende.some((l) => l.muster === "schraffur" && /Regel/.test(l.text)));
+  const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 200 });
+  assert.match(je.svg, /url\(#schraffur-Privat\)/);
 });

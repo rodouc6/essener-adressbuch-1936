@@ -103,3 +103,21 @@ def test_kennzahlen_bezug():
     f = pruefe_kennzahlen_bezug(KAP0, {"eintraege": 1})
     assert any("verortet" in x for x in f) and any("stufe_haus" in x for x in f)
     assert pruefe_kennzahlen_bezug(GUT, {}) == []                   # keine Trichter → nichts zu prüfen
+
+
+def test_datenbasis_schritt_muss_in_kapitel_0_existieren():
+    from pipeline.lib.perspektiven import pruefe_datenbasis_bezug
+    assert pruefe_datenbasis_bezug([KAP0, GUT]) == [f"Kapitel 'wohneigentum': datenbasis_schritt 'besitz' ist kein Schritt von Kapitel 'datenbasis'"]
+    k0 = json.loads(json.dumps(KAP0)); k0["schritte"][0]["id"] = "besitz"
+    assert pruefe_datenbasis_bezug([k0, GUT]) == []
+    assert pruefe_datenbasis_bezug([GUT]) == []          # ohne Kapitel 0 zeigt die Seite keinen Link — kein Fehler
+
+
+def test_trichter_ohne_anteil_und_aus_doppelt():
+    from pipeline.lib.perspektiven import pruefe_ansicht
+    a = json.loads(json.dumps(TRICHTER)); a["stufen"][0]["ohne_anteil"] = True
+    assert pruefe_ansicht(a, "S") == []
+    a["stufen"][0]["ohne_anteil"] = "ja"
+    assert any("ohne_anteil" in x for x in pruefe_ansicht(a, "S"))
+    d = json.loads(json.dumps(TRICHTER)); d["stufen"].append({"name": "Nochmal", "aus": "eintraege", "farbe": "#000"})
+    assert any("aus doppelt" in x for x in pruefe_ansicht(d, "S"))

@@ -23,7 +23,6 @@
 .kapitel > header .untertitel { color: var(--grau); margin: 2px 0 12px; }
 .kapitel > header .datenbasis { font-size: 14px; color: var(--grau); margin: 0 0 12px; padding-left: 10px; border-left: 3px solid var(--rand); }
 .kapitel > header .datenbasis a { white-space: nowrap; }
-.buehne svg .grund { pointer-events: none; }
 
 /* Scrolly: randlos über die volle Fensterbreite, egal wie breit main ist. */
 .scrolly { position: relative; width: 100vw; margin-left: calc(50% - 50vw); }

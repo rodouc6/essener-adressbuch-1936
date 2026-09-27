@@ -110,3 +110,8 @@ test("datenbasisLink nur, wenn Kapitel 0 sichtbar ist", () => {
   assert.equal(datenbasisLink(k, [{ id: "wohneigentum" }]), null);          // Review Focus 4
   assert.equal(datenbasisLink({ id: "x", datenbasis: "", datenbasis_schritt: "" }, [{ id: "datenbasis" }]), null);
 });
+
+test("detailTextStufe ohne Basis oder ohne Anteil nennt nur den Wert", () => {
+  assert.deepEqual(detailTextStufe({ id: "verortet", name: "verortet", wert: 800, basis: null, basisName: "", anteil: 0, erklaerung: "", muster: "" }).zeilen, ["800"]);
+  assert.deepEqual(detailTextStufe({ id: "adressen", name: "Adressen", wert: 300, basis: 1000, basisName: "Zeilen", anteil: 0.3, erklaerung: "E.", muster: "", ohne_anteil: true }).zeilen, ["300", "E."]);
+});

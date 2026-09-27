@@ -199,6 +199,7 @@ def test_kennzahlen_absolut_stellung_und_gewerbe():
     k = baue_kennzahlen(e, a, "2026-09-27")
     assert (k["teil_i_n"], k["beruf_geprueft_n"]) == (3, 3)
     assert (k["stellung_hand_n"], k["stellung_vorschlag_n"], k["stellung_unbestimmt_n"]) == (1, 1, 1)
+    assert k["stellung_bestimmt_n"] == 2
     assert (k["betriebe_n"], k["gewerbe_hand_n"], k["gewerbe_claude_n"], k["gewerbe_regel_n"]) == (2, 1, 0, 1)
     # Summen: die drei Stellung-Zähler ergeben alle Teil-I-Einträge, die Gewerbe-Zähler alle Betriebe
     assert k["stellung_hand_n"] + k["stellung_vorschlag_n"] + k["stellung_unbestimmt_n"] == k["teil_i_n"]
@@ -216,6 +217,24 @@ def test_export_bricht_bei_unbekannter_trichter_kennzahl_ab(tmp_path):
     e = [_v(id="1", teil="I")]
     with pytest.raises(ValueError, match="gibt_es_nicht"):
         schreibe_paket(tmp_path / "site", e, [], [], "2026-09-27", kacheln=False, perspektiven=ordner)
+
+
+def test_export_bricht_bei_totem_datenbasis_schritt_ab(tmp_path):
+    import pytest
+    k0 = {"id": "datenbasis", "reihenfolge": 0, "titel": "D", "untertitel": "u", "freigegeben": False, "einleitung": "x", "quellen": [],
+          "grenzen": "y", "datenbasis": "", "datenbasis_schritt": "", "ausschluss": "",
+          "schritte": [{"id": "weg", "text": "t", "beschreibung": "b", "hervorheben": [],
+                        "ansicht": {"daten": "kennzahlen", "form": "trichter", "stufen": [{"name": "Z", "aus": "eintraege", "farbe": "#000"}]}}]}
+    k1 = {"id": "w", "reihenfolge": 1, "titel": "W", "untertitel": "u", "freigegeben": False, "einleitung": "x", "quellen": [], "grenzen": "y",
+          "datenbasis": "d", "datenbasis_schritt": "besitzt", "ausschluss": "a",
+          "schritte": [{"id": "s", "text": "t", "beschreibung": "b", "hervorheben": [],
+                        "ansicht": {"daten": "besitz", "ebene": "stadtteil", "form": "balken", "gruppen": [{"name": "P", "aus": ["privatperson"], "farbe": "#000"}],
+                                    "kaufleute": "unbestimmt", "unsicher": False, "mass": "anteil", "bezug": "P", "min_n": 0, "filter": {}, "karte": None}}]}
+    ordner = tmp_path / "perspektiven"; ordner.mkdir()
+    (ordner / "datenbasis.json").write_text(json.dumps(k0), encoding="utf-8")
+    (ordner / "w.json").write_text(json.dumps(k1), encoding="utf-8")
+    with pytest.raises(ValueError, match="besitzt"):
+        schreibe_paket(tmp_path / "site", [_v(id="1", teil="I")], [], [], "2026-09-27", kacheln=False, perspektiven=ordner)
 
 
 def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():

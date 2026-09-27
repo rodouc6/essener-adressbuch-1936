@@ -112,7 +112,10 @@ export function detailTextGruppe(name, werte, ansicht, ausschlussText = "") {
 export function detailTextStufe(w) {
   const e = w || {};
   if (e.wert === null || e.wert === undefined) return { titel: String(e.name || e.id || ""), zeilen: ["Kennzahl im Export nicht vorhanden"] };
-  const zeilen = [`${formatZahl(e.wert)} von ${formatZahl(e.basis)} ${e.basisName || ""} (${formatProzent(e.anteil || 0)})`.replace("  ", " ")];
+  // Ohne Basis (erste Stufe) oder ohne Anteil (keine Teilmenge der ersten Stufe) steht nur die Zahl.
+  const zeilen = [e.basis === null || e.basis === undefined || e.ohne_anteil
+    ? formatZahl(e.wert)
+    : [formatZahl(e.wert), "von", formatZahl(e.basis), e.basisName, `(${formatProzent(e.anteil || 0)})`].filter(Boolean).join(" ")];
   if (e.erklaerung) zeilen.push(e.erklaerung);
   if (e.muster === "schraffur") zeilen.push("nicht von Hand geprüft (schraffiert)");
   return { titel: String(e.name || e.id || ""), zeilen };

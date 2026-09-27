@@ -11,7 +11,9 @@ const ZEILE_MAX = 56;
 // Wert einer Kennzahl oder null, wenn sie fehlt (alter Export) — null wird nie gerechnet, nur angezeigt.
 const wertVon = (kz, aus) => (typeof kz[aus] === "number" && Number.isFinite(kz[aus]) ? kz[aus] : null);
 const anteil = (wert, basis) => (wert === null || !basis ? 0 : wert / basis);
-const wertText = (wert, basis, erste) => wert === null ? "—" : erste ? formatZahl(wert) : `${formatZahl(wert)} von ${formatZahl(basis)} (${formatProzent(anteil(wert, basis))})`;
+// Ohne Basis (erste Stufe fehlt im alten Export) oder mit `ohne_anteil` (die Stufe ist keine Teilmenge der
+// ersten, etwa Adressen gegenüber Zeilen) steht nur die Zahl — „x von 0 (0 %)“ wäre eine falsche Aussage.
+const wertText = (wert, basis, nurZahl) => wert === null ? "—" : nurZahl || basis === null ? formatZahl(wert) : `${formatZahl(wert)} von ${formatZahl(basis)} (${formatProzent(anteil(wert, basis))})`;
 
 export function zeige(ansicht, daten, optionen = {}) {
   const breite = optionen.breite || 600;
@@ -38,15 +40,18 @@ export function zeige(ansicht, daten, optionen = {}) {
     const b = basis ? Math.min(maxBreite, maxBreite * anteil(wert, basis)) : 0;
     const segmente = Array.isArray(s.segmente) ? s.segmente : [];
     teile.push(`<text x="${RAND}" y="${r2(y + h / 2 + 4)}" class="name">${esc(s.name)}</text>`);
-    teile.push(`<text x="${r2(beschriftung + b + 6)}" y="${r2(y + h / 2 + 4)}" class="wert">${esc(wertText(wert, basis, i === 0))}</text>`);
+    const nurZahl = i === 0 || s.ohne_anteil === true;
+    const text = wertText(wert, basis, nurZahl);
+    teile.push(`<text x="${r2(beschriftung + b + 6)}" y="${r2(y + h / 2 + 4)}" class="wert">${esc(text)}</text>`);
+    werte.push({ id: s.aus, name: s.name, wert, basis: i === 0 ? null : basis, basisName, anteil: anteil(wert, basis), erklaerung: erklaerungen[s.aus] || "", muster: s.muster || "", ohne_anteil: s.ohne_anteil === true });
     if (!segmente.length) {
-      werte.push({ id: s.aus, name: s.name, wert, basis, basisName, anteil: anteil(wert, basis), erklaerung: erklaerungen[s.aus] || "", muster: s.muster || "" });
-      teile.push(`<rect class="einheit" data-id="${esc(s.aus)}" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(b)}" height="${r2(h)}" fill="${esc(s.farbe)}"><title>${esc(`${s.name}: ${wertText(wert, basis, i === 0)}`)}</title></rect>`);
+      teile.push(`<rect class="einheit" data-id="${esc(s.aus)}" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(b)}" height="${r2(h)}" fill="${esc(s.farbe)}"><title>${esc(`${s.name}: ${text}`)}</title></rect>`);
       return;
     }
-    // Stufe mit Segmenten: ein blasser Grund in Stufenbreite, darauf die Segmente als Einheiten. Die
-    // Segmentbreiten sind auf die Stufenbreite begrenzt — ein Kuratierungsfehler darf nicht überlaufen.
-    teile.push(`<rect class="grund" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(b)}" height="${r2(h)}" fill="${esc(s.farbe)}" opacity=".25"></rect>`);
+    // Stufe mit Segmenten: ein blasser Grund in Stufenbreite — selbst eine Einheit, damit ihr Erklärtext
+    // erreichbar bleibt —, darauf die Segmente als Einheiten. Die Segmentbreiten sind auf die Stufenbreite
+    // begrenzt — ein Kuratierungsfehler darf nicht überlaufen.
+    teile.push(`<rect class="einheit grund" data-id="${esc(s.aus)}" x="${r2(beschriftung)}" y="${r2(y)}" width="${r2(b)}" height="${r2(h)}" fill="${esc(s.farbe)}" opacity=".25"><title>${esc(`${s.name}: ${text}`)}</title></rect>`);
     let x = beschriftung;
     for (const seg of segmente) {
       const sw = wertVon(kz, seg.aus);
