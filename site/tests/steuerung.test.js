@@ -12,16 +12,18 @@ test("abweichend: nur bei Liberty, Zechen oder sichtbarem Plan", () => {
 });
 
 test("steuerungHtml: Knopf, Feld verborgen, Umschalter und Schalter mit Zustand, ohne Planregler", () => {
-  const h = steuerungHtml({ ...STANDARD, zechen: 1 }, { offen: false, mobil: false, plan: false });
+  const h = steuerungHtml({ ...STANDARD, zechen: 1 }, { offen: false, plan: false });
   assert.match(h, /<button class="ebenenknopf aktiv" data-feld="1" aria-expanded="false" aria-label="Kartenebenen"/);
   assert.match(h, /<div class="ebenenfeld" hidden>/);
   assert.match(h, /data-karte="positron" aria-pressed="true"/); assert.match(h, /data-karte="liberty" aria-pressed="false"/);
   assert.match(h, /data-zechen="1" aria-pressed="true"[^>]*><svg/);
-  assert.doesNotMatch(h, /data-plan|data-legende/);
+  assert.doesNotMatch(h, /data-plan/);
+  // Legendenknopf immer im Markup (CSS blendet ihn am Laptop aus) — sonst fehlt er nach einer Fensterverkleinerung.
+  assert.match(h, /data-legende="1"/);
 });
 
-test("steuerungHtml: offen, Handy mit Legendenknopf, Planregler stufenlos mit Prozent", () => {
-  const h = steuerungHtml({ ...STANDARD, plan: 0.35 }, { offen: true, mobil: true, plan: true });
+test("steuerungHtml: offen, Legendenknopf, Planregler stufenlos mit Prozent", () => {
+  const h = steuerungHtml({ ...STANDARD, plan: 0.35 }, { offen: true, plan: true });
   assert.match(h, /aria-expanded="true"/);
   assert.match(h, /<div class="ebenenfeld">/);
   assert.match(h, /data-legende="1"/);

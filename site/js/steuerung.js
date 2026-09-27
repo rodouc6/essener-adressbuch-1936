@@ -9,11 +9,12 @@ export const ZECHE_SVG = `<svg viewBox="0 0 430 430" width="14" height="14" aria
 
 export function abweichend(z) { return z.karte !== "positron" || !!z.zechen || z.plan > 0; }
 
-// z: Kartenzustand; o.offen: Feld sichtbar; o.mobil: Legendenknopf zeigen; o.plan: Planregler zeigen.
+// z: Kartenzustand; o.offen: Feld sichtbar; o.plan: Planregler zeigen. Der Legendenknopf steht immer im
+// Markup und wird am Laptop per CSS ausgeblendet — so ist er nach einer Fensterverkleinerung da.
 export function steuerungHtml(z, o) {
   const prozent = Math.round(z.plan * 100);
   return `<button class="ebenenknopf${abweichend(z) ? " aktiv" : ""}" data-feld="1" aria-expanded="${o.offen}" aria-label="Kartenebenen" title="Kartenebenen">${STAPEL_SVG}</button>` +
-    (o.mobil ? `<button class="ebenenknopf" data-legende="1" aria-label="Legende" title="Legende">≡</button>` : "") +
+    `<button class="ebenenknopf" data-legende="1" aria-label="Legende" title="Legende">≡</button>` +
     `<div class="ebenenfeld"${o.offen ? "" : " hidden"}>` +
       `<div class="zeile"><span>Grundkarte</span><span class="gruppe">` +
         `<button data-karte="positron" aria-pressed="${z.karte === "positron"}">dezent</button>` +

@@ -46,6 +46,7 @@ a { color: var(--blau); }
 
 @media (min-width: 900px) {
   .sidebar { top: 0; bottom: 0; left: 0; width: var(--breite-sidebar); }
+  [data-legende] { display: none; }
   .logo { left: calc(var(--breite-sidebar) + 10px); }
   .suchfeld { padding-top: 14px; }
 }

@@ -4,7 +4,7 @@ import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
 import { liesZustand, schreibeZustand } from "./zustand.js";
 import { popupHtml, esc } from "./popup.js";
-import { steuerungHtml } from "./steuerung.js";
+import { steuerungHtml, abweichend } from "./steuerung.js";
 import { dekodiereOderNull } from "./ansicht.js";
 import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
 import { ansichtTitel, werteFarben, legendeFuer } from "./ansicht_farben.js";
@@ -281,15 +281,21 @@ let feldOffen = false;   // Ebenenfeld auf/zu — nicht in der URL
 function zeichneSteuerung() {
   const s = document.getElementById("steuerung");
   if (!s.querySelector(".ebenenfeld")) {
-    s.innerHTML = steuerungHtml(zustand, { offen: feldOffen, mobil: mobil(), plan: PLAN_FREIGEGEBEN });
+    s.innerHTML = steuerungHtml(zustand, { offen: feldOffen, plan: PLAN_FREIGEGEBEN });
     s.querySelector("[data-feld]").onclick = () => { feldOffen = !feldOffen; zeichneSteuerung(); };
     s.querySelectorAll("[data-karte]").forEach((b) => { b.onclick = () => { if (zustand.karte !== b.dataset.karte) setzeZustand({ karte: b.dataset.karte }, false); }; });
     s.querySelector("[data-zechen]").onclick = () => setzeZustand({ zechen: zustand.zechen ? 0 : 1 }, false);
-    const p = s.querySelector("[data-plan]"); if (p) p.oninput = () => setzeZustand({ plan: Math.round(p.value * 100) / 100 }, false);
+    // Beim Ziehen nur die Kartenebene und die Prozentzahl (Dutzende input-Ereignisse je Geste); die
+    // volle Zustandskaskade (URL, Trefferliste, Legende) erst bei change, also beim Loslassen.
+    const p = s.querySelector("[data-plan]");
+    if (p) {
+      p.oninput = () => { karte.setzePlan(+p.value); s.querySelector(".prozent").textContent = `${Math.round(p.value * 100)} %`; };
+      p.onchange = () => setzeZustand({ plan: Math.round(p.value * 100) / 100 }, false);
+    }
     const l = s.querySelector("[data-legende]"); if (l) l.onclick = () => document.getElementById("legende").classList.toggle("offen");
   }
   const knopf = s.querySelector("[data-feld]");
-  knopf.classList.toggle("aktiv", zustand.karte !== "positron" || !!zustand.zechen || zustand.plan > 0);
+  knopf.classList.toggle("aktiv", abweichend(zustand));
   knopf.setAttribute("aria-expanded", String(feldOffen));
   s.querySelector(".ebenenfeld").hidden = !feldOffen;
   s.querySelectorAll("[data-karte]").forEach((b) => b.setAttribute("aria-pressed", String(zustand.karte === b.dataset.karte)));
