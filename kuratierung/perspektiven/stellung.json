@@ -1,7 +1,7 @@
 {
   "id": "stellung", "reihenfolge": 2,
   "titel": "Soziale Stellung 1936", "untertitel": "Arbeiter, Angestellte, Beamte, Bürgertum: Wer wohnte wo?",
-  "freigegeben": false,
+  "freigegeben": true,
   "datenbasis": "{stellung_hand_n} von {teil_i_n} Einwohnereinträgen mit von Hand bestimmter Stellung ({stellung_geprueft} %), {stellung_vorschlag_n} nach Vorschlag der Automatik ({stellung_vorschlag} %), {stellung_unbestimmt_n} unbestimmt ({stellung_unbestimmt} %).",
   "datenbasis_schritt": "stellung",
   "ausschluss": "Beruf ungeprüft oder Stellung unbestimmt",

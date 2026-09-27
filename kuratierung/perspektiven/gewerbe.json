@@ -1,7 +1,7 @@
 {
   "id": "gewerbe", "reihenfolge": 3,
   "titel": "Gewerbe und Versorgung 1936", "untertitel": "Handwerk, Handel und Gastwirtschaft: Wo die Stadt versorgt wurde",
-  "freigegeben": false,
+  "freigegeben": true,
   "datenbasis": "{betriebe_n} verortete Betriebe aus Teil III; Branche bei {gewerbe_hand_n} von Hand ({gewerbe_geprueft} %), bei {gewerbe_claude_n} nach dokumentierten Prinzipien ({gewerbe_entschieden} %), bei {gewerbe_regel_n} per Wortregel ({gewerbe_vorschlag} %).",
   "datenbasis_schritt": "gewerbe",
   "ausschluss": "Rubrik ohne Branche",

@@ -1,7 +1,7 @@
 {
   "id": "datenbasis", "reihenfolge": 0,
   "titel": "Die Datenbasis", "untertitel": "Vom Adreßbuch 1936 zur Karte",
-  "freigegeben": false,
+  "freigegeben": true,
   "datenbasis": "", "datenbasis_schritt": "", "ausschluss": "",
   "einleitung": "Jedes Schlaglicht auf dieser Seite beruht auf demselben Buch: dem Essener Adreßbuch von 1936. Bevor die Kapitel Häuser, Berufe und Betriebe zeigen, erklärt dieses Kapitel, was in dem Buch steht, wie es zur Tabelle und von der Tabelle auf die Karte wurde, und wie groß der Ausschnitt ist, den jedes Kapitel wirklich sieht. Die Trichter zeigen bei jedem Schritt, wie viel vom Ganzen übrig bleibt.",
   "quellen": [
