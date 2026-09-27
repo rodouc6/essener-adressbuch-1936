@@ -1,7 +1,8 @@
 # Perspektiven — Kapitel-Schema
 
-Stand 2026-09-25: Drei Kapitel angelegt (Wohneigentum; Soziale Stellung; Gewerbe und Versorgung), alle
-mit `freigegeben: false` — die Texte sind Platzhalter, keins ist freigegeben.
+Stand 2026-09-27: Vier Kapitel angelegt (0 Die Datenbasis; Wohneigentum; Soziale Stellung; Gewerbe und
+Versorgung), alle mit `freigegeben: false` — die Texte sind Entwürfe zur Handprüfung, keins ist freigegeben.
+Nach außen heißt die Seite „Schlaglichter“ (`site/schlaglichter.html`); die Codenamen bleiben `perspektiven`.
 
 Die Scrollytelling-Seite „Perspektiven" (Spec §6.2) besteht aus Kapiteln. Jedes Kapitel ist eine JSON-Datei
 unter `kuratierung/perspektiven/<id>.json`, die der Projektleiter von Hand pflegt (mit LLM-Vorschlag,
@@ -22,6 +23,9 @@ Pflichtfelder eines Kapitels (`PFLICHT` in `pipeline/lib/perspektiven.py`):
 | `einleitung` | str | einleitender Fließtext vor dem ersten Schritt |
 | `schritte` | list[dict] | die Scrollama-Schritte, siehe unten |
 | `grenzen` | str | Fließtext zu Reichweite und Lücken der Daten, mit Platzhaltern (siehe unten) |
+| `datenbasis` | str | Unterzeile unter dem Titel mit Platzhaltern; Pflicht (nicht leer) für Fachkapitel, leer in Kapitel 0 |
+| `datenbasis_schritt` | str | Schritt-id in Kapitel 0, auf die „Datenbasis ›“ verweist (Anker `#s-datenbasis-<id>`); Link nur, wenn Kapitel 0 sichtbar ist |
+| `ausschluss` | str | Text für das graue Segment (Legende, Hover, Detailkasten), z. B. „ohne Eigentümerangabe oder Eigentümer nicht zugeordnet“ |
 | `quellen` | list[str] | Quellenangaben, am Kapitelende angezeigt |
 
 Jeder Schritt in `schritte` (`PFLICHT_SCHRITT`):
@@ -74,22 +78,37 @@ ersetzt damit die Kurzform. Verweist `wie:` auf eine nicht vorhandene Schritt-`i
 einem `KeyError` ab — das ist bewusst laut, statt eine leere Gruppenliste zu erfinden. `pruefe_kapitel` prüft
 erst nach dieser Auflösung, sieht also nur noch echte Gruppenlisten.
 
-## Platzhalter in `grenzen`
+## Trichter-Ansicht (`daten: "kennzahlen"`, `form: "trichter"`)
 
-Der Text in `grenzen` erklärt am Kapitelende Reichweite und Lücken der zugrunde liegenden Daten. Er darf
-folgende Platzhalter enthalten, die die Seite beim Rendern aus `site/daten/kennzahlen.json` einsetzt:
+Kapitel 0 „Die Datenbasis“ zeichnet keine Ebenen, sondern Kennzahlen aus `site/daten/kennzahlen.json`.
+Die Ansicht trägt statt `gruppen` eine Liste `stufen`, jede mit `name`, `aus` (Schlüssel in kennzahlen.json),
+`farbe`, optional `segmente` (gleiche Felder, keine weitere Verschachtelung) und `muster: "schraffur"` für
+Anteile, die nicht von Hand geprüft sind; `erklaerungen` ordnet Schlüsseln den Text des Detailkastens zu.
+`daten: kennzahlen` ist nur mit `form: trichter` zulässig und umgekehrt; `ebene`, `mass`, `bezug`, `min_n`,
+`kaufleute`, `unsicher`, `filter`, `karte` entfallen. `pruefe_ansicht` prüft Struktur und Namen; ob jeder
+`aus`-Schlüssel existiert, prüft der Export (`pruefe_kennzahlen_bezug`) und bricht sonst mit `ValueError` ab.
+Die Form (`site/js/formen/trichter.js`) zeichnet Stufen als Balken untereinander, Breite proportional zur
+ersten Stufe, Beschriftung „x von y (z %)“; Segmente teilen ihre Stufe und sind auf deren Breite begrenzt.
+Fehlt eine Kennzahl (alter Export), zeigt die Stufe „—“. Trichter-Schritte haben keinen Karten- und
+Werkstattlink. Absolute Kennzahlen dafür: `eintraege`, `eintraege_I/II/III`, `stufe_haus/strasse/stadtplan/offen`,
+`besitz_hand`, `teil_i_n`, `beruf_geprueft_n`, `stellung_hand_n/vorschlag_n/unbestimmt_n`, `betriebe_n`,
+`gewerbe_hand_n/claude_n/regel_n`. Prüfblatt für die Zahlen der Kapiteltexte: `python3 werkzeuge/perspektiven_zahlen.py`.
 
-- `{adressen}`, `{besitz_geprueft}`, `{besitz_spanne}`, `{besitz_nummer}`, `{besitz_regel}`, `{berufe_geprueft}`, `{stellung_geprueft}`, `{stellung_vorschlag}`,
-  `{stellung_unbestimmt}`, `{gewerbe_geprueft}`, `{gewerbe_entschieden}`, `{gewerbe_vorschlag}`,
-  `{stadtteil_polygon}`, `{stand}` — jeweils der gleichnamige Wert aus `kennzahlen.json`.
-- `{besitz_geprueft_prozent}` — `besitz_geprueft / adressen`, auf eine Nachkommastelle gerundet (analog
-  wären `{berufe_geprueft_prozent}` usw. denkbar, sind aber für Kapitel 1 nicht nötig und daher nicht
-  implementiert — YAGNI, bis ein weiteres Kapitel sie braucht).
+## Platzhalter in `grenzen` und `datenbasis`
 
-`{besitz_geprueft_prozent}` ist damit derzeit der **einzige** `_prozent`-Platzhalter; jeder andere
-(`{stellung_geprueft_prozent}`, `{eigentuemer_geprueft_prozent}` …) bleibt ungefüllt im Text stehen, weil
-die betreffenden Kennzahlen entweder schon Prozentwerte sind oder einen anderen Nenner als `adressen`
-haben. Erweitert wird die Liste in `PROZENT_BASIS` in `site/js/perspektiven_modell.js`.
+Die Texte in `grenzen` (Kapitelende: Reichweite und Lücken der Daten) und `datenbasis` (Unterzeile unter dem
+Titel) dürfen folgende Platzhalter enthalten, die die Seite beim Rendern aus `site/daten/kennzahlen.json` einsetzt:
+
+- `{adressen}`, `{besitz_geprueft}`, `{besitz_hand}`, `{besitz_spanne}`, `{besitz_nummer}`, `{besitz_regel}`, `{berufe_geprueft}`,
+  `{stellung_geprueft}`, `{stellung_vorschlag}`, `{stellung_unbestimmt}`, `{gewerbe_geprueft}`, `{gewerbe_entschieden}`,
+  `{gewerbe_vorschlag}`, `{stadtteil_polygon}`, `{stand}` sowie alle absoluten Kennzahlen der Trichter (`{eintraege}`,
+  `{verortet}`, `{stufe_offen}`, `{teil_i_n}`, `{stellung_hand_n}`, `{betriebe_n}`, `{gewerbe_hand_n}` …) — jeweils der
+  gleichnamige Wert aus `kennzahlen.json`.
+- `{besitz_geprueft_prozent}` und `{besitz_hand_prozent}` — Anteil an `adressen`, auf eine Nachkommastelle gerundet.
+
+Das sind die **einzigen** `_prozent`-Platzhalter (`PROZENT_BASIS` in `site/js/perspektiven_modell.js`); jeder
+andere (`{stellung_geprueft_prozent}` …) bleibt ungefüllt im Text stehen, weil die betreffenden Kennzahlen
+entweder schon Prozentwerte sind oder einen anderen Nenner als `adressen` haben.
 
 Diese Platzhalter sind bewusst **nicht** Teil von `pruefe_kapitel` — das Schema prüft nur die Struktur, nicht
 den Text. Ein Tippfehler in einem Platzhalternamen fällt erst beim Rendern der Seite auf.
