@@ -53,8 +53,9 @@ export function zeige(ansicht, daten, optionen = {}) {
   const beschriftung = Math.min(180, spaltenBreite * 0.36);
   const wertSpalte = Math.min(90, spaltenBreite * 0.24);
   const balkenBreite = Math.max(10, spaltenBreite - beschriftung - wertSpalte - RAND);
-  // Die Fläche wächst mit, wenn die Zeilen nicht hineinpassen; die Seite skaliert das SVG dann.
-  const hoeheGesamt = Math.max(hoehe, oben + proSpalte * zeile + RAND);
+  // Die Fläche ist so hoch wie ihre Zeilen: passen sie nicht hinein, skaliert die Seite das SVG herunter;
+  // bleiben sie kürzer (Top 15), gibt die Bühne den Rest frei, damit die Legende direkt darunter steht.
+  const hoeheGesamt = Math.round(oben + proSpalte * zeile + RAND);
 
   const teile = [svgKopf(breite, hoeheGesamt)];
   if (optionen.titel) teile.push(`<text x="${RAND}" y="18" class="titel">${esc(optionen.titel)}</text>`);
@@ -71,5 +72,5 @@ export function zeige(ansicht, daten, optionen = {}) {
       + "</g>");
   }
   teile.push("</svg>");
-  return { svg: teile.join(""), legende: legendeNachMass(ansicht, { max: maxDichte }), zahlen };
+  return { svg: teile.join(""), legende: legendeNachMass(ansicht, { max: maxDichte }), zahlen, hoehe: hoeheGesamt };
 }

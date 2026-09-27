@@ -224,3 +224,11 @@ test("balken: Gesamtbalken meldet seine benötigte Höhe", () => {
   const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 900 });
   assert.ok(je.hoehe > 40 && je.hoehe < 120, `je hoehe ${je.hoehe}`);   // zwei Einheiten à höchstens 26 px
 });
+
+test("rangliste: meldet die genutzte Höhe, wenn wenige Zeilen die Bühne nicht füllen", () => {
+  const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "rangliste", gruppen: G, bezug: "Arbeiter", min_n: 0 });
+  const r = rangliste.zeige(a, daten, { breite: 600, hoehe: 900 });
+  // zwei Zeilen à höchstens ZEILE_MAX (28) plus Rand — deutlich unter 900
+  assert.ok(r.hoehe > 30 && r.hoehe < 100, `hoehe ${r.hoehe}`);
+  assert.match(r.svg, new RegExp(`height="${r.hoehe}"`));
+});
