@@ -1,6 +1,5 @@
 import { Lader } from "./daten.js";
 import { vorschlaege, hinweisHJ } from "./suche.js";
-import { themenListe } from "./themen.js";
 import { esc } from "./popup.js";
 import { schreibeZustand, STANDARD } from "./zustand.js";
 
@@ -87,20 +86,18 @@ try {
       });
     });
   }
-  const themen = await themenListe(lader);
-  if (themen.length) {
-    const k = document.getElementById("kachel-thema");
-    k.href = "karte.html?thema=" + encodeURIComponent(themen[0].id);
-    k.querySelector("b").textContent = themen[0].titel; k.querySelector("small").textContent = "Thema";
-    k.hidden = false;
-  }
-  // Kachel erscheint erst, sobald ein Perspektiven-Kapitel freigegeben ist (Spec §6.2); ein
-  // fehlendes perspektiven/index.json (noch kein Export) darf die Startseite nicht stören.
+  // Die Schlaglichter-Kachel steht immer; solange kein Kapitel freigegeben ist, führt sie in die
+  // Vorschau und sagt das. Ein fehlendes perspektiven/index.json (noch kein Export) darf die
+  // Startseite nicht stören.
   try {
     const p = await lader.perspektivenIndex();
-    if (p && p.some((k) => k.freigegeben)) document.getElementById("kachel-perspektiven").hidden = false;
+    if (!(p && p.some((k) => k.freigegeben))) {
+      const k = document.getElementById("kachel-schlaglichter");
+      k.href = "schlaglichter.html?vorschau=1";
+      k.querySelector("small").textContent += " (Vorschau, Texte sind Platzhalter)";
+    }
   } catch (fehler) {
-    console.error("Startseite: Perspektiven-Index konnte nicht geladen werden", fehler);
+    console.error("Startseite: Schlaglichter-Index konnte nicht geladen werden", fehler);
   }
 } catch (fehler) {
   console.error("Startseite: Kennzahlen/Kacheln konnten nicht geladen werden", fehler);

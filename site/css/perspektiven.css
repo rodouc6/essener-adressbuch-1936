@@ -80,7 +80,9 @@
 .grenzen p { margin: 0 0 6px; font-size: 14px; }
 .grenzen .quellen { font-size: 12px; color: var(--grau); margin: 0; }
 
-.detail { position: fixed; right: 16px; bottom: 16px; background: #fff; border-radius: 8px;
+/* Breit: der Kasten steht an der Einheit (left/top setzt perspektiven.js aus detailLage); schmal:
+   Leiste am unteren Rand, siehe unten. */
+.detail { position: fixed; background: #fff; border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,.2); padding: 12px 16px; max-width: 320px; z-index: 5; font-size: 13px; }
 .detail h4 { margin: 0 24px 6px 0; font-size: 15px; }
 .detail p { margin: 2px 0; }
@@ -116,5 +118,5 @@
   .scrolly .schritte { padding: 77vh 12px 40vh; padding-top: 77lvh; }
   .schritt { max-width: none; font-size: 16px; padding: 14px 16px; }
   .schritt + .schritt { margin-top: 85vh; }
-  .detail { left: 16px; right: 16px; max-width: none; }
+  .detail { left: 16px; right: 16px; bottom: 16px; max-width: none; }
 }

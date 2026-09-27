@@ -551,7 +551,8 @@ python3 pipeline/06_karte_export.py            # Ebenen, Layouts, Schichten, Sta
 
 ## Perspektiven (Teilprojekt 5b)
 
-Scrollytelling-Seite `site/perspektiven.html`: Einleitung, Inhaltsverzeichnis, Kapitel untereinander,
+Scrollytelling-Seite `site/schlaglichter.html` (nach außen „Schlaglichter“; Code, Kuratierung und Daten
+behalten den Arbeitsnamen `perspektiven` aus der Spec): Einleitung, Inhaltsverzeichnis, Kapitel untereinander,
 je Kapitel eine klebende Bühne über die volle Fensterhöhe und -breite, an der die Schritte als
 schmale Karten vorbeilaufen — auf breiten Schirmen in der rechten Spalte (das Bild nutzt die linken
 60 %), auf schmalen über dem unteren Drittel (das Bild nutzt die oberen 62 %); zwischen zwei Karten
@@ -607,8 +608,9 @@ Kapiteltexte sind, solange `freigegeben: false` gilt, ausdrücklich Platzhalter 
 geprüft.
 
 Der Detailkasten folgt dem Zeiger: Schweben über einer Einheit (Balkensegment, Stadtteil, Kreis,
-Ranglistenzeile) zeigt ihn flüchtig und hebt die Einheit hervor, ein Klick stellt ihn fest (dann erst
-mit Schließknopf und Kartenlink). Schweben über einer anderen Einheit, Schließen oder ein
+Ranglistenzeile) zeigt ihn flüchtig direkt über der Einheit (`detailLage`: mittig darüber, sonst
+darunter, immer im Fenster; auf schmalen Schirmen als Leiste am unteren Rand) und hebt die Einheit
+hervor, ein Klick stellt ihn fest (dann erst mit Schließknopf und Kartenlink). Schweben über einer anderen Einheit, Schließen oder ein
 Schrittwechsel löst die Feststellung wieder. Die Logik steht als `detailZustand` in
 `perspektiven_modell.js` (geprüft), das Verdrahten in `perspektiven.js`; Geräte ohne echten Zeiger
 (`(hover: hover) and (pointer: fine)`) bekommen nur den Klickweg, weil dort kein „Verlassen“ käme.

@@ -122,3 +122,16 @@ export function detailZustand(zustand, ereignis, id = null) {
     default: return z;
   }
 }
+
+// Lage des Detailkastens (fixed, in Fensterkoordinaten): mittig über dem Rechteck der Einheit mit
+// etwas Abstand; reicht der Platz oben nicht, darunter; seitlich so verschoben, dass er im Fenster
+// bleibt (mindestens `rand` zum Fensterrand). Alle Maße in px.
+export function detailLage(einheit, kasten, fenster, abstand = 10, rand = 8) {
+  const e = einheit || {}, k = kasten || {}, f = fenster || {};
+  const links = (e.left || 0) + (e.width || 0) / 2 - (k.width || 0) / 2;
+  const left = Math.max(rand, Math.min(links, (f.width || 0) - (k.width || 0) - rand));
+  let top = (e.top || 0) - (k.height || 0) - abstand;
+  if (top < rand) top = (e.top || 0) + (e.height || 0) + abstand;
+  if (top + (k.height || 0) > (f.height || 0) - rand) top = Math.max(rand, (f.height || 0) - (k.height || 0) - rand);
+  return { left: Math.round(left), top: Math.round(top) };
+}

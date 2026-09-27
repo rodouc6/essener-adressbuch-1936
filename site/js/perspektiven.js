@@ -10,7 +10,7 @@ import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
-import { detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import { detailLage, detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles };
 const lader = new Lader();
@@ -19,7 +19,11 @@ const reduziert = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // Nur Geräte mit echtem Zeiger bekommen die Schwebe-Anzeige; auf dem Touchscreen bliebe der Kasten
 // sonst nach jeder Berührung offen, ohne dass ein „Verlassen“ je käme.
 const schweben = matchMedia("(hover: hover) and (pointer: fine)").matches;
+// Auf schmalen Schirmen liegt der Kasten als Leiste am unteren Rand (CSS), nicht an der Einheit.
+const schmal = matchMedia("(max-width: 899px)");
 let detail = DETAIL_ZU;
+// Rechteck der Einheit, an der der Kasten zuletzt aufgegangen ist; festgestellt bleibt er dort.
+let anker = null;
 // Die gerade gezeichnete Ansicht: ihre Werte füllen den Detailkasten, ihr SVG trägt die Hervorhebung.
 let gezeigt = { werte: [], ansicht: null, svg: null };
 
@@ -123,9 +127,9 @@ function zeichne(sec, schritt) {
   gezeigt = { werte: werteJeEinheit(ansicht, daten), ansicht, svg };
   svg.querySelectorAll(".einheit").forEach((el) => {
     const titel = el.querySelector("title")?.textContent;
-    el.addEventListener("click", () => melde("klick", el.dataset.id, titel));
+    el.addEventListener("click", () => melde("klick", el.dataset.id, titel, el.getBoundingClientRect()));
     if (!schweben) return;
-    el.addEventListener("mouseenter", () => melde("schweben", el.dataset.id, titel));
+    el.addEventListener("mouseenter", () => melde("schweben", el.dataset.id, titel, el.getBoundingClientRect()));
     el.addEventListener("mouseleave", () => melde("verlassen", el.dataset.id, titel));
   });
 }
@@ -148,8 +152,9 @@ function zahlenText(r, ansicht) {
 
 // Ein Ereignis an einer Einheit (Schweben, Verlassen, Klick) oder an der Seite (Schließen,
 // Schrittwechsel) fortschreiben und den Detailkasten neu zeichnen.
-function melde(ereignis, id = null, titelFallback = "") {
+function melde(ereignis, id = null, titelFallback = "", rechteck = null) {
   detail = detailZustand(detail, ereignis, id);
+  if (rechteck && detail.sichtbar && detail.id === id) anker = rechteck;
   // Die Einheit, über der der Zeiger steht (oder die festgestellt ist), hebt sich im Bild ab.
   gezeigt.svg?.querySelectorAll(".einheit").forEach((el) =>
     el.classList.toggle("angesehen", detail.sichtbar && el.dataset.id === detail.id));
@@ -174,6 +179,12 @@ function zeichneDetail(titelFallback = "") {
     + (detail.fest ? "" : `<p class="wink">Klicken hält die Angaben fest.</p>`);
   box.hidden = false;
   if (detail.fest) box.querySelector(".schliessen").onclick = () => melde("schliessen");
+  // An der Einheit ausrichten — erst nach dem Füllen, denn die Maße des Kastens hängen am Text.
+  // Schmal: Leiste am unteren Rand aus dem CSS, keine Inline-Lage.
+  if (schmal.matches || !anker) { box.style.left = box.style.top = ""; return; }
+  const lage = detailLage(anker, { width: box.offsetWidth, height: box.offsetHeight }, { width: innerWidth, height: innerHeight });
+  box.style.left = `${lage.left}px`;
+  box.style.top = `${lage.top}px`;
 }
 
 // Verbindet die Schritte eines Kapitels mit der Grafik: Scrollama beim Scrollen, Fokus für die

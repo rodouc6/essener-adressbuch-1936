@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalisiere } from "../js/ansicht.js";
-import { detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
+import { detailLage, detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
 
 test("zeichenflaeche zieht Legende und Zahlenzeile ab und hält Mindestmaße", () => {
   assert.deepEqual(zeichenflaeche(800, 700, 90), { breite: 800, hoehe: 610 });
@@ -70,4 +70,18 @@ test("detailZustand: schweben flüchtig, Klick stellt fest, Schrittwechsel räum
   assert.deepEqual(detailZustand(f, "schrittwechsel"), DETAIL_ZU);
   // Unbekanntes Ereignis lässt den Zustand, wie er ist.
   assert.deepEqual(detailZustand(f, "wackeln", "Karnap"), f);
+});
+
+test("detailLage: mittig über der Einheit, sonst darunter, immer im Fenster", () => {
+  const fenster = { width: 1000, height: 800 };
+  const kasten = { width: 200, height: 100 };
+  // Platz oben: mittig darüber, 10 px Abstand.
+  assert.deepEqual(detailLage({ left: 400, top: 300, width: 100, height: 40 }, kasten, fenster), { left: 350, top: 190 });
+  // Kein Platz oben: darunter.
+  assert.deepEqual(detailLage({ left: 400, top: 50, width: 100, height: 40 }, kasten, fenster), { left: 350, top: 100 });
+  // Am linken und rechten Rand bleibt der Kasten im Fenster.
+  assert.equal(detailLage({ left: 0, top: 300, width: 20, height: 40 }, kasten, fenster).left, 8);
+  assert.equal(detailLage({ left: 990, top: 300, width: 10, height: 40 }, kasten, fenster).left, 792);
+  // Weder oben noch unten Platz (hohe Einheit am unteren Rand): an den unteren Rand gezogen.
+  assert.deepEqual(detailLage({ left: 400, top: 20, width: 100, height: 760 }, kasten, fenster), { left: 350, top: 692 });
 });
