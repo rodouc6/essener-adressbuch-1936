@@ -519,6 +519,138 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)))
 
 
+TOP_N = 10
+
+
+def _top(zaehler: dict, n: int = TOP_N) -> list:
+    """Die n häufigsten Einträge eines Zählers als Listen [schlüssel…, zahl], absteigend, bei Gleichstand alphabetisch."""
+    return [[*k, z] if isinstance(k, tuple) else [k, z] for k, z in sorted(zaehler.items(), key=lambda kv: (-kv[1], kv[0]))[:n]]
+
+
+def _stellung_klasse(b):
+    return b["stellung"] if b else "unbestimmt"
+
+
+def _sammle_berufe(adressen: dict[str, dict], schluessel) -> dict[str, dict]:
+    """Je Wert von `schluessel(_beruf)` (Stellung, Hauptgruppe, Niveau): Schreibweisen, Normen, Nennungen, Quelle, Top-Schreibweisen.
+    Einträge ohne geprüften Beruf zählen bei der Stellung als `unbestimmt` (Schreibweise ohne Norm und ohne Quelle)."""
+    aus: dict[str, dict] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            if e.get("teil") != "I":
+                continue
+            b = e.get("_beruf")
+            klasse = schluessel(b) if b else None
+            if klasse is None:
+                continue
+            k = aus.setdefault(klasse, dict(_schreib=defaultdict(int), _normen=set(), _quelle=defaultdict(int), _norm_von={}, _quelle_von={}))
+            s = e.get("Beruf o. ä.", "")
+            k["_schreib"][s] += 1
+            if b:
+                k["_normen"].add(b["ohdab"]); k["_norm_von"][s] = b["norm"]
+                q = b.get("stellung_quelle", "hand") if schluessel is _stellung_klasse else "hand"
+                k["_quelle"][q] += 1; k["_quelle_von"][s] = q
+            else:
+                k["_norm_von"][s] = ""; k["_quelle_von"][s] = ""
+    out = {}
+    for klasse, k in aus.items():
+        out[klasse] = dict(schreibweisen=len(k["_schreib"]), normen=len(k["_normen"]), nennungen=sum(k["_schreib"].values()),
+                           quelle=dict(k["_quelle"]),
+                           top=[[s, n, k["_norm_von"][s], k["_quelle_von"][s]] for s, n in _top(k["_schreib"])])
+    return out
+
+
+def baue_herkunft(adressen: dict[str, dict]) -> dict[str, dict]:
+    """Herkunftspaket (Spec 2026-09-27 Herkunftspfad §3): je Klasse und je Einzelobjekt, woher die Zahl kommt —
+    Schreibweisen des Buches, Normen bzw. kanonische Namen, Quellanteile (Hand/Vorschlag/Regel/Prinzipien).
+    Grundmenge sind die verorteten Einträge (Ergebnis von `gruppiere`), nicht die Kuratierungstabellen."""
+    stellung = _sammle_berufe(adressen, _stellung_klasse)
+    # Stellung: auch Einträge ohne geprüften Beruf, als unbestimmt (Schreibweise ohne Norm, ohne Quelle)
+    unbest = stellung.setdefault("unbestimmt", dict(schreibweisen=0, normen=0, nennungen=0, quelle={}, top=[]))
+    ohne: dict[str, int] = defaultdict(int)
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            if e.get("teil") == "I" and not e.get("_beruf"):
+                ohne[e.get("Beruf o. ä.", "")] += 1
+    if ohne:
+        schreib = defaultdict(int, {t[0]: t[1] for t in unbest["top"]})
+        for s, n in ohne.items(): schreib[s] += n
+        vorhanden = {t[0]: (t[2], t[3]) for t in unbest["top"]}
+        unbest["schreibweisen"] += len(ohne); unbest["nennungen"] += sum(ohne.values())
+        unbest["top"] = [[s, n, *vorhanden.get(s, ("", ""))] for s, n in _top(schreib)]
+    for k in stellung.values():
+        k["quelle"] = {"hand": k["quelle"].get("hand", 0), "vorschlag": k["quelle"].get("vorschlag", 0)}
+    gruppe = _sammle_berufe(adressen, lambda b: b["gruppe"] if b else None)
+    niveau = _sammle_berufe(adressen, lambda b: b["niveau"] if b else None)
+    for d in (gruppe, niveau):
+        for k in d.values(): k["quelle"] = {"hand": k["quelle"].get("hand", 0)}
+
+    berufe: dict[str, dict] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            b = e.get("_beruf")
+            if not b or e.get("teil") != "I":
+                continue
+            n = berufe.setdefault(b["ohdab"], dict(norm=b["norm"], _schreib=defaultdict(int), stellung=b["stellung"], stellung_quelle=b.get("stellung_quelle", "hand")))
+            n["_schreib"][e.get("Beruf o. ä.", "")] += 1
+    berufe = {k: dict(norm=v["norm"], nennungen=sum(v["_schreib"].values()), schreibweisen=_top(v["_schreib"]), stellung=v["stellung"], stellung_quelle=v["stellung_quelle"])
+              for k, v in berufe.items()}
+
+    besitz: dict[str, dict] = {}
+    eig: dict[str, dict] = {}
+    for a in adressen.values():
+        klasse = a.get("besitz", "ungeprueft")
+        if klasse == "ungeprueft":
+            continue
+        k = besitz.setdefault(klasse, dict(_eig=set(), zeilen=0, haeuser=0, quelle={"hand": 0, "regel": 0}, spanne=0, nummer=0, _top=defaultdict(int), _regel=defaultdict(int)))
+        k["haeuser"] += 1
+        k["quelle"]["regel" if a.get("besitz_pruefung") == "regel" else "hand"] += 1
+        if a.get("besitz_quelle") == "spanne": k["spanne"] += 1
+        if a.get("besitz_quelle") == "nummer": k["nummer"] += 1
+        kanon = a.get("besitz_eigentuemer", "")
+        if kanon:
+            k["_eig"].add(kanon); k["_top"][kanon] += 1
+            x = eig.setdefault(kanon, dict(_schreib=defaultdict(int), zeilen=0, haeuser=0, spanne=0, nummer=0, kategorie=klasse, identitaet=True, seite=""))
+            x["haeuser"] += 1
+            if a.get("besitz_quelle") == "spanne": x["spanne"] += 1
+            if a.get("besitz_quelle") == "nummer": x["nummer"] += 1
+        for e in a["eintraege"]:
+            if e.get("teil") != "II":
+                continue
+            k["zeilen"] += 1
+            s = e.get("Firmenname") or ", ".join(t for t in (e.get("lastname", ""), e.get("firstname", "")) if t)
+            if e.get("_pruefung") == "regel":
+                k["_regel"][s] += 1
+            if e.get("_eigentuemer") and e.get("_identitaet"):
+                x = eig.setdefault(e["_eigentuemer"], dict(_schreib=defaultdict(int), zeilen=0, haeuser=0, spanne=0, nummer=0, kategorie=e.get("_kategorie", klasse), identitaet=True, seite=""))
+                x["zeilen"] += 1; x["_schreib"][s] += 1
+                if not x["seite"]: x["seite"] = e.get("page", "")
+    besitz = {kl: dict(eigentuemer=len(k["_eig"]), zeilen=k["zeilen"], haeuser=k["haeuser"], quelle=k["quelle"], spanne=k["spanne"], nummer=k["nummer"],
+                       top=_top(k["_top"]), **({"regel_beispiele": _top(k["_regel"], 5)} if kl == "privatperson" else {}))
+              for kl, k in besitz.items()}
+    eigentuemer = {kanon: dict(schreibweisen=_top(x["_schreib"]), schreibweisen_gesamt=len(x["_schreib"]), zeilen=x["zeilen"], haeuser=x["haeuser"],
+                               spanne=x["spanne"], nummer=x["nummer"], kategorie=x["kategorie"], identitaet=x["identitaet"], seite=x["seite"])
+                   for kanon, x in eig.items()}
+
+    gewerbe: dict[str, dict] = {}
+    rubriken: dict[str, dict] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            g = e.get("_gewerbe")
+            if not g or e.get("teil") != "III":
+                continue
+            k = gewerbe.setdefault(g["gruppe"], dict(_rub=defaultdict(int), quelle={"hand": 0, "claude": 0, "vorschlag": 0}, _art={}, _quelle={}))
+            k["_rub"][g["rubrik"]] += 1
+            k["quelle"][g["quelle"]] = k["quelle"].get(g["quelle"], 0) + 1
+            k["_art"][g["rubrik"]] = g["art"]; k["_quelle"][g["rubrik"]] = g["quelle"]
+            r = rubriken.setdefault(g["rubrik"], dict(betriebe=0, gruppe=g["gruppe"], art=g["art"], quelle=g["quelle"]))
+            r["betriebe"] += 1
+    gewerbe = {gr: dict(rubriken=len(k["_rub"]), betriebe=sum(k["_rub"].values()), quelle=k["quelle"],
+                        top=[[r, n, k["_art"][r], k["_quelle"][r]] for r, n in _top(k["_rub"])])
+               for gr, k in gewerbe.items()}
+    return dict(stellung=stellung, gruppe=gruppe, niveau=niveau, berufe=berufe, besitz=besitz, eigentuemer=eigentuemer, gewerbe=gewerbe, rubriken=rubriken)
+
+
 def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
     """Vorberechnete Bubble-Layouts (Spec §5.4): Berufsnormen (Gruppenpackung nach Berufsgruppe + Beeswarm nach Niveau),
     identifizierte Eigentümer (Packung nach Klasse), Gewerberubriken (Packung nach Gruppe). Stellung und Gruppe je Norm =
@@ -726,6 +858,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         _json(ausgabe / "ebenen" / f"{_EBENEN_DATEI[ebene]}.json", aggregiere(adressen, ebene))
     for name, inhalt in baue_layouts(adressen).items():
         _json(ausgabe / "layout" / f"{name}.json", inhalt)
+    for name, inhalt in baue_herkunft(adressen).items():
+        _json(ausgabe / "herkunft" / f"{name}.json", inhalt)
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)
     kennzahlen["strassen_mit_linie"] = len(sf)
     _json(ausgabe / "kennzahlen.json", kennzahlen)

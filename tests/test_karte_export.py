@@ -711,3 +711,81 @@ def test_stadtteil_je_adresse_aus_polygon(tmp_path):
     assert g["features"][0]["properties"]["id"] == "Kray"
     ohne = gruppiere([e1], [], None)
     assert list(ohne.values())[0]["stadtteil_quelle"] == "strasse"
+
+
+# ---- Herkunftspaket (Spec 2026-09-27 Herkunftspfad §3) ----------------------------------------------------
+
+def _adr(aid, eintraege, **k):
+    a = dict(id=aid, lat=51.4, lon=7.0, stufe="haus", stadtteil="Kray", eintraege=eintraege,
+             besitz="ungeprueft", besitz_pruefung="", besitz_quelle="", besitz_eigentuemer="")
+    a.update(k)
+    return a
+
+
+def _bf(schreibweise, norm, ohdab, stellung, quelle="hand", niveau="fachlich", gruppe="B21"):
+    return dict(teil="I", **{"Beruf o. ä.": schreibweise},
+                _beruf=dict(beruf=norm, ohdab=ohdab, niveau=niveau, gattung="", gattung_id="", status="", norm=norm,
+                            stellung=stellung, stellung_quelle=quelle, gruppe=gruppe))
+
+
+def test_baue_herkunft_stellung_und_berufe():
+    from pipeline.lib.karte_export import baue_herkunft
+    a = {"1": _adr("1", [_bf("Bergm.", "Bergmann", "B 21112-100", "arbeiter"), _bf("Bergm.", "Bergmann", "B 21112-100", "arbeiter"),
+                        _bf("Bergmann", "Bergmann", "B 21112-100", "arbeiter"), _bf("Schlosser", "Schlosser", "B 24412-127", "arbeiter", "vorschlag"),
+                        _bf("Lehrer", "Lehrer", "B 84124-120", "beamte", niveau="hochkomplex", gruppe="B84"),
+                        dict(teil="I", **{"Beruf o. ä.": "Kfm."}, _beruf=None)])}
+    h = baue_herkunft(a)
+    st = h["stellung"]["arbeiter"]
+    assert (st["schreibweisen"], st["normen"], st["nennungen"]) == (3, 2, 4)
+    assert st["quelle"] == {"hand": 3, "vorschlag": 1}
+    assert st["top"] == [["Bergm.", 2, "Bergmann", "hand"], ["Bergmann", 1, "Bergmann", "hand"], ["Schlosser", 1, "Schlosser", "vorschlag"]]
+    assert h["stellung"]["beamte"]["top"] == [["Lehrer", 1, "Lehrer", "hand"]]
+    # ungeprüfter Beruf zählt zu „unbestimmt“, ohne Norm
+    assert h["stellung"]["unbestimmt"]["nennungen"] == 1 and h["stellung"]["unbestimmt"]["top"] == [["Kfm.", 1, "", ""]]
+    assert h["gruppe"]["B21"]["nennungen"] == 4 and h["gruppe"]["B21"]["quelle"] == {"hand": 4}
+    assert h["niveau"]["hochkomplex"]["nennungen"] == 1
+    b = h["berufe"]["B 21112-100"]
+    assert b == {"norm": "Bergmann", "nennungen": 3, "schreibweisen": [["Bergm.", 2], ["Bergmann", 1]], "stellung": "arbeiter", "stellung_quelle": "hand"}
+
+
+def test_baue_herkunft_besitz_und_eigentuemer():
+    from pipeline.lib.karte_export import baue_herkunft
+    krupp = lambda s: dict(teil="II", **{"Firmenname": s}, lastname="", firstname="", page="II-040", _eigentuemer="Fried. Krupp AG",
+                           _kategorie="industrie", _identitaet=True, _pruefung="hand")
+    person = dict(teil="II", **{"Firmenname": ""}, lastname="Müller", firstname="H.", page="II-041", _eigentuemer="", _kategorie="privatperson",
+                  _identitaet=False, _pruefung="regel")
+    a = {"1": _adr("1", [krupp("Fried. Krupp A.G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag", besitz_eigentuemer="Fried. Krupp AG"),
+         "2": _adr("2", [krupp("Fried. Krupp A.-G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag", besitz_eigentuemer="Fried. Krupp AG"),
+         "3": _adr("3", [], besitz="industrie", besitz_pruefung="hand", besitz_quelle="spanne", besitz_eigentuemer="Fried. Krupp AG"),
+         "4": _adr("4", [person], besitz="privatperson", besitz_pruefung="regel", besitz_quelle="eintrag"),
+         "5": _adr("5", [], besitz="ungeprueft")}
+    h = baue_herkunft(a)
+    ind = h["besitz"]["industrie"]
+    assert (ind["eigentuemer"], ind["zeilen"], ind["haeuser"], ind["spanne"], ind["nummer"]) == (1, 2, 3, 1, 0)
+    assert ind["quelle"] == {"hand": 3, "regel": 0} and ind["top"] == [["Fried. Krupp AG", 3]]
+    pr = h["besitz"]["privatperson"]
+    assert pr["quelle"] == {"hand": 0, "regel": 1} and pr["regel_beispiele"] == [["Müller, H.", 1]]
+    k = h["eigentuemer"]["Fried. Krupp AG"]
+    assert k == {"schreibweisen": [["Fried. Krupp A.-G.", 1], ["Fried. Krupp A.G.", 1]], "schreibweisen_gesamt": 2, "zeilen": 2, "haeuser": 3,
+                 "spanne": 1, "nummer": 0, "kategorie": "industrie", "identitaet": True, "seite": "II-040"}
+    # Review Focus 5: ohne gesicherte Identität kein Eintrag je Eigentümer
+    assert "Müller, H." not in h["eigentuemer"] and "" not in h["eigentuemer"]
+
+
+def test_baue_herkunft_gewerbe_und_rubriken():
+    from pipeline.lib.karte_export import baue_herkunft
+    gw = lambda rubrik, gruppe, art, quelle: dict(teil="III", **{"Firmenname": "X, " + rubrik}, _gewerbe=dict(rubrik=rubrik, firma="X", gruppe=gruppe, art=art, quelle=quelle, schluessel="x"))
+    a = {"1": _adr("1", [gw("Bäcker", "lebensmittel", "handwerk", "hand"), gw("Bäcker", "lebensmittel", "handwerk", "hand"),
+                        gw("Kolonialwaren", "lebensmittel", "handel", "claude"), gw("Maler", "bau", "handwerk", "vorschlag")])}
+    h = baue_herkunft(a)
+    lm = h["gewerbe"]["lebensmittel"]
+    assert (lm["rubriken"], lm["betriebe"]) == (2, 3) and lm["quelle"] == {"hand": 2, "claude": 1, "vorschlag": 0}
+    assert lm["top"] == [["Bäcker", 2, "handwerk", "hand"], ["Kolonialwaren", 1, "handel", "claude"]]
+    assert h["rubriken"]["Maler"] == {"betriebe": 1, "gruppe": "bau", "art": "handwerk", "quelle": "vorschlag"}
+
+
+def test_schreibe_paket_schreibt_herkunft(tmp_path):
+    schreibe_paket(tmp_path, [_v(id="1", teil="I")], [], [], "2026-09-27", kacheln=False)
+    for name in ("stellung", "gruppe", "niveau", "berufe", "besitz", "eigentuemer", "gewerbe", "rubriken"):
+        assert (tmp_path / "herkunft" / f"{name}.json").exists(), name
+    assert json.loads((tmp_path / "herkunft" / "stellung.json").read_text(encoding="utf-8"))["unbestimmt"]["nennungen"] == 1
