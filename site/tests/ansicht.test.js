@@ -58,6 +58,7 @@ test("kennzahlen: N, n_aus, Anteile, unter_min, dominant, mischung", () => {
   // stellung_hand: nur bei Stellung, aus n_stellung_hand der Einheit
   assert.equal(kennzahlen({ n_st_arbeiter: 10, n_stellung_hand: 9 }, a).stellung_hand, 9);
   assert.equal(kennzahlen({ n_bs_privatperson: 10, n_stellung_hand: 9 }, b).stellung_hand, 0);
+  assert.equal(kennzahlen({ n_st_arbeiter: 10, n_I: 50 }, a).n_I, 50);
 });
 
 test("dichte nur für gewerbe: Betriebe je 1.000 Teil-I-Einträge", () => {

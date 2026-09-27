@@ -132,7 +132,10 @@ nachgeladen beim ersten Schweben (`Lader.herkunft`). Kontextarten (`kontextVon` 
 `<Gruppe>#regel`), `kreis` (Bubbles: Norm, Eigentümer, Rubrik), `einheit` (kein Pfad; Stadtteile nennen bei
 Stellung den von Hand bestimmten Anteil), `ausgeschlossen` (kein Pfad). Schwebend: Kette
 Buch › Norm/Eigentümer/Rubrik › Klasse › Gruppe mit Quellmarken (hand grün, vorschlag grau, claude
-violett, regel orange) und drei häufigsten Schreibweisen (`herkunftPfad`). Festgestellt zusätzlich
+violett, regel orange; Nenner ist die Zahl der Stufe, Nennungen ohne Quelle als „ohne Quelle“) und drei
+häufigsten Schreibweisen (`herkunftPfad`). Klassenbeschriftungen kommen aus `STELLUNG`/`BESITZ`/`GEWERBE_TEXT`
+in ansicht.js (keine eigene Kopie). Besitz-Segmente nennen „n identifiziert“ und die Regel-Häuser ohne
+Identität; je Norm gilt die Mehrheits-Stellung wie im Layout (`_mehrheit`), Betriebe zählen je Rubrik einmal. Festgestellt zusätzlich
 „Woher kommt diese Zahl?“ mit bis zu zehn Zeilen, Link in die Suche (`herkunftLink`, nur Einzelobjekte),
 Belegtext (`BELEG`) und bei Eigentümern Faksimile-Link (`herkunftTabelle`). Fehlt die Datei (alter
 Export), bleibt der Kasten wie zuvor; die Konsole warnt einmal.

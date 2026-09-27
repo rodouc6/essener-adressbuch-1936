@@ -531,6 +531,12 @@ def _stellung_klasse(b):
     return b["stellung"] if b else "unbestimmt"
 
 
+def _mehrheit(zaehler: dict) -> str:
+    """Der häufigste Schlüssel eines Zählers, bei Gleichstand der alphabetisch letzte — dieselbe Regel für Layout
+    (Farbe des Kreises) und Herkunft (Stellung im Pfad), damit beide dieselbe Stellung je Norm nennen."""
+    return max(zaehler.items(), key=lambda kv: (kv[1], kv[0]))[0]
+
+
 def _sammle_berufe(adressen: dict[str, dict], schluessel) -> dict[str, dict]:
     """Je Wert von `schluessel(_beruf)` (Stellung, Hauptgruppe, Niveau): Schreibweisen, Normen, Nennungen, Quelle, Top-Schreibweisen.
     Einträge ohne geprüften Beruf zählen bei der Stellung als `unbestimmt` (Schreibweise ohne Norm und ohne Quelle)."""
@@ -591,9 +597,14 @@ def baue_herkunft(adressen: dict[str, dict]) -> dict[str, dict]:
             b = e.get("_beruf")
             if not b or e.get("teil") != "I":
                 continue
-            n = berufe.setdefault(b["ohdab"], dict(norm=b["norm"], _schreib=defaultdict(int), stellung=b["stellung"], stellung_quelle=b.get("stellung_quelle", "hand")))
-            n["_schreib"][e.get("Beruf o. ä.", "")] += 1
-    berufe = {k: dict(norm=v["norm"], nennungen=sum(v["_schreib"].values()), schreibweisen=_top(v["_schreib"]), stellung=v["stellung"], stellung_quelle=v["stellung_quelle"])
+            n = berufe.setdefault(b["ohdab"], dict(norm=b["norm"], _schreib=defaultdict(int), _st=defaultdict(int), _quelle=defaultdict(int), _quelle_von={}))
+            s = e.get("Beruf o. ä.", ""); q = b.get("stellung_quelle", "hand")
+            n["_schreib"][s] += 1; n["_st"][b["stellung"]] += 1; n["_quelle"][q] += 1; n["_quelle_von"][s] = q
+    # Stellung je Norm = Mehrheit der Nennungen (wie baue_layouts); die Quelle steht je Schreibweise, denn
+    # kuratierung/berufe.csv ordnet je Schreibweise zu — eine Norm kann Hand- und Vorschlagszeilen mischen.
+    berufe = {k: dict(norm=v["norm"], nennungen=sum(v["_schreib"].values()), schreibweisen_gesamt=len(v["_schreib"]),
+                      schreibweisen=[[s, n, v["_quelle_von"][s]] for s, n in _top(v["_schreib"])], stellung=_mehrheit(v["_st"]),
+                      quelle={"hand": v["_quelle"].get("hand", 0), "vorschlag": v["_quelle"].get("vorschlag", 0)})
               for k, v in berufe.items()}
 
     besitz: dict[str, dict] = {}
@@ -640,11 +651,15 @@ def baue_herkunft(adressen: dict[str, dict]) -> dict[str, dict]:
 
     gewerbe: dict[str, dict] = {}
     rubriken: dict[str, dict] = {}
+    betriebe: set[tuple[str, str]] = set()
     for a in adressen.values():
         for e in a["eintraege"]:
             g = e.get("_gewerbe")
             if not g or e.get("teil") != "III":
                 continue
+            if (g["schluessel"], g["rubrik"]) in betriebe:      # je Rubrik zählt ein Betrieb einmal (wie baue_layouts, Ebenen)
+                continue
+            betriebe.add((g["schluessel"], g["rubrik"]))
             k = gewerbe.setdefault(g["gruppe"], dict(_rub=defaultdict(int), quelle={"hand": 0, "claude": 0, "vorschlag": 0}, _art={}, _quelle={}))
             k["_rub"][g["rubrik"]] += 1
             k["quelle"][g["quelle"]] = k["quelle"].get(g["quelle"], 0) + 1
@@ -687,7 +702,7 @@ def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
     for x in eig.values():
         x["n"] = len(x.pop("haeuser"))
     for n in normen.values():
-        n["stellung"] = max(st[n["id"]].items(), key=lambda kv: (kv[1], kv[0]))[0]
+        n["stellung"] = _mehrheit(st[n["id"]])
 
     def layout(kreise: list[dict]) -> dict:
         kreise = sorted(kreise, key=lambda k: (-k["n"], k["id"]))

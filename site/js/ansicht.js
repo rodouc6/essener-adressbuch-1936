@@ -11,10 +11,10 @@ export const STANDARD_ANSICHT = Object.freeze({ daten: "stellung", ebene: "stadt
 const PRAEFIX = { stellung: "n_st_", gruppe: "n_gr_", niveau: "n_", besitz: "n_bs_", gewerbe: "n_gw_" };
 const NENNER = { stellung: "n_I", gruppe: "n_I", niveau: "n_I", besitz: "adressen", gewerbe: "n_III" };
 const NIVEAUS = ["helfer", "fachlich", "spezialist", "hochkomplex", "aufsicht", "fuehrung", "unsicher"];
-const STELLUNG = { arbeiter: ["Arbeiter/Gehilfen (nach Schreibung)", "#e69f00"], angestellte: ["Angestellte", "#56b4e9"], beamte: ["Beamte", "#009e73"], selbstaendige: ["Selbständige", "#f0e442"], freie_berufe: ["Freie Berufe und Akademiker", "#0072b2"], unternehmer: ["Unternehmer und Leitende", "#d55e00"], ohne_erwerb: ["Ohne Erwerbsberuf", "#cc79a7"], kaufleute: ["Kaufleute (Stellung unbestimmt)", "#000000"] };
-const BESITZ = { privatperson: ["Privatpersonen", "#d97706"], stadt_staat: ["Stadt und Staat", "#1d4ed8"], bergbau: ["Bergbau", "#111827"], industrie: ["Industrie", "#b91c1c"], genossenschaft_siedlung: ["Genossenschaft und Siedlung", "#15803d"], kirche_stiftung: ["Kirche und Stiftung", "#7c3aed"], bank_versicherung: ["Bank und Versicherung", "#0e7490"], sonstige: ["Sonstige", "#6b7280"] };
+export const STELLUNG = { arbeiter: ["Arbeiter/Gehilfen (nach Schreibung)", "#e69f00"], angestellte: ["Angestellte", "#56b4e9"], beamte: ["Beamte", "#009e73"], selbstaendige: ["Selbständige", "#f0e442"], freie_berufe: ["Freie Berufe und Akademiker", "#0072b2"], unternehmer: ["Unternehmer und Leitende", "#d55e00"], ohne_erwerb: ["Ohne Erwerbsberuf", "#cc79a7"], kaufleute: ["Kaufleute (Stellung unbestimmt)", "#000000"] };
+export const BESITZ = { privatperson: ["Privatpersonen", "#d97706"], stadt_staat: ["Stadt und Staat", "#1d4ed8"], bergbau: ["Bergbau", "#111827"], industrie: ["Industrie", "#b91c1c"], genossenschaft_siedlung: ["Genossenschaft und Siedlung", "#15803d"], kirche_stiftung: ["Kirche und Stiftung", "#7c3aed"], bank_versicherung: ["Bank und Versicherung", "#0e7490"], sonstige: ["Sonstige", "#6b7280"] };
 const GEWERBE = ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "lebensmittel", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"];
-const GEWERBE_TEXT = { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau", holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel und Genussmittel", handel: "Handel (übrige Waren)", gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post", finanzen_recht: "Banken, Versicherungen, Immobilien, Beratung", verwaltung: "Verwaltung, Polizei, Recht", bildung_kultur_kirche: "Bildung, Kultur, Medien, Kirche", gesundheit: "Gesundheit", haus_reinigung: "Haushalt, Reinigung, Körperpflege", sonstige: "Sonstige" };
+export const GEWERBE_TEXT = { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau", holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung", lebensmittel: "Lebensmittel und Genussmittel", handel: "Handel (übrige Waren)", gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post", finanzen_recht: "Banken, Versicherungen, Immobilien, Beratung", verwaltung: "Verwaltung, Polizei, Recht", bildung_kultur_kirche: "Bildung, Kultur, Medien, Kirche", gesundheit: "Gesundheit", haus_reinigung: "Haushalt, Reinigung, Körperpflege", sonstige: "Sonstige" };
 
 const wahl = (w, erlaubt, standard) => (erlaubt.includes(w) ? w : standard);
 
@@ -107,7 +107,7 @@ export function kennzahlen(einheit, ansicht) {
   const regel = ansicht.daten === "besitz" ? (einheit?.n_besitz_regel || 0) : 0;
   // Ebenso bei Stellung: wie viele Nennungen der Einheit eine von Hand bestimmte Stellung tragen.
   const stellung_hand = ansicht.daten === "stellung" ? (einheit?.n_stellung_hand || 0) : 0;
-  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte, regel, stellung_hand };
+  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte, regel, stellung_hand, n_I: nI };
 }
 
 export function standardGruppen(daten, hauptgruppen = {}) {

@@ -137,7 +137,7 @@ test("herkunftDatei je Kontext", () => {
 
 test("herkunftPfad: Segment Stellung mit Quellmarken und Top-Schreibweisen", () => {
   const p = herkunftPfad({ art: "segment", daten: "stellung", id: "Arbeiter/Gehilfen", gruppe: G_ST }, H_ST, A_ST);
-  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Buch", "534 Schreibweisen"], ["OhdAB", "419 Berufe"], ["Stellung", "Arbeiter"], ["Gruppe", "Arbeiter/Gehilfen"]]);
+  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Buch", "534 Schreibweisen"], ["OhdAB", "419 Berufe"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
   assert.deepEqual(p[2].marken, [{ art: "hand", anteil: 0.9379, zahl: 70000 }, { art: "vorschlag", anteil: 0.0621, zahl: 4635 }]);
   assert.deepEqual(p.beispiele, [["Bergm.", 27781], ["Arbeiter", 8432], ["Schlosser", 7193]]);
 });
@@ -146,17 +146,39 @@ test("herkunftPfad: Gruppe aus mehreren Klassen summiert (Review Focus 1), fehle
   const g = A_ST.gruppen[1];
   const p = herkunftPfad({ art: "segment", daten: "stellung", id: "Bürgertum", gruppe: g }, H_ST, A_ST);
   assert.equal(p[0].wert, "320 Schreibweisen"); assert.equal(p[1].wert, "230 Berufe");
-  assert.equal(p[2].wert, "Beamte, Angestellte, Freie Berufe");          // freie_berufe fehlt in der Datei → 0, aber genannt
+  assert.equal(p[2].wert, "Beamte, Angestellte, Freie Berufe und Akademiker");          // freie_berufe fehlt in der Datei → 0, aber genannt
   assert.deepEqual(p[2].marken.map((m) => [m.art, m.zahl]), [["hand", 22444], ["vorschlag", 604]]);
   assert.deepEqual(p.beispiele, [["Angest.", 5000], ["Lehrer", 900]]);  // über beide Klassen neu sortiert
   assert.ok(!JSON.stringify(p).includes("undefined"));
 });
 
+test("herkunftPfad: Quellmarken beziehen sich auf die Nennungen; der Rest ohne Quelle wird ausgewiesen", () => {
+  // stellung „unbestimmt“: 39.118 Nennungen, nur 3.990 davon mit Quelle (geprüft, Stellung offen) — kein „79 % Hand“
+  const H = { unbestimmt: { schreibweisen: 5000, normen: 20, nennungen: 39118, quelle: { hand: 3155, vorschlag: 835 }, top: [] } };
+  const p = herkunftPfad({ art: "segment", daten: "stellung", id: "offen", gruppe: { name: "offen", aus: ["unbestimmt"] } }, H, { daten: "stellung", gruppen: [] });
+  assert.deepEqual(p[2].marken.map((m) => [m.art, Math.round(m.anteil * 100), m.zahl]), [["hand", 8, 3155], ["vorschlag", 2, 835], ["ohne", 90, 35128]]);
+});
+
+test("herkunftPfad: Besitz-Segment nennt identifizierte Eigentümer und die Regel-Häuser ohne Identität (Review: Privatpersonen)", () => {
+  const besitz = { privatperson: { eigentuemer: 8, zeilen: 25757, haeuser: 40800, quelle: { hand: 8275, regel: 32525 }, spanne: 4077, nummer: 0, top: [["Krupp v. Bohlen u. Halbach", 45]], regel_beispiele: [] } };
+  const AB = { daten: "besitz", gruppen: [{ name: "Privatpersonen", aus: ["privatperson"], farbe: "#d97706" }] };
+  const p = herkunftPfad({ art: "segment", daten: "besitz", id: "Privatpersonen", gruppe: AB.gruppen[0] }, besitz, AB);
+  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Buch", "25.757 Zeilen im Häuserbuch"], ["Eigentümer", "8 identifiziert"], ["Klasse", "Privatpersonen"], ["Gruppe", "Privatpersonen"]]);
+  assert.deepEqual(p[2].marken.map((m) => [m.art, m.zahl]), [["hand", 8275], ["regel", 32525]]);
+  assert.equal(p.hinweis, "32.525 der 40.800 Häuser per Regel, ohne belegbare Identität des Eigentümers");
+  const t = herkunftTabelle({ art: "segment", daten: "besitz", id: "Privatpersonen", gruppe: AB.gruppen[0] }, besitz, AB);
+  assert.deepEqual(t.kopf, ["Eigentümer (identifiziert)", "Häuser"]);
+  assert.match(t.hinweis, /^32\.525 der 40\.800 Häuser: Person ohne Firmenname, per Regel Privatperson, keine Identität\./);
+  // ohne Regel-Anteil kein Hinweis
+  const ind = herkunftPfad({ art: "segment", daten: "besitz", id: "I", gruppe: { name: "I", aus: ["industrie"] } }, { industrie: { eigentuemer: 36, zeilen: 1354, haeuser: 8365, quelle: { hand: 8365, regel: 0 }, top: [] } }, AB);
+  assert.equal(ind.hinweis, undefined);
+});
+
 test("herkunftPfad: Kreis Beruf, Kreis Eigentümer, Kreis Rubrik, Regel-Teil; unbekannte id → leer (Review Focus 3)", () => {
-  const berufe = { "B 21112-100": { norm: "Bergmann", nennungen: 24913, schreibweisen: [["Bergm.", 24700], ["Bergmann", 213]], stellung: "arbeiter", stellung_quelle: "hand" } };
+  const berufe = { "B 21112-100": { norm: "Bergmann", nennungen: 24913, schreibweisen_gesamt: 12, schreibweisen: [["Bergm.", 24700, "hand"], ["Bergmann", 213, "vorschlag"]], stellung: "arbeiter", quelle: { hand: 24700, vorschlag: 213 } } };
   const k = herkunftPfad({ art: "kreis", daten: "stellung", id: "B 21112-100", gruppe: null }, berufe, A_ST);
-  assert.deepEqual(k.map((s) => [s.label, s.wert]), [["Buch", "2 Schreibweisen"], ["OhdAB", "Bergmann"], ["Stellung", "Arbeiter"], ["Gruppe", "Arbeiter/Gehilfen"]]);
-  assert.deepEqual(k[2].marken, [{ art: "hand", anteil: 1, zahl: 24913 }]);
+  assert.deepEqual(k.map((s) => [s.label, s.wert]), [["Buch", "12 Schreibweisen"], ["OhdAB", "Bergmann"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
+  assert.deepEqual(k[2].marken, [{ art: "hand", anteil: 0.9915, zahl: 24700 }, { art: "vorschlag", anteil: 0.0085, zahl: 213 }]);
   assert.deepEqual(herkunftPfad({ art: "kreis", daten: "stellung", id: "B 99999-000", gruppe: null }, berufe, A_ST), []);
   const eig = { "Fried. Krupp AG": { schreibweisen: [["Fried. Krupp A.G.", 257], ["Fried. Krupp A. G.", 181]], schreibweisen_gesamt: 60, zeilen: 733, haeuser: 3351, spanne: 2600, nummer: 18, kategorie: "industrie", identitaet: true, seite: "II-040" } };
   const AB = { daten: "besitz", gruppen: [{ name: "Zechen und Werke", aus: ["bergbau", "industrie"], farbe: "#111" }, { name: "Privatpersonen", aus: ["privatperson"], farbe: "#d97706" }] };
@@ -190,13 +212,24 @@ test("herkunftTabelle und herkunftLink", () => {
   const te = herkunftTabelle({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG", gruppe: null }, eig, { daten: "besitz", gruppen: [] });
   assert.deepEqual(te.kopf, ["Schreibweise im Buch", "Zeilen", "Quelle"]); assert.deepEqual(te.zeilen[0], ["Fried. Krupp A.G.", 257, "hand"]);
   assert.match(te.hinweis, /733 Zeilen ergeben 3\.351 Häuser/); assert.equal(te.seite, "II-040");
+  // Norm: Quelle je Schreibweise, gesamt = alle Schreibweisen (nicht nur die Top 10), damit der Suchlink erscheinen kann
+  const berufe = { "B 21112-100": { norm: "Bergmann", nennungen: 24913, schreibweisen_gesamt: 12, schreibweisen: [["Bergm.", 24700, "hand"], ["Bergmann", 213, "vorschlag"]], stellung: "arbeiter", quelle: { hand: 24700, vorschlag: 213 } } };
+  const tb = herkunftTabelle({ art: "kreis", daten: "stellung", id: "B 21112-100", gruppe: null }, berufe, A_ST);
+  assert.deepEqual(tb.zeilen, [["Bergm.", 24700, "Bergmann", "hand"], ["Bergmann", 213, "Bergmann", "vorschlag"]]); assert.equal(tb.gesamt, 12);
+  // Regel-Beispiele sind Zeilen des Häuserbuchs, keine Häuser
+  const tr = herkunftTabelle({ art: "regel", daten: "besitz", id: "P#regel", gruppe: { name: "P", aus: ["privatperson"] } }, { privatperson: { quelle: { regel: 5 }, regel_beispiele: [["Müller, H.", 2]] } }, { daten: "besitz", gruppen: [] });
+  assert.deepEqual(tr.kopf, ["Schreibweise im Buch", "Zeilen"]);
   assert.equal(herkunftTabelle({ art: "einheit", daten: "stellung", id: "Katernberg" }, H_ST, A_ST), null);
 });
 
-test("herkunftAktuell: Pfad nur, wenn der Kasten noch dieselbe Einheit zeigt (Review Focus 4)", () => {
-  assert.equal(herkunftAktuell({ id: "Arbeiter", sichtbar: true }, "Arbeiter"), true);
-  assert.equal(herkunftAktuell({ id: "Beamte", sichtbar: true }, "Arbeiter"), false);
-  assert.equal(herkunftAktuell({ id: "Arbeiter", sichtbar: false }, "Arbeiter"), false);
+test("herkunftAktuell: nach dem Laden neu zeichnen, wenn der sichtbare Kasten diese Datei braucht (Review Focus 4)", () => {
+  // dieselbe Einheit oder eine Nachbar-Einheit derselben Datei (Kreis A → Kreis B während des Ladens): neu zeichnen
+  assert.equal(herkunftAktuell({ id: "A", sichtbar: true }, "berufe", "berufe"), true);
+  // der Kasten zeigt inzwischen etwas, das eine andere (oder keine) Datei braucht: kein Pfad aus der falschen Datei
+  assert.equal(herkunftAktuell({ id: "Katernberg", sichtbar: true }, "berufe", null), false);
+  assert.equal(herkunftAktuell({ id: "X", sichtbar: true }, "berufe", "stellung"), false);
+  assert.equal(herkunftAktuell({ id: "A", sichtbar: false }, "berufe", "berufe"), false);
+  assert.equal(herkunftAktuell(null, "berufe", "berufe"), false);
 });
 
 test("detailTextGruppe: Regel-Teil (#regel) heißt „per Regel“ und nennt den Regel-Anteil", () => {
@@ -209,8 +242,10 @@ test("detailTextGruppe: Regel-Teil (#regel) heißt „per Regel“ und nennt den
 
 test("detailText: Stadtteil bei Stellung nennt den handbestimmten Anteil", () => {
   const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "rangliste", gruppen: [{ name: "Arbeiter", aus: ["arbeiter"], farbe: "#000" }], bezug: "Arbeiter" });
-  const d = detailText({ id: "Katernberg", name: "Katernberg", N: 100, n_aus: 20, zaehler: { Arbeiter: 70 }, anteile: { Arbeiter: 0.7 }, stellung_hand: 90 }, a);
-  assert.ok(d.zeilen.includes("90 von 100 Nennungen mit von Hand bestimmter Stellung (90 %)"));
+  // Nenner sind alle Teil-I-Einträge der Einheit (n_I), nicht die gezeichneten Gruppen: n_stellung_hand zählt auch
+  // geprüfte Einträge mit offener Stellung, und eine Ansicht kann eine Teilmenge der Klassen zeigen (sonst > 100 %).
+  const d = detailText({ id: "Katernberg", name: "Katernberg", N: 100, n_aus: 20, n_I: 120, zaehler: { Arbeiter: 70 }, anteile: { Arbeiter: 0.7 }, stellung_hand: 90 }, a);
+  assert.ok(d.zeilen.includes("90 von 120 Einträgen in Teil I mit von Hand bestimmter Stellung (75 %)"), d.zeilen.join(" | "));
   const ohne = detailText({ id: "K", name: "K", N: 100, n_aus: 0, zaehler: {}, anteile: {} }, a);
   assert.ok(!ohne.zeilen.some((z) => /von Hand bestimmter/.test(z)));
 });

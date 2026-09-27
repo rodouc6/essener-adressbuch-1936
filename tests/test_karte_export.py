@@ -733,7 +733,11 @@ def test_baue_herkunft_stellung_und_berufe():
     a = {"1": _adr("1", [_bf("Bergm.", "Bergmann", "B 21112-100", "arbeiter"), _bf("Bergm.", "Bergmann", "B 21112-100", "arbeiter"),
                         _bf("Bergmann", "Bergmann", "B 21112-100", "arbeiter"), _bf("Schlosser", "Schlosser", "B 24412-127", "arbeiter", "vorschlag"),
                         _bf("Lehrer", "Lehrer", "B 84124-120", "beamte", niveau="hochkomplex", gruppe="B84"),
-                        dict(teil="I", **{"Beruf o. ä.": "Kfm."}, _beruf=None)])}
+                        dict(teil="I", **{"Beruf o. ä.": "Kfm."}, _beruf=None),
+                        # Stellung je Norm = Mehrheit der Nennungen (wie baue_layouts), nicht die erste Zeile
+                        _bf("Kfm. Angest.", "Kaufmännischer Angestellter", "B 71304-101", "kaufleute", gruppe="B71"),
+                        _bf("kfm. Angestellter", "Kaufmännischer Angestellter", "B 71304-101", "angestellte", "vorschlag", gruppe="B71"),
+                        _bf("kfm. Angestellter", "Kaufmännischer Angestellter", "B 71304-101", "angestellte", "vorschlag", gruppe="B71")])}
     h = baue_herkunft(a)
     st = h["stellung"]["arbeiter"]
     assert (st["schreibweisen"], st["normen"], st["nennungen"]) == (3, 2, 4)
@@ -745,7 +749,11 @@ def test_baue_herkunft_stellung_und_berufe():
     assert h["gruppe"]["B21"]["nennungen"] == 4 and h["gruppe"]["B21"]["quelle"] == {"hand": 4}
     assert h["niveau"]["hochkomplex"]["nennungen"] == 1
     b = h["berufe"]["B 21112-100"]
-    assert b == {"norm": "Bergmann", "nennungen": 3, "schreibweisen": [["Bergm.", 2], ["Bergmann", 1]], "stellung": "arbeiter", "stellung_quelle": "hand"}
+    assert b == {"norm": "Bergmann", "nennungen": 3, "schreibweisen_gesamt": 2, "schreibweisen": [["Bergm.", 2, "hand"], ["Bergmann", 1, "hand"]],
+                 "stellung": "arbeiter", "quelle": {"hand": 3, "vorschlag": 0}}
+    ka = h["berufe"]["B 71304-101"]
+    assert ka["stellung"] == "angestellte" and ka["quelle"] == {"hand": 1, "vorschlag": 2}
+    assert ka["schreibweisen"] == [["kfm. Angestellter", 2, "vorschlag"], ["Kfm. Angest.", 1, "hand"]]
 
 
 def test_baue_herkunft_besitz_und_eigentuemer():
@@ -776,9 +784,11 @@ def test_baue_herkunft_besitz_und_eigentuemer():
 
 def test_baue_herkunft_gewerbe_und_rubriken():
     from pipeline.lib.karte_export import baue_herkunft
-    gw = lambda rubrik, gruppe, art, quelle: dict(teil="III", **{"Firmenname": "X, " + rubrik}, _gewerbe=dict(rubrik=rubrik, firma="X", gruppe=gruppe, art=art, quelle=quelle, schluessel="x"))
-    a = {"1": _adr("1", [gw("Bäcker", "lebensmittel", "handwerk", "hand"), gw("Bäcker", "lebensmittel", "handwerk", "hand"),
-                        gw("Kolonialwaren", "lebensmittel", "handel", "claude"), gw("Maler", "bau", "handwerk", "vorschlag")])}
+    gw = lambda rubrik, gruppe, art, quelle, schl: dict(teil="III", **{"Firmenname": "X, " + rubrik}, _gewerbe=dict(rubrik=rubrik, firma="X", gruppe=gruppe, art=art, quelle=quelle, schluessel=schl))
+    # Je Rubrik zählt ein Betrieb (schluessel) einmal, wie in baue_layouts und den Ebenen — b1 steht zweimal unter „Bäcker“
+    a = {"1": _adr("1", [gw("Bäcker", "lebensmittel", "handwerk", "hand", "b1"), gw("Bäcker", "lebensmittel", "handwerk", "hand", "b2"),
+                        gw("Bäcker", "lebensmittel", "handwerk", "hand", "b1"),
+                        gw("Kolonialwaren", "lebensmittel", "handel", "claude", "k1"), gw("Maler", "bau", "handwerk", "vorschlag", "m1")])}
     h = baue_herkunft(a)
     lm = h["gewerbe"]["lebensmittel"]
     assert (lm["rubriken"], lm["betriebe"]) == (2, 3) and lm["quelle"] == {"hand": 2, "claude": 1, "vorschlag": 0}

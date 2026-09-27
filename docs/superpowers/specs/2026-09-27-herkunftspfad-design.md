@@ -37,7 +37,10 @@ von `schreibe_paket`, Ordner vorher geleert wie `perspektiven`. Alle Zählungen 
 - `herkunft/gruppe.json`, `herkunft/niveau.json` — gleiche Form je Hauptgruppe bzw. Niveau, Quelle
   `{ hand: int }` (Beruf ist immer von Hand zugeordnet; Niveau `unsicher` als eigene Zahl).
 - `herkunft/berufe.json` — je OhdAB-Norm (Schlüssel wie `layout/berufe.json`):
-  `{ norm, nennungen, schreibweisen: [[schreibweise, nennungen], … max 10], stellung, stellung_quelle }`
+  `{ norm, nennungen, schreibweisen_gesamt: int, schreibweisen: [[schreibweise, nennungen, quelle], … max 10],
+     stellung (Mehrheit der Nennungen, wie das Layout), quelle: { hand: int, vorschlag: int } }` — die Quelle steht je
+  Schreibweise (`kuratierung/berufe.csv` ordnet je Schreibweise zu), eine Norm kann Hand- und Vorschlagszeilen mischen.
+  Betriebe (`gewerbe`, `rubriken`) zählen je Rubrik einmal pro Betrieb (`schluessel`), wie Layout und Ebenen.
 - `herkunft/besitz.json` — je Klasse: `{ eigentuemer: int, zeilen: int, haeuser: int, quelle: { hand: int, regel: int },
      spanne: int, nummer: int, top: [[kanonischer Name, haeuser], … max 10] }`; für `privatperson` zusätzlich
   `regel_beispiele: [[schreibweise, haeuser], … 5]`.
@@ -61,21 +64,25 @@ Unter der bisherigen Zahlenzeile eine Brotkrumen-Zeile `herkunftPfad(kontext, he
 - Segment (Gruppe im Balken), Datenkern stellung: `Buch: 534 Schreibweisen › OhdAB: 419 Berufe › Stellung: Arbeiter [94 % Hand] [6 % Vorschlag] › Gruppe: <Gruppenname>`.
   Bei Gruppen aus mehreren Klassen (z. B. Bürgertum = beamte + angestellte + …) werden die Klassen
   summiert; die Stufe „Stellung“ nennt dann die Klassen mit Komma.
-- Segment, Datenkern besitz: `Buch: <n> Schreibweisen › Eigentümer: <n> zusammengeführt › Klasse: <Name> [Hand n %][Regel n %] › Gruppe`.
+- Segment, Datenkern besitz: `Buch: <n> Zeilen im Häuserbuch › Eigentümer: <n> identifiziert › Klasse: <Name> [Hand n %][Regel n %] › Gruppe`;
+  bei Regel-Häusern darunter „<n> der <N> Häuser per Regel, ohne belegbare Identität des Eigentümers“ — `eigentuemer`
+  zählt nur identifizierte Eigentümer, die Zahl darf nicht als „alle Eigentümer des Segments“ gelesen werden.
 - Segment, Datenkern gewerbe: `Buch: <n> Rubriken › Branche: <Name> [Hand][Prinzipien][Wortregel] › Gruppe`.
 - Kreis (Bubbles) Beruf: `Buch: <n> Schreibweisen › OhdAB: <Norm> › Stellung: <Klasse> [Hand|Vorschlag] › Gruppe`.
 - Kreis Eigentümer: `Buch: <n> Schreibweisen › Eigentümer: <Name> › Klasse [Hand] › Gruppe`, darunter Zeile
   „<zeilen> Zeilen im Häuserbuch, <haeuser − zeilen> Häuser dazu über Hausnummernspannen“, wenn > 0.
 - Kreis Rubrik: `Buch: <Rubrik> › Branche: <Name> [Quelle] › Gruppe`.
 - Einheit (Stadtteil, Straße, Hexfeld): kein Pfad, nur eine Quellzeile aus den Zählfeldern der Einheit:
-  stellung „<n_stellung_hand> von <N> von Hand“, besitz „<regel> per Regel“ (gibt es schon), gewerbe keine.
+  stellung „<n_stellung_hand> von <n_I> Einträgen in Teil I von Hand“ (Nenner alle Teil-I-Einträge, denn
+  `n_stellung_hand` zählt auch geprüfte Einträge mit offener Stellung), besitz „<regel> per Regel“ (gibt es schon), gewerbe keine.
 - Segment „ausgeschlossen“: kein Pfad (der Ausschluss-Text aus Schritt 1 bleibt).
 - Schraffierter Regel-Teil der Privatpersonen: `Buch: Person ohne Firmenname › Regel: → Privatperson [Regel] › Gruppe`,
   Hinweis „keine Handprüfung, keine Identität“ (Fall 3 des Mockups). Dafür bekommt der schraffierte
   Teil im Balken eine eigene `data-id` `<Gruppe>#regel`; `detailTextGruppe` erkennt das Suffix.
 
 Quellmarken als `<span class="q hand|vorschlag|claude|regel">` mit Prozent, wenn die Zahl > 0. Marken mit
-0 % entfallen. Farben: hand `#15803d`, vorschlag `#6b7280`, claude `#6d28d9`, regel `#b45309` (Mockup).
+0 % entfallen. Nenner ist die Zahl der Stufe (Nennungen, Häuser, Betriebe), nicht die Summe der Quellen; Nennungen
+ohne Quelle (Beruf ungeprüft) erscheinen als Marke `ohne` („ohne Quelle“, hellgrau). Farben: hand `#15803d`, vorschlag `#6b7280`, claude `#6d28d9`, regel `#b45309` (Mockup).
 
 Darunter, kursiv grau: „Häufigste Schreibweisen: A (n), B (n), C (n)“ (drei), bei Rubriken entfällt sie.
 
@@ -85,8 +92,8 @@ Zusätzlich ein `<details>` „Woher kommt diese Zahl?“ (standardmäßig **ge�
 Beleg sofort zeigt) mit:
 
 - Tabelle: Schreibweise | Nennungen bzw. Zeilen | Norm bzw. Klasse | Quelle (Marke), zehn Zeilen aus `top`
-  bzw. `schreibweisen`; darunter „alle <n> Schreibweisen in der Suche ›“ als Link auf
-  `karte.html?ohdab=<id>` (Norm), `karte.html?eigentuemer=<kanon>` (Eigentümer) oder
+  bzw. `schreibweisen`; darunter „alle <n> in der Suche ›“ (mehr Schreibweisen als Zeilen) bzw. „in der Suche
+  zeigen ›“ als Link auf `karte.html?ohdab=<id>` (Norm), `karte.html?eigentuemer=<kanon>` (Eigentümer) oder
   `karte.html?q=<rubrik>` (Rubrik); für Klassen ohne Einzelziel entfällt der Link.
 - Belegzeile (Klasse `beleg`): Regel und Tabelle in Worten, z. B. „Stellung nach Berufszählung 1933 / AVG 1911
   (docs/stellung.md). Tabelle: kuratierung/berufe.csv, Spalte stellung.“ Texte je Datenkern als Konstante
@@ -102,7 +109,8 @@ Beim ersten Schweben über eine Einheit eines Datenkerns lädt die Seite die pas
 (`Lader.herkunft`). Solange sie fehlt, zeigt der Kasten die Zahlen wie heute und darunter „Herkunft wird
 geladen …“; nach dem Laden wird der Kasten neu gezeichnet, falls er noch dieselbe Einheit zeigt. Schlägt das
 Laden fehl (404, alter Export), bleibt der Kasten ohne Pfad und ohne Fehlermeldung, die Konsole meldet es
-einmal. Der Detailkasten wächst durch den Pfad; `detailLage` positioniert wie bisher nach dem Füllen.
+einmal. Neu gezeichnet wird nach dem Laden, wenn der sichtbare Kasten diese Datei braucht — auch für eine
+Nachbar-Einheit derselben Datei, auf die der Zeiger während des Ladens gewechselt ist. Der Detailkasten wächst durch den Pfad; `detailLage` positioniert wie bisher nach dem Füllen.
 
 ## 5. Modell und Tests
 

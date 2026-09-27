@@ -35,6 +35,9 @@ let sichtbar = [];
 // geladen, null = Laden fehlgeschlagen (alter Export) — dann bleibt der Kasten ohne Pfad.
 const herkunft = new Map();
 let faksimile = null;
+// Zeile der zuletzt gemeldeten Einheit (Bubbles geben ihre Zahlenzeile per data-zeile mit); für das
+// Neuzeichnen nach dem Nachladen, wenn der Kasten inzwischen eine andere Einheit derselben Datei zeigt.
+let detailZeile = "";
 
 // Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, „Vier Blicke“, ab fünf Ziffern.
 const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei", 4: "Vier" };
@@ -180,6 +183,7 @@ function zahlenText(r, ansicht) {
 // Schrittwechsel) fortschreiben und den Detailkasten neu zeichnen.
 function melde(ereignis, id = null, zeile = "", rechteck = null) {
   detail = detailZustand(detail, ereignis, id);
+  if (detail.sichtbar && detail.id === id) detailZeile = zeile;
   if (rechteck && detail.sichtbar && detail.id === id) anker = rechteck;
   // Die Einheit, über der der Zeiger steht (oder die festgestellt ist), hebt sich im Bild ab.
   gezeigt.svg?.querySelectorAll(".einheit").forEach((el) =>
@@ -205,18 +209,19 @@ function kontextVon(id, ansicht) {
   return { art: "einheit", daten: ansicht.daten, id, gruppe: null };
 }
 
-// Herkunftsdatei holen; nach dem Laden den Kasten neu zeichnen, falls er noch dieselbe Einheit zeigt.
-function ladeHerkunft(name, fuerId, zeile) {
+// Herkunftsdatei holen; nach dem Laden den Kasten neu zeichnen, falls er noch etwas zeigt, das diese Datei
+// braucht (dieselbe Einheit oder ein Nachbar derselben Datei — sonst bliebe „wird geladen“ stehen).
+function ladeHerkunft(name) {
   if (herkunft.has(name)) return;
   herkunft.set(name, undefined);            // „wird geladen“
   lader.herkunft(name).then((h) => {
     herkunft.set(name, h || null);
     if (!h) console.warn(`Herkunft ${name}: nicht geladen (alter Export?)`);
-    if (herkunftAktuell(detail, fuerId)) zeichneDetail(zeile);
+    if (herkunftAktuell(detail, name, herkunftDatei(kontextVon(detail.id, gezeigt.ansicht)))) zeichneDetail(detailZeile);
   }).catch((e) => { herkunft.set(name, null); console.warn(`Herkunft ${name}:`, e); });
 }
 
-const MARKE = { hand: "Hand", vorschlag: "Vorschlag", claude: "Prinzipien", regel: "Regel" };
+const MARKE = { hand: "Hand", vorschlag: "Vorschlag", claude: "Prinzipien", regel: "Regel", ohne: "ohne Quelle" };
 const markeHtml = (m) => `<span class="q ${esc(m.art)}">${m.anteil < 1 ? `${Math.round(m.anteil * 100)} % ` : ""}${MARKE[m.art] || m.art}</span>`;
 
 function pfadHtml(pfad) {
@@ -230,10 +235,12 @@ function pfadHtml(pfad) {
 
 function tabelleHtml(t, kontext) {
   if (!t) return "";
-  const zelle = (v, i) => t.kopf[i] === "Quelle" ? `<td>${markeHtml({ art: v, anteil: 1 })}</td>` : typeof v === "number" ? `<td class="z">${formatZahl(v)}</td>` : `<td>${esc(v)}</td>`;
+  const zelle = (v, i) => t.kopf[i] === "Quelle" ? `<td>${v ? markeHtml({ art: v, anteil: 1 }) : "—"}</td>` : typeof v === "number" ? `<td class="z">${formatZahl(v)}</td>` : `<td>${esc(v)}</td>`;
   const zeilen = t.zeilen.map((z) => `<tr>${z.map(zelle).join("")}</tr>`).join("");
   const link = herkunftLink(kontext);
-  const alle = t.gesamt > t.zeilen.length && link ? `<tr><td colspan="${t.kopf.length}"><a href="${esc(link)}">alle ${formatZahl(t.gesamt)} in der Suche ›</a></td></tr>` : "";
+  // Einzelobjekte (Norm, Eigentümer, Rubrik) führen in die Suche — auch, wenn die Tabelle schon alles zeigt.
+  const linkText = t.gesamt > t.zeilen.length ? `alle ${formatZahl(t.gesamt)} in der Suche ›` : "in der Suche zeigen ›";
+  const alle = link ? `<tr><td colspan="${t.kopf.length}"><a href="${esc(link)}">${linkText}</a></td></tr>` : "";
   const bild = t.seite && faksimile && faksimile[t.seite] ? ` · <a href="${esc(faksimileUrl(faksimile[t.seite]))}" target="_blank" rel="noopener">Faksimile Seite ${esc(t.seite)}</a>` : "";
   return `<details open><summary>Woher kommt diese Zahl?</summary><table><tr>${t.kopf.map((k) => `<th>${esc(k)}</th>`).join("")}</tr>${zeilen}${alle}</table>`
     + `<p class="beleg">${esc(t.hinweis)}${bild}</p></details>`;
@@ -252,14 +259,13 @@ function zeichneDetail(zeile = "") {
     : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
   box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
     + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
-    + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "")
-    + (detail.fest ? "" : `<p class="wink">Klicken hält die Angaben fest.</p>`);
-  // Herkunftspfad (Spec Herkunftspfad §4): Kette beim Schweben, Belegtabelle beim Klick; die Datei
-  // kommt beim ersten Bedarf, bis dahin steht „wird geladen“.
+    + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "");
+  // Herkunftspfad (Spec Herkunftspfad §4): Kette direkt unter der Zahlenzeile beim Schweben, Belegtabelle
+  // beim Klick; die Datei kommt beim ersten Bedarf, bis dahin steht „wird geladen“.
   const kontext = kontextVon(detail.id, ansicht);
   const datei = herkunftDatei(kontext);
   if (datei) {
-    if (!herkunft.has(datei)) ladeHerkunft(datei, detail.id, zeile);
+    if (!herkunft.has(datei)) ladeHerkunft(datei);
     const h = herkunft.get(datei);
     if (h === undefined) box.insertAdjacentHTML("beforeend", `<p class="wink">Herkunft wird geladen …</p>`);
     else if (h) {
@@ -267,6 +273,7 @@ function zeichneDetail(zeile = "") {
       if (detail.fest) box.insertAdjacentHTML("beforeend", tabelleHtml(herkunftTabelle(kontext, h, ansicht), kontext));
     }
   }
+  if (!detail.fest) box.insertAdjacentHTML("beforeend", `<p class="wink">Klicken hält die Angaben fest.</p>`);
   box.hidden = false;
   if (detail.fest) box.querySelector(".schliessen").onclick = () => melde("schliessen");
   // An der Einheit ausrichten — erst nach dem Füllen, denn die Maße des Kastens hängen am Text.

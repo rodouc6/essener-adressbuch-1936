@@ -1,7 +1,8 @@
 // site/js/perspektiven_modell.js — reine Hilfen der Perspektiven-Seite (Spec §6.2): Auswahl der
 // Kapitel, Platzhalter in den Grenzen-Texten, Links in Karte und Werkstatt, Wahl der Form und der
 // Text des Detailkastens. Ohne DOM, damit node:test alles prüfen kann.
-import { kodiere } from "./ansicht.js";
+import { BESITZ, GEWERBE_TEXT, kodiere, STELLUNG } from "./ansicht.js";
+import { KATEGORIEN } from "./kategorien.js";
 import { formatProzent, formatZahl } from "./formen/skalen.js";
 import { regelText } from "./formen/balken.js";
 
@@ -88,7 +89,9 @@ export function detailText(einheit, ansicht) {
   // Besitz: Privatpersonen sind zum Teil nur per Regel klassifiziert — das gehört sichtbar dazu.
   if (ansicht?.daten === "besitz" && e.regel > 0) zeilen.push(regelText(e.regel));
   // Stellung: wie viel der Einheit von Hand bestimmt ist (Rest: Vorschlag der Automatik).
-  if (ansicht?.daten === "stellung" && e.stellung_hand > 0) zeilen.push(`${formatZahl(e.stellung_hand)} von ${formatZahl(e.N)} Nennungen mit von Hand bestimmter Stellung (${formatProzent(e.N ? e.stellung_hand / e.N : 0)})`);
+  // Nenner sind alle Teil-I-Einträge der Einheit: n_stellung_hand zählt auch geprüfte Einträge mit offener
+  // Stellung, und die gezeichneten Gruppen können eine Teilmenge der Klassen sein.
+  if (ansicht?.daten === "stellung" && e.stellung_hand > 0) zeilen.push(`${formatZahl(e.stellung_hand)} von ${formatZahl(e.n_I)} Einträgen in Teil I mit von Hand bestimmter Stellung (${formatProzent(e.n_I ? e.stellung_hand / e.n_I : 0)})`);
   if (e.unter_min) zeilen.push(`unter ${formatZahl(ansicht?.min_n)} Nennungen — Anteil nicht belastbar`);
   return { titel: String(e.name || e.id || ""), zeilen };
 }
@@ -185,16 +188,13 @@ export function herkunftDatei(kontext) {
   return (HERKUNFT_DATEI[k.art] || {})[k.daten] || null;
 }
 
-// Beschriftungen der Klassen, wie die Kapitel sie nennen (Rohwert → Anzeige).
+// Beschriftungen der Klassen — dieselben Tabellen, die die Kapitel über `wie:` nutzen (ansicht.js), keine
+// eigene Kopie; nur die Betriebsform (art) hat auf der Site sonst keine Tabelle (Schlüssel wie pipeline/lib/gewerbe.py).
+const namen = (tabelle) => Object.fromEntries(Object.entries(tabelle).map(([k, v]) => [k, v[0]]));
 export const KLASSEN = {
-  stellung: { arbeiter: "Arbeiter", angestellte: "Angestellte", beamte: "Beamte", selbstaendige: "Selbständige", freie_berufe: "Freie Berufe",
-    unternehmer: "Unternehmer", ohne_erwerb: "Ohne Erwerbsberuf", kaufleute: "Kaufleute", unbestimmt: "unbestimmt" },
-  besitz: { privatperson: "Privatperson", stadt_staat: "Stadt und Staat", bergbau: "Bergbau", industrie: "Industrie", genossenschaft_siedlung: "Genossenschaft und Siedlung",
-    kirche_stiftung: "Kirche und Stiftung", bank_versicherung: "Bank und Versicherung", sonstige: "Sonstige", gemischt: "gemischt" },
-  gewerbe: { bergbau: "Bergbau und Kokerei", metall_maschinen: "Metall, Maschinen, Elektro", bau: "Bau", holz_moebel: "Holz und Möbel", textil_bekleidung: "Textil und Bekleidung",
-    lebensmittel: "Lebensmittel und Genussmittel", handel: "Handel (übrige Waren)", gastgewerbe: "Gastgewerbe", verkehr_bahn_post: "Verkehr, Bahn, Post",
-    finanzen_recht: "Banken, Versicherungen, Immobilien, Beratung", verwaltung: "Verwaltung, Polizei, Recht", bildung_kultur_kirche: "Bildung, Kultur, Medien, Kirche",
-    gesundheit: "Gesundheit", haus_reinigung: "Haushalt, Reinigung, Körperpflege", sonstige: "Sonstige" },
+  stellung: { ...namen(STELLUNG), unbestimmt: "unbestimmt" },
+  besitz: { ...namen(BESITZ), gemischt: KATEGORIEN.gemischt },
+  gewerbe: GEWERBE_TEXT,
   art: { handwerk: "Handwerk", handel: "Handel", industrie: "Industrie", dienstleistung: "Dienstleistung", gastgewerbe: "Gastgewerbe", freier_beruf: "Freier Beruf", sonstige: "Sonstige" },
 };
 const klasseText = (daten, roh) => (KLASSEN[daten === "gruppe" || daten === "niveau" ? "stellung" : daten] || {})[roh] || roh;
@@ -208,12 +208,18 @@ export const BELEG = {
   gewerbe: "Branche und Betriebsform je Rubrik nach docs/gewerbe.md. Tabelle: kuratierung/gewerbe.csv, Spalten gruppe, art, geprueft.",
 };
 
-// Quellmarken in fester Reihenfolge; nur mit Zahl > 0.
+// Quellmarken in fester Reihenfolge; nur mit Zahl > 0. Der Nenner ist die Zahl, die die Stufe nennt
+// (Nennungen, Häuser, Betriebe) — nicht die Summe der Quellen: Nennungen ohne Quelle (Beruf ungeprüft)
+// erscheinen als eigene Marke „ohne“, statt die übrigen Anteile aufzublähen.
 const QUELLEN = ["hand", "vorschlag", "claude", "regel"];
-function marken(quelle) {
+function marken(quelle, basis) {
   const q = quelle || {};
   const summe = QUELLEN.reduce((s, a) => s + (q[a] || 0), 0);
-  return QUELLEN.filter((a) => (q[a] || 0) > 0).map((a) => ({ art: a, anteil: summe ? Math.round((q[a] / summe) * 10000) / 10000 : 0, zahl: q[a] }));
+  const nenner = basis > 0 ? basis : summe;
+  const anteil = (z) => (nenner ? Math.round((z / nenner) * 10000) / 10000 : 0);
+  const m = QUELLEN.filter((a) => (q[a] || 0) > 0).map((a) => ({ art: a, anteil: anteil(q[a]), zahl: q[a] }));
+  if (nenner > summe) m.push({ art: "ohne", anteil: anteil(nenner - summe), zahl: nenner - summe });
+  return m;
 }
 
 // Summe mehrerer Klassen (Gruppe aus mehreren Rohwerten): Zähler addieren, Quellen addieren, Top-Listen
@@ -243,21 +249,23 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
     const s = summeKlassen(herkunft, k.gruppe.aus);
     const klassen = k.gruppe.aus.map((r) => klasseText(k.daten, r)).join(", ");
     if (k.daten === "besitz") {
-      pfad.push({ label: "Buch", wert: `${formatZahl(s.zeilen)} Zeilen im Häuserbuch` }, { label: "Eigentümer", wert: `${formatZahl(s.eigentuemer)} zusammengeführt` },
-        { label: "Klasse", wert: klassen, marken: marken(s.quelle) }, { label: "Gruppe", wert: k.gruppe.name });
+      // `eigentuemer` zählt nur identifizierte Eigentümer; Häuser per Regel (Person ohne Firmenname) haben keinen.
+      pfad.push({ label: "Buch", wert: `${formatZahl(s.zeilen)} Zeilen im Häuserbuch` }, { label: "Eigentümer", wert: `${formatZahl(s.eigentuemer)} identifiziert` },
+        { label: "Klasse", wert: klassen, marken: marken(s.quelle, s.haeuser) }, { label: "Gruppe", wert: k.gruppe.name });
+      if (s.quelle.regel > 0) pfad.hinweis = `${formatZahl(s.quelle.regel)} der ${formatZahl(s.haeuser)} Häuser per Regel, ohne belegbare Identität des Eigentümers`;
     } else if (k.daten === "gewerbe") {
-      pfad.push({ label: "Buch", wert: `${formatZahl(s.rubriken)} Rubriken` }, { label: "Branche", wert: klassen, marken: marken(s.quelle) }, { label: "Gruppe", wert: k.gruppe.name });
+      pfad.push({ label: "Buch", wert: `${formatZahl(s.rubriken)} Rubriken` }, { label: "Branche", wert: klassen, marken: marken(s.quelle, s.betriebe) }, { label: "Gruppe", wert: k.gruppe.name });
     } else {
       const stufe = k.daten === "gruppe" ? "Hauptgruppe" : k.daten === "niveau" ? "Niveau" : "Stellung";
       pfad.push({ label: "Buch", wert: `${formatZahl(s.schreibweisen)} Schreibweisen` }, { label: "OhdAB", wert: `${formatZahl(s.normen)} Berufe` },
-        { label: stufe, wert: klassen, marken: marken(s.quelle) }, { label: "Gruppe", wert: k.gruppe.name });
+        { label: stufe, wert: klassen, marken: marken(s.quelle, s.nennungen) }, { label: "Gruppe", wert: k.gruppe.name });
     }
     pfad.beispiele = s.top.slice(0, 3).map((t) => [t[0], t[1]]);
     return pfad;
   }
   if (k.art === "regel" && k.gruppe) {
     const s = summeKlassen(herkunft, ["privatperson"]);
-    pfad.push({ label: "Buch", wert: "Person ohne Firmenname" }, { label: "Regel", wert: "→ Privatperson", marken: marken({ regel: s.quelle.regel || 0 }) }, { label: "Gruppe", wert: k.gruppe.name });
+    pfad.push({ label: "Buch", wert: "Person ohne Firmenname" }, { label: "Regel", wert: "→ Privatperson", marken: marken({ regel: s.quelle.regel || 0 }, s.quelle.regel || 0) }, { label: "Gruppe", wert: k.gruppe.name });
     pfad.hinweis = "keine Handprüfung, keine Identität";
     pfad.beispiele = (herkunft.privatperson?.regel_beispiele || []).slice(0, 3);
     return pfad;
@@ -268,7 +276,7 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
     if (k.daten === "besitz") {
       const g = gruppeVon(ansicht, h.kategorie);
       pfad.push({ label: "Buch", wert: `${formatZahl(h.schreibweisen_gesamt)} Schreibweisen` }, { label: "Eigentümer", wert: k.id },
-        { label: "Klasse", wert: klasseText("besitz", h.kategorie), marken: marken({ hand: h.haeuser }) }, { label: "Gruppe", wert: g ? g.name : klasseText("besitz", h.kategorie) });
+        { label: "Klasse", wert: klasseText("besitz", h.kategorie), marken: marken({ hand: h.haeuser }, h.haeuser) }, { label: "Gruppe", wert: g ? g.name : klasseText("besitz", h.kategorie) });
       const dazu = h.haeuser - h.zeilen;
       if (dazu > 0) pfad.zusatz = `${formatZahl(h.zeilen)} Zeilen im Häuserbuch, ${formatZahl(dazu)} Häuser dazu über Hausnummernspannen und gleiche Nummern`;
       pfad.beispiele = (h.schreibweisen || []).slice(0, 3);
@@ -276,13 +284,13 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
     }
     if (k.daten === "gewerbe") {
       const g = gruppeVon(ansicht, h.gruppe);
-      pfad.push({ label: "Buch", wert: k.id }, { label: "Branche", wert: `${klasseText("gewerbe", h.gruppe)} · ${klasseText("art", h.art)}`, marken: marken({ [h.quelle]: h.betriebe }) },
+      pfad.push({ label: "Buch", wert: k.id }, { label: "Branche", wert: `${klasseText("gewerbe", h.gruppe)} · ${klasseText("art", h.art)}`, marken: marken({ [h.quelle]: h.betriebe }, h.betriebe) },
         { label: "Gruppe", wert: g ? g.name : klasseText("gewerbe", h.gruppe) });
       return pfad;
     }
     const g = gruppeVon(ansicht, h.stellung);
-    pfad.push({ label: "Buch", wert: `${formatZahl((h.schreibweisen || []).length)} Schreibweisen` }, { label: "OhdAB", wert: h.norm },
-      { label: "Stellung", wert: klasseText("stellung", h.stellung), marken: marken({ [h.stellung_quelle || "hand"]: h.nennungen }) },
+    pfad.push({ label: "Buch", wert: `${formatZahl(h.schreibweisen_gesamt ?? (h.schreibweisen || []).length)} Schreibweisen` }, { label: "OhdAB", wert: h.norm },
+      { label: "Stellung", wert: klasseText("stellung", h.stellung), marken: marken(h.quelle, h.nennungen) },
       { label: "Gruppe", wert: g ? g.name : klasseText("stellung", h.stellung) });
     pfad.beispiele = (h.schreibweisen || []).slice(0, 3);
     return pfad;
@@ -296,13 +304,16 @@ export function herkunftTabelle(kontext, herkunft, ansicht) {
   if (!herkunft || !["segment", "kreis", "regel"].includes(k.art)) return null;
   if (k.art === "segment" && k.gruppe) {
     const s = summeKlassen(herkunft, k.gruppe.aus);
-    if (k.daten === "besitz") return { kopf: ["Eigentümer", "Häuser"], zeilen: s.top.slice(0, 10).map((t) => [t[0], t[1]]), gesamt: s.eigentuemer, hinweis: BELEG.besitz };
+    if (k.daten === "besitz") {
+      const regel = s.quelle.regel > 0 ? `${formatZahl(s.quelle.regel)} der ${formatZahl(s.haeuser)} Häuser: Person ohne Firmenname, per Regel Privatperson, keine Identität. ` : "";
+      return { kopf: ["Eigentümer (identifiziert)", "Häuser"], zeilen: s.top.slice(0, 10).map((t) => [t[0], t[1]]), gesamt: s.eigentuemer, hinweis: regel + BELEG.besitz };
+    }
     if (k.daten === "gewerbe") return { kopf: ["Rubrik", "Betriebe", "Betriebsform", "Quelle"], zeilen: s.top.slice(0, 10).map((t) => [t[0], t[1], klasseText("art", t[2]), t[3]]), gesamt: s.rubriken, hinweis: BELEG.gewerbe };
     return { kopf: ["Schreibweise", "Nennungen", "OhdAB", "Quelle"], zeilen: s.top.slice(0, 10), gesamt: s.schreibweisen, hinweis: BELEG[k.daten] || BELEG.stellung };
   }
   if (k.art === "regel") {
     const h = herkunft.privatperson || {};
-    return { kopf: ["Schreibweise im Buch", "Häuser"], zeilen: (h.regel_beispiele || []).slice(0, 10), gesamt: h.quelle?.regel || 0,
+    return { kopf: ["Schreibweise im Buch", "Zeilen"], zeilen: (h.regel_beispiele || []).slice(0, 10), gesamt: h.quelle?.regel || 0,
       hinweis: "Der Eigentümer steht als Person ohne Firmennamen im Häuserbuch; die Klasse folgt aus der Regel, nicht aus einer Prüfung des Einzelfalls. Ausnahmen: Firmenmuster wie „Gebr.“; „gen.“-Hofnamen zählen als Personen. Export: besitz_pruefung = regel." };
   }
   const h = herkunft[k.id];
@@ -313,8 +324,8 @@ export function herkunftTabelle(kontext, herkunft, ansicht) {
       seite: h.seite || "" };
   }
   if (k.daten === "gewerbe") return { kopf: ["Rubrik", "Betriebe", "Betriebsform", "Quelle"], zeilen: [[k.id, h.betriebe, klasseText("art", h.art), h.quelle]], gesamt: 1, hinweis: BELEG.gewerbe };
-  return { kopf: ["Schreibweise", "Nennungen", "OhdAB", "Quelle"], zeilen: (h.schreibweisen || []).slice(0, 10).map((t) => [t[0], t[1], h.norm, h.stellung_quelle || "hand"]),
-    gesamt: (h.schreibweisen || []).length, hinweis: BELEG[k.daten] || BELEG.stellung };
+  return { kopf: ["Schreibweise", "Nennungen", "OhdAB", "Quelle"], zeilen: (h.schreibweisen || []).slice(0, 10).map((t) => [t[0], t[1], h.norm, t[2] || ""]),
+    gesamt: h.schreibweisen_gesamt ?? (h.schreibweisen || []).length, hinweis: BELEG[k.daten] || BELEG.stellung };
 }
 
 // Link „alle … in der Suche“: nur für Einzelobjekte (Norm, Eigentümer, Rubrik).
@@ -326,5 +337,7 @@ export function herkunftLink(kontext) {
   return `karte.html?ohdab=${encodeURIComponent(k.id)}`;
 }
 
-// Nach dem Nachladen darf der Pfad nur erscheinen, wenn der Kasten noch dieselbe Einheit zeigt.
-export const herkunftAktuell = (detail, geladenFuer) => !!detail && detail.sichtbar === true && detail.id === geladenFuer;
+// Nach dem Nachladen wird der Kasten neu gezeichnet, wenn er sichtbar ist und das, was er gerade zeigt,
+// genau diese Datei braucht — dieselbe Einheit oder eine Nachbar-Einheit derselben Datei (Kreis A → Kreis B
+// während des Ladens). Braucht er eine andere oder keine, bleibt er, wie er ist: kein Pfad aus der falschen Datei.
+export const herkunftAktuell = (detail, name, dateiAktuell) => !!detail && detail.sichtbar === true && !!name && dateiAktuell === name;

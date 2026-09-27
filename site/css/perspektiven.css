@@ -105,6 +105,7 @@
 .detail .pfad .pfeil { color: var(--grau); }
 .detail .q { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; color: #fff; }
 .detail .q.hand { background: #15803d; } .detail .q.vorschlag { background: #6b7280; } .detail .q.claude { background: #6d28d9; } .detail .q.regel { background: #b45309; }
+.detail .q.ohne { background: #e5e7eb; color: #374151; }
 .detail details { margin-top: 8px; border-top: 1px solid var(--rand); padding-top: 6px; }
 .detail summary { cursor: pointer; color: var(--blau); font-size: 12px; }
 .detail table { border-collapse: collapse; width: 100%; font-size: 11.5px; margin-top: 6px; }
