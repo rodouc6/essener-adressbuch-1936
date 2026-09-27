@@ -4,6 +4,7 @@ import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
 import { liesZustand, schreibeZustand } from "./zustand.js";
 import { popupHtml, esc } from "./popup.js";
+import { steuerungHtml } from "./steuerung.js";
 import { dekodiereOderNull } from "./ansicht.js";
 import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
 import { ansichtTitel, werteFarben, legendeFuer } from "./ansicht_farben.js";
@@ -273,17 +274,31 @@ async function klickPunkt(id, lngLat) {
   }
 }
 
+let feldOffen = false;   // Ebenenfeld auf/zu — nicht in der URL
+
+// Einmal bauen, danach nur Werte setzen: ein Neubau des DOM bei jedem `input` des Reglers würde die
+// Zieh-Geste abbrechen (Spec §5). Der Regler wird nicht überschrieben, solange er fokussiert ist.
 function zeichneSteuerung() {
   const s = document.getElementById("steuerung");
-  s.innerHTML = `<button data-karte="1">Grundkarte: ${zustand.karte === "positron" ? "dezent" : "detailliert"}</button>` +
-    `<button data-zechen="1" aria-pressed="${!!zustand.zechen}">Zechen ${zustand.zechen ? "aus" : "an"}</button>` +
-    (PLAN_FREIGEGEBEN ? `<label>Stadtplan 1935 <input type="range" min="0" max="1" step="0.1" value="${zustand.plan}" data-plan="1"></label>` : "") +
-    (mobil() ? `<button data-legende="1">Legende</button>` : "");
-  s.querySelector("[data-karte]").onclick = () => setzeZustand({ karte: zustand.karte === "positron" ? "liberty" : "positron" }, false);
-  s.querySelector("[data-zechen]").onclick = () => setzeZustand({ zechen: zustand.zechen ? 0 : 1 }, false);
-  const p = s.querySelector("[data-plan]"); if (p) p.oninput = () => setzeZustand({ plan: +p.value }, false);
-  const l = s.querySelector("[data-legende]"); if (l) l.onclick = () => document.getElementById("legende").classList.toggle("offen");
+  if (!s.querySelector(".ebenenfeld")) {
+    s.innerHTML = steuerungHtml(zustand, { offen: feldOffen, mobil: mobil(), plan: PLAN_FREIGEGEBEN });
+    s.querySelector("[data-feld]").onclick = () => { feldOffen = !feldOffen; zeichneSteuerung(); };
+    s.querySelectorAll("[data-karte]").forEach((b) => { b.onclick = () => { if (zustand.karte !== b.dataset.karte) setzeZustand({ karte: b.dataset.karte }, false); }; });
+    s.querySelector("[data-zechen]").onclick = () => setzeZustand({ zechen: zustand.zechen ? 0 : 1 }, false);
+    const p = s.querySelector("[data-plan]"); if (p) p.oninput = () => setzeZustand({ plan: Math.round(p.value * 100) / 100 }, false);
+    const l = s.querySelector("[data-legende]"); if (l) l.onclick = () => document.getElementById("legende").classList.toggle("offen");
+  }
+  const knopf = s.querySelector("[data-feld]");
+  knopf.classList.toggle("aktiv", zustand.karte !== "positron" || !!zustand.zechen || zustand.plan > 0);
+  knopf.setAttribute("aria-expanded", String(feldOffen));
+  s.querySelector(".ebenenfeld").hidden = !feldOffen;
+  s.querySelectorAll("[data-karte]").forEach((b) => b.setAttribute("aria-pressed", String(zustand.karte === b.dataset.karte)));
+  s.querySelector("[data-zechen]").setAttribute("aria-pressed", String(!!zustand.zechen));
+  const p = s.querySelector("[data-plan]");
+  if (p) { if (document.activeElement !== p) p.value = zustand.plan; s.querySelector(".prozent").textContent = `${Math.round(zustand.plan * 100)} %`; }
 }
+
+function schliesseFeld() { if (feldOffen) { feldOffen = false; zeichneSteuerung(); } }
 
 // Straßen-Einheiten ohne OSM-Linie: sie tragen Zahlen bei, lassen sich aber nicht zeichnen.
 // `strassen_mit_linie` aus kennzahlen.json gegen die Zahl der Straßen-Einheiten gerechnet.
@@ -358,6 +373,8 @@ sidebar.suche.addEventListener("input", () => {
   }, 120);
 });
 sidebar.suche.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { sidebar.setzeVorschlaege(null); sucheAusText(sidebar.suche.value.trim()); } });
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") schliesseFeld(); });
+document.getElementById("karte").addEventListener("click", schliesseFeld, true);   // #steuerung liegt neben #karte, nicht darin
 document.getElementById("suche-leeren").addEventListener("click", () => { sidebar.suche.value = ""; auswahl = null; setzeZustand({ q: "", id: "", beruf: "", eigentuemer: "", ohdab: "" }, true, true); sucheAusfuehren(); });
 document.addEventListener("click", (ev) => { if (!ev.target.closest(".suchfeld")) sidebar.setzeVorschlaege(null); });
 window.addEventListener("popstate", async () => {

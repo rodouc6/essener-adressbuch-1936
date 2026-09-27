@@ -62,3 +62,9 @@ test("ohdab im Zustand", () => {
   assert.equal(liesZustand("?ohdab=B+21112-100").ohdab, "B 21112-100");
   assert.equal(schreibeZustand({ ...STANDARD, ohdab: "B 21112-100" }), "ohdab=B+21112-100");
 });
+
+test("plan mit zwei Nachkommastellen wird gelesen und unverändert geschrieben", () => {
+  const z = liesZustand("?plan=0.35");
+  assert.equal(z.plan, 0.35);
+  assert.equal(schreibeZustand(z), "plan=0.35");
+});

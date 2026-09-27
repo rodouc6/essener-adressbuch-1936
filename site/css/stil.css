@@ -20,8 +20,20 @@ a { color: var(--blau); }
 .pill[aria-pressed="true"] { color: #fff; border-color: transparent; }
 .pill.I[aria-pressed="true"] { background: var(--blau); } .pill.II[aria-pressed="true"] { background: var(--gold); } .pill.III[aria-pressed="true"] { background: var(--rot); }
 .inhalt { flex: 1; overflow: auto; padding: 0 12px 12px; }
-.steuerung { position: fixed; z-index: 4; right: 10px; top: 110px; display: flex; flex-direction: column; gap: 6px; }
-.steuerung button, .steuerung label { background: #fff; border: 1px solid var(--rand); border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer; min-height: 32px; }
+.steuerung { position: fixed; z-index: 4; right: 10px; top: 110px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.ebenenknopf { position: relative; width: 32px; height: 32px; padding: 0; display: grid; place-items: center; background: #fff; border: 0; border-radius: 6px; box-shadow: 0 0 0 2px rgba(0,0,0,.1); cursor: pointer; color: var(--text); font-size: 16px; }
+.ebenenknopf[aria-expanded="true"] { background: #eef2ff; }
+.ebenenknopf.aktiv::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--blau); }
+.ebenenfeld { position: absolute; right: 40px; top: 0; width: 240px; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.2); padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ebenenfeld[hidden] { display: none; }
+.ebenenfeld .zeile { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ebenenfeld .gruppe { display: inline-flex; }
+.ebenenfeld .gruppe button, .ebenenfeld .schalter { background: #fff; border: 1px solid var(--rand); padding: 4px 8px; font-size: 12px; cursor: pointer; min-height: 28px; color: var(--text); }
+.ebenenfeld .gruppe button:first-child { border-radius: 6px 0 0 6px; } .ebenenfeld .gruppe button:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.ebenenfeld .schalter { border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; }
+.ebenenfeld .gruppe button[aria-pressed="true"], .ebenenfeld .schalter[aria-pressed="true"] { background: var(--text); color: #fff; border-color: var(--text); }
+.ebenenfeld input[type=range] { width: 100px; vertical-align: middle; }
+.ebenenfeld .prozent { min-width: 36px; text-align: right; color: var(--grau); }
 .legende { position: fixed; z-index: 4; right: 10px; bottom: 28px; background: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.2); max-width: 220px; }
 .legende .zeile { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
 .legende .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
@@ -92,7 +104,7 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
   .sidebar[data-stufe="halb"] { height: 45vh; }
   .sidebar[data-stufe="voll"] { height: 92vh; }
   .griff { display: block; flex-shrink: 0; width: 40px; height: 5px; border-radius: 3px; background: #bbb; margin: 8px auto 0; cursor: grab; }
-  .steuerung { top: 60px; }
+  .ebenenfeld { right: 0; top: 76px; }
   .legende { display: none; }
   .legende.offen { display: block; bottom: auto; top: 60px; right: 56px; }
   .vermerk { display: none; }
