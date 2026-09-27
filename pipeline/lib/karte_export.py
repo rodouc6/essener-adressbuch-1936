@@ -493,7 +493,9 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
                 berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),
-                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand"), len(teil_i)),
+                # Drei disjunkte Anteile (Summe 100): von Hand bestimmt, Vorschlag bestimmt, unbestimmt (auch
+                # nach Handprüfung) oder ohne geprüften Beruf. Handgeprüft-unbestimmt zählte sonst doppelt.
+                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
                 stellung_vorschlag=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
                 stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
                 gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "hand"), len(teil_iii)),

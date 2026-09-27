@@ -8,14 +8,14 @@
   "schritte": [
     {"id": "rubriken", "text": "Platzhaltertext: Fünfzehn Branchen, jede als Kreis — Fläche nach Zahl der Betriebe.", "beschreibung": "Bubbles der Betriebe, gefärbt nach Branche, gepackt je Branche.", "hervorheben": ["Schneider für Herren", "Schankwirt"],
      "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "bubbles", "gruppen": [
-        {"name": "Bergbau und Kokerei", "aus": ["bergbau"], "farbe": "#e69f00"}, {"name": "Metall, Maschinen, Elektro", "aus": ["metall_maschinen"], "farbe": "#56b4e9"},
-        {"name": "Bau", "aus": ["bau"], "farbe": "#009e73"}, {"name": "Holz und Möbel", "aus": ["holz_moebel"], "farbe": "#f0e442"},
-        {"name": "Textil und Bekleidung", "aus": ["textil_bekleidung"], "farbe": "#0072b2"}, {"name": "Lebensmittel und Genussmittel", "aus": ["lebensmittel"], "farbe": "#d55e00"},
-        {"name": "Handel (übrige Waren)", "aus": ["handel"], "farbe": "#cc79a7"}, {"name": "Gastgewerbe", "aus": ["gastgewerbe"], "farbe": "#000000"},
-        {"name": "Verkehr, Bahn, Post", "aus": ["verkehr_bahn_post"], "farbe": "#e69f00"}, {"name": "Banken, Versicherungen, Immobilien, Beratung", "aus": ["finanzen_recht"], "farbe": "#56b4e9"},
-        {"name": "Verwaltung, Polizei, Recht", "aus": ["verwaltung"], "farbe": "#009e73"}, {"name": "Bildung, Kultur, Medien, Kirche", "aus": ["bildung_kultur_kirche"], "farbe": "#f0e442"},
-        {"name": "Gesundheit", "aus": ["gesundheit"], "farbe": "#0072b2"}, {"name": "Haushalt, Reinigung, Körperpflege", "aus": ["haus_reinigung"], "farbe": "#d55e00"},
-        {"name": "Sonstige", "aus": ["sonstige"], "farbe": "#cc79a7"}],
+        {"name": "Bergbau und Kokerei", "aus": ["bergbau"], "farbe": "#000000"}, {"name": "Metall, Maschinen, Elektro", "aus": ["metall_maschinen"], "farbe": "#1f77b4"},
+        {"name": "Bau", "aus": ["bau"], "farbe": "#ff7f0e"}, {"name": "Holz und Möbel", "aus": ["holz_moebel"], "farbe": "#8c564b"},
+        {"name": "Textil und Bekleidung", "aus": ["textil_bekleidung"], "farbe": "#9467bd"}, {"name": "Lebensmittel und Genussmittel", "aus": ["lebensmittel"], "farbe": "#d62728"},
+        {"name": "Handel (übrige Waren)", "aus": ["handel"], "farbe": "#e377c2"}, {"name": "Gastgewerbe", "aus": ["gastgewerbe"], "farbe": "#bcbd22"},
+        {"name": "Verkehr, Bahn, Post", "aus": ["verkehr_bahn_post"], "farbe": "#17becf"}, {"name": "Banken, Versicherungen, Immobilien, Beratung", "aus": ["finanzen_recht"], "farbe": "#2ca02c"},
+        {"name": "Verwaltung, Polizei, Recht", "aus": ["verwaltung"], "farbe": "#393b79"}, {"name": "Bildung, Kultur, Medien, Kirche", "aus": ["bildung_kultur_kirche"], "farbe": "#e7ba52"},
+        {"name": "Gesundheit", "aus": ["gesundheit"], "farbe": "#98df8a"}, {"name": "Haushalt, Reinigung, Körperpflege", "aus": ["haus_reinigung"], "farbe": "#aec7e8"},
+        {"name": "Sonstige", "aus": ["sonstige"], "farbe": "#6b7280"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Bergbau und Kokerei", "min_n": 0, "filter": {}, "karte": null}},
     {"id": "dichte", "text": "Platzhaltertext: Wo gab es je 1.000 Einwohnereinträge die meisten Betriebe?", "beschreibung": "Rangliste der Stadtteile nach Betrieben je 1.000 Teil-I-Einträgen; Stadtteile unter 200 Teil-I-Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "rangliste", "gruppen": [
@@ -23,7 +23,7 @@
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "alle Betriebe", "min_n": 200, "filter": {}, "karte": null}},
     {"id": "karte-lebensmittel", "text": "Platzhaltertext: Wo war die Lebensmittelversorgung besonders dicht?", "beschreibung": "Stadtteilkarte: Lebensmittelbetriebe je 1.000 Teil-I-Einträge; Stadtteile unter 200 Teil-I-Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "gewerbe", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [
-        {"name": "Lebensmittel", "aus": ["lebensmittel"], "farbe": "#d55e00"},
+        {"name": "Lebensmittel", "aus": ["lebensmittel"], "farbe": "#d62728"},
         {"name": "übrige", "aus": ["bergbau", "metall_maschinen", "bau", "holz_moebel", "textil_bekleidung", "handel", "gastgewerbe", "verkehr_bahn_post", "finanzen_recht", "verwaltung", "bildung_kultur_kirche", "gesundheit", "haus_reinigung", "sonstige"], "farbe": "#c8c8c8"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "dichte", "bezug": "Lebensmittel", "min_n": 200, "filter": {}, "karte": null}},
     {"id": "geschaeftsstrassen", "text": "Platzhaltertext: Auf welchen Straßen war Gewerbe am dichtesten?", "beschreibung": "Rangliste der Straßen nach Betriebsdichte, die fünfzehn dichtesten; Straßen unter 30 Teil-I-Einträgen grau.", "hervorheben": [],

@@ -529,11 +529,12 @@ und Perspektiven. Grundlage: `python3 werkzeuge/osm_stadtteile_laden.py` → `bu
 
 ### Kennzahlen (`site/daten/kennzahlen.json`)
 
-Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (handgeprüft),
+Zusätzlich zu den bestehenden Feldern (Teile, Präzisionsstufen, Berufe): `stellung_geprueft` (von Hand bestimmt,
+seit 2026-09-27 ohne die handgeprüft-unbestimmten, damit die drei Stellung-Anteile 100 % ergeben — vorher 101,8 %),
 `stellung_vorschlag`, `stellung_unbestimmt`, `gewerbe_geprueft`, `gewerbe_entschieden`, `gewerbe_vorschlag`
 (Prozentwerte, `_prozent(z, n)`; `gruppen_geprueft` entfiel 2026-09-25),
 `strassen_mit_linie` (Zahl) und `stadtteil_polygon` (Prozentanteil der verorteten Adressen mit Polygontreffer,
-s. o.). Stand 2026-09-25 (Lauf nach der ersten Handprüfungsrunde): `stellung_geprueft: 73.0`,
+s. o.). Stand 2026-09-25 (Lauf nach der ersten Handprüfungsrunde): `stellung_geprueft: 73.0` (nach der Korrektur 71,2),
 `stellung_vorschlag: 6.2`, `stellung_unbestimmt: 22.6`, `gewerbe_geprueft: 68.1`, `gewerbe_entschieden: 20.2`,
 `gewerbe_vorschlag: 11.7`, `besitz_geprueft: 7546`, `stadtteil_polygon: 100.0`, `adressen: 70316`. Diese Werte
 ändern sich mit jeder weiteren Handprüfungsrunde beim nächsten Lauf von `pipeline/06_karte_export.py`.

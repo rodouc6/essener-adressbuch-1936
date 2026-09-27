@@ -4,7 +4,7 @@
   "freigegeben": false,
   "einleitung": "Platzhaltertext: Teil I des Adressbuchs nennt zu jedem Eintrag einen Beruf. Aus der Berufsbezeichnung ist eine soziale Stellung abgeleitet — Arbeiter, Angestellte, Beamte, Selbständige, freie Berufe, Unternehmer, ohne Erwerbsberuf und Kaufleute, bei denen die Stellung aus der Bezeichnung allein nicht sicher ist.",
   "quellen": ["Adreßbuch Essen 1936, Teil I (Einwohner)", "Stellungs-Kuratierung docs/stellung.md"],
-  "grenzen": "Von {adressen} Adressen … Stellung handgeprüft für {stellung_geprueft} % der Einträge, {stellung_vorschlag} % Automatik-Vorschlag, {stellung_unbestimmt} % unbestimmt oder ohne geprüften Beruf. Der Anteil „unbestimmt“ ist nicht zufällig verteilt: in bürgerlichen Vierteln sind seltene Berufsbezeichnungen häufiger und öfter noch ungeprüft. Klassen nach der Berufszählung 1933 / AVG 1911 (docs/stellung.md); „Arbeiter/Gehilfen (nach Schreibung)“ schließt bei manchen Handwerksberufen Inhaber ein. Heutige Stadtteilgrenzen.",
+  "grenzen": "Von {adressen} Adressen … Stellung für {stellung_geprueft} % der Einträge von Hand bestimmt, {stellung_vorschlag} % Automatik-Vorschlag, {stellung_unbestimmt} % unbestimmt (auch nach Handprüfung) oder ohne geprüften Beruf. Der Anteil „unbestimmt“ ist nicht zufällig verteilt: in bürgerlichen Vierteln sind seltene Berufsbezeichnungen häufiger und öfter noch ungeprüft. Klassen nach der Berufszählung 1933 / AVG 1911 (docs/stellung.md); „Arbeiter/Gehilfen (nach Schreibung)“ schließt bei manchen Handwerksberufen Inhaber ein. Heutige Stadtteilgrenzen.",
   "schritte": [
     {"id": "anteile", "text": "Platzhaltertext: Wie verteilen sich die geprüften Einträge auf die acht Klassen der sozialen Stellung?", "beschreibung": "Ein Balken mit acht farbigen Segmenten und einem grauen Segment „unbestimmt“.", "hervorheben": [],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "balken", "gruppen": [
@@ -13,7 +13,7 @@
         {"name": "Freie Berufe und Akademiker", "aus": ["freie_berufe"], "farbe": "#0072b2"}, {"name": "Unternehmer und Leitende", "aus": ["unternehmer"], "farbe": "#d55e00"},
         {"name": "Ohne Erwerbsberuf", "aus": ["ohne_erwerb"], "farbe": "#cc79a7"}, {"name": "Kaufleute (Stellung unbestimmt)", "aus": ["kaufleute"], "farbe": "#000000"}],
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Arbeiter/Gehilfen (nach Schreibung)", "min_n": 0, "filter": {}, "karte": null}},
-    {"id": "nord-sued", "text": "Platzhaltertext: Wo lag der Arbeiteranteil am höchsten, wo am niedrigsten?", "beschreibung": "Rangliste der Stadtteile nach Arbeiteranteil", "hervorheben": ["Katernberg", "Margaretenhöhe"],
+    {"id": "nord-sued", "text": "Platzhaltertext: Wo lag der Arbeiteranteil am höchsten, wo am niedrigsten?", "beschreibung": "Rangliste der Stadtteile nach Arbeiteranteil", "hervorheben": ["Vogelheim", "Katernberg", "Margaretenhöhe"],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "rangliste", "gruppen": [
         {"name": "Arbeiter", "aus": ["arbeiter"], "farbe": "#e69f00"},
         {"name": "übrige bestimmte", "aus": ["angestellte", "beamte", "selbstaendige", "freie_berufe", "unternehmer", "ohne_erwerb", "kaufleute"], "farbe": "#c8c8c8"}],
@@ -21,7 +21,7 @@
     {"id": "karte-arbeiter", "text": "Platzhaltertext: Der Arbeiteranteil auf der Stadtteilkarte.", "beschreibung": "Stadtteilkarte: Arbeiteranteil an den Stellung-geprüften Einträgen; Stadtteile unter 200 geprüften Einträgen grau.", "hervorheben": [],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": "wie:nord-sued",
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "anteil", "bezug": "Arbeiter", "min_n": 200, "filter": {}, "karte": null}},
-    {"id": "karte-buergertum", "text": "Platzhaltertext: Wo lag das Bürgertum — Beamte, Angestellte, freie Berufe, Unternehmer?", "beschreibung": "Stadtteilkarte: Bürgertum-Anteil an den Stellung-geprüften Einträgen; Stadtteile unter 200 geprüften Einträgen grau.", "hervorheben": ["Huttrop", "Margaretenhöhe", "Südviertel"],
+    {"id": "karte-buergertum", "text": "Platzhaltertext: Wo lag das Bürgertum — Beamte, Angestellte, freie Berufe, Unternehmer?", "beschreibung": "Stadtteilkarte: Bürgertum-Anteil an den Stellung-geprüften Einträgen; Stadtteile unter 200 geprüften Einträgen grau.", "hervorheben": ["Margaretenhöhe", "Huttrop", "Stadtwald"],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": [
         {"name": "Bürgertum", "aus": ["beamte", "angestellte", "freie_berufe", "unternehmer"], "farbe": "#1d4ed8"},
         {"name": "übrige bestimmte", "aus": ["arbeiter", "selbstaendige", "ohne_erwerb", "kaufleute"], "farbe": "#c8c8c8"}],
@@ -29,10 +29,7 @@
     {"id": "mischung", "text": "Platzhaltertext: Wie gemischt waren Stadtkern, Südviertel, Katernberg und Margaretenhöhe in ihrer sozialen Stellung?", "beschreibung": "Gestapelte Anteile der acht Klassen je Stadtteil (Stadtkern, Südviertel, Katernberg, Margaretenhöhe); der Mischungsgrad steht als Zahl neben jedem Balken.", "hervorheben": [],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "balken", "gruppen": "wie:anteile",
        "kaufleute": "unbestimmt", "unsicher": false, "mass": "mischung", "bezug": "Arbeiter/Gehilfen (nach Schreibung)", "min_n": 200, "filter": {"je_einheit": true, "stadtteil": ["Stadtkern", "Südviertel", "Katernberg", "Margaretenhöhe"]}, "karte": null}},
-    {"id": "kaufleute-selbstaendig", "text": "Platzhaltertext: Zählen die Kaufleute zu den Selbständigen, verschiebt sich das Bürgertum kaum.", "beschreibung": "Stadtteilkarte wie „Bürgertum“, Kaufleute den Selbständigen zugeschlagen.", "hervorheben": ["Huttrop", "Margaretenhöhe", "Südviertel"],
-     "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": "wie:karte-buergertum",
-       "kaufleute": "selbstaendige", "unsicher": false, "mass": "anteil", "bezug": "Bürgertum", "min_n": 200, "filter": {}, "karte": null}},
-    {"id": "kaufleute-angestellt", "text": "Platzhaltertext: Zählen die Kaufleute zu den Angestellten, wächst das Bürgertum sichtbar.", "beschreibung": "Stadtteilkarte wie „Bürgertum“, Kaufleute den Angestellten zugeschlagen.", "hervorheben": ["Huttrop", "Margaretenhöhe", "Südviertel"],
+    {"id": "kaufleute-angestellt", "text": "Platzhaltertext: Zählen die Kaufleute zu den Angestellten, wächst das Bürgertum sichtbar. (Zählte man sie zu den Selbständigen, änderte sich diese Karte nicht — Selbständige gehören hier nicht zum Bürgertum.)", "beschreibung": "Stadtteilkarte wie „Bürgertum“, Kaufleute den Angestellten zugeschlagen.", "hervorheben": ["Margaretenhöhe", "Huttrop", "Stadtwald"],
      "ansicht": {"daten": "stellung", "ebene": "stadtteil", "form": "stadtteilkarte", "gruppen": "wie:karte-buergertum",
        "kaufleute": "angestellte", "unsicher": false, "mass": "anteil", "bezug": "Bürgertum", "min_n": 200, "filter": {}, "karte": null}}
   ]

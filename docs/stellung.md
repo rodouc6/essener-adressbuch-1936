@@ -265,7 +265,7 @@ wurde entschieden, die Automatik-Vorschläge für den Rest zu übernehmen und di
 
 Der Export schreibt in `site/daten/kennzahlen.json`:
 
-- `stellung_geprueft` — Anteil der Teil-I-Einträge mit handgeprüfter Stellung (`stellung_quelle=hand`).
+- `stellung_geprueft` — Anteil der Teil-I-Einträge mit von Hand **bestimmter** Stellung (`stellung_quelle=hand` und Klasse ≠ `unbestimmt`); handgeprüft-unbestimmte zählen zu `stellung_unbestimmt`, damit die drei Anteile 100 % ergeben.
 - `stellung_vorschlag` — Anteil mit exportiertem Automatik-Vorschlag (ohne `unbestimmt`).
 - `stellung_unbestimmt` — Anteil der Teil-I-Einträge ohne Beruf oder mit Stellung `unbestimmt`.
 
