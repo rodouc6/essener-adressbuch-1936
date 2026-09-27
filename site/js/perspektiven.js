@@ -121,6 +121,8 @@ function zeichne(sec, schritt, k) {
   const zahlen = buehne.querySelector(".zahlen");
   const optionen = { hervorheben: schritt.hervorheben || [], ausschlussText: (k && k.ausschluss) || "" };
   buehne.querySelector(".titel").textContent = schritt.beschreibung || "";
+  // Vor dem Messen wieder die ganze Bühne freigeben — der vorige Schritt kann sie verkleinert haben.
+  svg.style.flex = "";
   // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Überschrift, Legende und Zahlenzeile
   // übrig lässt — und deren Höhe kennt man erst, wenn die Legende dieses Schritts steht. Der
   // erste Durchgang liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest.
@@ -131,6 +133,9 @@ function zeichne(sec, schritt, k) {
   // Schrittwechsel als Überblendung des bleibenden Behälters: Übergänge auf den SVG-Knoten selbst
   // liefen nie, weil innerHTML sie alle ersetzt. Bei reduzierter Bewegung wird hart getauscht.
   svg.innerHTML = r.svg;
+  // Formen, die nur so hoch sind wie ihr Inhalt (Trichter, Balken), geben den Rest der Bühne frei:
+  // Legende und Zahlenzeile rücken direkt unter das Bild, statt am unteren Rand zu hängen.
+  if (Number.isFinite(r.hoehe)) svg.style.flex = "0 0 auto";
   if (!reduziert) {
     svg.classList.add("blass");
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));

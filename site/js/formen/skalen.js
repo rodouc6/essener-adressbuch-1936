@@ -108,3 +108,31 @@ export function schraffurDefs(muster) {
     `<pattern id="${esc(id)}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">`
     + `<rect width="6" height="6" fill="#fff"/><rect width="3" height="6" fill="${esc(farbe)}"/></pattern>`).join("") + "</defs>";
 }
+
+// Zeilenumbruch für SVG-Beschriftungen (SVG-Text bricht nicht selbst): Wörter auf höchstens `maxZeilen`
+// Zeilen à `maxZeichen` verteilen; was nicht passt, wird mit „…“ abgeschnitten. Zu lange Einzelwörter
+// werden hart getrennt.
+export function umbruch(text, maxZeichen, maxZeilen = 2) {
+  const zeilen = [];
+  let zeile = "";
+  for (const wort of String(text ?? "").split(/\s+/).filter(Boolean)) {
+    if (!zeile) { zeile = wort; }
+    else if ((zeile + " " + wort).length <= maxZeichen) { zeile += " " + wort; }
+    else { zeilen.push(zeile); zeile = wort; }
+    while (zeile.length > maxZeichen) { zeilen.push(zeile.slice(0, maxZeichen)); zeile = zeile.slice(maxZeichen); }
+  }
+  if (zeile) zeilen.push(zeile);
+  if (zeilen.length > maxZeilen) {
+    const rest = zeilen.slice(0, maxZeilen);
+    rest[maxZeilen - 1] = rest[maxZeilen - 1].slice(0, Math.max(0, maxZeichen - 1)) + "…";
+    return rest;
+  }
+  return zeilen;
+}
+
+// <text> mit einem <tspan> je Zeile, vertikal um `yMitte` zentriert.
+export function textZeilen(x, yMitte, zeilen, klasse, zeilenhoehe = 12) {
+  const start = yMitte - ((zeilen.length - 1) * zeilenhoehe) / 2 + 4;
+  return `<text x="${r2(x)}" y="${r2(start)}" class="${klasse}">`
+    + zeilen.map((z, i) => `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : zeilenhoehe}">${esc(z)}</tspan>`).join("") + "</text>";
+}

@@ -1,7 +1,7 @@
 // site/js/formen/trichter.js — Trichter aus Kennzahlen (Kapitel 0 „Die Datenbasis“, Spec 2026-09-27 §3):
 // Stufen als Balken untereinander, Breite proportional zur ersten Stufe; eine Stufe darf Segmente tragen
 // (Hand / Regel / Vorschlag), schraffiert, wo nichts von Hand geprüft ist. Rein, ohne DOM.
-import { esc, formatProzent, formatZahl, r2, schraffurDefs, schraffurId, svgKopf } from "./skalen.js";
+import { esc, formatProzent, formatZahl, r2, schraffurDefs, schraffurId, svgKopf, textZeilen, umbruch } from "./skalen.js";
 
 const RAND = 8;
 const BESCHRIFTUNG = 0.32;      // Anteil der Breite für den Stufennamen
@@ -25,7 +25,10 @@ export function zeige(ansicht, daten, optionen = {}) {
   const basisName = stufen.length ? stufen[0].name : "";
   const oben = optionen.titel ? 30 : RAND;
   const zeile = Math.min(ZEILE_MAX, Math.max(18, (hoehe - oben - RAND) / Math.max(1, stufen.length)));
+  // Die Form braucht nur ihre Zeilen, nicht die ganze Bühne — die Seite rückt Legende und Zahlenzeile nach.
+  const genutzt = Math.round(oben + stufen.length * zeile + RAND);
   const beschriftung = Math.min(200, breite * BESCHRIFTUNG);
+  const maxZeichen = Math.max(8, Math.floor(beschriftung / 7.5));
   const maxBreite = Math.max(10, breite - beschriftung - WERTSPALTE - RAND);
   const werte = [];
   const legende = [];
@@ -39,7 +42,7 @@ export function zeige(ansicht, daten, optionen = {}) {
     const h = Math.max(6, zeile - 8);
     const b = basis ? Math.min(maxBreite, maxBreite * anteil(wert, basis)) : 0;
     const segmente = Array.isArray(s.segmente) ? s.segmente : [];
-    teile.push(`<text x="${RAND}" y="${r2(y + h / 2 + 4)}" class="name">${esc(s.name)}</text>`);
+    teile.push(textZeilen(RAND, y + h / 2, umbruch(s.name, maxZeichen), "name"));
     const nurZahl = i === 0 || s.ohne_anteil === true;
     const text = wertText(wert, basis, nurZahl);
     teile.push(`<text x="${r2(beschriftung + b + 6)}" y="${r2(y + h / 2 + 4)}" class="wert">${esc(text)}</text>`);
@@ -64,7 +67,7 @@ export function zeige(ansicht, daten, optionen = {}) {
       x += sb;
     }
   });
-  const svg = svgKopf(breite, hoehe) + schraffurDefs(muster) + teile.join("") + "</svg>";
+  const svg = svgKopf(breite, genutzt) + schraffurDefs(muster) + teile.join("") + "</svg>";
   const zahlen = { N: basis || 0, n_aus: 0, unter_min: 0, einheiten: werte.length, hinweis: `Stand ${kz.stand || "unbekannt"}` };
-  return { svg, legende, zahlen, werte };
+  return { svg, legende, zahlen, werte, hoehe: genutzt };
 }

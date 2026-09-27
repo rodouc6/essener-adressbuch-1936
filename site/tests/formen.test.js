@@ -203,3 +203,24 @@ test("balken: Regel-Anteil der Privatpersonen schraffiert, Legende nennt die Sch
   const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 200 });
   assert.match(je.svg, /url\(#schraffur-Privat\)/);
 });
+
+test("trichter: meldet die benötigte Höhe und bricht lange Stufennamen auf zwei Zeilen um", () => {
+  const r = trichter.zeige(T, { kennzahlen: KZ }, { breite: 600, hoehe: 900 });
+  // drei Stufen à höchstens 56 px plus Rand — nicht die ganze Bühne
+  assert.ok(r.hoehe >= 3 * 40 && r.hoehe <= 3 * 56 + 2 * 8, `hoehe ${r.hoehe}`);
+  assert.match(r.svg, new RegExp(`height="${r.hoehe}"`));
+  const lang = { ...T, stufen: [T.stufen[0], { name: "zusammengefasst zu Adressen auf der Karte, ohne Anteil", aus: "adressen", farbe: "#000" }] };
+  const l = trichter.zeige(lang, { kennzahlen: KZ }, { breite: 600, hoehe: 300 });
+  const tspans = l.svg.match(/<tspan[^>]*>[^<]*<\/tspan>/g) || [];
+  assert.equal(tspans.length, 3, "eine Zeile für „Zeilen“, zwei für den langen Namen");
+  assert.ok(tspans.every((s) => s.replace(/<[^>]+>/g, "").length <= 26), "keine Zeile länger als die Spalte");
+  assert.ok(!/<tspan[^>]*>zusammengefasst zu Adressen auf der Karte, ohne Anteil</.test(l.svg));
+});
+
+test("balken: Gesamtbalken meldet seine benötigte Höhe", () => {
+  const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "balken", gruppen: G, bezug: "Arbeiter", min_n: 0 });
+  const r = balken.zeige(a, daten, { breite: 600, hoehe: 900 });
+  assert.ok(r.hoehe > 40 && r.hoehe < 140, `hoehe ${r.hoehe}`);
+  const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 900 });
+  assert.ok(je.hoehe > 40 && je.hoehe < 120, `je hoehe ${je.hoehe}`);   // zwei Einheiten à höchstens 26 px
+});

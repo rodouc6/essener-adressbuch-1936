@@ -90,9 +90,11 @@ export function zeige(ansicht, daten, optionen = {}) {
       teile.push(`<g class="${klasse}" data-id="${esc(w.id)}">`
         + `<text x="${RAND}" y="${r2(y + h - 4)}" class="name">${esc(w.name)}</text>${inhalt}</g>`);
     }
+    const genutzt = Math.round(oben + sortiert.length * zeile + RAND);
+    teile[0] = svgKopf(breite, genutzt);
     teile.push("</svg>");
     teile.splice(1, 0, schraffurDefs(muster));
-    return { svg: teile.join(""), legende, zahlen };
+    return { svg: teile.join(""), legende, zahlen, hoehe: genutzt };
   }
 
   // Gesamtbalken: Summen je Gruppe über die gezeichneten Einheiten.
@@ -108,7 +110,9 @@ export function zeige(ansicht, daten, optionen = {}) {
     if (b > 30) teile.push(`<text x="${r2(x + 4)}" y="${r2(oben + h + 14)}" class="wert">${formatProzent(summe ? seg.wert / summe : 0)}</text>`);
     x += b;
   }
+  const genutzt = Math.round(oben + h + 30);   // Balken plus Prozentzeile darunter
+  teile[0] = svgKopf(breite, genutzt);
   teile.push("</svg>");
   teile.splice(1, 0, schraffurDefs(muster));
-  return { svg: teile.join(""), legende, zahlen };
+  return { svg: teile.join(""), legende, zahlen, hoehe: genutzt };
 }
