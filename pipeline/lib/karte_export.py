@@ -16,7 +16,7 @@ from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_exp
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
-from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_kapitel
+from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_kapitel, pruefe_kennzahlen_bezug
 from pipeline.lib.stadtteile import Stadtteile
 from pipeline.lib.stellung import STELLUNGEN
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
@@ -732,7 +732,7 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     if perspektiven is not None:
         ks = lade_kapitel(perspektiven)
         for k in ks:
-            fehler = pruefe_kapitel(k)
+            fehler = pruefe_kapitel(k) + pruefe_kennzahlen_bezug(k, kennzahlen)
             if fehler:
                 raise ValueError("kuratierung/perspektiven: " + "; ".join(fehler))
         _json(ausgabe / "perspektiven" / "index.json", kapitel_index(ks))

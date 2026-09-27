@@ -205,6 +205,19 @@ def test_kennzahlen_absolut_stellung_und_gewerbe():
     assert k["gewerbe_hand_n"] + k["gewerbe_claude_n"] + k["gewerbe_regel_n"] == k["betriebe_n"]
 
 
+def test_export_bricht_bei_unbekannter_trichter_kennzahl_ab(tmp_path):
+    import pytest
+    k = {"id": "datenbasis", "reihenfolge": 0, "titel": "D", "untertitel": "u", "freigegeben": False, "einleitung": "x", "quellen": [],
+         "grenzen": "y", "datenbasis": "", "datenbasis_schritt": "", "ausschluss": "",
+         "schritte": [{"id": "weg", "text": "t", "beschreibung": "b", "hervorheben": [],
+                       "ansicht": {"daten": "kennzahlen", "form": "trichter", "stufen": [{"name": "Z", "aus": "gibt_es_nicht", "farbe": "#000"}]}}]}
+    ordner = tmp_path / "perspektiven"; ordner.mkdir()
+    (ordner / "datenbasis.json").write_text(json.dumps(k), encoding="utf-8")
+    e = [_v(id="1", teil="I")]
+    with pytest.raises(ValueError, match="gibt_es_nicht"):
+        schreibe_paket(tmp_path / "site", e, [], [], "2026-09-27", kacheln=False, perspektiven=ordner)
+
+
 def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():
     g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
     assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt", "Zeche Jahre Unbekannt"]
