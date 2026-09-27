@@ -36,6 +36,15 @@ test("balken: Gesamtbalken mit Segmenten, unbestimmt grau, Zahlenzeile", () => {
   assert.match(je.svg, /data-id="Katernberg"/); assert.match(je.svg, /data-id="Südviertel"/);
 });
 
+test("balken: ausschlussText ersetzt „unbestimmt/ungeprüft“ in Legende und Segmenttitel", () => {
+  const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "balken", gruppen: G, bezug: "Arbeiter", min_n: 0 });
+  const r = balken.zeige(a, daten, { breite: 600, hoehe: 200, ausschlussText: "Beruf ungeprüft oder Stellung unbestimmt" });
+  assert.equal(r.legende[2].text, "Beruf ungeprüft oder Stellung unbestimmt");
+  assert.match(r.svg, /<title>Beruf ungeprüft oder Stellung unbestimmt: 55<\/title>/);
+  const ohne = balken.zeige(a, daten, { breite: 600, hoehe: 200 });
+  assert.equal(ohne.legende[2].text, "unbestimmt/ungeprüft");
+});
+
 test("rangliste: sortiert nach Wert, unter min_n ans Ende und grau, hervorheben", () => {
   const a = normalisiere({ daten: "stellung", ebene: "stadtteil", form: "rangliste", gruppen: G, bezug: "Arbeiter", min_n: 50 });
   const r = rangliste.zeige(a, daten, { breite: 600, hoehe: 300, hervorheben: ["Südviertel"] });

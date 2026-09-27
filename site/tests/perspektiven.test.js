@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalisiere } from "../js/ansicht.js";
-import { detailLage, detailText, detailTextGruppe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
+import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, sichtbareKapitel, zeichenflaeche } from "../js/perspektiven_modell.js";
 
 test("zeichenflaeche zieht Legende und Zahlenzeile ab und hält Mindestmaße", () => {
   assert.deepEqual(zeichenflaeche(800, 700, 90), { breite: 800, hoehe: 610 });
@@ -84,4 +84,29 @@ test("detailLage: mittig über der Einheit, sonst darunter, immer im Fenster", (
   assert.equal(detailLage({ left: 990, top: 300, width: 10, height: 40 }, kasten, fenster).left, 792);
   // Weder oben noch unten Platz (hohe Einheit am unteren Rand): an den unteren Rand gezogen.
   assert.deepEqual(detailLage({ left: 400, top: 20, width: 100, height: 760 }, kasten, fenster), { left: 350, top: 692 });
+});
+
+test("formFuer trichter, besitz_hand_prozent, Detail zu einer Trichter-Stufe", () => {
+  assert.equal(formFuer({ daten: "kennzahlen", form: "trichter" }), "trichter");
+  const kz = { adressen: 70316, besitz_hand: 31914 };
+  assert.equal(fuellePlatzhalter("{besitz_hand_prozent} %", kz), "45,4 %");
+  const d = detailTextStufe({ id: "stufe_strasse", name: "straßengenau", wert: 300, basis: 1000, basisName: "Zeilen", anteil: 0.3, erklaerung: "Straße bekannt, Nummer nicht.", muster: "schraffur" });
+  assert.equal(d.titel, "straßengenau");
+  assert.deepEqual(d.zeilen, ["300 von 1.000 Zeilen (30 %)", "Straße bekannt, Nummer nicht.", "nicht von Hand geprüft (schraffiert)"]);
+  const fehlt = detailTextStufe({ id: "x", name: "Adressen", wert: null, basis: 1000, basisName: "Zeilen", anteil: 0, erklaerung: "", muster: "" });
+  assert.deepEqual(fehlt.zeilen, ["Kennzahl im Export nicht vorhanden"]);
+});
+
+test("detailTextGruppe nennt den Ausschluss des Kapitels", () => {
+  const a = normalisiere({ daten: "besitz", ebene: "stadtteil", form: "balken", gruppen: [{ name: "Privat", aus: ["privatperson"], farbe: "#000" }], bezug: "Privat" });
+  const werte = [{ id: "K", N: 90, n_aus: 10, zaehler: { Privat: 90 } }];
+  assert.equal(detailTextGruppe("ausgeschlossen", werte, a).zeilen[0], "10 Nennungen ausgeschlossen (unbestimmt, ungeprüft), 90 einbezogen");
+  assert.equal(detailTextGruppe("ausgeschlossen", werte, a, "ohne Eigentümerangabe").zeilen[0], "10 Nennungen ausgeschlossen (ohne Eigentümerangabe), 90 einbezogen");
+});
+
+test("datenbasisLink nur, wenn Kapitel 0 sichtbar ist", () => {
+  const k = { id: "wohneigentum", datenbasis: "x", datenbasis_schritt: "besitz" };
+  assert.equal(datenbasisLink(k, [{ id: "datenbasis" }, { id: "wohneigentum" }]), "#s-datenbasis-besitz");
+  assert.equal(datenbasisLink(k, [{ id: "wohneigentum" }]), null);          // Review Focus 4
+  assert.equal(datenbasisLink({ id: "x", datenbasis: "", datenbasis_schritt: "" }, [{ id: "datenbasis" }]), null);
 });

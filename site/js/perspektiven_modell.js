@@ -27,7 +27,7 @@ function alsText(v) {
 // verorteten Adressen sind. Die übrigen Felder in kennzahlen.json sind entweder selbst schon
 // Prozentwerte (stellung_geprueft, gewerbe_geprueft …) oder haben einen anderen Nenner
 // (eigentuemer_geprueft) — für sie bliebe die Rechnung falsch, also wird sie nicht gemacht.
-export const PROZENT_BASIS = ["besitz_geprueft"];
+export const PROZENT_BASIS = ["besitz_geprueft", "besitz_hand"];
 
 // Ersetzt {schluessel} aus kennzahlen.json. Der Zusatz `_prozent` rechnet den Anteil an den
 // verorteten Adressen aus ({besitz_geprueft_prozent}), aber nur für PROZENT_BASIS. Unbekannte
@@ -57,6 +57,7 @@ export const linkWerkstatt = (ansicht) => `werkstatt.html?ansicht=${kodiere(ansi
 // Balkenform, die mit filter.je_einheit einen Balken je Einheit liefert.
 export function formFuer(ansicht) {
   const form = ansicht && ansicht.form;
+  if (form === "trichter") return "trichter";
   if (form === "karte") return ansicht.ebene === "stadtteil" ? "stadtteilkarte" : "rangliste";
   if (form === "multiples") return "balken";
   if (form === "stadtteilkarte" || form === "bubbles" || form === "rangliste") return form;
@@ -93,17 +94,37 @@ export function detailText(einheit, ansicht) {
 // Detailkasten zu einem angeklickten Segment des Gesamtbalkens: die Gruppe über alle gezeichneten
 // Einheiten (Summe, Anteil an den einbezogenen Nennungen), bei Besitz mit dem Regel-Anteil der
 // Privatpersonen. `null`, wenn der Name weder Gruppe noch „ausgeschlossen“ ist.
-export function detailTextGruppe(name, werte, ansicht) {
+export function detailTextGruppe(name, werte, ansicht, ausschlussText = "") {
   const g = (ansicht?.gruppen || []).find((x) => x.name === name);
   if (!g && name !== "ausgeschlossen") return null;
   const N = werte.reduce((s, w) => s + (w.N || 0), 0);
   const n_aus = werte.reduce((s, w) => s + (w.n_aus || 0), 0);
-  if (!g) return { titel: "ausgeschlossen", zeilen: [`${formatZahl(n_aus)} Nennungen ausgeschlossen (unbestimmt, ungeprüft), ${formatZahl(N)} einbezogen`] };
+  if (!g) return { titel: "ausgeschlossen", zeilen: [`${formatZahl(n_aus)} Nennungen ausgeschlossen (${ausschlussText || "unbestimmt, ungeprüft"}), ${formatZahl(N)} einbezogen`] };
   const z = werte.reduce((s, w) => s + (w.zaehler?.[name] || 0), 0);
   const zeilen = [`${formatZahl(z)} von ${formatZahl(N)} einbezogenen Nennungen (${formatProzent(N ? z / N : 0)})`];
   const regel = werte.reduce((s, w) => s + (w.regel || 0), 0);
   if (ansicht?.daten === "besitz" && g.aus.includes("privatperson") && regel > 0) zeilen.push(regelText(regel));
   return { titel: name, zeilen };
+}
+
+// Detailkasten zu einer Trichter-Stufe (Kapitel 0): Wert und Anteil an der ersten Stufe, Erklärtext,
+// Hinweis bei Schraffur. Fehlt die Kennzahl im Export, steht das da — keine erfundene Null.
+export function detailTextStufe(w) {
+  const e = w || {};
+  if (e.wert === null || e.wert === undefined) return { titel: String(e.name || e.id || ""), zeilen: ["Kennzahl im Export nicht vorhanden"] };
+  const zeilen = [`${formatZahl(e.wert)} von ${formatZahl(e.basis)} ${e.basisName || ""} (${formatProzent(e.anteil || 0)})`.replace("  ", " ")];
+  if (e.erklaerung) zeilen.push(e.erklaerung);
+  if (e.muster === "schraffur") zeilen.push("nicht von Hand geprüft (schraffiert)");
+  return { titel: String(e.name || e.id || ""), zeilen };
+}
+
+// Anker der Datenbasis-Zeile eines Fachkapitels auf den passenden Schritt in Kapitel 0 — nur, wenn
+// Kapitel 0 überhaupt sichtbar ist (sonst zeigte der Link ins Leere).
+export function datenbasisLink(kapitel, index) {
+  const k = kapitel || {};
+  if (!k.datenbasis || !k.datenbasis_schritt) return null;
+  if (!(index || []).some((e) => e.id === "datenbasis")) return null;
+  return `#s-datenbasis-${k.datenbasis_schritt}`;
 }
 
 // Zustand des Detailkastens. Schweben zeigt ihn flüchtig, ein Klick stellt ihn fest (er bleibt
