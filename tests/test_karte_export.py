@@ -176,6 +176,33 @@ def test_kennzahlen():
     assert k["eintraege_je_teil"] == {"I": 2, "II": 1, "III": 1}
     assert k["stufen"] == {"haus": 50.0, "strasse": 25.0, "stadtplan": 0.0, "offen": 25.0}
     assert k["verortet"] == 3 and k["offen"] == 1 and k["adressen"] == 2 and k["stand"] == "2026-09-21"
+    # absolute Zähler für die Trichter der Schlaglichter (Spec 2026-09-27 §3.4)
+    assert (k["eintraege"], k["eintraege_I"], k["eintraege_II"], k["eintraege_III"]) == (4, 2, 1, 1)
+    assert (k["stufe_haus"], k["stufe_strasse"], k["stufe_stadtplan"], k["stufe_offen"]) == (2, 1, 0, 1)
+    assert k["stufe_haus"] + k["stufe_strasse"] + k["stufe_stadtplan"] + k["stufe_offen"] == k["eintraege"]
+    assert k["besitz_hand"] == k["besitz_geprueft"] - k["besitz_regel"]
+    # ohne _beruf/_gewerbe: alles unbestimmt bzw. keine Betriebe
+    assert (k["teil_i_n"], k["beruf_geprueft_n"], k["stellung_hand_n"], k["stellung_vorschlag_n"], k["stellung_unbestimmt_n"]) == (2, 0, 0, 0, 2)
+    assert (k["betriebe_n"], k["gewerbe_hand_n"], k["gewerbe_claude_n"], k["gewerbe_regel_n"]) == (0, 0, 0, 0)
+
+
+def test_kennzahlen_absolut_stellung_und_gewerbe():
+    e = [_v(id="1", teil="I"), _v(id="2", teil="I"), _v(id="3", teil="I"), _v(id="4", teil="III"), _v(id="5", teil="III")]
+    a = gruppiere(e, [])
+    eintraege = [x for adr in a.values() for x in adr["eintraege"]]
+    by = {x["id"]: x for x in eintraege}
+    by["1"]["_beruf"] = {"stellung": "arbeiter", "stellung_quelle": "hand"}
+    by["2"]["_beruf"] = {"stellung": "angestellte", "stellung_quelle": "vorschlag"}
+    by["3"]["_beruf"] = {"stellung": "unbestimmt", "stellung_quelle": "hand"}      # handgeprüft, aber unbestimmt
+    by["4"]["_gewerbe"] = {"quelle": "hand"}
+    by["5"]["_gewerbe"] = {"quelle": "vorschlag"}
+    k = baue_kennzahlen(e, a, "2026-09-27")
+    assert (k["teil_i_n"], k["beruf_geprueft_n"]) == (3, 3)
+    assert (k["stellung_hand_n"], k["stellung_vorschlag_n"], k["stellung_unbestimmt_n"]) == (1, 1, 1)
+    assert (k["betriebe_n"], k["gewerbe_hand_n"], k["gewerbe_claude_n"], k["gewerbe_regel_n"]) == (2, 1, 0, 1)
+    # Summen: die drei Stellung-Zähler ergeben alle Teil-I-Einträge, die Gewerbe-Zähler alle Betriebe
+    assert k["stellung_hand_n"] + k["stellung_vorschlag_n"] + k["stellung_unbestimmt_n"] == k["teil_i_n"]
+    assert k["gewerbe_hand_n"] + k["gewerbe_claude_n"] + k["gewerbe_regel_n"] == k["betriebe_n"]
 
 
 def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():

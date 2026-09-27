@@ -482,25 +482,40 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
     teil_i = [e for a in adressen.values() for e in a["eintraege"] if e["teil"] == "I"]
     teil_iii = [e for a in adressen.values() for e in a["eintraege"] if e["teil"] == "III" and e.get("_gewerbe")]
     mit_beruf = [e for e in teil_i if e.get("_beruf")]
+    st_hand = sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand" and e["_beruf"]["stellung"] != "unbestimmt")
+    st_vorschlag = sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt")
+    st_unbestimmt = sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt")
+    gw_hand = sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "hand")
+    gw_claude = sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "claude")
+    gw_regel = sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag")
+    besitz_geprueft = sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft")
+    besitz_regel = sum(1 for a in adressen.values() if a.get("besitz_pruefung") == "regel")
     return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
                 stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
                 adressen=len(adressen), stand=datum,
-                besitz_geprueft=sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft"),
+                # absolute Zähler für die Trichter der Schlaglichter (Kapitel 0): Zeilen je Teil und Stufe
+                eintraege=len(eintraege), eintraege_I=je_teil["I"], eintraege_II=je_teil["II"], eintraege_III=je_teil["III"],
+                stufe_haus=je_stufe["haus"], stufe_strasse=je_stufe["strasse"], stufe_stadtplan=je_stufe["stadtplan"], stufe_offen=je_stufe["offen"],
+                besitz_geprueft=besitz_geprueft,
                 besitz_spanne=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "spanne"),
                 besitz_nummer=sum(1 for a in adressen.values() if a.get("besitz_quelle") == "nummer"),
-                besitz_regel=sum(1 for a in adressen.values() if a.get("besitz_pruefung") == "regel"),
+                besitz_regel=besitz_regel,
+                besitz_hand=besitz_geprueft - besitz_regel,
                 eigentuemer_geprueft=len({e["_eigentuemer"] for a in adressen.values() for e in a["eintraege"] if e.get("_eigentuemer")}),
-                berufe_geprueft=round(100 * sum(1 for e in teil_i if e.get("_beruf")) / (len(teil_i) or 1), 1),
+                berufe_geprueft=round(100 * len(mit_beruf) / (len(teil_i) or 1), 1),
                 berufe_schreibweisen_geprueft=len({e["Beruf o. ä."] for e in teil_i if e.get("_beruf")}),
                 # Drei disjunkte Anteile (Summe 100): von Hand bestimmt, Vorschlag bestimmt, unbestimmt (auch
                 # nach Handprüfung) oder ohne geprüften Beruf. Handgeprüft-unbestimmt zählte sonst doppelt.
-                stellung_geprueft=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "hand" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
-                stellung_vorschlag=_prozent(sum(1 for e in mit_beruf if e["_beruf"].get("stellung_quelle") == "vorschlag" and e["_beruf"]["stellung"] != "unbestimmt"), len(teil_i)),
-                stellung_unbestimmt=_prozent(sum(1 for e in teil_i if not e.get("_beruf") or e["_beruf"]["stellung"] == "unbestimmt"), len(teil_i)),
-                gewerbe_geprueft=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "hand"), len(teil_iii)),
-                gewerbe_entschieden=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "claude"), len(teil_iii)),
-                gewerbe_vorschlag=_prozent(sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag"), len(teil_iii)),
+                stellung_geprueft=_prozent(st_hand, len(teil_i)),
+                stellung_vorschlag=_prozent(st_vorschlag, len(teil_i)),
+                stellung_unbestimmt=_prozent(st_unbestimmt, len(teil_i)),
+                teil_i_n=len(teil_i), beruf_geprueft_n=len(mit_beruf),
+                stellung_hand_n=st_hand, stellung_vorschlag_n=st_vorschlag, stellung_unbestimmt_n=st_unbestimmt,
+                gewerbe_geprueft=_prozent(gw_hand, len(teil_iii)),
+                gewerbe_entschieden=_prozent(gw_claude, len(teil_iii)),
+                gewerbe_vorschlag=_prozent(gw_regel, len(teil_iii)),
+                betriebe_n=len(teil_iii), gewerbe_hand_n=gw_hand, gewerbe_claude_n=gw_claude, gewerbe_regel_n=gw_regel,
                 stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)))
 
 
