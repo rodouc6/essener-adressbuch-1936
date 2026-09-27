@@ -31,8 +31,8 @@ let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss
 // Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
 let sichtbar = [];
 
-// Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, ab vier Ziffern.
-const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei" };
+// Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, „Vier Blicke“, ab fünf Ziffern.
+const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei", 4: "Vier" };
 
 let daten = null;
 // Ein Ladefehler (Netz, kaputtes JSON) darf die Seite nicht als leere Fläche zurücklassen.
