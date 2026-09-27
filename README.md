@@ -265,6 +265,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum, dazu Abdeckung Stellung/Gruppen/Gewerbe und `strassen_mit_linie` (Teilprojekt 5a) |
 | `hauptgruppen.json` | Bezeichnungen der OhdAB-Hauptgruppen (`{B21: {bezeichnung, kurz, bereich}}`) aus `kuratierung/hauptgruppen.csv` — Beschriftung der Gruppenachse in Perspektiven und Werkstatt |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
+| `herkunft/*.json` | Herkunftspaket für den Detailkasten der Schlaglichter: je Klasse Schreibweisen, Normen, Quellanteile und Top-10; je Norm/Eigentümer/Rubrik die Einzelherkunft (`docs/perspektiven.md`, Abschnitt Herkunftspfad) |
 | `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
 | `strassen.geojson`, `hex.geojson` | Straßenlinien (heutige OSM-Führung) und Hex-Polygone, auch als Layer `strassen`/`hex` in `adressen.pmtiles` |

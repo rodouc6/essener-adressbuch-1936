@@ -121,6 +121,22 @@ entweder schon Prozentwerte sind oder einen anderen Nenner als `adressen` haben.
 Diese Platzhalter sind bewusst **nicht** Teil von `pruefe_kapitel` — das Schema prüft nur die Struktur, nicht
 den Text. Ein Tippfehler in einem Platzhalternamen fällt erst beim Rendern der Seite auf.
 
+## Herkunftspfad im Detailkasten
+
+Seit 2026-09-27 zeigt der Detailkasten, woher eine Zahl kommt (Spec `2026-09-27-herkunftspfad-design.md`).
+Daten: `site/daten/herkunft/{stellung,gruppe,niveau,berufe,besitz,eigentuemer,gewerbe,rubriken}.json`
+(`baue_herkunft` in `pipeline/lib/karte_export.py`, Grundmenge = verortete Einträge; Häuser je Eigentümer
+wie im Eigentümerindex aus eigenen Häuserbuch-Zeilen und Übernahmen per Spanne oder gleicher Nummer),
+nachgeladen beim ersten Schweben (`Lader.herkunft`). Kontextarten (`kontextVon` in perspektiven.js):
+`segment` (Gruppe im Gesamtbalken, Klassen werden summiert), `regel` (schraffierter Teil, `data-id`
+`<Gruppe>#regel`), `kreis` (Bubbles: Norm, Eigentümer, Rubrik), `einheit` (kein Pfad; Stadtteile nennen bei
+Stellung den von Hand bestimmten Anteil), `ausgeschlossen` (kein Pfad). Schwebend: Kette
+Buch › Norm/Eigentümer/Rubrik › Klasse › Gruppe mit Quellmarken (hand grün, vorschlag grau, claude
+violett, regel orange) und drei häufigsten Schreibweisen (`herkunftPfad`). Festgestellt zusätzlich
+„Woher kommt diese Zahl?“ mit bis zu zehn Zeilen, Link in die Suche (`herkunftLink`, nur Einzelobjekte),
+Belegtext (`BELEG`) und bei Eigentümern Faksimile-Link (`herkunftTabelle`). Fehlt die Datei (alter
+Export), bleibt der Kasten wie zuvor; die Konsole warnt einmal.
+
 ## Freigabe (`freigegeben`, `?vorschau=1`)
 
 `freigegeben: false` ist der Normalzustand während der Bearbeitung: Das Kapitel wird exportiert und geprüft
