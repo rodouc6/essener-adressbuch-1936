@@ -192,6 +192,18 @@ python3 werkzeuge/serve.py 8765   # → http://localhost:8765/site/
 ```
 `serve.py` statt `python3 -m http.server`, weil PMTiles Range-Requests braucht (siehe oben).
 
+Bedienung (Stand 2026-09-28): Rechts oben ein Ebenenknopf (Stapel-Symbol) mit aufklappbarem Feld für
+Grundkarte (dezent | detailliert), Zechen (Schlägel-und-Eisen-Symbol, Wikimedia Commons, gemeinfrei, s.
+Impressum) und — nur bei `PLAN_FREIGEGEBEN` — den stufenlosen Stadtplan-Regler; ein blauer Punkt am Knopf
+zeigt eine Abweichung vom Standard. Das Popup eines Adresspunkts ist die Visitenkarte des Hauses:
+Kennzeile (Präzision nur, wenn nicht hausgenau; Zähler je Teil), dann Einwohner, Eigentümer, Gewerbe mit
+höchstens vier Zeilen je Teil (Handy zwei), Beruf nur als Norm (ohne Norm die Buchschreibung kursiv),
+Eigentümer mit Besitzklasse, Gewerbe mit Rubrik (das Firmenfeld in Teil III endet auf „, Rubrik“ und wird
+darum gekürzt); bei ein oder zwei aktiven Ebenen sind deren Teile farbig markiert. „Haus im Detail ›“ öffnet
+die Hausansicht in der Sidebar mit der vollen Belegkette. Alle Adresspunkte tragen ab Straßenzoom einen
+weißen Halo (`HALO` in `karte.js`), damit sich überlappende Punkte trennen und der Kontrast auf Liberty
+bleibt. HTML der Leiste: `site/js/steuerung.js`, des Popups: `site/js/popup.js`.
+
 ## Eigentümer (Teilprojekt 3)
 
 Eigentümer aus Teil II werden zu kanonischen Eigentümern mit Kategorie zusammengeführt
