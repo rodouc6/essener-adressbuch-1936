@@ -63,8 +63,15 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .quelle { font-size: 12px; color: var(--grau); margin-top: 4px; }
 .kein-bild { color: #92400e; }
 .etage { font-size: 11px; background: #eee; border-radius: 3px; padding: 0 4px; }
-.pname { padding: 3px 0; cursor: pointer; } .pname:hover { text-decoration: underline; }
-.pmehr { color: var(--blau); cursor: pointer; padding-top: 4px; }
+.popup-kopf b { font-size: 14px; }
+.popup-kopf .kenn { color: var(--grau); font-size: 12px; margin: 2px 0 4px; }
+.popup-kopf .kenn .praez-strasse, .popup-kopf .kenn .praez-stadtplan, .popup-kopf .kenn .praez-unbekannt { color: #92400e; }
+.teil { margin-top: 6px; }
+.teil h4 { margin: 4px 0 1px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); font-weight: 600; }
+.teil .z { padding: 2px 0; cursor: pointer; } .teil .z:hover b { text-decoration: underline; }
+.teil .z .n { color: var(--grau); } .teil .z i { color: var(--grau); }
+.teil .weitere { color: var(--grau); font-size: 12px; padding: 2px 0; }
+.pmehr { color: var(--blau); cursor: pointer; margin-top: 8px; padding-top: 6px; border-top: 1px solid #eee; }
 .thema { background: #eef2ff; border-radius: 8px; padding: 8px 12px; margin: 10px 12px 0; font-size: 13px; }
 /* Themenkopf darf die Trefferliste (.inhalt) nicht verdrängen: feste Höhe, Eigentümerliste scrollt für sich. */
 #themenkopf { flex: none; }

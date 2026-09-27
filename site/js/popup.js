@@ -1,4 +1,4 @@
-import { EBENEN, PRAEZISION, DIGIBIB_WERK } from "./konfig.js";
+import { EBENEN, PRAEZISION, DIGIBIB_WERK, FARBEN } from "./konfig.js";
 import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
 
 // Statustexte der Berufsangabe (mehrere, durch ";" getrennt, einzeln übersetzt und mit ", " verbunden).
@@ -45,17 +45,56 @@ function nameZeile(e, mitBeruf = true) {
   return `<b>${esc(name)}</b>${rest ? ` · ${esc(rest)}` : ""}${e.etage ? ` <span class="etage">${esc(e.etage)}</span>` : ""}`;
 }
 
-export function popupHtml(eig, eintraege, kompakt) {
-  const max = kompakt ? 3 : 12;
-  const zeilen = eintraege.slice(0, max).map((e) => `<div class="pname" data-eintrag="${esc(e.id)}">${nameZeile(e)}</div>`);
-  // Kompakt (Popup) verweist immer auf die Hausansicht — auch bei genau drei Namen, damit „alle
-  // im Detail“ dort landet, wo die vollen Angaben (Beruf, Etage, Quelle) stehen.
-  if (kompakt || eintraege.length > max) zeilen.push(`<div class="pmehr" data-mehr="1">alle ${eintraege.length} im Detail ›</div>`);
+// ---- Popup: Visitenkarte des Hauses (Spec 2026-09-28 §2/§3). Lesestoff steht in hausHtml. ----
+const TEILE = ["I", "II", "III"];
+const PRAEZ_KURZ = { strasse: "nur straßengenau", stadtplan: "Punkt vom Stadtplan 1935", unbekannt: "Präzision unbekannt" };
+const TOOLTIP_ROH = "Schreibung im Buch, Beruf noch nicht zugeordnet";
+
+function personName(e) { return [e.name, e.vorname].filter(Boolean).join(", "); }
+
+function popupName(e) {
+  if (e.teil === "II") return e.eigentuemer_kanon || e.firma || personName(e);
+  return (e.teil === "III" ? e.firma : "") || personName(e) || e.firma || "";
+}
+
+// Zusatz hinter dem Namen, bereits als HTML: Einwohner Beruf (nur Norm; sonst Buchschreibung kursiv)
+// und Stand; Eigentümer Besitzklasse (per Regel mit Vermerk); Gewerbe Buchrubrik.
+function popupZusatz(e) {
+  if (e.teil === "II") {
+    if (e.pruefung === "regel") return `${esc(KATEGORIEN.privatperson)} (Regel)`;
+    return e.kategorie ? esc(KATEGORIEN[e.kategorie] || e.kategorie) : "";
+  }
+  if (e.teil === "III") return esc(e.rubrik || "");
+  const beruf = e.beruf_norm ? esc(e.beruf_norm) : e.beruf ? `<i title="${TOOLTIP_ROH}">${esc(e.beruf)}</i>` : "";
+  return [beruf, esc(e.stand || "")].filter(Boolean).join(", ");
+}
+
+export function popupZeile(e) {
+  const z = popupZusatz(e);
+  return `<div class="z" data-eintrag="${esc(e.id)}"><b>${esc(popupName(e))}</b>${z ? ` <span class="n">· ${z}</span>` : ""}</div>`;
+}
+
+function teilHtml(teil, liste, max, hervor) {
+  if (!liste.length) return "";
+  const zeilen = liste.slice(0, max).map(popupZeile);
+  const rest = liste.length - max;
+  if (rest > 0) zeilen.push(`<div class="weitere">und ${rest} weitere ${rest === 1 ? "Zeile" : "Zeilen"}</div>`);
+  const kopf = liste.length > 1 ? `${EBENEN[teil]} · ${liste.length}` : EBENEN[teil];
+  const attr = hervor ? ` class="teil hervor" style="--f:${FARBEN[teil]}"` : ` class="teil"`;
+  return `<div${attr}><h4>${kopf}</h4>${zeilen.join("")}</div>`;
+}
+
+// ebenen: aktive Ebenen der Karte; bei genau 1 oder 2 werden deren Teile hervorgehoben (§3).
+export function popupHtml(eig, eintraege, kompakt, ebenen = TEILE) {
+  const max = kompakt ? 2 : 4;
+  const hervor = new Set(ebenen.length >= 1 && ebenen.length <= 2 ? ebenen : []);
+  const praez = PRAEZ_KURZ[eig.stufe] ? `<span class="praez-${esc(eig.stufe)}">${PRAEZ_KURZ[eig.stufe]}</span>` : "";
+  const kenn = [praez, esc(zaehlerText(eig))].filter(Boolean).join(" · ");
+  const teile = TEILE.map((t) => teilHtml(t, eintraege.filter((e) => e.teil === t), max, hervor.has(t))).join("");
   return `<div class="popup-kopf"><b>${esc(heutigeAdresse(eig))}</b>` +
-    (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
-    `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
-    `<div class="zaehler">${esc(zaehlerText(eig))}</div></div>` +
-    `<div class="popup-namen">${zeilen.join("")}</div>`;
+    (eig.strasse_heute ? `<div class="hist">${esc(eig.historisch)} im Buch</div>` : "") +
+    `<div class="kenn">${kenn}</div></div>${teile}` +
+    `<div class="pmehr" data-mehr="1">Haus im Detail ›</div>`;
 }
 
 // Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
