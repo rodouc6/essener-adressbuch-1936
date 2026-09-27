@@ -55,4 +55,5 @@ export class Lader {
   stadtteilePolygone() { return this.json("stadtteile.geojson"); }
   perspektivenIndex() { return this.json("perspektiven/index.json"); }
   kapitel(id) { return this.json(`perspektiven/${id}.json`); }
+  herkunft(name) { return this.json(`herkunft/${name}.json`); }
 }

@@ -195,10 +195,12 @@ test("balken: Regel-Anteil der Privatpersonen schraffiert, Legende nennt die Sch
   const a = normalisiere({ daten: "besitz", ebene: "stadtteil", form: "balken", gruppen: P, bezug: "Privat", min_n: 0 });
   const r = balken.zeige(a, daten, { breite: 600, hoehe: 200 });
   // Privat 10 + 5 = 15, davon 7 per Regel (Katernberg) → ein voller und ein schraffierter Teil, beide Einheit „Privat“
-  assert.equal((r.svg.match(/data-id="Privat"/g) || []).length, 2);
+  assert.equal((r.svg.match(/data-id="Privat"/g) || []).length, 1);
+  assert.equal((r.svg.match(/data-id="Privat#regel"/g) || []).length, 1);
   assert.match(r.svg, /<pattern id="schraffur-Privat"/); assert.match(r.svg, /fill="url\(#schraffur-Privat\)"/);
-  const b = [...r.svg.matchAll(/data-id="Privat"[^>]*width="([\d.]+)"/g)].map((m) => Number(m[1]));
-  assert.ok(Math.abs(b[1] / (b[0] + b[1]) - 7 / 15) < 0.01, "schraffierter Teil = Regel-Anteil");
+  const bv = Number(r.svg.match(/data-id="Privat"[^>]*width="([\d.]+)"/)[1]);
+  const br = Number(r.svg.match(/data-id="Privat#regel"[^>]*width="([\d.]+)"/)[1]);
+  assert.ok(Math.abs(br / (bv + br) - 7 / 15) < 0.01, "schraffierter Teil = Regel-Anteil");
   assert.ok(r.legende.some((l) => l.muster === "schraffur" && /Regel/.test(l.text)));
   const je = balken.zeige({ ...a, filter: { je_einheit: true } }, daten, { breite: 600, hoehe: 200 });
   assert.match(je.svg, /url\(#schraffur-Privat\)/);

@@ -105,7 +105,9 @@ export function kennzahlen(einheit, ansicht) {
   // Transparenz bei Besitz: wie viele Adressen der Einheit nur per Regel (Person → Privatperson) klassifiziert
   // sind — die Seite weist das an den Privatpersonen aus, statt sie als handgeprüft erscheinen zu lassen.
   const regel = ansicht.daten === "besitz" ? (einheit?.n_besitz_regel || 0) : 0;
-  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte, regel };
+  // Ebenso bei Stellung: wie viele Nennungen der Einheit eine von Hand bestimmte Stellung tragen.
+  const stellung_hand = ansicht.daten === "stellung" ? (einheit?.n_stellung_hand || 0) : 0;
+  return { N, n_aus, unter_min, anteile, zaehler, wert, dominant, mischung, dichte, regel, stellung_hand };
 }
 
 export function standardGruppen(daten, hauptgruppen = {}) {

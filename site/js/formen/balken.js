@@ -45,7 +45,10 @@ function balkenZeile(segs, x, y, breite, hoehe, summe, jeEinheit, muster = []) {
     if (regelB > 0) {
       const id = schraffurId(seg.id);
       if (!muster.some((m) => m.id === id)) muster.push({ id, farbe: seg.farbe });
-      teile.push(`${kopf} x="${r2(px + b - regelB)}" y="${r2(y)}" width="${r2(regelB)}" height="${r2(hoehe)}" fill="url(#${id})"><title>${esc(titel)}</title></rect>`);
+      // Der Regel-Teil ist im Gesamtbalken eine eigene Einheit („<Gruppe>#regel“), damit der Detailkasten
+      // seine Herkunft (Regel statt Handprüfung) getrennt erklären kann.
+      const kopfRegel = jeEinheit ? `<rect class="segment"` : `<rect class="einheit" data-id="${esc(seg.id)}#regel"`;
+      teile.push(`${kopfRegel} x="${r2(px + b - regelB)}" y="${r2(y)}" width="${r2(regelB)}" height="${r2(hoehe)}" fill="url(#${id})"><title>${esc(titel)}</title></rect>`);
     }
     px += b;
   }
