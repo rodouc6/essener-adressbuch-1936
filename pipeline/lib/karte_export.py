@@ -607,13 +607,12 @@ def baue_herkunft(adressen: dict[str, dict]) -> dict[str, dict]:
         k["quelle"]["regel" if a.get("besitz_pruefung") == "regel" else "hand"] += 1
         if a.get("besitz_quelle") == "spanne": k["spanne"] += 1
         if a.get("besitz_quelle") == "nummer": k["nummer"] += 1
-        kanon = a.get("besitz_eigentuemer", "")
-        if kanon:
-            k["_eig"].add(kanon); k["_top"][kanon] += 1
-            x = eig.setdefault(kanon, dict(_schreib=defaultdict(int), zeilen=0, haeuser=0, spanne=0, nummer=0, kategorie=klasse, identitaet=True, seite=""))
-            x["haeuser"] += 1
-            if a.get("besitz_quelle") == "spanne": x["spanne"] += 1
-            if a.get("besitz_quelle") == "nummer": x["nummer"] += 1
+        # Das Haus zählt für jeden identifizierten Eigentümer einmal — wie baue_eigentuemerindex: aus den eigenen
+        # Teil-II-Zeilen (dort steht besitz_eigentuemer nicht) oder aus der Übernahme per Spanne / gleicher Nummer.
+        neu = lambda kat: dict(_schreib=defaultdict(int), zeilen=0, haeuser=0, spanne=0, nummer=0, kategorie=kat, identitaet=True, seite="")
+        kanone: dict[str, str] = {}
+        if a.get("besitz_eigentuemer"):
+            kanone[a["besitz_eigentuemer"]] = klasse
         for e in a["eintraege"]:
             if e.get("teil") != "II":
                 continue
@@ -622,9 +621,16 @@ def baue_herkunft(adressen: dict[str, dict]) -> dict[str, dict]:
             if e.get("_pruefung") == "regel":
                 k["_regel"][s] += 1
             if e.get("_eigentuemer") and e.get("_identitaet"):
-                x = eig.setdefault(e["_eigentuemer"], dict(_schreib=defaultdict(int), zeilen=0, haeuser=0, spanne=0, nummer=0, kategorie=e.get("_kategorie", klasse), identitaet=True, seite=""))
+                kanone.setdefault(e["_eigentuemer"], e.get("_kategorie", klasse))
+                x = eig.setdefault(e["_eigentuemer"], neu(e.get("_kategorie", klasse)))
                 x["zeilen"] += 1; x["_schreib"][s] += 1
                 if not x["seite"]: x["seite"] = e.get("page", "")
+        for kanon, kat in kanone.items():
+            k["_eig"].add(kanon); k["_top"][kanon] += 1
+            x = eig.setdefault(kanon, neu(kat))
+            x["haeuser"] += 1
+            if a.get("besitz_quelle") == "spanne": x["spanne"] += 1
+            if a.get("besitz_quelle") == "nummer": x["nummer"] += 1
     besitz = {kl: dict(eigentuemer=len(k["_eig"]), zeilen=k["zeilen"], haeuser=k["haeuser"], quelle=k["quelle"], spanne=k["spanne"], nummer=k["nummer"],
                        top=_top(k["_top"]), **({"regel_beispiele": _top(k["_regel"], 5)} if kl == "privatperson" else {}))
               for kl, k in besitz.items()}

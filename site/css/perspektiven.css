@@ -89,7 +89,7 @@
 /* Breit: der Kasten steht an der Einheit (left/top setzt perspektiven.js aus detailLage); schmal:
    Leiste am unteren Rand, siehe unten. */
 .detail { position: fixed; background: #fff; border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.2); padding: 12px 16px; max-width: 320px; z-index: 5; font-size: 13px; }
+  box-shadow: 0 2px 12px rgba(0,0,0,.2); padding: 12px 16px; max-width: 360px; z-index: 5; font-size: 13px; }
 .detail h4 { margin: 0 24px 6px 0; font-size: 15px; }
 .detail p { margin: 2px 0; }
 .detail .schliessen { position: absolute; top: 4px; right: 6px; border: 0; background: none; cursor: pointer;
@@ -97,6 +97,22 @@
 /* Flüchtig (der Zeiger schwebt nur): der Kasten fängt keine Zeigerereignisse und nennt den Klick. */
 .detail:not(.fest) { pointer-events: none; }
 .detail .wink { margin-top: 6px; color: var(--grau); font-size: 12px; }
+/* Herkunftspfad im Detailkasten (Spec Herkunftspfad §4): Kette aus Stufen mit Quellmarken, darunter
+   festgestellt die Belegtabelle. */
+.detail .pfad { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 8px 0 2px; font-size: 12px; }
+.detail .pfad .stufe { border: 1px solid var(--rand); border-radius: 6px; padding: 2px 7px; background: #fafafa; white-space: nowrap; }
+.detail .pfad .stufe small { display: block; font-size: 9.5px; color: var(--grau); text-transform: uppercase; letter-spacing: .04em; }
+.detail .pfad .pfeil { color: var(--grau); }
+.detail .q { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; color: #fff; }
+.detail .q.hand { background: #15803d; } .detail .q.vorschlag { background: #6b7280; } .detail .q.claude { background: #6d28d9; } .detail .q.regel { background: #b45309; }
+.detail details { margin-top: 8px; border-top: 1px solid var(--rand); padding-top: 6px; }
+.detail summary { cursor: pointer; color: var(--blau); font-size: 12px; }
+.detail table { border-collapse: collapse; width: 100%; font-size: 11.5px; margin-top: 6px; }
+.detail th, .detail td { text-align: left; padding: 2px 6px 2px 0; border-bottom: 1px solid #eee; vertical-align: top; }
+.detail th { color: var(--grau); font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.detail td.z { text-align: right; font-variant-numeric: tabular-nums; color: var(--grau); }
+.detail .beleg { font-size: 11px; color: var(--grau); margin-top: 6px; }
+.detail.fest { max-height: 80vh; overflow: auto; }
 
 .perspektiven .leer { max-width: 720px; margin: 32px auto; color: var(--grau); }
 

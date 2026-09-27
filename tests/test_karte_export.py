@@ -754,8 +754,10 @@ def test_baue_herkunft_besitz_und_eigentuemer():
                            _kategorie="industrie", _identitaet=True, _pruefung="hand")
     person = dict(teil="II", **{"Firmenname": ""}, lastname="Müller", firstname="H.", page="II-041", _eigentuemer="", _kategorie="privatperson",
                   _identitaet=False, _pruefung="regel")
-    a = {"1": _adr("1", [krupp("Fried. Krupp A.G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag", besitz_eigentuemer="Fried. Krupp AG"),
-         "2": _adr("2", [krupp("Fried. Krupp A.-G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag", besitz_eigentuemer="Fried. Krupp AG"),
+    # Wie gruppiere: Adressen mit eigener Teil-II-Zeile tragen kein besitz_eigentuemer (das setzt nur die
+    # Übernahme aus Spanne oder gleicher Nummer); der Eigentümer steht in der Zeile (_eigentuemer, _identitaet).
+    a = {"1": _adr("1", [krupp("Fried. Krupp A.G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag"),
+         "2": _adr("2", [krupp("Fried. Krupp A.-G.")], besitz="industrie", besitz_pruefung="hand", besitz_quelle="eintrag"),
          "3": _adr("3", [], besitz="industrie", besitz_pruefung="hand", besitz_quelle="spanne", besitz_eigentuemer="Fried. Krupp AG"),
          "4": _adr("4", [person], besitz="privatperson", besitz_pruefung="regel", besitz_quelle="eintrag"),
          "5": _adr("5", [], besitz="ungeprueft")}

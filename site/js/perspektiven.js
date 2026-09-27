@@ -5,13 +5,14 @@
 import { Lader } from "./daten.js";
 import { normalisiere } from "./ansicht.js";
 import { filterEinheiten, ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
-import { esc, nennerText } from "./formen/skalen.js";
+import { esc, formatZahl, nennerText } from "./formen/skalen.js";
+import { faksimileUrl } from "./popup.js";
 import * as balken from "./formen/balken.js";
 import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
 import * as trichter from "./formen/trichter.js";
-import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, herkunftAktuell, herkunftDatei, herkunftLink, herkunftPfad, herkunftTabelle, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles, trichter };
 const istTrichter = (a) => !!a && (a.form === "trichter" || a.daten === "kennzahlen");
@@ -30,6 +31,10 @@ let anker = null;
 let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "" };
 // Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
 let sichtbar = [];
+// Herkunftsdateien (site/daten/herkunft/*.json), nachgeladen beim ersten Bedarf; undefined = wird
+// geladen, null = Laden fehlgeschlagen (alter Export) — dann bleibt der Kasten ohne Pfad.
+const herkunft = new Map();
+let faksimile = null;
 
 // Zahlwörter für die Einleitung: „Ein Blick“, „Zwei Blicke“, „Drei Blicke“, „Vier Blicke“, ab fünf Ziffern.
 const ZAHLWORT = { 1: "Ein", 2: "Zwei", 3: "Drei", 4: "Vier" };
@@ -46,6 +51,7 @@ try {
 
 async function seiteAufbauen() {
   daten = await ladeEbenen(lader);
+  faksimile = (await lader.faksimile()) || {};
   const index = sichtbareKapitel((await lader.perspektivenIndex()) || [], vorschau);
   sichtbar = index;
   // Die Einleitung zählt, was wirklich sichtbar ist — „Drei Blicke“ wäre falsch, sobald ein
@@ -184,6 +190,55 @@ function melde(ereignis, id = null, zeile = "", rechteck = null) {
 // Detailkasten zur Einheit unter dem Zeiger: Name, Nennungen, Anteile je Gruppe, Hinweis unter
 // min_n. Festgestellt (angeklickt) trägt er den Schließknopf und den Kartenlink; flüchtig
 // (schwebend) bleibt er knapp — dort führt kein Klick hin, ohne den Zeiger wegzunehmen.
+// Welche Art Einheit der Kasten zeigt: Segment eines Gesamtbalkens (Gruppenname), dessen Regel-Teil,
+// Kreis einer Bubbles-Ansicht (Norm, Eigentümer, Rubrik), sonst eine Einheit der Ebene.
+function kontextVon(id, ansicht) {
+  if (!ansicht || gezeigt.trichter) return null;
+  if (id === "ausgeschlossen") return { art: "ausgeschlossen", daten: ansicht.daten, id, gruppe: null };
+  if (typeof id === "string" && id.endsWith("#regel")) {
+    const g = (ansicht.gruppen || []).find((x) => x.name === id.slice(0, -"#regel".length));
+    return g ? { art: "regel", daten: ansicht.daten, id, gruppe: g } : null;
+  }
+  const g = (ansicht.gruppen || []).find((x) => x.name === id);
+  if (g) return { art: "segment", daten: ansicht.daten, id, gruppe: g };
+  if (ansicht.form === "bubbles") return { art: "kreis", daten: ansicht.daten, id, gruppe: null };
+  return { art: "einheit", daten: ansicht.daten, id, gruppe: null };
+}
+
+// Herkunftsdatei holen; nach dem Laden den Kasten neu zeichnen, falls er noch dieselbe Einheit zeigt.
+function ladeHerkunft(name, fuerId, zeile) {
+  if (herkunft.has(name)) return;
+  herkunft.set(name, undefined);            // „wird geladen“
+  lader.herkunft(name).then((h) => {
+    herkunft.set(name, h || null);
+    if (!h) console.warn(`Herkunft ${name}: nicht geladen (alter Export?)`);
+    if (herkunftAktuell(detail, fuerId)) zeichneDetail(zeile);
+  }).catch((e) => { herkunft.set(name, null); console.warn(`Herkunft ${name}:`, e); });
+}
+
+const MARKE = { hand: "Hand", vorschlag: "Vorschlag", claude: "Prinzipien", regel: "Regel" };
+const markeHtml = (m) => `<span class="q ${esc(m.art)}">${m.anteil < 1 ? `${Math.round(m.anteil * 100)} % ` : ""}${MARKE[m.art] || m.art}</span>`;
+
+function pfadHtml(pfad) {
+  if (!pfad || !pfad.length) return "";
+  const stufen = pfad.map((s) => `<span class="stufe"><small>${esc(s.label)}</small>${esc(s.wert)}${(s.marken || []).map(markeHtml).join("")}</span>`).join(`<span class="pfeil">›</span>`);
+  const beispiele = pfad.beispiele && pfad.beispiele.length ? `<p class="wink">Häufigste Schreibweisen: ${pfad.beispiele.map((b) => `${esc(b[0])} (${formatZahl(b[1])})`).join(", ")}</p>` : "";
+  const zusatz = pfad.zusatz ? `<p class="wink">${esc(pfad.zusatz)}</p>` : "";
+  const hinweis = pfad.hinweis ? `<p class="wink">${esc(pfad.hinweis)}</p>` : "";
+  return `<div class="pfad">${stufen}</div>${zusatz}${beispiele}${hinweis}`;
+}
+
+function tabelleHtml(t, kontext) {
+  if (!t) return "";
+  const zelle = (v, i) => t.kopf[i] === "Quelle" ? `<td>${markeHtml({ art: v, anteil: 1 })}</td>` : typeof v === "number" ? `<td class="z">${formatZahl(v)}</td>` : `<td>${esc(v)}</td>`;
+  const zeilen = t.zeilen.map((z) => `<tr>${z.map(zelle).join("")}</tr>`).join("");
+  const link = herkunftLink(kontext);
+  const alle = t.gesamt > t.zeilen.length && link ? `<tr><td colspan="${t.kopf.length}"><a href="${esc(link)}">alle ${formatZahl(t.gesamt)} in der Suche ›</a></td></tr>` : "";
+  const bild = t.seite && faksimile && faksimile[t.seite] ? ` · <a href="${esc(faksimileUrl(faksimile[t.seite]))}" target="_blank" rel="noopener">Faksimile Seite ${esc(t.seite)}</a>` : "";
+  return `<details open><summary>Woher kommt diese Zahl?</summary><table><tr>${t.kopf.map((k) => `<th>${esc(k)}</th>`).join("")}</tr>${zeilen}${alle}</table>`
+    + `<p class="beleg">${esc(t.hinweis)}${bild}</p></details>`;
+}
+
 function zeichneDetail(zeile = "") {
   const box = document.getElementById("detail");
   const { werte, ansicht } = gezeigt;
@@ -199,6 +254,19 @@ function zeichneDetail(zeile = "") {
     + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
     + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "")
     + (detail.fest ? "" : `<p class="wink">Klicken hält die Angaben fest.</p>`);
+  // Herkunftspfad (Spec Herkunftspfad §4): Kette beim Schweben, Belegtabelle beim Klick; die Datei
+  // kommt beim ersten Bedarf, bis dahin steht „wird geladen“.
+  const kontext = kontextVon(detail.id, ansicht);
+  const datei = herkunftDatei(kontext);
+  if (datei) {
+    if (!herkunft.has(datei)) ladeHerkunft(datei, detail.id, zeile);
+    const h = herkunft.get(datei);
+    if (h === undefined) box.insertAdjacentHTML("beforeend", `<p class="wink">Herkunft wird geladen …</p>`);
+    else if (h) {
+      box.insertAdjacentHTML("beforeend", pfadHtml(herkunftPfad(kontext, h, ansicht)));
+      if (detail.fest) box.insertAdjacentHTML("beforeend", tabelleHtml(herkunftTabelle(kontext, h, ansicht), kontext));
+    }
+  }
   box.hidden = false;
   if (detail.fest) box.querySelector(".schliessen").onclick = () => melde("schliessen");
   // An der Einheit ausrichten — erst nach dem Füllen, denn die Maße des Kastens hängen am Text.
