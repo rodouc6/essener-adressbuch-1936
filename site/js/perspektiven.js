@@ -126,11 +126,11 @@ function zeichne(sec, schritt) {
   svg.setAttribute("aria-label", schritt.beschreibung || "");
   gezeigt = { werte: werteJeEinheit(ansicht, daten), ansicht, svg };
   svg.querySelectorAll(".einheit").forEach((el) => {
-    const titel = el.querySelector("title")?.textContent;
-    el.addEventListener("click", () => melde("klick", el.dataset.id, titel, el.getBoundingClientRect()));
+    const zeile = el.dataset.zeile || "";
+    el.addEventListener("click", () => melde("klick", el.dataset.id, zeile, el.getBoundingClientRect()));
     if (!schweben) return;
-    el.addEventListener("mouseenter", () => melde("schweben", el.dataset.id, titel, el.getBoundingClientRect()));
-    el.addEventListener("mouseleave", () => melde("verlassen", el.dataset.id, titel));
+    el.addEventListener("mouseenter", () => melde("schweben", el.dataset.id, zeile, el.getBoundingClientRect()));
+    el.addEventListener("mouseleave", () => melde("verlassen", el.dataset.id, zeile));
   });
 }
 
@@ -152,27 +152,28 @@ function zahlenText(r, ansicht) {
 
 // Ein Ereignis an einer Einheit (Schweben, Verlassen, Klick) oder an der Seite (Schließen,
 // Schrittwechsel) fortschreiben und den Detailkasten neu zeichnen.
-function melde(ereignis, id = null, titelFallback = "", rechteck = null) {
+function melde(ereignis, id = null, zeile = "", rechteck = null) {
   detail = detailZustand(detail, ereignis, id);
   if (rechteck && detail.sichtbar && detail.id === id) anker = rechteck;
   // Die Einheit, über der der Zeiger steht (oder die festgestellt ist), hebt sich im Bild ab.
   gezeigt.svg?.querySelectorAll(".einheit").forEach((el) =>
     el.classList.toggle("angesehen", detail.sichtbar && el.dataset.id === detail.id));
-  zeichneDetail(titelFallback);
+  zeichneDetail(zeile);
 }
 
 // Detailkasten zur Einheit unter dem Zeiger: Name, Nennungen, Anteile je Gruppe, Hinweis unter
 // min_n. Festgestellt (angeklickt) trägt er den Schließknopf und den Kartenlink; flüchtig
 // (schwebend) bleibt er knapp — dort führt kein Klick hin, ohne den Zeiger wegzunehmen.
-function zeichneDetail(titelFallback = "") {
+function zeichneDetail(zeile = "") {
   const box = document.getElementById("detail");
   const { werte, ansicht } = gezeigt;
   box.classList.toggle("fest", detail.fest);
   if (!detail.sichtbar || !ansicht) { box.hidden = true; box.innerHTML = ""; return; }
-  // Einheit (Stadtteil, Straße …) oder — beim Gesamtbalken — ein Gruppensegment über alle Einheiten.
+  // Einheit (Stadtteil, Straße …), beim Gesamtbalken ein Gruppensegment über alle Einheiten, bei
+  // Bubbles ein Kreis (Eigentümer, Beruf), dessen Zeile die Form selbst mitgibt (data-zeile).
   const w = werte.find((x) => x.id === detail.id);
   const d = w ? detailText(w, ansicht)
-    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: titelFallback || detail.id, zeilen: [] });
+    : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
   box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
     + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
     + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "")
@@ -181,10 +182,10 @@ function zeichneDetail(titelFallback = "") {
   if (detail.fest) box.querySelector(".schliessen").onclick = () => melde("schliessen");
   // An der Einheit ausrichten — erst nach dem Füllen, denn die Maße des Kastens hängen am Text.
   // Schmal: Leiste am unteren Rand aus dem CSS, keine Inline-Lage.
-  if (schmal.matches || !anker) { box.style.left = box.style.top = ""; return; }
+  if (schmal.matches || !anker) { box.style.cssText = ""; return; }
   const lage = detailLage(anker, { width: box.offsetWidth, height: box.offsetHeight }, { width: innerWidth, height: innerHeight });
-  box.style.left = `${lage.left}px`;
-  box.style.top = `${lage.top}px`;
+  // right/bottom ausdrücklich lösen: stünde eines davon aus einer Stilregel, zöge es den Kasten auf.
+  box.style.cssText = `left:${lage.left}px; top:${lage.top}px; right:auto; bottom:auto`;
 }
 
 // Verbindet die Schritte eines Kapitels mit der Grafik: Scrollama beim Scrollen, Fokus für die

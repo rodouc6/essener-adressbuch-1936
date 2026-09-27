@@ -118,5 +118,5 @@
   .scrolly .schritte { padding: 77vh 12px 40vh; padding-top: 77lvh; }
   .schritt { max-width: none; font-size: 16px; padding: 14px 16px; }
   .schritt + .schritt { margin-top: 85vh; }
-  .detail { left: 16px; right: 16px; bottom: 16px; max-width: none; }
+  .detail { left: 16px; right: 16px; top: auto; bottom: 16px; max-width: none; }
 }

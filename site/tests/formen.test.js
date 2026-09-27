@@ -113,6 +113,8 @@ test("stadtteilkarte: Pfade je Polygon, Farbe nach Anteil, grau unter min_n", ()
 test("bubbles: Kreise aus dem Layout, Farbe nach Gruppe, hervorheben, Skalierung in die Fläche", () => {
   const a = normalisiere({ daten: "besitz", ebene: "stadtteil", form: "bubbles", gruppen: [{ name: "Stadt", aus: ["stadt_staat"], farbe: "#1d4ed8" }, { name: "Industrie", aus: ["industrie"], farbe: "#b91c1c" }], min_n: 0 });
   const r = bubbles.zeige(a, daten, { breite: 400, hoehe: 400, hervorheben: ["Fried. Krupp AG"] });
+  // Jeder Kreis trägt die Zeile des Detailkastens: Zahl, Nenner, Gruppe (oder „in keiner Gruppe“).
+  assert.match(r.svg, /data-id="Fried. Krupp AG" data-zeile="[\d.]+ geprüften Adressen · Industrie"/);
   assert.equal((r.svg.match(/<circle class="einheit/g) || []).length, 3);
   assert.match(r.svg, /data-id="Stadt Essen"[^>]*fill="#1d4ed8"|fill="#1d4ed8"[^>]*data-id="Stadt Essen"/);
   assert.match(r.svg, /data-id="X"[^>]*fill="#c8c8c8"|fill="#c8c8c8"[^>]*data-id="X"/);   // in keiner Gruppe → grau

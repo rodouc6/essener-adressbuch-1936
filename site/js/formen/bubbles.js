@@ -1,6 +1,6 @@
 // site/js/formen/bubbles.js — Kreispackung aus den vorberechneten Layouts (5a): ein Kreis je
 // Beruf, Eigentümer oder Gewerbe. Die Lage kommt aus der Datei, eingefärbt wird nach Gruppe.
-import { esc, formatZahl, GRAU, hinweisText, einheitKlasse, leer, r2, skaliere, svgKopf } from "./skalen.js";
+import { esc, formatZahl, GRAU, hinweisText, einheitKlasse, leer, nennerText, r2, skaliere, svgKopf } from "./skalen.js";
 
 // Datenkern → Layoutdatei und Feld, über das die Zugehörigkeit zu einer Gruppe entschieden wird.
 const LAYOUT = { besitz: ["eigentuemer", "gruppe"], stellung: ["berufe", "stellung"], gruppe: ["berufe", "gruppe"], gewerbe: ["gewerbe", "gruppe"] };
@@ -16,7 +16,8 @@ export function zeige(ansicht, daten, optionen = {}) {
 
   // Farbe je Schlüssel des Layoutfelds; was in keiner Gruppe liegt, bleibt grau.
   const farbeJeSchluessel = new Map();
-  for (const g of ansicht.gruppen) for (const k of g.aus) if (!farbeJeSchluessel.has(k)) farbeJeSchluessel.set(k, g.farbe);
+  const gruppeJeSchluessel = new Map();
+  for (const g of ansicht.gruppen) for (const k of g.aus) if (!farbeJeSchluessel.has(k)) { farbeJeSchluessel.set(k, g.farbe); gruppeJeSchluessel.set(k, g.name); }
 
   const kreise = layout.kreise;
   const minX = Math.min(...kreise.map((k) => k.x - k.r));
@@ -38,7 +39,9 @@ export function zeige(ansicht, daten, optionen = {}) {
     if (unterMin) unter_min += 1;
     const istHervor = hervor.has(k.id);
     const rand = istHervor ? ' stroke="#111" stroke-width="2"' : "";
-    teile.push(`<circle class="${einheitKlasse(istHervor, unterMin)}" data-id="${esc(k.id)}" cx="${r2(p.x(k.x))}" cy="${r2(p.y(k.y))}" r="${r2(Math.max(1, k.r * p.s))}" fill="${esc(farbe)}"${rand}>`
+    // data-zeile: der Text des Detailkastens — Kreise sind Eigentümer/Berufe, keine Einheiten der Ebene.
+    const zeile = `${formatZahl(n)} ${nennerText(ansicht)}${inGruppe ? ` · ${gruppeJeSchluessel.get(k[feld])}` : " · in keiner Gruppe"}`;
+    teile.push(`<circle class="${einheitKlasse(istHervor, unterMin)}" data-id="${esc(k.id)}" data-zeile="${esc(zeile)}" cx="${r2(p.x(k.x))}" cy="${r2(p.y(k.y))}" r="${r2(Math.max(1, k.r * p.s))}" fill="${esc(farbe)}"${rand}>`
       + `<title>${esc(k.id)}: ${formatZahl(n)}</title></circle>`);
   }
   teile.push("</svg>");
