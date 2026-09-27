@@ -137,7 +137,10 @@ häufigsten Schreibweisen (`herkunftPfad`). Klassenbeschriftungen kommen aus `ST
 in ansicht.js (keine eigene Kopie). Besitz-Segmente nennen „n identifiziert“ und die Regel-Häuser ohne
 Identität; je Norm gilt die Mehrheits-Stellung wie im Layout (`_mehrheit`), Betriebe zählen je Rubrik einmal. Festgestellt zusätzlich
 „Woher kommt diese Zahl?“ mit bis zu zehn Zeilen, Link in die Suche (`herkunftLink`, nur Einzelobjekte),
-Belegtext (`BELEG`) und bei Eigentümern Faksimile-Link (`herkunftTabelle`). Fehlt die Datei (alter
+Belegtext (`BELEG`) und bei Eigentümern Faksimile-Link (`herkunftTabelle`). Der Weg zur Karte ist das
+Kartensymbol hinter der Zahlenzeile (`herkunftLink`: Norm, Eigentümer, Rubrik in die Suche, Stadtteil auf die
+Karte). Festgestellt gewinnt: Schweben über Nachbarn ändert den festgestellten Kasten nicht (`detailZustand`);
+Escape schließt ihn. Fehlt die Datei (alter
 Export), bleibt der Kasten wie zuvor; die Konsole warnt einmal.
 
 ## Freigabe (`freigegeben`, `?vorschau=1`)

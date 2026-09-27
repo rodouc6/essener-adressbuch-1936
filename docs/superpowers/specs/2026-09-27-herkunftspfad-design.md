@@ -92,16 +92,20 @@ Zusätzlich ein `<details>` „Woher kommt diese Zahl?“ (standardmäßig **ge�
 Beleg sofort zeigt) mit:
 
 - Tabelle: Schreibweise | Nennungen bzw. Zeilen | Norm bzw. Klasse | Quelle (Marke), zehn Zeilen aus `top`
-  bzw. `schreibweisen`; darunter „alle <n> in der Suche ›“ (mehr Schreibweisen als Zeilen) bzw. „in der Suche
-  zeigen ›“ als Link auf `karte.html?ohdab=<id>` (Norm), `karte.html?eigentuemer=<kanon>` (Eigentümer) oder
-  `karte.html?q=<rubrik>` (Rubrik); für Klassen ohne Einzelziel entfällt der Link.
+  bzw. `schreibweisen`; bei mehr Schreibweisen als Zeilen eine Schlusszeile „… n weitere“. Der Weg zur Karte ist
+  ein Kartensymbol (gefaltetes Kartenblatt, `a.kartenlink`) hinter der Zahlenzeile des festgestellten Kastens
+  (Entscheidung 2026-09-27 nach Sichtprüfung): `karte.html?ohdab=<id>` (Norm), `karte.html?eigentuemer=<kanon>`
+  (Eigentümer), `karte.html?q=<rubrik>` (Rubrik), `karte.html?stadtteil=<id>` (Stadtteil); Segmente, Straßen und
+  Hexfelder haben keins. Der frühere Textlink „Auf der Karte zeigen“ bei Stadtteilen entfällt.
 - Belegzeile (Klasse `beleg`): Regel und Tabelle in Worten, z. B. „Stellung nach Berufszählung 1933 / AVG 1911
   (docs/stellung.md). Tabelle: kuratierung/berufe.csv, Spalte stellung.“ Texte je Datenkern als Konstante
   `BELEG` im Modell.
 - Bei Eigentümern: „<zeilen> Zeilen ergeben <haeuser> Häuser, weil Spannen einmal je Straßenseite stehen“ und
   Link „Faksimile“ auf die DigiBib-Seite der ersten Zeile (Seite aus dem Eintrag; `faksimileUrl` in popup.js).
 
-Der bisherige Kartenlink („Auf der Karte zeigen“ bei Stadtteilen) bleibt.
+Festgestellt gewinnt: Schweben über Nachbar-Einheiten ändert den festgestellten Kasten nicht mehr (der Weg des
+Zeigers zum Kasten führt bei der Stadtteilkarte über Nachbarn); erst Klick auf eine andere Einheit, Schließen,
+Escape oder Schrittwechsel lösen ihn.
 
 ### 4.3 Laden und Fehler
 

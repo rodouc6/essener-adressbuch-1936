@@ -181,6 +181,9 @@ function zahlenText(r, ansicht) {
 
 // Ein Ereignis an einer Einheit (Schweben, Verlassen, Klick) oder an der Seite (Schließen,
 // Schrittwechsel) fortschreiben und den Detailkasten neu zeichnen.
+// Escape schließt den festgestellten Kasten — der Zeiger muss dafür nicht bis zum Kreuz.
+addEventListener("keydown", (e) => { if (e.key === "Escape" && detail.fest) melde("schliessen"); });
+
 function melde(ereignis, id = null, zeile = "", rechteck = null) {
   detail = detailZustand(detail, ereignis, id);
   if (detail.sichtbar && detail.id === id) detailZeile = zeile;
@@ -198,15 +201,16 @@ function melde(ereignis, id = null, zeile = "", rechteck = null) {
 // Kreis einer Bubbles-Ansicht (Norm, Eigentümer, Rubrik), sonst eine Einheit der Ebene.
 function kontextVon(id, ansicht) {
   if (!ansicht || gezeigt.trichter) return null;
-  if (id === "ausgeschlossen") return { art: "ausgeschlossen", daten: ansicht.daten, id, gruppe: null };
+  const k = { daten: ansicht.daten, ebene: ansicht.ebene, id, gruppe: null };
+  if (id === "ausgeschlossen") return { art: "ausgeschlossen", ...k };
   if (typeof id === "string" && id.endsWith("#regel")) {
     const g = (ansicht.gruppen || []).find((x) => x.name === id.slice(0, -"#regel".length));
-    return g ? { art: "regel", daten: ansicht.daten, id, gruppe: g } : null;
+    return g ? { art: "regel", ...k, gruppe: g } : null;
   }
   const g = (ansicht.gruppen || []).find((x) => x.name === id);
-  if (g) return { art: "segment", daten: ansicht.daten, id, gruppe: g };
-  if (ansicht.form === "bubbles") return { art: "kreis", daten: ansicht.daten, id, gruppe: null };
-  return { art: "einheit", daten: ansicht.daten, id, gruppe: null };
+  if (g) return { art: "segment", ...k, gruppe: g };
+  if (ansicht.form === "bubbles") return { art: "kreis", ...k };
+  return { art: "einheit", ...k };
 }
 
 // Herkunftsdatei holen; nach dem Laden den Kasten neu zeichnen, falls er noch etwas zeigt, das diese Datei
@@ -233,14 +237,17 @@ function pfadHtml(pfad) {
   return `<div class="pfad">${stufen}</div>${zusatz}${beispiele}${hinweis}`;
 }
 
-function tabelleHtml(t, kontext) {
+// Kartensymbol (gefaltetes Kartenblatt) hinter der Zahlenzeile: führt Einzelobjekte in die Suche der
+// Karte, Stadtteile auf die Karte. Nur im festgestellten Kasten — der flüchtige fängt keinen Klick.
+const KARTE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>`;
+const karteHtml = (link) => link ? ` <a class="kartenlink" href="${esc(link)}" title="Auf der Karte zeigen" aria-label="Auf der Karte zeigen">${KARTE_SVG}</a>` : "";
+
+function tabelleHtml(t) {
   if (!t) return "";
   const zelle = (v, i) => t.kopf[i] === "Quelle" ? `<td>${v ? markeHtml({ art: v, anteil: 1 }) : "—"}</td>` : typeof v === "number" ? `<td class="z">${formatZahl(v)}</td>` : `<td>${esc(v)}</td>`;
   const zeilen = t.zeilen.map((z) => `<tr>${z.map(zelle).join("")}</tr>`).join("");
-  const link = herkunftLink(kontext);
-  // Einzelobjekte (Norm, Eigentümer, Rubrik) führen in die Suche — auch, wenn die Tabelle schon alles zeigt.
-  const linkText = t.gesamt > t.zeilen.length ? `alle ${formatZahl(t.gesamt)} in der Suche ›` : "in der Suche zeigen ›";
-  const alle = link ? `<tr><td colspan="${t.kopf.length}"><a href="${esc(link)}">${linkText}</a></td></tr>` : "";
+  // Mehr Schreibweisen als Zeilen: die Zahl steht da, der Weg zu allen ist das Kartensymbol oben.
+  const alle = t.gesamt > t.zeilen.length ? `<tr><td colspan="${t.kopf.length}" class="rest">… ${formatZahl(t.gesamt - t.zeilen.length)} weitere</td></tr>` : "";
   const bild = t.seite && faksimile && faksimile[t.seite] ? ` · <a href="${esc(faksimileUrl(faksimile[t.seite]))}" target="_blank" rel="noopener">Faksimile Seite ${esc(t.seite)}</a>` : "";
   return `<details open><summary>Woher kommt diese Zahl?</summary><table><tr>${t.kopf.map((k) => `<th>${esc(k)}</th>`).join("")}</tr>${zeilen}${alle}</table>`
     + `<p class="beleg">${esc(t.hinweis)}${bild}</p></details>`;
@@ -257,12 +264,12 @@ function zeichneDetail(zeile = "") {
   const d = gezeigt.trichter ? (w ? detailTextStufe(w) : { titel: detail.id, zeilen: [] })
     : w ? detailText(w, ansicht)
     : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: zeile ? [zeile] : [] });
+  const kontext = kontextVon(detail.id, ansicht);
+  const karte = detail.fest ? karteHtml(herkunftLink(kontext)) : "";
   box.innerHTML = (detail.fest ? `<button class="schliessen" type="button" aria-label="Schließen">✕</button>` : "")
-    + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z) => `<p>${esc(z)}</p>`).join("")}`
-    + (detail.fest && ansicht.ebene === "stadtteil" && w ? `<p><a href="karte.html?stadtteil=${encodeURIComponent(detail.id)}">Auf der Karte zeigen</a></p>` : "");
+    + `<h4>${esc(d.titel)}</h4>${d.zeilen.map((z, i) => `<p>${esc(z)}${i === 0 ? karte : ""}</p>`).join("")}`;
   // Herkunftspfad (Spec Herkunftspfad §4): Kette direkt unter der Zahlenzeile beim Schweben, Belegtabelle
   // beim Klick; die Datei kommt beim ersten Bedarf, bis dahin steht „wird geladen“.
-  const kontext = kontextVon(detail.id, ansicht);
   const datei = herkunftDatei(kontext);
   if (datei) {
     if (!herkunft.has(datei)) ladeHerkunft(datei);
@@ -270,7 +277,7 @@ function zeichneDetail(zeile = "") {
     if (h === undefined) box.insertAdjacentHTML("beforeend", `<p class="wink">Herkunft wird geladen …</p>`);
     else if (h) {
       box.insertAdjacentHTML("beforeend", pfadHtml(herkunftPfad(kontext, h, ansicht)));
-      if (detail.fest) box.insertAdjacentHTML("beforeend", tabelleHtml(herkunftTabelle(kontext, h, ansicht), kontext));
+      if (detail.fest) box.insertAdjacentHTML("beforeend", tabelleHtml(herkunftTabelle(kontext, h, ansicht)));
     }
   }
   if (!detail.fest) box.insertAdjacentHTML("beforeend", `<p class="wink">Klicken hält die Angaben fest.</p>`);

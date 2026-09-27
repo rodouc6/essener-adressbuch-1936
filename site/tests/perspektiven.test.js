@@ -65,7 +65,11 @@ test("detailZustand: schweben flüchtig, Klick stellt fest, Schrittwechsel räum
   assert.deepEqual(f, { id: "Borbeck", sichtbar: true, fest: true });
   assert.deepEqual(detailZustand(f, "verlassen", "Borbeck"), f);
   assert.deepEqual(detailZustand(f, "schweben", "Borbeck"), f);
-  assert.deepEqual(detailZustand(f, "schweben", "Karnap"), { id: "Karnap", sichtbar: true, fest: false });
+  // Feststellen gewinnt: Schweben über eine andere Einheit (der Weg zum Kasten führt bei der Stadtteilkarte
+  // über Nachbarn) ändert nichts; erst ein Klick auf eine andere Einheit stellt die um.
+  assert.deepEqual(detailZustand(f, "schweben", "Karnap"), f);
+  assert.deepEqual(detailZustand(f, "verlassen", "Karnap"), f);
+  assert.deepEqual(detailZustand(f, "klick", "Karnap"), { id: "Karnap", sichtbar: true, fest: true });
   assert.deepEqual(detailZustand(f, "schliessen"), DETAIL_ZU);
   assert.deepEqual(detailZustand(f, "schrittwechsel"), DETAIL_ZU);
   // Unbekanntes Ereignis lässt den Zustand, wie er ist.
@@ -208,6 +212,9 @@ test("herkunftTabelle und herkunftLink", () => {
   assert.equal(herkunftLink({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG" }), "karte.html?eigentuemer=Fried.%20Krupp%20AG");
   assert.equal(herkunftLink({ art: "kreis", daten: "gewerbe", id: "Bäcker" }), "karte.html?q=B%C3%A4cker");
   assert.equal(herkunftLink({ art: "segment", daten: "stellung", id: "Arbeiter/Gehilfen" }), null);
+  // Einheiten: nur Stadtteile haben ein Kartenziel
+  assert.equal(herkunftLink({ art: "einheit", daten: "stellung", id: "Katernberg", ebene: "stadtteil" }), "karte.html?stadtteil=Katernberg");
+  assert.equal(herkunftLink({ art: "einheit", daten: "stellung", id: "Lattenkamp", ebene: "strasse" }), null);
   const eig = { "Fried. Krupp AG": { schreibweisen: [["Fried. Krupp A.G.", 257]], schreibweisen_gesamt: 60, zeilen: 733, haeuser: 3351, spanne: 2600, nummer: 18, kategorie: "industrie", identitaet: true, seite: "II-040" } };
   const te = herkunftTabelle({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG", gruppe: null }, eig, { daten: "besitz", gruppen: [] });
   assert.deepEqual(te.kopf, ["Schreibweise im Buch", "Zeilen", "Quelle"]); assert.deepEqual(te.zeilen[0], ["Fried. Krupp A.G.", 257, "hand"]);

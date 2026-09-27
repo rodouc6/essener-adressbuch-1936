@@ -144,16 +144,15 @@ export function datenbasisLink(kapitel, index) {
   return `#s-datenbasis-${k.datenbasis_schritt}`;
 }
 
-// Zustand des Detailkastens. Schweben zeigt ihn flüchtig, ein Klick stellt ihn fest (er bleibt
-// stehen, wenn der Zeiger die Einheit verlässt); erst Schließen oder ein Schrittwechsel räumt ihn
-// weg. Schwebt der Zeiger über eine andere Einheit, gewinnt immer die Einheit unter dem Zeiger —
-// die Feststellung einer anderen Einheit fällt damit, sonst zeigte der Kasten beim Verlassen
-// wieder etwas, das gerade niemand ansieht.
+// Zustand des Detailkastens. Schweben zeigt ihn flüchtig, ein Klick stellt ihn fest; festgestellt
+// gewinnt: Schweben und Verlassen ändern dann nichts mehr, denn der Weg des Zeigers zum Kasten führt
+// (bei der Stadtteilkarte zwangsläufig) über Nachbar-Einheiten. Erst ein Klick auf eine andere Einheit,
+// Schließen oder ein Schrittwechsel lösen die Feststellung.
 export const DETAIL_ZU = { id: null, sichtbar: false, fest: false };
 export function detailZustand(zustand, ereignis, id = null) {
   const z = zustand || DETAIL_ZU;
   switch (ereignis) {
-    case "schweben": return { id, sichtbar: true, fest: z.fest && z.id === id };
+    case "schweben": return z.fest ? z : { id, sichtbar: true, fest: false };
     case "verlassen": return z.fest ? z : DETAIL_ZU;
     case "klick": return { id, sichtbar: true, fest: true };
     case "schliessen": case "schrittwechsel": return DETAIL_ZU;
@@ -328,10 +327,13 @@ export function herkunftTabelle(kontext, herkunft, ansicht) {
     gesamt: h.schreibweisen_gesamt ?? (h.schreibweisen || []).length, hinweis: BELEG[k.daten] || BELEG.stellung };
 }
 
-// Link „alle … in der Suche“: nur für Einzelobjekte (Norm, Eigentümer, Rubrik).
+// Kartenziel des Kastens (Kartensymbol hinter der Zahlenzeile): Einzelobjekte (Norm, Eigentümer, Rubrik)
+// führen in die Suche, Stadtteile auf die Karte; Segmente, Straßen, Hexfelder haben keins.
 export function herkunftLink(kontext) {
   const k = kontext || {};
-  if (k.art !== "kreis" || !k.id) return null;
+  if (!k.id) return null;
+  if (k.art === "einheit") return k.ebene === "stadtteil" ? `karte.html?stadtteil=${encodeURIComponent(k.id)}` : null;
+  if (k.art !== "kreis") return null;
   if (k.daten === "besitz") return `karte.html?eigentuemer=${encodeURIComponent(k.id)}`;
   if (k.daten === "gewerbe") return `karte.html?q=${encodeURIComponent(k.id)}`;
   return `karte.html?ohdab=${encodeURIComponent(k.id)}`;

@@ -97,6 +97,9 @@
 /* Flüchtig (der Zeiger schwebt nur): der Kasten fängt keine Zeigerereignisse und nennt den Klick. */
 .detail:not(.fest) { pointer-events: none; }
 .detail .wink { margin-top: 6px; color: var(--grau); font-size: 12px; }
+.detail a.kartenlink { display: inline-block; vertical-align: -3px; margin-left: 6px; color: var(--blau); line-height: 0; }
+.detail a.kartenlink:hover { color: var(--rot); }
+.detail td.rest { color: var(--grau); }
 /* Herkunftspfad im Detailkasten (Spec Herkunftspfad §4): Kette aus Stufen mit Quellmarken, darunter
    festgestellt die Belegtabelle. */
 .detail .pfad { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 8px 0 2px; font-size: 12px; }
