@@ -31,8 +31,9 @@ test("gesammelt: ein Kreis je Feld und Gruppe, Packung nebeneinander, Karten uns
   assert.deepEqual([...xs].sort((p, q) => p - q), xs);                    // nach Größe sortiert von links nach rechts
   assert.ok(b.kreise.every((k) => k.x >= 0 && k.x <= 1000 && k.y >= 0 && k.y <= 700));
   assert.equal(r.zahlen.N, 6); assert.equal(r.zahlen.n_aus, 20);           // ungeprüfte Berufe als Ausschluss
-  assert.equal(r.legende.find((l) => l.name === "Belegschaft").text, "Belegschaft · 5");
-  assert.match(r.legende.map((l) => l.text).join(" "), /größter Wert 4/);
+  assert.equal(r.legende.find((l) => l.name === "Belegschaft").text, "5");        // Name steht schon im Eintrag, kein Doppel
+  assert.equal(r.legende.find((l) => l.name === "Kreisfläche").text, "eingetragene Personen je Hexfeld (120 m Kante), größter Wert 4");
+  assert.ok(r.legende.every((l) => !["mass", "zechen", "ring"].includes(l.name)));     // keine technischen Namen in der Legende
 });
 
 test("karten: jeder Kreis liegt im Feld seiner Gruppe, Mindestradius, nur Zechen in Förderung", () => {
@@ -62,8 +63,24 @@ test("haeuser: ein Punkt je Haus, Farbe nach Gesellschaft, Ring bei nur straßen
   assert.equal((r.svg.match(/<circle class="einheit p/g) || []).length, 2);
   assert.match(r.svg, /data-id="a1"[^>]*fill="#e69f00"/);
   assert.match(r.svg, /data-id="a2"[^>]*fill="none"[^>]*stroke="#c8c8c8"/);
-  assert.equal(r.zahlen.N, 2); assert.match(r.legende.map((l) => l.text).join(" "), /Ring: nur straßengenau oder Stadtplan 1935 \(1\)/);
-  assert.match(r.legende.map((l) => l.text).join(" "), /übrige Bergbau-Eigentümer/);
+  assert.equal(r.zahlen.N, 2); assert.equal(r.legende.find((l) => l.name === "Ring").text, "nur straßengenau oder Stadtplan 1935 (1)");
+  assert.equal(r.legende.find((l) => l.name === "übrige Bergbau-Eigentümer").farbe, "#c8c8c8");
+  assert.equal(r.legende.find((l) => l.name === "Stinnes").text, "1");
+});
+
+test("gesammelt: Packungstitel überlappen nicht (Mindestabstand der Mitten ≥ 150 px bei 1000 px Breite)", () => {
+  const b = berechne(A({ zustand: "gesammelt" }), DATEN, O);
+  const xs = b.titel.map((t) => t.x).sort((p, q) => p - q);
+  for (let i = 1; i < xs.length; i++) assert.ok(xs[i] - xs[i - 1] >= 150 - 0.01, `Abstand ${xs[i] - xs[i - 1]}`);
+});
+
+test("gesammelt: auf schmaler Bühne passen alle Packungen samt Titel in die Breite", () => {
+  const groß = { ...PUNKTE, hex: { ...PUNKTE.hex, belegschaft: Array.from({ length: 60 }, (_, i) => ({ id: `${i}_0`, lon: 7.01, lat: 51.45, n: 4, r: 9, x: (i % 8) * 19, y: Math.floor(i / 8) * 19 })) } };
+  for (const breite of [420, 600]) {
+    const b = berechne(A({ zustand: "gesammelt" }), { ...DATEN, punkte: groß }, { breite, hoehe: 500 });
+    assert.ok(b.kreise.every((k) => k.x - k.r >= 0 && k.x + k.r <= breite), `Kreis außerhalb bei ${breite}`);
+    assert.ok(b.titel.every((t) => t.x >= 80 && t.x <= breite - 80), `Titel außerhalb bei ${breite}`);
+  }
 });
 
 test("raster: zwei Spalten ab 600 px, sonst eine", () => {

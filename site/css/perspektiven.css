@@ -146,3 +146,14 @@
   .schritt + .schritt { margin-top: 85vh; }
   .detail { left: 16px; right: 16px; top: auto; bottom: 16px; max-width: none; }
 }
+
+/* Punktkarte (Bergbau): Kreise wandern per Transition zwischen Packung und Karte; Karten blenden. */
+.buehne svg circle.p { transition: transform .9s cubic-bezier(.4, 0, .2, 1), r .9s cubic-bezier(.4, 0, .2, 1), opacity .5s ease; fill-opacity: .62; }
+.buehne svg circle.p.gedimmt { opacity: .12; }
+.buehne svg g.karte { transition: opacity .6s ease; }
+.buehne svg g.karte .umriss { fill: #fff; stroke: #c9c5bc; stroke-width: .7; }
+.buehne svg g.karte .zeche { fill: var(--text); opacity: .85; }
+.buehne svg .karte-titel { font-size: 12px; font-weight: 600; fill: var(--text); }
+.buehne svg .gruppe-titel { font-size: 13px; font-weight: 600; fill: var(--text); transition: opacity .6s ease; }
+.buehne svg .gruppe-titel .wert { font-size: 12px; font-weight: 400; fill: var(--grau); }
+@media (prefers-reduced-motion: reduce) { .buehne svg circle.p, .buehne svg g.karte, .buehne svg .gruppe-titel { transition: none; } }

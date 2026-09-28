@@ -12,9 +12,10 @@ import * as rangliste from "./formen/rangliste.js";
 import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
 import * as trichter from "./formen/trichter.js";
+import * as punktkarte from "./formen/punktkarte.js";
 import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, herkunftAktuell, herkunftDatei, herkunftLink, herkunftPfad, herkunftTabelle, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
-const FORMEN = { balken, rangliste, stadtteilkarte, bubbles, trichter };
+const FORMEN = { balken, rangliste, stadtteilkarte, bubbles, trichter, punktkarte };
 const istTrichter = (a) => !!a && (a.form === "trichter" || a.daten === "kennzahlen");
 const lader = new Lader();
 const vorschau = new URLSearchParams(location.search).get("vorschau") === "1";
@@ -91,7 +92,10 @@ function kapitelHtml(k) {
     // Trichter zeigen Kennzahlen, keine Einheiten der Karte — Karten- und Werkstattlink ergäben nichts.
     if (istTrichter(s.ansicht)) return `${kopf}</article>`;
     const a = normalisiere(s.ansicht);
-    return `${kopf}<p class="links"><a href="${esc(linkKarte(a))}">Auf der Karte öffnen</a> · <a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen</a></p></article>`;
+    // Punktkarten (Bergbau) führen auf das Thema der Karte, nicht in die Werkstatt; die hausgenaue Karte hat keinen Link.
+    const lk = linkKarte(a);
+    const links = [lk ? `<a href="${esc(lk)}">Auf der Karte öffnen</a>` : "", a.form === "punktkarte" ? "" : `<a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen</a>`].filter(Boolean).join(" · ");
+    return `${kopf}${links ? `<p class="links">${links}</p>` : ""}</article>`;
   }).join("");
   const quellen = (Array.isArray(k.quellen) ? k.quellen : []).map((q) => esc(q)).join(" · ");
   const link = datenbasisLink(k, sichtbar);
@@ -130,6 +134,19 @@ function zeichne(sec, schritt, k) {
   const zahlen = buehne.querySelector(".zahlen");
   const optionen = { hervorheben: schritt.hervorheben || [], ausschlussText: (k && k.ausschluss) || "" };
   buehne.querySelector(".titel").textContent = schritt.beschreibung || "";
+  // Punktkarte → Punktkarte (gleiche Gruppen, kein Häuser-Zustand): die Kreise bleiben und wandern (Spec Bergbau §4).
+  const vorige = gezeigt.ansicht;
+  const gleitet = form === punktkarte && vorige && vorige.form === "punktkarte" && gezeigt.svg === svg
+    && ansicht.punkte && ansicht.punkte.zustand !== "haeuser" && vorige.punkte && vorige.punkte.zustand !== "haeuser"
+    && JSON.stringify(vorige.gruppen) === JSON.stringify(ansicht.gruppen) && svg.querySelector("circle.p");
+  if (gleitet) {
+    const r = punktkarte.aktualisiere(svg, ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
+    legende.innerHTML = legendeHtml(r.legende);
+    zahlen.textContent = r.zahlen.hinweis;
+    svg.setAttribute("aria-label", schritt.beschreibung || "");
+    gezeigt = { ...gezeigt, ansicht, ausschluss: optionen.ausschlussText };
+    return;
+  }
   // Vor dem Messen wieder die ganze Bühne freigeben — der vorige Schritt kann sie verkleinert haben.
   svg.style.flex = "";
   // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Überschrift, Legende und Zahlenzeile
@@ -137,7 +154,7 @@ function zeichne(sec, schritt, k) {
   // erste Durchgang liefert nur Legende und Zahlen; danach ist .svg (flex: 1) genau der Rest.
   const vorab = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   legende.innerHTML = legendeHtml(vorab.legende);
-  zahlen.textContent = trichterSchritt ? vorab.zahlen.hinweis : zahlenText(vorab, ansicht);
+  zahlen.textContent = trichterSchritt || form === punktkarte ? vorab.zahlen.hinweis : zahlenText(vorab, ansicht);
   const r = form.zeige(ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
   // Schrittwechsel als Überblendung des bleibenden Behälters: Übergänge auf den SVG-Knoten selbst
   // liefen nie, weil innerHTML sie alle ersetzt. Bei reduzierter Bewegung wird hart getauscht.
@@ -165,7 +182,8 @@ function zeichne(sec, schritt, k) {
 function legendeHtml(legende) {
   return legende.map((l) => {
     const stil = l.muster === "schraffur" ? `background: repeating-linear-gradient(45deg, ${esc(l.farbe)} 0 3px, #fff 3px 6px)` : `background:${esc(l.farbe)}`;
-    return `<span><i style="${stil}"></i>${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`;
+    // Einträge ohne Farbe (Erklärzeilen der Punktkarte) bekommen kein Farbkästchen.
+    return `<span>${l.farbe ? `<i style="${stil}"></i>` : ""}${esc(l.name)}${l.text && l.text !== l.name ? ` <small>${esc(l.text)}</small>` : ""}</span>`;
   }).join("");
 }
 
@@ -209,7 +227,7 @@ function kontextVon(id, ansicht) {
   }
   const g = (ansicht.gruppen || []).find((x) => x.name === id);
   if (g) return { art: "segment", ...k, gruppe: g };
-  if (ansicht.form === "bubbles") return { art: "kreis", ...k };
+  if (ansicht.form === "bubbles" || ansicht.form === "punktkarte") return { art: "kreis", ...k };
   return { art: "einheit", ...k };
 }
 
