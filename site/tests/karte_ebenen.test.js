@@ -47,3 +47,14 @@ test("zeche.svg: bereinigte Commons-Datei, ein Pfad, viewBox, unter 4 KB", () =>
   assert.doesNotMatch(svg, /inkscape|sodipodi|<\?xml|<metadata/);
   assert.match(svg, /Wikimedia Commons/);   // Herkunftskommentar in der Datei
 });
+
+test("setzeFilter: Schalterfilter des Themas wird Teil des Adressfilters", () => {
+  const filter = {}; const paint = {};
+  const map = { getLayer: () => true, setFilter: (l, f) => { filter[l] = f; }, setPaintProperty: (l, k, v) => { paint[`${l}.${k}`] = v; }, setLayoutProperty: () => {} };
+  const self = { map, farbe: { ausdruck: "#111", filter: ["any", [">", ["coalesce", ["get", "n_bb_leitung"], 0], 0]] }, ansicht: null, treffer: new Set(), _deckkraftSetzen() {} };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["I"], praez: ["haus"], stadtteil: "" });
+  assert.ok(JSON.stringify(filter["adressen-haus"]).includes('"n_bb_leitung"'));
+  self.farbe = { ausdruck: "#111", filter: null };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["I"], praez: ["haus"], stadtteil: "" });
+  assert.ok(!JSON.stringify(filter["adressen-haus"]).includes("n_bb_"));
+});

@@ -229,6 +229,7 @@ export class Karte {
     const bedingungen = [[">", n, 0], ["in", ["get", "stufe"], ["literal", z.praez]]];
     if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
     if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
+    if (this.farbe && this.farbe.filter) bedingungen.push(this.farbe.filter);   // Schalter eines Themas (Spec Bergbau §5)
     bedingungen.push(["any", [">=", ["zoom"], 12], [">=", n, 5]]);   // Stadtansicht nicht zulaufen lassen
     const grund = this.farbe ? this.farbe.ausdruck : (z.ebene.length === 1 ? FARBEN[z.ebene[0]] : FARBEN.neutral);
     const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], FARBEN.treffer, grund];

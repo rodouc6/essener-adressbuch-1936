@@ -1,7 +1,7 @@
 // Der gesamte Zustand der Kartenseite liegt in der URL (Spec §4): reproduzierbare Links.
 export const STANDARD = Object.freeze({
   q: "", ebene: ["I", "II", "III"], stadtteil: "", praez: ["haus", "strasse", "stadtplan"], beruf: "", eigentuemer: "", ohdab: "",
-  thema: "", id: "", karte: "positron", plan: 0, zechen: 0, z: null, c: null,
+  thema: "", klassen: "", id: "", karte: "positron", plan: 0, zechen: 0, z: null, c: null,
   // Roh-String der Ansicht (Spec §8); dekodiert wird erst in app.js über ansicht.js.
   ansicht: "",
 });
@@ -34,6 +34,7 @@ export function liesZustand(search) {
     eigentuemer: p.get("eigentuemer") || "",
     ohdab: p.get("ohdab") || "",
     thema: p.get("thema") || "",
+    klassen: p.get("klassen") || "",
     ansicht: p.get("ansicht") || "",
     id: p.get("id") || "",
     karte: KARTEN.includes(p.get("karte")) ? p.get("karte") : STANDARD.karte,

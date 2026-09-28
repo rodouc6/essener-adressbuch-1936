@@ -38,6 +38,7 @@ a { color: var(--blau); }
 .legende .zeile { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
 .legende .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .legende .punkt.ungenau { background: none !important; border: 2px dashed currentColor; }
+.legende label.schalter { cursor: pointer; } .legende label.schalter input { margin: 0 2px 0 0; }
 /* Flächenansichten (Spec §8): Farbstufen als Quadrate, Grundlage-/Herkunftszeilen kleiner. */
 .legende .flaeche { width: 14px; height: 10px; border: 1px solid rgba(0,0,0,.15); display: inline-block; flex: none; }
 .legende .klein { display: block; font-size: 11px; color: var(--grau); margin: 2px 0; }

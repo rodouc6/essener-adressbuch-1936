@@ -34,3 +34,44 @@ test("farbregel kategorien → match-Ausdruck", () => {
   assert.deepEqual(r.ausdruck, ["match", ["get", "besitz"], "industrie", "#b91c1c", "stadt_staat", "#1d4ed8", "#ccc"]);
   assert.deepEqual(r.kategorien, { industrie: "#b91c1c", stadt_staat: "#1d4ed8" });
 });
+
+import { schalterFarbe, schalterFilter, schalterKlassen } from "../js/themen.js";
+const BB = { id: "bergbau", titel: "Bergbau", freigegeben: true, filter: { ebenen: ["I"] },
+  farbe: { art: "kategorien", feld: "bergbau", werte: { leitung: "#7c3aed", aufsicht: "#1d4ed8", belegschaft: "#c2410c", invaliden: "#15803d" } },
+  schalter: { praefix: "n_bb_", klassen: ["leitung", "aufsicht", "belegschaft", "invaliden"], namen: { leitung: "Leitung und Beamte", aufsicht: "Aufsicht", belegschaft: "Belegschaft", invaliden: "Berginvaliden" } },
+  zusatz: { zechen: true }, legende: "Farbe: höchste Bergbau-Gruppe im Haus" };
+
+test("schalterKlassen: leer = alle, keine = [], unbekannte Werte fallen weg, Reihenfolge des Themas", () => {
+  assert.deepEqual(schalterKlassen(BB, ""), ["leitung", "aufsicht", "belegschaft", "invaliden"]);
+  assert.deepEqual(schalterKlassen(BB, "keine"), []);
+  assert.deepEqual(schalterKlassen(BB, "belegschaft,quatsch,leitung"), ["leitung", "belegschaft"]);
+  assert.deepEqual(schalterKlassen({ id: "besitz" }, "leitung"), []);
+});
+
+test("schalterFilter: any über eingeschaltete Klassen; alle aus → null; Thema ohne Schalter → null", () => {
+  assert.deepEqual(schalterFilter(BB, "leitung,belegschaft"),
+    ["any", [">", ["coalesce", ["get", "n_bb_leitung"], 0], 0], [">", ["coalesce", ["get", "n_bb_belegschaft"], 0], 0]]);
+  assert.equal(schalterFilter(BB, "keine"), null);
+  assert.equal(schalterFilter({ id: "besitz", farbe: { art: "kategorien", feld: "besitz", werte: {} } }, "leitung"), null);
+});
+
+test("schalterFarbe: case nach Rang über eingeschaltete Klassen, sonst Grau", () => {
+  const f = schalterFarbe(BB, "aufsicht,belegschaft");
+  assert.deepEqual(f, ["case", [">", ["coalesce", ["get", "n_bb_aufsicht"], 0], 0], "#1d4ed8", [">", ["coalesce", ["get", "n_bb_belegschaft"], 0], 0], "#c2410c", "#c8c8c8"]);
+  // Haus mit Bergmann und Zechenbeamtem bei klassen=leitung: lila; Haus nur mit Bergmann: Grau (und per Filter weg)
+  const nur = schalterFarbe(BB, "leitung");
+  assert.deepEqual(nur, ["case", [">", ["coalesce", ["get", "n_bb_leitung"], 0], 0], "#7c3aed", "#c8c8c8"]);
+});
+
+test("farbregel mit Schalter trägt filter und klassen; ohne Schalter ignoriert sie klassen", () => {
+  const r = farbregel(BB, "leitung");
+  assert.deepEqual(r.filter, ["any", [">", ["coalesce", ["get", "n_bb_leitung"], 0], 0]]);
+  assert.deepEqual(r.klassen, ["leitung"]); assert.equal(r.ausdruck[0], "case");
+  const b = farbregel({ filter: {}, farbe: { art: "kategorien", feld: "besitz", werte: { bergbau: "#111" } } }, "leitung");
+  assert.equal(b.filter, null); assert.equal(b.ausdruck[0], "match");
+});
+
+test("schalterFarbe ohne eingeschaltete Klasse: schlichte Grundfarbe, kein leeres case (MapLibre lehnt case mit einem Argument ab)", () => {
+  assert.equal(schalterFarbe(BB, "keine"), "#c8c8c8");
+  assert.equal(farbregel(BB, "keine").ausdruck, "#c8c8c8");
+});

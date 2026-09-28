@@ -68,3 +68,11 @@ test("plan mit zwei Nachkommastellen wird gelesen und unverändert geschrieben",
   assert.equal(z.plan, 0.35);
   assert.equal(schreibeZustand(z), "plan=0.35");
 });
+
+test("klassen: Komma-Liste oder 'keine', Standard leer, Rundreise", () => {
+  assert.equal(STANDARD.klassen, "");
+  assert.equal(liesZustand("?thema=bergbau&klassen=leitung,aufsicht").klassen, "leitung,aufsicht");
+  assert.equal(liesZustand("?klassen=keine").klassen, "keine");
+  assert.equal(liesZustand("").klassen, "");
+  assert.equal(schreibeZustand({ ...STANDARD, thema: "bergbau", klassen: "leitung" }), "klassen=leitung&thema=bergbau");
+});

@@ -98,7 +98,7 @@ async function setzeZustand(patch, push, nurKarte = false) {
   // veralteten Warter ab, ohne ihn aufzulösen) — daher nicht awaiten, sonst hängt setzeZustand.
   // Die Karte wendet Filter/Plan/Zechen/Treffer/Auswahl in ebenenAufsetzen() selbst wieder an.
   if (alt.karte !== zustand.karte) { karte.setzeStil(zustand.karte); schreibeKarteSpeicher(zustand.karte); }
-  if (alt.thema !== zustand.thema) await wendeThemaAn();
+  if (alt.thema !== zustand.thema || alt.klassen !== zustand.klassen) await wendeThemaAn();
   if (alt.ansicht !== zustand.ansicht) await wendeAnsichtAn();
   // Bei einem Stilwechsel legt ebenenAufsetzen() die Ebenen erst neu an (asynchron, nicht
   // awaitet); ein sofortiger setzeFilter/setzePlan/setzeZechen hier würde noch auf die alten,
@@ -130,8 +130,10 @@ async function ohdabName(id) {
 }
 
 async function wendeThemaAn() {
-  const t = zustand.thema ? await ladeThema(lader, zustand.thema) : null;
+  const t = zustand.thema ? await ladeThema(lader, zustand.thema, zustand.klassen) : null;
   themaAktiv = t;
+  // klassen gehört nur zu einem Thema mit Schaltern; sonst klebte der Parameter an der URL.
+  if (!(t && t.schalter) && zustand.klassen) zustand = { ...zustand, klassen: "" };
   sidebar.zeigeThema(t, t && t.zusatz && t.zusatz.eigentuemerliste ? await lader.eigentuemer() : null);
   karte.setzeFarbe(t ? t.farbregel : null);
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
@@ -339,6 +341,14 @@ function zeichneLegende() {
       const farbeStufen = farbe.stufen.map(([_, c]) => c);
       const gradient = farbeStufen.map((c, i) => `${c} ${(i / (farbeStufen.length - 1)) * 100}%`).join(", ");
       html += `<div class="zeile"><span class="punkt" style="background:linear-gradient(90deg, ${gradient})"></span> ${themaAktiv.legende}</div>`;
+    } else if (farbe.art === "kategorien" && themaAktiv.schalter) {
+      // Schaltbare Klassen (Spec Bergbau §5): Kästchen je Klasse, Zustand aus der Farbregel (klassen=).
+      html += `<div class="zeile"><b>${esc(themaAktiv.legende)}</b></div>`;
+      const an = new Set(themaAktiv.farbregel.klassen || []);
+      for (const k of themaAktiv.schalter.klassen) {
+        html += `<label class="zeile schalter"><input type="checkbox" data-klasse="${esc(k)}"${an.has(k) ? " checked" : ""}><span class="punkt" style="background:${esc(farbe.werte[k] || "#c8c8c8")}"></span> ${esc(themaAktiv.schalter.namen?.[k] || k)}</label>`;
+      }
+      html += an.size ? `<div class="zeile klein">Adressen ohne eingeschaltete Gruppe sind ausgeblendet.</div>` : `<div class="zeile klein">Keine Gruppe gewählt – alle Adressen in Grundfarbe.</div>`;
     } else if (farbe.art === "kategorien") {
       html += `<div class="zeile"><b>${themaAktiv.legende}</b></div>`;
       for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${ANZEIGE[k] || k}</div>`;
@@ -354,6 +364,11 @@ function zeichneLegende() {
     `<div class="zeile">Größe = Zahl der Einträge</div>`;
 
   document.getElementById("legende").innerHTML = html;
+  document.querySelectorAll("#legende [data-klasse]").forEach((cb) => cb.addEventListener("change", () => {
+    const alle = themaAktiv.schalter.klassen;
+    const an = alle.filter((k) => document.querySelector(`#legende [data-klasse="${k}"]`).checked);
+    setzeZustand({ klassen: an.length === alle.length ? "" : an.length ? an.join(",") : "keine" }, false);
+  }));
 }
 
 async function exportiere() {
