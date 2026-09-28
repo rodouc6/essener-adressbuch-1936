@@ -854,3 +854,15 @@ def test_baue_bergbau_punkte():
     assert p["haeuser"][1]["stufe"] == "strasse" and set(p["haeuser"][0]) == {"id", "lon", "lat", "eig", "stufe"}
     assert p["gesellschaften"] == [dict(id="gewerkschaft_mathias_stinnes", name="Gewerkschaft Mathias Stinnes", haeuser=2),
                                    dict(id="unbekannt", name="unbekannter Bergbau-Eigentümer", haeuser=1)]
+
+
+def test_kennzahl_bergbau_gesellschaften():
+    """Spec Bergbau §2.3: Zahl der Gesellschaften mit geprüften Häusern der Klasse Bergbau (ohne namenlose)."""
+    from pipeline.lib.karte_export import baue_kennzahlen
+    def adr(i, besitz, eig="", spanne=""):
+        e = [dict(teil="II", _eigentuemer=eig, _kategorie="bergbau")] if eig else []
+        return dict(id=str(i), lat=51.4, lon=7.0, stufe="haus", besitz=besitz, besitz_eigentuemer=spanne, eintraege=e)
+    adressen = {a["id"]: a for a in [adr(1, "bergbau", "Gewerkschaft Mathias Stinnes"), adr(2, "bergbau", "Gewerkschaft Mathias Stinnes"),
+                                      adr(3, "bergbau", spanne="Zeche Langenbrahm"), adr(4, "bergbau"), adr(5, "privatperson", "Müller")]}
+    kz = baue_kennzahlen([], adressen, "2026-09-28")
+    assert kz["bergbau_gesellschaften_n"] == 2 and kz["bergbau_haeuser_n"] == 4 and kz["bergbau_haeuser_ohne_name_n"] == 1

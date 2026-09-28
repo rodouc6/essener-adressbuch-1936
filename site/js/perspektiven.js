@@ -13,7 +13,7 @@ import * as stadtteilkarte from "./formen/stadtteilkarte.js";
 import * as bubbles from "./formen/bubbles.js";
 import * as trichter from "./formen/trichter.js";
 import * as punktkarte from "./formen/punktkarte.js";
-import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, herkunftAktuell, herkunftDatei, herkunftLink, herkunftPfad, herkunftTabelle, linkKarte, linkWerkstatt, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
+import { datenbasisLink, detailLage, detailText, detailTextGruppe, detailTextStufe, detailZustand, DETAIL_ZU, formFuer, fuellePlatzhalter, herkunftAktuell, herkunftDatei, herkunftLink, herkunftPfad, herkunftTabelle, linkKarte, linkWerkstatt, punktKontext, sichtbareKapitel, zeichenflaeche } from "./perspektiven_modell.js";
 
 const FORMEN = { balken, rangliste, stadtteilkarte, bubbles, trichter, punktkarte };
 const istTrichter = (a) => !!a && (a.form === "trichter" || a.daten === "kennzahlen");
@@ -29,7 +29,7 @@ let detail = DETAIL_ZU;
 // Rechteck der Einheit, an der der Kasten zuletzt aufgegangen ist; festgestellt bleibt er dort.
 let anker = null;
 // Die gerade gezeichnete Ansicht: ihre Werte füllen den Detailkasten, ihr SVG trägt die Hervorhebung.
-let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "" };
+let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "", masse: "" };
 // Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
 let sichtbar = [];
 // Herkunftsdateien (site/daten/herkunft/*.json), nachgeladen beim ersten Bedarf; undefined = wird
@@ -135,8 +135,10 @@ function zeichne(sec, schritt, k) {
   const optionen = { hervorheben: schritt.hervorheben || [], ausschlussText: (k && k.ausschluss) || "" };
   buehne.querySelector(".titel").textContent = schritt.beschreibung || "";
   // Punktkarte → Punktkarte (gleiche Gruppen, kein Häuser-Zustand): die Kreise bleiben und wandern (Spec Bergbau §4).
+  // Nur bei unveränderter Bühne: nach einer Größenänderung (Drehen des Handys) müssen viewBox und Umrisse neu.
   const vorige = gezeigt.ansicht;
-  const gleitet = form === punktkarte && vorige && vorige.form === "punktkarte" && gezeigt.svg === svg
+  const masse = `${svg.clientWidth}x${svg.clientHeight}`;
+  const gleitet = form === punktkarte && vorige && vorige.form === "punktkarte" && gezeigt.svg === svg && gezeigt.masse === masse
     && ansicht.punkte && ansicht.punkte.zustand !== "haeuser" && vorige.punkte && vorige.punkte.zustand !== "haeuser"
     && JSON.stringify(vorige.gruppen) === JSON.stringify(ansicht.gruppen) && svg.querySelector("circle.p");
   if (gleitet) {
@@ -167,7 +169,7 @@ function zeichne(sec, schritt, k) {
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
   svg.setAttribute("aria-label", schritt.beschreibung || "");
-  gezeigt = { werte: trichterSchritt ? r.werte : werteJeEinheit(ansicht, daten), ansicht, svg, trichter: trichterSchritt, ausschluss: optionen.ausschlussText };
+  gezeigt = { werte: trichterSchritt ? r.werte : werteJeEinheit(ansicht, daten), ansicht, svg, trichter: trichterSchritt, ausschluss: optionen.ausschlussText, masse };
   svg.querySelectorAll(".einheit").forEach((el) => {
     const zeile = el.dataset.zeile || "";
     el.addEventListener("click", () => melde("klick", el.dataset.id, zeile, el.getBoundingClientRect()));
@@ -227,7 +229,8 @@ function kontextVon(id, ansicht) {
   }
   const g = (ansicht.gruppen || []).find((x) => x.name === id);
   if (g) return { art: "segment", ...k, gruppe: g };
-  if (ansicht.form === "bubbles" || ansicht.form === "punktkarte") return { art: "kreis", ...k };
+  if (ansicht.form === "punktkarte") return punktKontext(id, ansicht, daten.punkte, daten.hex);
+  if (ansicht.form === "bubbles") return { art: "kreis", ...k };
   return { art: "einheit", ...k };
 }
 
@@ -281,7 +284,9 @@ function zeichneDetail() {
   // Einheit (Stadtteil, Straße …), beim Gesamtbalken ein Gruppensegment über alle Einheiten, bei
   // Bubbles ein Kreis (Eigentümer, Beruf), dessen Zeile die Form selbst mitgibt (data-zeile).
   const w = werte.find((x) => x.id === detail.id);
+  const kontextVorab = kontextVon(detail.id, ansicht);
   const d = gezeigt.trichter ? (w ? detailTextStufe(w) : { titel: detail.id, zeilen: [] })
+    : kontextVorab && kontextVorab.art === "punkt" ? { titel: kontextVorab.titel, zeilen: detailZeile ? [detailZeile] : [] }
     : w ? detailText(w, ansicht)
     : (detailTextGruppe(detail.id, filterEinheiten(werte, ansicht.filter), ansicht, gezeigt.ausschluss) || { titel: detail.id, zeilen: detailZeile ? [detailZeile] : [] });
   const kontext = kontextVon(detail.id, ansicht);

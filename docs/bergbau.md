@@ -22,7 +22,8 @@ Rang bei mehreren Gruppen im Haus (Adressfeld `bergbau`): Leitung > Aufsicht > B
 
 Stand des Exports 2026-09-28 (verortete Teil-I-Einträge): Belegschaft 26.179, Aufsicht 1.121, Leitung und Beamte 342,
 Berginvaliden 602; zusammen 28.244 von 173.168 Einträgen. Häuser der Klasse Bergbau: 5.428 (davon 1.651 nur
-straßengenau oder Stadtplan 1935); 26 Gesellschaften, elf davon mit mehr als 90 Häusern.
+straßengenau oder Stadtplan 1935); 23 Gesellschaften mit Namen, elf davon mit mehr als 90 Häusern; 18 Häuser der Klasse
+Bergbau ohne Eigentümernamen (Gesellschaft „unbekannt“, grau). Kennzahlen `bergbau_gesellschaften_n`, `bergbau_haeuser_ohne_name_n`.
 
 ## Grenzfälle (aufgenommen, mit Hinweis in der Tabelle)
 

@@ -501,6 +501,11 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
     besitz_regel = sum(1 for a in adressen.values() if a.get("besitz_pruefung") == "regel")
     bb = [e for e in teil_i if (e.get("_beruf") or {}).get("bergbau")]
     bb_je = {g: sum(1 for e in bb if e["_beruf"]["bergbau"] == g) for g in BB_GRUPPEN}
+    bb_haeuser = [a for a in adressen.values() if a.get("besitz") == "bergbau"]
+    def _gesellschaft(a):
+        return next((e["_eigentuemer"] for e in a["eintraege"] if e.get("teil") == "II" and e.get("_kategorie") == "bergbau" and e.get("_eigentuemer")),
+                    a.get("besitz_eigentuemer") or "")
+    bb_namen = [_gesellschaft(a) for a in bb_haeuser]
     return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
                 stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
@@ -530,7 +535,8 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)),
                 bergbau_n=len(bb), bergbau_belegschaft_n=bb_je["belegschaft"], bergbau_aufsicht_n=bb_je["aufsicht"],
                 bergbau_leitung_n=bb_je["leitung"], bergbau_invaliden_n=bb_je["invaliden"],
-                bergbau_haeuser_n=sum(1 for a in adressen.values() if a.get("besitz") == "bergbau"))
+                bergbau_haeuser_n=len(bb_haeuser), bergbau_gesellschaften_n=len({n for n in bb_namen if n}),
+                bergbau_haeuser_ohne_name_n=sum(1 for n in bb_namen if not n))
 
 
 TOP_N = 10

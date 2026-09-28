@@ -8,8 +8,10 @@ import { esc, formatZahl, GRAU, leer, svgKopf } from "./skalen.js";
 const COS = Math.cos((51.45 * Math.PI) / 180);
 const K_MAP = 0.62;            // Radius auf der Karte relativ zur Packung
 const R_MIN_KARTE = 1.6;
+const R_MIN_PACKUNG = 1.2;     // Boden der Pipeline (karte_export.baue_bergbau_punkte, r_von)
 const R_HAUS = 2.4;
 const ABSTAND = 40;            // zwischen zwei Packungen
+const PACKUNG_REIHE_AB = 760;  // darunter Packungen 2×2 statt in einer Reihe (Titel brauchen ≈ 150 px je Packung)
 const RAND = 80;               // links und rechts, damit die Titel unter den Packungen nicht abgeschnitten werden
 const MIN_MITTE = 150;         // Mindestabstand der Packungsmitten, damit die Titel nicht überlappen
 // Schlägel und Eisen (site/bilder/zeche.svg, Wikimedia Commons, gemeinfrei) als Symbol im SVG.
@@ -93,6 +95,16 @@ export function berechne(ansicht, daten, optionen = {}) {
   const mitte = {};
   { let x = RAND + e[0];
     reihe.forEach((g, i) => { if (i > 0) x += grund[i] + wunsch[i] * anteil; mitte[g.schluessel] = [x, hoehe / 2 - 24]; }); }
+  // Schmale Bühne (Handy): Packungen 2×2 statt in einer Reihe, sonst überlappen die Titel und die Kreise
+  // schrumpfen unter einen Pixel. Der Maßstab richtet sich nach der größten Packung in ihrer Zelle.
+  let kPackWirksam = kPack;
+  const titelY = {};      // Titel unter der Packung; im 2×2-Raster für alle auf einer Zeilenunterkante
+  if (breite < PACKUNG_REIHE_AB && reihe.length > 1) {
+    const zw = breite / 2, zh = (hoehe - 20) / 2;
+    const extMax = Math.max(...reihe.map((g) => ext[g.schluessel]));
+    kPackWirksam = Math.max(0.05, Math.min(1.3, (Math.min(zw / 2 - 12, zh / 2 - 34)) / extMax));
+    reihe.forEach((g, i) => { mitte[g.schluessel] = [zw * ((i % 2) + 0.5), 10 + zh * (Math.floor(i / 2) + 0.5) - 12]; titelY[g.schluessel] = mitte[g.schluessel][1] + extMax * kPackWirksam + 18; });
+  }
   const { spalten } = raster(breite);
   const zeilen = Math.ceil(gruppen.length / spalten);
   const fw = breite / spalten, fh = (hoehe - 20) / zeilen;
@@ -103,18 +115,23 @@ export function berechne(ansicht, daten, optionen = {}) {
       zechen: zechenIn(p, zechen), sichtbar: zustand === "karten" };
   });
   const kreise = [];
+  // Precision first: Kreise unter dem Mindestradius sehen gleich groß aus — bis zu welcher Personenzahl
+  // das reicht, sagt die Legende (Zeile „Mindestgröße“), sonst behauptete sie eine Flächenkodierung, die nicht da ist.
+  let boden = 0;
   for (const g of gruppen) {
     const k = karten.find((c) => c.gruppe === g.schluessel);
     const gedimmt = hervor.size > 0 && !hervor.has(g.name);
     for (const pkt of P.hex[g.schluessel] || []) {
       let x, y, r;
-      if (zustand === "karten" && k.p) { [x, y] = k.p.xy(pkt.lon, pkt.lat); r = Math.max(R_MIN_KARTE, pkt.r * kPack * K_MAP); }
-      else { x = mitte[g.schluessel][0] + pkt.x * kPack; y = mitte[g.schluessel][1] + pkt.y * kPack; r = pkt.r * kPack; }
+      let amBoden;
+      if (zustand === "karten" && k.p) { [x, y] = k.p.xy(pkt.lon, pkt.lat); const roh = pkt.r * kPackWirksam * K_MAP; amBoden = roh <= R_MIN_KARTE; r = Math.max(R_MIN_KARTE, roh); }
+      else { x = mitte[g.schluessel][0] + pkt.x * kPackWirksam; y = mitte[g.schluessel][1] + pkt.y * kPackWirksam; r = pkt.r * kPackWirksam; amBoden = pkt.r <= R_MIN_PACKUNG; }
+      if (amBoden && pkt.n > boden) boden = pkt.n;
       kreise.push({ id: `${pkt.id}|${g.schluessel}`, gruppe: g.schluessel, x, y, r, farbe: g.farbe, ring: false, gedimmt,
         zeile: `${g.name} · ${formatZahl(pkt.n)} eingetragene Personen · Feld ${pkt.id}` });
     }
   }
-  const titel = reihe.map((g) => ({ gruppe: g.schluessel, x: mitte[g.schluessel][0], y: mitte[g.schluessel][1] + ext[g.schluessel] * kPack + 18,
+  const titel = reihe.map((g) => ({ gruppe: g.schluessel, x: mitte[g.schluessel][0], y: titelY[g.schluessel] ?? (mitte[g.schluessel][1] + ext[g.schluessel] * kPackWirksam + 18),
     name: g.name, wert: `${formatZahl(g.n)} eingetragene Personen`, sichtbar: zustand === "gesammelt" }));
   const N = gruppen.reduce((s, g) => s + g.n, 0);
   const kz = daten.kennzahlen || {};
@@ -122,6 +139,7 @@ export function berechne(ansicht, daten, optionen = {}) {
   const zahlen = { N, n_aus, unter_min: 0, einheiten: kreise.length, einheiten_gesamt: kreise.length, hinweis: `${formatZahl(N)} eingetragene Personen mit Bergbau-Beruf, ${formatZahl(n_aus)} Einträge ohne geprüften Beruf ausgeschlossen` };
   const legende = [...gruppen.map((g) => ({ name: g.name, farbe: g.farbe, text: formatZahl(g.n) })),
     { name: "Kreisfläche", farbe: null, text: `eingetragene Personen je Hexfeld (120 m Kante), größter Wert ${formatZahl(P.maxn)}` },
+    ...(boden > 0 ? [{ name: "Mindestgröße", farbe: null, text: `Felder bis ${formatZahl(boden)} Personen erscheinen gleich groß` }] : []),
     { name: "Schlägel und Eisen", farbe: null, text: "Zechen in Förderung 1936" }];
   return { breite, hoehe, kreise, karten, titel, legende, zahlen, zustand };
 }

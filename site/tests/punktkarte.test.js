@@ -107,3 +107,27 @@ test("Zechensymbol der Punktkarte ist der Pfad aus bilder/zeche.svg", () => {
   const js = readFileSync(new URL("../js/formen/punktkarte.js", import.meta.url), "utf8");
   assert.ok(js.includes(`const ZECHE_PFAD = "${d}"`));
 });
+
+test("Legende nennt den Mindestradius: bis zu welcher Personenzahl Felder gleich groß erscheinen", () => {
+  const gross = { ...PUNKTE, maxn: 210, hex: { ...PUNKTE.hex, belegschaft: [{ id: "0_0", lon: 7.01, lat: 51.45, n: 210, r: 9, x: 0, y: 0 }, { id: "1_0", lon: 7.02, lat: 51.46, n: 3, r: 1.2, x: 14, y: 0 }, { id: "2_0", lon: 7.03, lat: 51.46, n: 1, r: 1.2, x: 28, y: 0 }, { id: "3_0", lon: 7.04, lat: 51.46, n: 20, r: 2.777, x: 42, y: 0 }] } };
+  const k = berechne(A({ zustand: "karten" }), { ...DATEN, punkte: gross }, O);
+  const boden = k.legende.find((l) => l.name === "Mindestgröße");
+  assert.ok(boden, "Legendenzeile fehlt");
+  assert.equal(boden.text, "Felder bis 3 Personen erscheinen gleich groß");   // r für n=3 und n=1 liegt am Boden, n=20 darüber
+  const g = berechne(A({ zustand: "gesammelt" }), { ...DATEN, punkte: gross }, O);
+  assert.equal(g.legende.find((l) => l.name === "Mindestgröße").text, "Felder bis 3 Personen erscheinen gleich groß");
+  const ohne = berechne(A({ zustand: "karten" }), DATEN, { breite: 3000, hoehe: 2000 });   // alle Radien über dem Boden
+  assert.equal(ohne.legende.find((l) => l.name === "Mindestgröße"), undefined);
+});
+
+test("gesammelt unter 760 px: Packungen 2×2, Titel überlappen nicht, alles im Bild", () => {
+  assert.equal(new Set(berechne(A({ zustand: "gesammelt" }), DATEN, { breite: 700, hoehe: 600 }).titel.map((t) => Math.round(t.y))).size, 2, "bei 700 px zwei Zeilen");
+  const reihe = berechne(A({ zustand: "gesammelt" }), DATEN, { breite: 800, hoehe: 600 }).titel.map((t) => t.y);
+  assert.ok(Math.max(...reihe) - Math.min(...reihe) < 40, "ab 760 px eine Reihe (Titel hängen je unter ihrer Packung)");
+  const b = berechne(A({ zustand: "gesammelt" }), DATEN, { breite: 360, hoehe: 520 });
+  const ys = new Set(b.titel.map((t) => Math.round(t.y)));
+  assert.equal(ys.size, 2, "zwei Zeilen erwartet");
+  for (const t of b.titel) { const nachbarn = b.titel.filter((u) => u !== t && Math.round(u.y) === Math.round(t.y)); for (const u of nachbarn) assert.ok(Math.abs(u.x - t.x) >= 150, `Titelabstand ${Math.abs(u.x - t.x)}`); }
+  assert.ok(b.kreise.every((k) => k.x - k.r >= 0 && k.x + k.r <= 360 && k.y - k.r >= 0 && k.y + k.r <= 520));
+  assert.ok(b.titel.every((t) => t.y + 16 <= 520));
+});

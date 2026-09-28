@@ -266,3 +266,22 @@ test("formFuer punktkarte; linkKarte führt Punktkarten auf das Thema Bergbau mi
   assert.equal(linkKarte({ ...a, daten: "besitz", punkte: { zustand: "haeuser", hervor: [] } }), null);
   assert.match(linkKarte(normalisiere({ daten: "besitz", ebene: "stadtteil", gruppen: g })), /^karte\.html\?ansicht=/);
 });
+
+import { punktKontext } from "../js/perspektiven_modell.js";
+test("punktKontext: Hexfeld-Kreis mit Gruppe, Stadtteil und Themenlink; Haus mit Gesellschaft und Eigentümersuche; unbekannt ohne Link", () => {
+  const g = [{ name: "Belegschaft", aus: ["belegschaft"], farbe: "#c2410c" }];
+  const hex = normalisiere({ daten: "bergbau", ebene: "hex", form: "punktkarte", gruppen: g, punkte: { zustand: "karten" } });
+  const punkte = { gesellschaften: [{ id: "gewerkschaft_mathias_stinnes", name: "Gewerkschaft Mathias Stinnes", haeuser: 725 }, { id: "unbekannt", name: "unbekannter Bergbau-Eigentümer", haeuser: 18 }],
+    haeuser: [{ id: "a1", eig: "gewerkschaft_mathias_stinnes" }, { id: "a2", eig: "unbekannt" }] };
+  const hexe = [{ id: "-10_-1", stadtteil: "Katernberg" }];
+  const k = punktKontext("-10_-1|belegschaft", hex, punkte, hexe);
+  assert.equal(k.art, "punkt"); assert.equal(k.titel, "Belegschaft · Feld -10_-1 (Katernberg)");
+  assert.equal(herkunftLink(k), "karte.html?thema=bergbau&klassen=belegschaft");
+  assert.equal(herkunftDatei(k), null);
+  const haus = normalisiere({ daten: "besitz", ebene: "adresse", form: "punktkarte", gruppen: [{ name: "Stinnes", aus: ["gewerkschaft_mathias_stinnes"], farbe: "#e69f00" }], punkte: { zustand: "haeuser" } });
+  const h = punktKontext("a1", haus, punkte, hexe);
+  assert.equal(h.titel, "Gewerkschaft Mathias Stinnes"); assert.equal(herkunftLink(h), "karte.html?eigentuemer=Gewerkschaft%20Mathias%20Stinnes");
+  const u = punktKontext("a2", haus, punkte, hexe);
+  assert.equal(u.titel, "unbekannter Bergbau-Eigentümer"); assert.equal(herkunftLink(u), null);
+  assert.equal(punktKontext("gibtsnicht", haus, punkte, hexe).titel, "gibtsnicht");
+});

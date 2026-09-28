@@ -339,9 +339,33 @@ export function herkunftTabelle(kontext, herkunft, ansicht) {
 
 // Kartenziel des Kastens (Kartensymbol hinter der Zahlenzeile): Einzelobjekte (Norm, Eigentümer, Rubrik)
 // führen in die Suche, Stadtteile auf die Karte; Segmente, Straßen, Hexfelder haben keins.
+// Kontext eines Kreises der Punktkarte (Spec Bergbau §4): Hexfeld → Gruppe, Feld, Stadtteil, Themenlink mit
+// dieser Klasse; Haus → Gesellschaft und Eigentümersuche; unbekannte Gesellschaft ohne Link.
+export function punktKontext(id, ansicht, punkte, hexe) {
+  const k = { art: "punkt", id, daten: ansicht.daten, ebene: ansicht.ebene, gruppe: null, klasse: null, eigentuemer: null, titel: String(id) };
+  const p = punkte || {};
+  if (ansicht.punkte && ansicht.punkte.zustand === "haeuser") {
+    const haus = (p.haeuser || []).find((h) => h.id === id);
+    const ges = haus && (p.gesellschaften || []).find((g) => g.id === haus.eig);
+    if (ges) { k.titel = ges.name; if (ges.id !== "unbekannt") k.eigentuemer = ges.name; }
+    return k;
+  }
+  const [feld, klasse] = String(id).split("|");
+  const g = (ansicht.gruppen || []).find((x) => x.aus[0] === klasse);
+  if (!g) return k;
+  const st = (hexe || []).find((h) => h.id === feld);
+  k.klasse = klasse;
+  k.titel = `${g.name} · Feld ${feld}${st && st.stadtteil ? ` (${st.stadtteil})` : ""}`;
+  return k;
+}
+
 export function herkunftLink(kontext) {
   const k = kontext || {};
   if (!k.id) return null;
+  if (k.art === "punkt") {
+    if (k.klasse) return `karte.html?thema=bergbau&klassen=${encodeURIComponent(k.klasse)}`;
+    return k.eigentuemer ? `karte.html?eigentuemer=${encodeURIComponent(k.eigentuemer)}` : null;
+  }
   if (k.art === "einheit") return k.ebene === "stadtteil" ? `karte.html?stadtteil=${encodeURIComponent(k.id)}` : null;
   if (k.art !== "kreis") return null;
   if (k.daten === "besitz") return `karte.html?eigentuemer=${encodeURIComponent(k.id)}`;
