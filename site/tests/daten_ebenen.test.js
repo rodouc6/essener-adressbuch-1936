@@ -42,3 +42,10 @@ test("filterEinheiten nach Stadtteil und top", async () => {
   assert.deepEqual(filterEinheiten(s, { stadtteil: ["Frohnhausen"] }).length, 1);
   assert.deepEqual(filterEinheiten(s, { stadtteil: ["Steele"] }).length, 0);
 });
+
+test("ladeEbenen liefert Kapitelpunkte und Zechen, fehlend → null", async () => {
+  const D2 = { ...D, "daten/perspektiven/bergbau_punkte.json": { gruppen: [], hex: {}, haeuser: [], gesellschaften: [], maxn: 0 } };
+  const f = async (u) => ({ ok: u in D2, status: u in D2 ? 200 : 404, json: async () => D2[u] });
+  const d = await ladeEbenen(new Lader("daten/", f));
+  assert.deepEqual(d.punkte.gruppen, []); assert.equal(d.zechen, null);
+});

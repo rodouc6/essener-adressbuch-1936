@@ -256,3 +256,13 @@ test("detailText: Stadtteil bei Stellung nennt den handbestimmten Anteil", () =>
   const ohne = detailText({ id: "K", name: "K", N: 100, n_aus: 0, zaehler: {}, anteile: {} }, a);
   assert.ok(!ohne.zeilen.some((z) => /von Hand bestimmter/.test(z)));
 });
+
+test("formFuer punktkarte; linkKarte führt Punktkarten auf das Thema Bergbau mit Klassen, Häuser-Zustand ohne Link", () => {
+  const g = [{ name: "Belegschaft", aus: ["belegschaft"], farbe: "#c2410c" }, { name: "Leitung und Beamte", aus: ["leitung"], farbe: "#7c3aed" }];
+  const a = normalisiere({ daten: "bergbau", ebene: "hex", form: "punktkarte", gruppen: g, punkte: { zustand: "karten", hervor: [] } });
+  assert.equal(formFuer(a), "punktkarte");
+  assert.equal(linkKarte(a), "karte.html?thema=bergbau");
+  assert.equal(linkKarte({ ...a, punkte: { zustand: "karten", hervor: ["Leitung und Beamte"] } }), "karte.html?thema=bergbau&klassen=leitung");
+  assert.equal(linkKarte({ ...a, daten: "besitz", punkte: { zustand: "haeuser", hervor: [] } }), null);
+  assert.match(linkKarte(normalisiere({ daten: "besitz", ebene: "stadtteil", gruppen: g })), /^karte\.html\?ansicht=/);
+});

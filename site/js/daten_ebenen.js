@@ -2,10 +2,10 @@
 import { kennzahlen } from "./ansicht.js";
 
 export async function ladeEbenen(lader) {
-  const [strassen, stadtteile, hex, berufe, eigentuemer, gewerbe, hauptgruppen, polygone, kz] = await Promise.all([
+  const [strassen, stadtteile, hex, berufe, eigentuemer, gewerbe, hauptgruppen, polygone, kz, punkte, zechen] = await Promise.all([
     lader.ebene("strassen"), lader.ebene("stadtteile"), lader.ebene("hex"), lader.layout("berufe"), lader.layout("eigentuemer"), lader.layout("gewerbe"),
-    lader.hauptgruppen(), lader.stadtteilePolygone(), lader.kennzahlen()]);
-  return { strassen: strassen || [], stadtteile: stadtteile || [], hex: hex || [], layout: { berufe, eigentuemer, gewerbe }, hauptgruppen: hauptgruppen || {}, polygone, kennzahlen: kz || {} };
+    lader.hauptgruppen(), lader.stadtteilePolygone(), lader.kennzahlen(), lader.punkte(), lader.zechen()]);
+  return { strassen: strassen || [], stadtteile: stadtteile || [], hex: hex || [], layout: { berufe, eigentuemer, gewerbe }, hauptgruppen: hauptgruppen || {}, polygone, kennzahlen: kz || {}, punkte: punkte || null, zechen: zechen || null };
 }
 
 export function einheiten(ebenen, ansicht) {

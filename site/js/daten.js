@@ -56,4 +56,6 @@ export class Lader {
   perspektivenIndex() { return this.json("perspektiven/index.json"); }
   kapitel(id) { return this.json(`perspektiven/${id}.json`); }
   herkunft(name) { return this.json(`herkunft/${name}.json`); }
+  punkte() { return this.json("perspektiven/bergbau_punkte.json"); }
+  zechen() { return this.json("zechen.geojson"); }
 }

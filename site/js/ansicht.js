@@ -1,15 +1,18 @@
 // site/js/ansicht.js — Ansicht-Modell (Spec §4): eine Ansicht beschreibt eine Darstellung vollständig; Karte,
 // Perspektiven und Werkstatt lesen und schreiben dasselbe Objekt. Rein, ohne DOM (node:test).
-export const DATEN = ["stellung", "gruppe", "niveau", "besitz", "gewerbe"];
+export const DATEN = ["stellung", "gruppe", "niveau", "besitz", "gewerbe", "bergbau"];
 export const EBENEN = ["adresse", "strasse", "stadtteil", "hex"];
-export const FORMEN = ["karte", "stadtteilkarte", "bubbles", "balken", "multiples", "rangliste"];
+export const FORMEN = ["karte", "stadtteilkarte", "bubbles", "balken", "multiples", "rangliste", "punktkarte"];
+export const PUNKTE_ZUSTAENDE = ["gesammelt", "karten", "haeuser"];
 export const MASSE = ["anteil", "dominant", "mischung", "dichte"];
 export const KAUFLEUTE = ["unbestimmt", "angestellte", "selbstaendige"];
 export const MIN_N = Object.freeze({ adresse: 0, strasse: 30, hex: 50, stadtteil: 200 });
 export const OKABE_ITO = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#000000"];
-export const STANDARD_ANSICHT = Object.freeze({ daten: "stellung", ebene: "stadtteil", form: "karte", gruppen: [], kaufleute: "unbestimmt", unsicher: false, mass: "anteil", bezug: "", min_n: 200, filter: {}, karte: null });
-const PRAEFIX = { stellung: "n_st_", gruppe: "n_gr_", niveau: "n_", besitz: "n_bs_", gewerbe: "n_gw_" };
-const NENNER = { stellung: "n_I", gruppe: "n_I", niveau: "n_I", besitz: "adressen", gewerbe: "n_III" };
+export const STANDARD_ANSICHT = Object.freeze({ daten: "stellung", ebene: "stadtteil", form: "karte", gruppen: [], kaufleute: "unbestimmt", unsicher: false, mass: "anteil", bezug: "", min_n: 200, filter: {}, karte: null, punkte: null });
+const PRAEFIX = { stellung: "n_st_", gruppe: "n_gr_", niveau: "n_", besitz: "n_bs_", gewerbe: "n_gw_", bergbau: "n_bb_" };
+const NENNER = { stellung: "n_I", gruppe: "n_I", niveau: "n_I", besitz: "adressen", gewerbe: "n_III", bergbau: "n_I" };
+// Bergbau-Gruppen (Spec 2026-09-28 §3): Reihenfolge = Reihenfolge im Kapitel und in der Legende.
+export const BERGBAU = { belegschaft: ["Belegschaft", "#c2410c"], aufsicht: ["Aufsicht", "#1d4ed8"], leitung: ["Leitung und Beamte", "#7c3aed"], invaliden: ["Berginvaliden", "#15803d"] };
 const NIVEAUS = ["helfer", "fachlich", "spezialist", "hochkomplex", "aufsicht", "fuehrung", "unsicher"];
 export const STELLUNG = { arbeiter: ["Arbeiter/Gehilfen (nach Schreibung)", "#e69f00"], angestellte: ["Angestellte", "#56b4e9"], beamte: ["Beamte", "#009e73"], selbstaendige: ["Selbständige", "#f0e442"], freie_berufe: ["Freie Berufe und Akademiker", "#0072b2"], unternehmer: ["Unternehmer und Leitende", "#d55e00"], ohne_erwerb: ["Ohne Erwerbsberuf", "#cc79a7"], kaufleute: ["Kaufleute (Stellung unbestimmt)", "#000000"] };
 export const BESITZ = { privatperson: ["Privatpersonen", "#d97706"], stadt_staat: ["Stadt und Staat", "#1d4ed8"], bergbau: ["Bergbau", "#111827"], industrie: ["Industrie", "#b91c1c"], genossenschaft_siedlung: ["Genossenschaft und Siedlung", "#15803d"], kirche_stiftung: ["Kirche und Stiftung", "#7c3aed"], bank_versicherung: ["Bank und Versicherung", "#0e7490"], sonstige: ["Sonstige", "#6b7280"] };
@@ -18,10 +21,19 @@ export const GEWERBE_TEXT = { bergbau: "Bergbau und Kokerei", metall_maschinen: 
 
 const wahl = (w, erlaubt, standard) => (erlaubt.includes(w) ? w : standard);
 
+// Zustand der Punktkarte (Spec Bergbau §3): nur diese Form trägt das Feld; hervor nennt nur echte Gruppen.
+function punkteVon(o, form, namen) {
+  if (form !== "punktkarte") return null;
+  const p = o.punkte && typeof o.punkte === "object" ? o.punkte : {};
+  const hervor = (Array.isArray(p.hervor) ? p.hervor : []).map(String).filter((h) => namen.has(h));
+  return { zustand: wahl(p.zustand, PUNKTE_ZUSTAENDE, "gesammelt"), hervor };
+}
+
 export function normalisiere(obj) {
   const o = obj && typeof obj === "object" ? obj : {};
   const daten = wahl(o.daten, DATEN, STANDARD_ANSICHT.daten);
   const ebene = wahl(o.ebene, EBENEN, STANDARD_ANSICHT.ebene);
+  const form = wahl(o.form, FORMEN, STANDARD_ANSICHT.form);
   const namen = new Set(); const gruppen = [];
   for (const [i, g] of (Array.isArray(o.gruppen) ? o.gruppen : []).entries()) {
     if (!g || typeof g !== "object" || !Array.isArray(g.aus)) continue;
@@ -35,11 +47,12 @@ export function normalisiere(obj) {
   }
   const min_n = Number.isInteger(o.min_n) && o.min_n >= 0 ? o.min_n : MIN_N[ebene];
   return {
-    daten, ebene, form: wahl(o.form, FORMEN, STANDARD_ANSICHT.form), gruppen,
+    daten, ebene, form, gruppen,
     kaufleute: wahl(o.kaufleute, KAUFLEUTE, "unbestimmt"), unsicher: o.unsicher === true,
     mass: wahl(o.mass, MASSE, "anteil"), bezug: typeof o.bezug === "string" && namen.has(o.bezug) ? o.bezug : (gruppen[0]?.name || ""),
     min_n, filter: o.filter && typeof o.filter === "object" ? { ...o.filter } : {},
     karte: o.karte && typeof o.karte === "object" ? { zentrum: o.karte.zentrum, zoom: o.karte.zoom } : null,
+    punkte: punkteVon(o, form, namen),
   };
 }
 
@@ -113,6 +126,7 @@ export function kennzahlen(einheit, ansicht) {
 export function standardGruppen(daten, hauptgruppen = {}) {
   if (daten === "stellung") return Object.entries(STELLUNG).map(([k, [name, farbe]]) => ({ name, aus: [k], farbe }));
   if (daten === "besitz") return Object.entries(BESITZ).map(([k, [name, farbe]]) => ({ name, aus: k === "sonstige" ? ["sonstige", "gemischt"] : [k], farbe }));
+  if (daten === "bergbau") return Object.entries(BERGBAU).map(([k, [name, farbe]]) => ({ name, aus: [k], farbe }));
   if (daten === "gewerbe") return GEWERBE.map((k, i) => ({ name: GEWERBE_TEXT[k], aus: [k], farbe: OKABE_ITO[i % OKABE_ITO.length] }));
   if (daten === "niveau") return NIVEAUS.slice(0, 6).map((k, i) => ({ name: k, aus: [k], farbe: OKABE_ITO[i] }));
   return Object.keys(hauptgruppen).sort().map((k, i) => ({ name: hauptgruppen[k].kurz || k, aus: [k], farbe: OKABE_ITO[i % OKABE_ITO.length] }));

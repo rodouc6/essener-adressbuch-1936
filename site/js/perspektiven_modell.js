@@ -49,7 +49,16 @@ export function fuellePlatzhalter(text, kennzahlen = {}) {
   });
 }
 
-export const linkKarte = (ansicht) => `karte.html?ansicht=${kodiere(ansicht)}`;
+// Punktkarten (Bergbau) führen nicht in eine ?ansicht=, sondern auf das Thema der Karte mit den
+// hervorgehobenen Klassen (Spec Bergbau §6); die hausgenaue Karte verlinkt je Gesellschaft im Detailkasten.
+export function linkKarte(ansicht) {
+  if (ansicht && ansicht.form === "punktkarte") {
+    if (!ansicht.punkte || ansicht.punkte.zustand === "haeuser") return null;
+    const klassen = ansicht.punkte.hervor.map((h) => (ansicht.gruppen.find((g) => g.name === h) || { aus: [] }).aus[0]).filter(Boolean);
+    return `karte.html?thema=bergbau${klassen.length ? `&klassen=${klassen.join(",")}` : ""}`;
+  }
+  return `karte.html?ansicht=${kodiere(ansicht)}`;
+}
 export const linkWerkstatt = (ansicht) => `werkstatt.html?ansicht=${kodiere(ansicht)}`;
 
 // Welche Form zeichnet diese Ansicht auf der Perspektiven-Seite? Die Seite hat keine MapLibre-
@@ -59,6 +68,7 @@ export const linkWerkstatt = (ansicht) => `werkstatt.html?ansicht=${kodiere(ansi
 export function formFuer(ansicht) {
   const form = ansicht && ansicht.form;
   if (form === "trichter") return "trichter";
+  if (form === "punktkarte") return "punktkarte";
   if (form === "karte") return ansicht.ebene === "stadtteil" ? "stadtteilkarte" : "rangliste";
   if (form === "multiples") return "balken";
   if (form === "stadtteilkarte" || form === "bubbles" || form === "rangliste") return form;

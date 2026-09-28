@@ -87,3 +87,28 @@ test("standardGruppen je Datenkern", () => {
   const hg = { B21: { kurz: "Bergbau, Glas, Keramik" }, A10: { kurz: "Berufslose" } };
   assert.deepEqual(standardGruppen("gruppe", hg).map((g) => [g.name, g.aus]), [["Berufslose", ["A10"]], ["Bergbau, Glas, Keramik", ["B21"]]]);
 });
+
+import { BERGBAU, DATEN, FORMEN, PUNKTE_ZUSTAENDE } from "../js/ansicht.js";
+
+test("bergbau als Datenkern: Präfix, Standardgruppen, punktkarte als Form", () => {
+  assert.ok(DATEN.includes("bergbau")); assert.ok(FORMEN.includes("punktkarte"));
+  assert.equal(praefix("bergbau"), "n_bb_");
+  assert.deepEqual(PUNKTE_ZUSTAENDE, ["gesammelt", "karten", "haeuser"]);
+  const g = standardGruppen("bergbau");
+  assert.deepEqual(g.map((x) => x.aus[0]), ["belegschaft", "aufsicht", "leitung", "invaliden"]);
+  assert.equal(g[2].name, "Leitung und Beamte"); assert.equal(g[3].farbe, "#15803d");
+  assert.equal(BERGBAU.belegschaft[1], "#c2410c");
+  const e = { n_I: 10, n_bb_belegschaft: 4, n_bb_aufsicht: 1, n_gr_ungeprueft: 2 };
+  const k = kennzahlen(e, normalisiere({ daten: "bergbau", ebene: "hex", gruppen: g, bezug: "Belegschaft", min_n: 0 }));
+  assert.equal(k.N, 5); assert.equal(k.zaehler.Belegschaft, 4);
+});
+
+test("punkte nur bei punktkarte; hervor auf Gruppennamen gefiltert; unbekannter Zustand → gesammelt", () => {
+  const g = standardGruppen("bergbau");
+  const a = normalisiere({ daten: "bergbau", ebene: "hex", form: "punktkarte", gruppen: g, punkte: { zustand: "karten", hervor: ["Belegschaft", "Erfunden"] } });
+  assert.deepEqual(a.punkte, { zustand: "karten", hervor: ["Belegschaft"] });
+  assert.equal(normalisiere({ daten: "bergbau", form: "punktkarte", gruppen: g, punkte: { zustand: "fliegen" } }).punkte.zustand, "gesammelt");
+  assert.deepEqual(normalisiere({ daten: "bergbau", form: "punktkarte", gruppen: g }).punkte, { zustand: "gesammelt", hervor: [] });
+  assert.equal(normalisiere({ daten: "bergbau", form: "balken", gruppen: g, punkte: { zustand: "karten" } }).punkte, null);
+  assert.deepEqual(dekodiere(kodiere(a)), a);      // Rundreise erhält punkte
+});
