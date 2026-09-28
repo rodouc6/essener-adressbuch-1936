@@ -50,3 +50,13 @@ def test_hausnummernspanne_und_haeuser_der_zeile():
     assert hausnummernspanne(dict(hausnr="40", hausnr_bis="4")) is None                # verdreht
     assert hausnummernspanne(dict(hausnr="12", hausnr_bis="")) is None and hausnummernspanne({}) is None
     assert [haeuser_der_zeile(dict(hausnr=a, hausnr_bis=b)) for a, b in (("2", "84"), ("2", "9"), ("37", "37A"), ("5", ""), ("40", "4"))] == [42, 8, 1, 1, 1]
+
+
+def test_kuratierung_bergbau_kanonische_namen_ohne_dubletten():
+    """Spec Bergbau §2.5: ein kanonischer Name je Gesellschaft — sonst zählt das Kapitel eine Gesellschaft mehrfach."""
+    from pipeline.lib.io import lies_csv, projektwurzel
+    zeilen = lies_csv(projektwurzel() / "kuratierung" / "eigentuemer.csv")
+    kanon = {z["eigentuemer"].strip() for z in zeilen if z.get("kategorie") == "bergbau" and z.get("geprueft") == "ja"}
+    assert [k for k in kanon if "König Wilhelm" in k] == ["Essener Bergwerks-Verein König Wilhelm"]
+    assert [k for k in kanon if "lheimer Bergwerks" in k] == ["Mülheimer Bergwerks-Verein"]
+    assert "Gewerkschft Zeche Carolus Magnus" not in kanon and "Gewerkschaft Zeche Carolus Magnus" in kanon
