@@ -153,3 +153,22 @@ test("popupHtml: eine oder zwei Ebenen heben ihre Teile hervor, drei nicht", () 
 test("popupHtml: leere Ebenenliste hebt nichts hervor", () => {
   assert.doesNotMatch(popupHtml(EIG, VIELE, false, []), /hervor/);
 });
+
+test("hausHtml: Reiter je vorhandenem Teil plus „Alle“, aktiver Reiter filtert die Gruppen", () => {
+  const alle = hausHtml(EIG, VIELE, null, "alle");
+  assert.match(alle, /<div class="reiter"><button data-teil="alle" aria-pressed="true">Alle 11<\/button><button data-teil="I" aria-pressed="false">Einwohner 5<\/button><button data-teil="II" aria-pressed="false">Eigentümer 1<\/button><button data-teil="III" aria-pressed="false">Gewerbe 5<\/button><\/div>/);
+  assert.match(alle, /<h3>Einwohner \(5\)<\/h3>/); assert.match(alle, /<h3>Gewerbe \(5\)<\/h3>/);
+  const nurG = hausHtml(EIG, VIELE, null, "III");
+  assert.match(nurG, /data-teil="III" aria-pressed="true"/);
+  assert.doesNotMatch(nurG, /<h3>Einwohner|<h3>Eigentümer|id="e-i1"/);
+  assert.match(nurG, /id="e-g5"/);   // im Reiter keine Kappung
+});
+
+test("hausHtml: ohne Reiterangabe „Alle“; bei nur einem Teil keine Reiterzeile", () => {
+  assert.match(hausHtml(EIG, VIELE), /data-teil="alle" aria-pressed="true"/);
+  const einTeil = hausHtml(EIG, VIELE.filter((e) => e.teil === "I"));
+  assert.doesNotMatch(einTeil, /class="reiter"/);
+  assert.match(einTeil, /<h3>Einwohner \(5\)<\/h3>/);
+  // Reiter auf einen Teil ohne Einträge fällt auf „Alle“ zurück
+  assert.match(hausHtml(EIG, VIELE.filter((e) => e.teil !== "III"), null, "III"), /data-teil="alle" aria-pressed="true"/);
+});

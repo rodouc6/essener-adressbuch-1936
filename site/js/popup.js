@@ -120,11 +120,18 @@ function eintragHtml(e, faksimile) {
 }
 
 // faksimile: Seite → Bildnummer (daten/faksimile.json); ohne Tabelle keine Links.
-export function hausHtml(eig, eintraege, faksimile = null) {
-  const gruppen = ["I", "II", "III"].map((t) => {
-    const l = eintraege.filter((e) => e.teil === t);
-    return l.length ? `<h3>${EBENEN[t]} (${l.length})</h3>${l.map((e) => eintragHtml(e, faksimile)).join("")}` : "";
-  }).join("");
+// reiter: "alle" oder ein Teil (I/II/III) — zeigt nur dessen Einträge; ein Teil ohne Einträge fällt auf
+// "alle" zurück. Die Reiterzeile erscheint nur, wenn das Haus Einträge in mehr als einem Teil hat.
+export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle") {
+  const je = new Map(TEILE.map((t) => [t, eintraege.filter((e) => e.teil === t)]));
+  const vorhanden = TEILE.filter((t) => je.get(t).length);
+  const aktiv = vorhanden.includes(reiter) ? reiter : "alle";
+  const reiterHtml = vorhanden.length > 1
+    ? `<div class="reiter">` + [["alle", `Alle ${eintraege.length}`], ...vorhanden.map((t) => [t, `${EBENEN[t]} ${je.get(t).length}`])]
+        .map(([k, text]) => `<button data-teil="${k}" aria-pressed="${k === aktiv}">${text}</button>`).join("") + `</div>`
+    : "";
+  const gruppen = vorhanden.filter((t) => aktiv === "alle" || t === aktiv).map((t) =>
+    `<h3>${EBENEN[t]} (${je.get(t).length})</h3>${je.get(t).map((e) => eintragHtml(e, faksimile)).join("")}`).join("");
   return `<div class="haus-kopf"><h2>${esc(heutigeAdresse(eig))}</h2>` +
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
@@ -133,7 +140,7 @@ export function hausHtml(eig, eintraege, faksimile = null) {
     // eines anderen Adressobjekts derselben Nummer: die Adresse hat keine eigene Teil-II-Zeile, die
     // Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
     (BESITZ_HERKUNFT[eig.besitz_quelle] ? `<div class="hist">Eigentümer laut Häuserbuch (${BESITZ_HERKUNFT[eig.besitz_quelle]}): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
-    `</div>${gruppen}`;
+    `</div>${reiterHtml}${gruppen}`;
 }
 
 export function trefferzeileHtml(t) {

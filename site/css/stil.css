@@ -70,6 +70,9 @@ a { color: var(--blau); }
 .praez { font-size: 12px; margin-top: 2px; } .praez-strasse, .praez-stadtplan { color: #92400e; }
 .flag { font-size: 12px; color: #92400e; }
 h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin: 14px 0 4px; }
+.reiter { display: flex; gap: 2px; border-bottom: 1px solid var(--rand); margin: 10px 0 4px; overflow-x: auto; }
+.reiter button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 8px; font-size: 12px; color: var(--grau); cursor: pointer; white-space: nowrap; min-height: 32px; }
+.reiter button[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
 .eintrag { padding: 8px 6px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
 .eintrag.hervor { background: #eef2ff; border-left: 3px solid var(--blau); }
 .eintrag .k { color: var(--grau); }

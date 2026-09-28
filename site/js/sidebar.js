@@ -104,13 +104,24 @@ export class Sidebar {
     this.inhalt.querySelector(".kopf").insertAdjacentHTML("afterend", `<div class="verteilung">Nach Stadtteil: ${top}</div>`);
   }
 
-  zeigeHaus(eig, eintraege, hervorgehoben, faksimile = null) {
-    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege, faksimile);
+  // ebenen: aktive Kartenebenen — bei genau einer startet die Hausansicht im Reiter dieses Teils; ein
+  // hervorgehobener Eintrag zieht seinen Teil vor, damit er sichtbar ist.
+  zeigeHaus(eig, eintraege, hervorgehoben, faksimile = null, ebenen = []) {
+    const hv = hervorgehoben ? eintraege.find((e) => e.id === hervorgehoben) : null;
+    const reiter = hv ? hv.teil : ebenen.length === 1 ? ebenen[0] : "alle";
+    this._haus = { eig, eintraege, faksimile };
+    this._hausZeichnen(reiter, hervorgehoben);
+    this.setzeStufe("voll");
+  }
+
+  _hausZeichnen(reiter, hervorgehoben = null) {
+    const { eig, eintraege, faksimile } = this._haus;
+    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege, faksimile, reiter);
+    this.inhalt.querySelectorAll("[data-teil]").forEach((b) => b.addEventListener("click", () => { this._hausZeichnen(b.dataset.teil); this.inhalt.scrollTop = 0; }));
     if (hervorgehoben) {
       const e = this.inhalt.querySelector(`#e-${CSS.escape(hervorgehoben)}`);
       if (e) { e.classList.add("hervor"); e.scrollIntoView({ block: "center" }); }
     }
-    this.setzeStufe("voll");
   }
 
   zeigeThema(thema, groesste = null) {

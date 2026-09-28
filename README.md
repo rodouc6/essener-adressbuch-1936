@@ -200,7 +200,8 @@ Kennzeile (Präzision nur, wenn nicht hausgenau; Zähler je Teil), dann Einwohne
 höchstens vier Zeilen je Teil (Handy zwei), Beruf nur als Norm (ohne Norm die Buchschreibung kursiv),
 Eigentümer mit Besitzklasse, Gewerbe mit Rubrik (das Firmenfeld in Teil III endet auf „, Rubrik“ und wird
 darum gekürzt); bei ein oder zwei aktiven Ebenen sind deren Teile farbig markiert. „Haus im Detail ›“ öffnet
-die Hausansicht in der Sidebar mit der vollen Belegkette. Alle Adresspunkte tragen ab Straßenzoom einen
+die Hausansicht in der Sidebar mit der vollen Belegkette; dort Reiter „Alle · Einwohner · Eigentümer · Gewerbe“
+(nur bei mehr als einem Teil), Start im Teil der einzigen aktiven Ebene bzw. des angeklickten Eintrags. Alle Adresspunkte tragen ab Straßenzoom einen
 weißen Halo (`HALO` in `karte.js`), damit sich überlappende Punkte trennen und der Kontrast auf Liberty
 bleibt. HTML der Leiste: `site/js/steuerung.js`, des Popups: `site/js/popup.js`.
 
