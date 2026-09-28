@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import subprocess
 import unicodedata
@@ -15,7 +16,7 @@ from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaeh
 from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, person_nach_regel, schreibweise_von
 from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
-from pipeline.lib.layout import beeswarm, packe_gruppen, radius
+from pipeline.lib.layout import beeswarm, packe_gruppen, packe_kreise, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_datenbasis_bezug, pruefe_kapitel, pruefe_kennzahlen_bezug
 from pipeline.lib.stadtteile import Stadtteile
@@ -735,6 +736,47 @@ def baue_layouts(adressen: dict[str, dict]) -> dict[str, dict]:
     return dict(berufe=berufe, eigentuemer=layout(list(eig.values())), gewerbe=layout(list(rub.values())))
 
 
+def baue_bergbau_punkte(adressen: dict[str, dict]) -> dict:
+    """Kapiteldaten des Bergbau-Kapitels (Spec 2026-09-28 §2.4): je Gruppe ein Kreis je Hexfeld mit Packung
+    (gesammelter Zustand) und Lage (verteilter Zustand); dazu alle geprüften Häuser der Klasse Bergbau mit
+    ihrer Gesellschaft. Radius ∝ sqrt(n / maxn), ein Maßstab über alle Gruppen (max 9, min 1.2)."""
+    from pipeline.lib.bergbau import GRUPPEN as BB, NAMEN
+    from pipeline.lib.ebenen import _lonlat, hex_id, hex_mitte, hex_zelle
+    je_feld: dict[str, dict[str, int]] = {g: defaultdict(int) for g in BB}
+    haeuser: list[dict] = []
+    gesellschaften: dict[str, dict] = {}
+    for a in adressen.values():
+        hid = hex_id(*hex_zelle(a["lat"], a["lon"]))
+        for e in a["eintraege"]:
+            g = (e.get("_beruf") or {}).get("bergbau") if e.get("teil") == "I" else None
+            if g:
+                je_feld[g][hid] += 1
+        if a.get("besitz") == "bergbau":
+            name = next((e["_eigentuemer"] for e in a["eintraege"] if e.get("teil") == "II" and e.get("_kategorie") == "bergbau" and e.get("_eigentuemer")),
+                        a.get("besitz_eigentuemer") or "")
+            eid = falte(name).replace(" ", "_") if name else "unbekannt"
+            haeuser.append(dict(id=a["id"], lon=a["lon"], lat=a["lat"], eig=eid, stufe=a.get("stufe", "haus")))
+            x = gesellschaften.setdefault(eid, dict(id=eid, name=name or "unbekannter Bergbau-Eigentümer", haeuser=0))
+            x["haeuser"] += 1
+    maxn = max((n for z in je_feld.values() for n in z.values()), default=0)
+
+    def r_von(n: int) -> float:
+        return max(1.2, round(9.0 * math.sqrt(n / maxn), 3)) if maxn else 1.2
+
+    hexe: dict[str, list[dict]] = {}
+    for g in BB:
+        kreise = []
+        for hid, n in je_feld[g].items():
+            q, r = (int(v) for v in hid.split("_"))
+            lon, lat = _lonlat(*hex_mitte(q, r))
+            kreise.append(dict(id=hid, lon=lon, lat=lat, n=n, r=r_von(n)))
+        kreise.sort(key=lambda k: (-k["n"], k["id"]))
+        hexe[g] = packe_kreise(kreise, abstand=0.6) if kreise else []
+    gruppen = [dict(id=g, name=NAMEN[g], n=sum(je_feld[g].values()), felder=len(je_feld[g])) for g in BB]
+    return dict(gruppen=gruppen, hex=hexe, haeuser=haeuser,
+                gesellschaften=sorted(gesellschaften.values(), key=lambda x: (-x["haeuser"], x["id"])), maxn=maxn)
+
+
 def zechen_geojson(zeilen: list[dict]) -> dict:
     """`aktiv_1936` kommt aus dem kuratierten `status_1936` (werkzeuge/zechen_abgleich.py: Wikipedia-Liste,
     Artikel-Infobox und Stadtplan 1935 müssen übereinstimmen); „unklar“ und „stillgelegt“ sind nicht aktiv.
@@ -898,6 +940,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         _json(ausgabe / "ebenen" / f"{_EBENEN_DATEI[ebene]}.json", aggregiere(adressen, ebene))
     for name, inhalt in baue_layouts(adressen).items():
         _json(ausgabe / "layout" / f"{name}.json", inhalt)
+    punkte = baue_bergbau_punkte(adressen)
+    _json(ausgabe / "perspektiven" / "bergbau_punkte.json", punkte)
     for name, inhalt in baue_herkunft(adressen).items():
         _json(ausgabe / "herkunft" / f"{name}.json", inhalt)
     kennzahlen = baue_kennzahlen(eintraege, adressen, datum)

@@ -825,3 +825,32 @@ def test_gruppiere_bergbau_gruppe_und_rangfeld(tmp_path):
     assert "bergbau" not in punkt_feature(nach_nr["4"])["properties"]      # ungeprüfter Beruf: kein Feld, kein n_bb_
     kz = baue_kennzahlen(eintraege, a, "2026-09-28")
     assert (kz["bergbau_n"], kz["bergbau_belegschaft_n"], kz["bergbau_aufsicht_n"], kz["bergbau_leitung_n"], kz["bergbau_haeuser_n"]) == (3, 2, 1, 0, 0)
+
+
+def test_baue_bergbau_punkte():
+    from pipeline.lib.karte_export import baue_bergbau_punkte
+    from pipeline.lib.ebenen import hex_id, hex_zelle
+    from pipeline.lib.layout import ueberlappen
+    def adr(i, lat, lon, gruppen=(), besitz="ungeprueft", eig="", stufe="haus"):
+        eintraege = [dict(teil="I", _beruf=dict(bergbau=g)) for g in gruppen]
+        if eig:
+            eintraege.append(dict(teil="II", _eigentuemer=eig, _kategorie="bergbau"))
+        return dict(id=str(i), lat=lat, lon=lon, stufe=stufe, besitz=besitz, eintraege=eintraege)
+    adressen = {a["id"]: a for a in [
+        adr(1, 51.45, 7.01, ["belegschaft", "belegschaft", "aufsicht"]),
+        adr(2, 51.4501, 7.0101, ["belegschaft"], besitz="bergbau", eig="Gewerkschaft Mathias Stinnes"),
+        adr(3, 51.40, 7.10, ["leitung"], besitz="bergbau", eig="Gewerkschaft Mathias Stinnes", stufe="strasse"),
+        adr(4, 51.41, 7.11, [], besitz="bergbau"),
+        adr(5, 51.42, 7.12, [], besitz="privatperson")]}
+    p = baue_bergbau_punkte(adressen)
+    assert [g["id"] for g in p["gruppen"]] == ["belegschaft", "aufsicht", "leitung", "invaliden"]
+    assert p["gruppen"][0] == dict(id="belegschaft", name="Belegschaft", n=3, felder=1)     # Adresse 1 und 2 im selben Hexfeld
+    assert p["maxn"] == 3
+    b = p["hex"]["belegschaft"]
+    assert len(b) == 1 and b[0]["n"] == 3 and b[0]["id"] == hex_id(*hex_zelle(51.45, 7.01)) and b[0]["r"] == 9.0
+    assert set(b[0]) == {"id", "lon", "lat", "n", "r", "x", "y"}
+    assert p["hex"]["invaliden"] == [] and ueberlappen(p["hex"]["belegschaft"] + []) == []
+    assert [h["eig"] for h in p["haeuser"]] == ["gewerkschaft_mathias_stinnes", "gewerkschaft_mathias_stinnes", "unbekannt"]
+    assert p["haeuser"][1]["stufe"] == "strasse" and set(p["haeuser"][0]) == {"id", "lon", "lat", "eig", "stufe"}
+    assert p["gesellschaften"] == [dict(id="gewerkschaft_mathias_stinnes", name="Gewerkschaft Mathias Stinnes", haeuser=2),
+                                   dict(id="unbekannt", name="unbekannter Bergbau-Eigentümer", haeuser=1)]
