@@ -26,6 +26,8 @@ class Regel:
 def lade_regeln(ordner: Path) -> list[Regel]:
     regeln: list[Regel] = []
     for pfad in sorted(Path(ordner).glob("*.csv")):
+        if pfad.name == "bergbau.csv":     # Gruppen-Tabelle (pipeline/lib/bergbau.py), keine Merkmalsregel
+            continue
         for z in lies_csv(pfad):
             if z["art"] not in ARTEN:
                 raise ValueError(f"{pfad.name}: unbekannte Art {z['art']!r} (erlaubt: {sorted(ARTEN)})")

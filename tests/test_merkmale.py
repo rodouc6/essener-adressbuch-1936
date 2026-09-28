@@ -57,3 +57,10 @@ def test_fehlender_beleg_wird_abgewiesen(tmp_path):
         assert "beleg" in str(e) and "bergbau" in str(e) and "x.csv" in str(e)
     else:
         raise AssertionError("ValueError erwartet")
+
+
+def test_lade_regeln_ueberspringt_bergbau_tabelle(tmp_path):
+    from pipeline.lib.merkmale import lade_regeln
+    (tmp_path / "akademiker.csv").write_text("feld,art,muster,merkmal,beleg\nBeruf o. ä.,praefix,Dr.,akademiker,Titel\n", encoding="utf-8")
+    (tmp_path / "bergbau.csv").write_text("beruf,gruppe,geprueft,bearbeiter,datum,hinweis\nBergmann,belegschaft,,,,\n", encoding="utf-8")
+    assert len(lade_regeln(tmp_path)) == 1

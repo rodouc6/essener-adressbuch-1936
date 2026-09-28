@@ -1,0 +1,61 @@
+beruf,gruppe,geprueft,bearbeiter,datum,hinweis
+Bergmann,belegschaft,,claude,2026-09-28,
+Hauer,belegschaft,,claude,2026-09-28,
+Bergarbeiter,belegschaft,,claude,2026-09-28,
+Zechenarbeiter,belegschaft,,claude,2026-09-28,
+Fördermaschinist,belegschaft,,claude,2026-09-28,
+Anschläger,belegschaft,,claude,2026-09-28,
+Kettenanschläger,belegschaft,,claude,2026-09-28,
+Schachthauer,belegschaft,,claude,2026-09-28,
+Fahrhauer,belegschaft,,claude,2026-09-28,
+Lehrhauer,belegschaft,,claude,2026-09-28,
+Grubenschlosser,belegschaft,,claude,2026-09-28,
+Zechenschmied,belegschaft,,claude,2026-09-28,
+Zechenschreiner,belegschaft,,claude,2026-09-28,
+Zechenschlosser,belegschaft,,claude,2026-09-28,
+Bergtagelöhner,belegschaft,,claude,2026-09-28,
+Schießhauer,belegschaft,,claude,2026-09-28,
+Gesteinshauer,belegschaft,,claude,2026-09-28,
+Zechenbote,belegschaft,,claude,2026-09-28,
+Kokereiarbeiter,belegschaft,,claude,2026-09-28,Grenzfall: Kokerei meist Betriebsteil der Zeche
+Koksarbeiter,belegschaft,,claude,2026-09-28,Grenzfall: Kokerei meist Betriebsteil der Zeche
+Schlepper,belegschaft,,claude,2026-09-28,Grenzfall: im Ruhrbergbau Bergbau-Beruf; OhdAB führt ihn unter Verkehr (B 5131)
+Steiger,aufsicht,,claude,2026-09-28,
+Fahrsteiger,aufsicht,,claude,2026-09-28,
+Fahrsteig.,aufsicht,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Maschinensteiger,aufsicht,,claude,2026-09-28,
+Maschinensteig.,aufsicht,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Obersteiger,aufsicht,,claude,2026-09-28,
+Reviersteiger,aufsicht,,claude,2026-09-28,
+Reviersteig.,aufsicht,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Grubensteiger,aufsicht,,claude,2026-09-28,
+Grubensteig.,aufsicht,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Elektrosteiger,aufsicht,,claude,2026-09-28,
+Wettersteiger,aufsicht,,claude,2026-09-28,
+Schießmeister,aufsicht,,claude,2026-09-28,
+Förderaufseher,aufsicht,,claude,2026-09-28,
+Koksmeister,aufsicht,,claude,2026-09-28,
+Lampenmeister,aufsicht,,claude,2026-09-28,
+Schachtaufseh.,aufsicht,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Bohrmeister,aufsicht,,claude,2026-09-28,
+Obermaschinenmeister,aufsicht,,claude,2026-09-28,
+Zechenbeamter,leitung,,claude,2026-09-28,
+Grubenbeamter,leitung,,claude,2026-09-28,
+Bergbeamter,leitung,,claude,2026-09-28,
+Bergwerksbeamter,leitung,,claude,2026-09-28,
+kaufmännischer Grubenbeamter,leitung,,claude,2026-09-28,
+Bergassess.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Bergassessor,leitung,,claude,2026-09-28,
+Bergrat,leitung,,claude,2026-09-28,
+Bergwerksdirektor,leitung,,claude,2026-09-28,
+Bergwerksunternehm.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Grubeninspektor,leitung,,claude,2026-09-28,
+Bergrevierinspekt.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Markscheider,leitung,,claude,2026-09-28,
+Markscheiderassistent,leitung,,claude,2026-09-28,
+Bergbauingenieur,leitung,,claude,2026-09-28,
+Kokereiassist.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Zechenangest.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Bergbauangest.,leitung,,claude,2026-09-28,abgekürzte Normvariante in berufe.csv
+Oberschaffner,leitung,,claude,2026-09-28,Grenzfall: OhdAB B 2111; Bedeutung im Bergbau unklar
+Berginvalide,invaliden,,claude,2026-09-28,

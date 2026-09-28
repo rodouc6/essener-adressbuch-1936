@@ -801,3 +801,27 @@ def test_schreibe_paket_schreibt_herkunft(tmp_path):
     for name in ("stellung", "gruppe", "niveau", "berufe", "besitz", "eigentuemer", "gewerbe", "rubriken"):
         assert (tmp_path / "herkunft" / f"{name}.json").exists(), name
     assert json.loads((tmp_path / "herkunft" / "stellung.json").read_text(encoding="utf-8"))["unbestimmt"]["nennungen"] == 1
+
+
+def test_gruppiere_bergbau_gruppe_und_rangfeld(tmp_path):
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    # Beide Schreibweisen auf ein Item aus der Test-OhdAB (B 21112-100); die Bergbau-Gruppe hängt an der Norm, nicht am Item.
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja"),
+                     dict(schreibweise="Steiger", beruf="Steiger", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja"),
+                     dict(schreibweise="Lehrer", beruf="Lehrer", status="", ohdab_id="B 84124-120", niveau_unsicher="", geprueft="ja")])
+    basis = dict(stufe="haus", lat="51.4", lon="7.0", strasse_norm="x", strasse_roh="X", hausnr="1", Vorort="", stadtteil="Kray", lastname="N", firstname="", page="I-1")
+    def e(i, beruf, hausnr="1"):
+        return dict(basis, id=str(i), teil="I", hausnr=hausnr, **{"Beruf o. ä.": beruf})
+    eintraege = [e(1, "Bergm."), e(2, "Steiger"), e(3, "Bergm.", "2"), e(4, "Lehrer", "3"), e(5, "Kfm.", "4")]
+    a = gruppiere(eintraege, [], None, berufe=b, ohdab=o, bergbau={"Bergmann": "belegschaft", "Steiger": "aufsicht"})
+    nach_nr = {x["hausnr"]: x for x in a.values()}
+    assert [x["_beruf"].get("bergbau") for x in nach_nr["1"]["eintraege"]] == ["belegschaft", "aufsicht"]
+    p1 = punkt_feature(nach_nr["1"])["properties"]
+    assert p1["bergbau"] == "aufsicht" and p1["n_bb_belegschaft"] == 1 and p1["n_bb_aufsicht"] == 1   # Rang: Aufsicht vor Belegschaft
+    assert punkt_feature(nach_nr["2"])["properties"]["bergbau"] == "belegschaft"
+    assert "bergbau" not in punkt_feature(nach_nr["3"])["properties"] and "bergbau" not in nach_nr["3"]["eintraege"][0]["_beruf"]
+    assert "bergbau" not in punkt_feature(nach_nr["4"])["properties"]      # ungeprüfter Beruf: kein Feld, kein n_bb_
+    kz = baue_kennzahlen(eintraege, a, "2026-09-28")
+    assert (kz["bergbau_n"], kz["bergbau_belegschaft_n"], kz["bergbau_aufsicht_n"], kz["bergbau_leitung_n"], kz["bergbau_haeuser_n"]) == (3, 2, 1, 0, 0)

@@ -70,6 +70,8 @@ def zaehlfelder(a: dict) -> dict[str, int]:
             if b.get("stellung_quelle") == "hand":
                 n["n_stellung_hand"] += 1      # Nenner für „davon handgeprüft“ (kein n_st_-Präfix: keine Klasse)
             n["n_gr_" + b.get("gruppe", "ungeprueft")] += 1
+            if b.get("bergbau"):
+                n["n_bb_" + b["bergbau"]] += 1     # Bergbau-Gruppe je Norm (pipeline/lib/bergbau.py)
         elif e["teil"] == "III" and e.get("_gewerbe"):
             g = e["_gewerbe"]
             if (g["schluessel"], "g:" + g["gruppe"]) not in gesehen:

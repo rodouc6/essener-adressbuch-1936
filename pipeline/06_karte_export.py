@@ -34,6 +34,8 @@ ohdab = lade_ohdab(W / "kuratierung" / "ohdab.csv") if berufe else {}
 hauptgruppen = lies_csv(W / "kuratierung" / "hauptgruppen.csv")   # Bezeichnungen der OhdAB-Hauptgruppen (Spec §5.2)
 gewerbe_pfad = W / "kuratierung" / "gewerbe.csv"
 gewerbe = lies_csv(gewerbe_pfad) if gewerbe_pfad.exists() else []
+bergbau_pfad = W / "kuratierung" / "merkmale" / "bergbau.csv"
+bergbau = lies_csv(bergbau_pfad) if bergbau_pfad.exists() else []
 osm_pfad = W / "build" / "osm_strassen.json"
 if osm_pfad.exists():
     osm_linien = json.loads(osm_pfad.read_text(encoding="utf-8"))["linien"]
@@ -54,5 +56,5 @@ k = schreibe_paket(ziel, lies_csv(W / "build" / "eintraege.csv"), lade_regeln(W 
                    zechen, datetime.date.today().isoformat(), kacheln=kacheln, faksimile=faksimile, beispiele=beispiele,
                    themen=W / "kuratierung" / "themen", eigentuemer=eigentuemer, berufe=berufe, ohdab=ohdab,
                    hauptgruppen=hauptgruppen, gewerbe=gewerbe, osm_linien=osm_linien, stadtteile=stadtteile,
-                   perspektiven=W / "kuratierung" / "perspektiven")
+                   perspektiven=W / "kuratierung" / "perspektiven", bergbau=bergbau)
 print(json.dumps(k, ensure_ascii=False, indent=1))

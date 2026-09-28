@@ -9,6 +9,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
+from pipeline.lib.bergbau import GRUPPEN as BB_GRUPPEN, lade_bergbau, pruefe_gegen_berufe, rang_gruppe
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
 from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, person_nach_regel, schreibweise_von
@@ -189,7 +190,8 @@ def _besitz_aus_spanne(a: dict, spannen: dict[str, list[dict]]) -> None:
 
 def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str, dict] | None = None,
              berufe: dict[str, dict] | None = None, ohdab: dict[str, dict] | None = None,
-             gewerbe: dict[str, dict] | None = None, stadtteile: "Stadtteile | None" = None) -> dict[str, dict]:
+             gewerbe: dict[str, dict] | None = None, stadtteile: "Stadtteile | None" = None,
+             bergbau: dict[str, str] | None = None) -> dict[str, dict]:
     """Verortete Einträge je Adresse bündeln; Einträge sortiert, Merkmale, (Teil II) geprüfter Eigentümer,
     Berufszuordnung (mit OhdAB-Hauptgruppe als `gruppe`, Spec §5.2) und Gewerbezuordnung (Teil III) angehängt; `besitz` je Adresse =
     Kategorie | gemischt | ungeprueft (Spec §6.1), `niveau`/`n_niveau` je Adresse aus den Berufszuordnungen
@@ -220,6 +222,8 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         beruf = berufszuordnung(e, berufe, ohdab) if berufe and e.get("teil") in ("I", "II") else None
         if beruf:
             beruf["gruppe"] = hauptgruppe(beruf["gattung_id"])
+        if beruf and bergbau and bergbau.get(beruf["beruf"]):
+            beruf["bergbau"] = bergbau[beruf["beruf"]]      # Spec Bergbau §2.3
         gew = None
         if e.get("teil") == "III" and e.get("Firmenname"):
             firma, rubrik = rubrik_von(e["Firmenname"])
@@ -278,7 +282,11 @@ def punkt_feature(a: dict) -> dict:
         for m in e["_merkmale"]:
             merkmale[m] += 1
     p.update({f"m_{m}": n for m, n in sorted(merkmale.items())})
-    p.update(zaehlfelder(a))
+    z = zaehlfelder(a)
+    p.update(z)
+    bb = rang_gruppe(z)
+    if bb:
+        p["bergbau"] = bb        # höchste Bergbau-Gruppe im Haus (Thema auf der Karte, Spec §5)
     return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [a["lon"], a["lat"]]},
             "properties": p}
 
@@ -490,6 +498,8 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
     gw_regel = sum(1 for e in teil_iii if e["_gewerbe"].get("quelle") == "vorschlag")
     besitz_geprueft = sum(1 for a in adressen.values() if a.get("besitz", "ungeprueft") != "ungeprueft")
     besitz_regel = sum(1 for a in adressen.values() if a.get("besitz_pruefung") == "regel")
+    bb = [e for e in teil_i if (e.get("_beruf") or {}).get("bergbau")]
+    bb_je = {g: sum(1 for e in bb if e["_beruf"]["bergbau"] == g) for g in BB_GRUPPEN}
     return dict(eintraege_je_teil=dict(sorted(je_teil.items())),
                 stufen={s: round(100 * je_stufe[s] / n, 1) for s in STUFEN},
                 verortet=sum(je_stufe[s] for s in STUFEN[:3]), offen=je_stufe["offen"],
@@ -516,7 +526,10 @@ def baue_kennzahlen(eintraege: list[dict], adressen: dict[str, dict], datum: str
                 gewerbe_entschieden=_prozent(gw_claude, len(teil_iii)),
                 gewerbe_vorschlag=_prozent(gw_regel, len(teil_iii)),
                 betriebe_n=len(teil_iii), gewerbe_hand_n=gw_hand, gewerbe_claude_n=gw_claude, gewerbe_regel_n=gw_regel,
-                stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)))
+                stadtteil_polygon=_prozent(sum(1 for a in adressen.values() if a.get("stadtteil_quelle") == "polygon"), len(adressen)),
+                bergbau_n=len(bb), bergbau_belegschaft_n=bb_je["belegschaft"], bergbau_aufsicht_n=bb_je["aufsicht"],
+                bergbau_leitung_n=bb_je["leitung"], bergbau_invaliden_n=bb_je["invaliden"],
+                bergbau_haeuser_n=sum(1 for a in adressen.values() if a.get("besitz") == "bergbau"))
 
 
 TOP_N = 10
@@ -823,7 +836,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
                    eigentuemer: list[dict] | None = None, berufe: list[dict] | None = None,
                    ohdab: dict[str, dict] | None = None, hauptgruppen: list[dict] | None = None,
                    gewerbe: list[dict] | None = None, osm_linien: dict | None = None,
-                   stadtteile: "Stadtteile | None" = None, perspektiven: Path | None = None) -> dict:
+                   stadtteile: "Stadtteile | None" = None, perspektiven: Path | None = None,
+                   bergbau: list[dict] | None = None) -> dict:
     """Schreibt das komplette Datenpaket nach `ausgabe` (site/daten) und gibt die Kennzahlen zurück."""
     ausgabe = Path(ausgabe)
     hg = lade_hauptgruppen(hauptgruppen or [])
@@ -835,9 +849,14 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     if themen is not None:
         schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
+    bb_tabelle = lade_bergbau(bergbau or [])
+    if bb_tabelle and berufe:
+        fehlt = pruefe_gegen_berufe(bb_tabelle, berufe)
+        if fehlt:
+            raise ValueError(f"kuratierung/merkmale/bergbau.csv: Norm nicht in berufe.csv: {fehlt}")
     adressen = gruppiere(eintraege, regeln, lade_kuratierung(eigentuemer or []),
                          berufe=lade_berufe(berufe or []), ohdab=ohdab or {}, gewerbe=lade_gewerbe(gewerbe or []),
-                         stadtteile=stadtteile)
+                         stadtteile=stadtteile, bergbau=bb_tabelle)
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)

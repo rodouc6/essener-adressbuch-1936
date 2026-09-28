@@ -66,3 +66,14 @@ def test_stadtteil_aggregation_verwirft_keine_adresse_ohne_stadtteil():
     ohne = next(s for s in sd if s["id"] == "ohne_stadtteil")
     assert ohne["adressen"] == 1 and "rang_nord" not in ohne
     assert all("rang_nord" in s for s in sd if s["id"] != "ohne_stadtteil")
+
+
+def test_zaehlfelder_bergbau():
+    b_berg = dict(niveau="fachlich", stellung="arbeiter", stellung_quelle="hand", gruppe="B21", bergbau="belegschaft")
+    b_steig = dict(niveau="aufsicht", stellung="angestellte", stellung_quelle="hand", gruppe="B21", bergbau="aufsicht")
+    b_ohne = dict(niveau="fachlich", stellung="arbeiter", stellung_quelle="hand", gruppe="B24")
+    a = _adresse(1, 51.45, 7.01, eintraege=[("I", b_berg, None), ("I", b_berg, None), ("I", b_steig, None), ("I", b_ohne, None), ("I", None, None)])
+    z = zaehlfelder(a)
+    assert z["n_bb_belegschaft"] == 2 and z["n_bb_aufsicht"] == 1
+    assert "n_bb_leitung" not in z and z["n_gr_ungeprueft"] == 1       # ungeprüfter Beruf: kein n_bb_, bleibt Ausschluss
+    assert sum(1 for k in z if k.startswith("n_bb_")) == 2
