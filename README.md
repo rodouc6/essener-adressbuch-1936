@@ -283,7 +283,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
 | `strassen.geojson`, `hex.geojson` | Straßenlinien (heutige OSM-Führung) und Hex-Polygone, auch als Layer `strassen`/`hex` in `adressen.pmtiles` |
 | `stadtteile.geojson` | Heutige OSM-Stadtteilgrenzen (`Stadtteile.geojson()`), je Feature `id` (Name), `quelle`, `stand` — nicht die Stadtteilgrenzen von 1936, siehe `docs/stadtteile.md` |
-| `perspektiven/index.json` | Kapitelübersicht der Schlaglichter-Seite (`id, titel, untertitel, freigegeben, reihenfolge`, Teilprojekt 5b, s. u.); vier Kapitel, Kapitel 0 „Die Datenbasis“ mit Trichtern aus den Kennzahlen (`docs/perspektiven.md`) |
+| `perspektiven/index.json` | Kapitelübersicht der Schlaglichter-Seite (`id, titel, untertitel, freigegeben, reihenfolge`, Teilprojekt 5b, s. u.); fünf Kapitel, Kapitel 0 „Die Datenbasis“ mit Trichtern aus den Kennzahlen (`docs/perspektiven.md`), Kapitel 4 „Bergbau 1936“ (Vorschau, `docs/bergbau.md`; Kapiteldaten `perspektiven/bergbau_punkte.json`) |
 | `perspektiven/<id>.json` | Vollständiges, aufgelöstes Kapitel (Schritte, Ansichten, Gruppen, Grenzen, Quellen) — Schema in `docs/perspektiven.md` |
 
 ### URL-Parameter (`karte.html?…`)
@@ -320,7 +320,12 @@ erscheint die Kachel auf der Startseite). Die Definitionen liegen versioniert in
 Stufe 06 kopiert sie nach `site/daten/themen/` und erzeugt dort `index.json`. Merkmale stammen aus `kuratierung/merkmale/<name>.csv`
 (Spalten `feld`, `art`, `muster`, `merkmal`, `beleg`, `bearbeiter`, `datum`) und werden in Stufe 06 an
 jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
-`thema=<id>` in der URL, kombinierbar mit Suche und Filtern.
+`thema=<id>` in der URL, kombinierbar mit Suche und Filtern. Ausnahme in `kuratierung/merkmale/`:
+`bergbau.csv` ist keine Merkmalsregel, sondern die Tabelle Norm → Bergbau-Gruppe (`docs/bergbau.md`).
+Optional `schalter: {praefix, klassen, namen}` (seit 2026-09-28, Thema „Bergbau“): die Legende zeigt je
+Klasse ein Kästchen; abgeschaltete Klassen fallen aus dem Kartenfilter (`any` über `<praefix><klasse> > 0`),
+die Farbe folgt dem Rang der Reihenfolge in `klassen` über die eingeschalteten; Zustand im URL-Parameter
+`klassen=` (leer = alle, `keine`, sonst Komma-Liste; nur bei einem Thema mit Schaltern).
 
 ## Berufe (Teilprojekt 4)
 
@@ -471,7 +476,8 @@ Eintrag die Herkunft; Prinzipien und entschiedene Grenzfälle in `docs/gewerbe.m
 `zaehlfelder(adresse)` zählt je Adresse einmal: Teile (`n_I`, `n_II`, `n_III`), Niveau (`n_helfer` …,
 wie bisher), Stellung (`n_st_<klasse>`), Berufsgruppe (`n_gr_<gruppe>`), Gewerbegruppe/-art
 (`n_gw_<gruppe>`, `n_gwa_<art>`, je Betrieb einmal über die Dublettenregel) und Besitzklasse
-(`n_bs_<klasse>`). Teil-I-Einträge ohne geprüften Beruf zählen bei Stellung und Gruppe als
+(`n_bs_<klasse>`) sowie Bergbau-Gruppe (`n_bb_<gruppe>`, aus `kuratierung/merkmale/bergbau.csv`, `docs/bergbau.md`;
+je Adresse zusätzlich das Rangfeld `bergbau` in den Kacheln). Teil-I-Einträge ohne geprüften Beruf zählen bei Stellung und Gruppe als
 `unbestimmt`/`ungeprueft` mit — der Nenner bleibt so sichtbar, statt Zeilen stillschweigend zu
 verwerfen. `aggregiere(adressen, ebene)` summiert diese Felder auf drei Ebenen
 (`EBENEN = ("strasse", "stadtteil", "hex")`):
@@ -553,6 +559,9 @@ s. o.). Stand 2026-09-25 (Lauf nach der ersten Handprüfungsrunde): `stellung_ge
 `gewerbe_vorschlag: 11.7`, `besitz_geprueft: 7546` (nach den Hausnummernspannen und der Regel vom 26.9. 64439), `stadtteil_polygon: 100.0`, `adressen: 70316`. Diese Werte
 ändern sich mit jeder weiteren Handprüfungsrunde beim nächsten Lauf von `pipeline/06_karte_export.py`.
 
+Seit 2026-09-28 Bergbau (Kapitel 4): `bergbau_n` (verortete Teil-I-Einträge mit Bergbau-Norm), `bergbau_belegschaft_n`,
+`bergbau_aufsicht_n`, `bergbau_leitung_n`, `bergbau_invaliden_n`, `bergbau_haeuser_n` (geprüfte Adressen der Klasse Bergbau).
+
 Seit 2026-09-27 zusätzlich absolute Zähler für die Trichter von Kapitel 0 der Schlaglichter: `eintraege`,
 `eintraege_I/II/III`, `stufe_haus/strasse/stadtplan/offen`, `besitz_hand` (= `besitz_geprueft − besitz_regel`),
 `teil_i_n`, `beruf_geprueft_n`, `stellung_bestimmt_n` (= hand + vorschlag), `stellung_hand_n/vorschlag_n/unbestimmt_n` (Summe = `teil_i_n`), `betriebe_n`,
@@ -601,9 +610,12 @@ die Gruppen-Kurzform `wie:`, die Platzhalter in `grenzen` und die Freigabelogik 
 `docs/perspektiven.md`. Drei Kapitel sind angelegt (Wohneigentum; Soziale Stellung; Gewerbe und
 Versorgung), alle mit `freigegeben: false` — die Ansichten sind fertig, die Texte noch Platzhalter.
 
-**Formen** (`site/js/formen/{balken,bubbles,rangliste,stadtteilkarte,skalen}.js`): reine SVG-Erzeuger
+**Formen** (`site/js/formen/{balken,bubbles,rangliste,stadtteilkarte,punktkarte,skalen}.js`): reine SVG-Erzeuger
 ohne DOM-Abhängigkeit, gemeinsame Schnittstelle `zeige(ansicht, daten, optionen) → {svg, legende,
-zahlen}`. Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
+zahlen}`. Die Punktkarte (Kapitel 4 Bergbau, `docs/bergbau.md`) trägt in der Ansicht das Feld
+`punkte: {zustand: gesammelt | karten | haeuser, hervor: [Gruppenname]}` und zusätzlich `aktualisiere(svgEl, …)`:
+folgen zwei Punktkarten-Schritte mit denselben Gruppen aufeinander, verschiebt die Seite die vorhandenen Kreise
+(CSS-Transition) statt neu zu zeichnen; ihre Kapitellinks führen auf das Thema „Bergbau“ der Karte (`klassen=`). Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
 dargestellt (Grau-Regel); `zahlen` nennt neben N und den ausgeschlossenen Nennungen, wie viele
 Einheiten der Ebene gezeichnet sind und wie viele unter `min_n` grau bleiben — die Perspektiven-Seite
 druckt das als „… · 15 von 50 Einheiten gezeichnet · 8 unter 200 Nennungen (grau, nicht eingefärbt)“,
