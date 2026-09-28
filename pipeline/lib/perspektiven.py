@@ -4,9 +4,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-DATEN = ("stellung", "gruppe", "niveau", "besitz", "gewerbe")
+DATEN = ("stellung", "gruppe", "niveau", "besitz", "gewerbe", "bergbau")
 EBENEN = ("adresse", "strasse", "stadtteil", "hex")
-FORMEN = ("karte", "stadtteilkarte", "bubbles", "balken", "multiples", "rangliste")
+FORMEN = ("karte", "stadtteilkarte", "bubbles", "balken", "multiples", "rangliste", "punktkarte")
+PUNKTE_ZUSTAENDE = ("gesammelt", "karten", "haeuser")
 MASSE = ("anteil", "dominant", "mischung", "dichte")
 KAUFLEUTE = ("unbestimmt", "angestellte", "selbstaendige")
 MUSTER = ("schraffur",)
@@ -67,6 +68,28 @@ def pruefe_ansicht(a: dict, wo: str) -> list[str]:
         if not g.get("name") or not isinstance(g.get("aus"), list) or not g.get("farbe"): f.append(f"{wo}: Gruppe unvollständig {g!r}")
     if a["mass"] in ("anteil", "dichte") and a["bezug"] not in namen: f.append(f"{wo}: bezug {a['bezug']!r} ist keine Gruppe")
     if not isinstance(a["min_n"], int) or a["min_n"] < 0: f.append(f"{wo}: min_n muss ganze Zahl ≥ 0 sein")
+    p = a.get("punkte")
+    if a["form"] == "punktkarte" or p is not None:
+        if not isinstance(p, dict): f.append(f"{wo}: punktkarte braucht punkte {{zustand, hervor}}")
+        else:
+            if p.get("zustand") not in PUNKTE_ZUSTAENDE: f.append(f"{wo}: punkte.zustand {p.get('zustand')!r} unbekannt")
+            if not isinstance(p.get("hervor"), list): f.append(f"{wo}: punkte.hervor muss Liste sein")
+            elif any(h not in namen for h in p["hervor"]): f.append(f"{wo}: punkte.hervor nennt keine Gruppe")
+    return f
+
+
+def pruefe_punkte_bezug(k: dict, punkte: dict) -> list[str]:
+    """Schritte im Zustand `haeuser` gruppieren nach Gesellschafts-IDs; jede muss in bergbau_punkte.json stehen —
+    sonst bliebe eine Gesellschaft stumm grau, und der Text spräche von Häusern, die niemand sieht."""
+    ids = {g["id"] for g in punkte.get("gesellschaften", [])}
+    f = []
+    for s in k.get("schritte", []):
+        a = s.get("ansicht", {})
+        if a.get("form") != "punktkarte" or (a.get("punkte") or {}).get("zustand") != "haeuser": continue
+        for g in a.get("gruppen", []):
+            for aus in g.get("aus", []):
+                if aus not in ids:
+                    f.append(f"Kapitel {k.get('id')!r}, Schritt {s.get('id')!r}: Gesellschaft {aus!r} fehlt in bergbau_punkte.json")
     return f
 
 

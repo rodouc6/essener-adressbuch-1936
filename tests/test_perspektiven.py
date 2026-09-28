@@ -121,3 +121,23 @@ def test_trichter_ohne_anteil_und_aus_doppelt():
     assert any("ohne_anteil" in x for x in pruefe_ansicht(a, "S"))
     d = json.loads(json.dumps(TRICHTER)); d["stufen"].append({"name": "Nochmal", "aus": "eintraege", "farbe": "#000"})
     assert any("aus doppelt" in x for x in pruefe_ansicht(d, "S"))
+
+
+def test_punktkarte_und_punkte_feld():
+    k = json.loads(json.dumps(GUT))
+    k["schritte"][0]["ansicht"].update(daten="bergbau", form="punktkarte", punkte={"zustand": "karten", "hervor": ["Privat"]},
+                                       gruppen=[{"name": "Privat", "aus": ["belegschaft"], "farbe": "#c2410c"}])
+    assert pruefe_kapitel(k) == []
+    k["schritte"][0]["ansicht"]["punkte"] = {"zustand": "fliegen", "hervor": "Privat"}
+    f = pruefe_kapitel(k)
+    assert any("zustand" in x for x in f) and any("hervor" in x for x in f)
+
+
+def test_pruefe_punkte_bezug_nennt_unbekannte_gesellschaften():
+    from pipeline.lib.perspektiven import pruefe_punkte_bezug
+    k = json.loads(json.dumps(GUT))
+    k["schritte"][0]["ansicht"].update(daten="besitz", ebene="adresse", form="punktkarte", punkte={"zustand": "haeuser", "hervor": []},
+                                       gruppen=[{"name": "Stinnes", "aus": ["gewerkschaft_mathias_stinnes"], "farbe": "#e69f00"}, {"name": "X", "aus": ["gibts_nicht"], "farbe": "#000"}])
+    punkte = {"gesellschaften": [{"id": "gewerkschaft_mathias_stinnes", "name": "Gewerkschaft Mathias Stinnes", "haeuser": 725}]}
+    assert pruefe_punkte_bezug(k, punkte) == ["Kapitel 'wohneigentum', Schritt 'anteile': Gesellschaft 'gibts_nicht' fehlt in bergbau_punkte.json"]
+    assert pruefe_punkte_bezug(GUT, punkte) == []

@@ -26,7 +26,7 @@
          {"name": "Teil III: Betriebe", "aus": "eintraege_III", "farbe": "#c2410c"}],
        "erklaerungen": {
          "eintraege": "Jede Zeile der Transkription ist ein Eintrag des Buches: eine Person, ein Haus mit Eigentümer oder ein Betrieb.",
-         "eintraege_I": "Haushaltsvorstände mit Beruf und Adresse. Die Namen H bis J fehlen in der Vorlage.",
+         "eintraege_I": "Eingetragene Personen mit Beruf und Adresse: Erwerbstätige, Witwen, Rentner, auch erwachsene Söhne im selben Haus. Die Namen H bis J fehlen in der Vorlage.",
          "eintraege_II": "Ein Eintrag je Haus, mit dem Eigentümer; Eigentümer vieler Häuser stehen oft einmal je Straßenseite.",
          "eintraege_III": "Betriebe nach Branchen, mit Firmenname und Adresse."}}},
     {"id": "weg",
