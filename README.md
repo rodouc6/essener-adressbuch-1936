@@ -228,11 +228,14 @@ Eigentümer“ aber nur mit `identitaet=sicher`. Schreibweisen aus `kuratierung/
 „Kath. Kirchengem. ‹Katernberg›“; der Export sucht zuerst diese, dann die einfache Schreibweise. Auf der Karte
 zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
 „Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL).
-Eigentümer-Vergleich (2026-09-29): `eigentuemer=` nimmt bis zu fünf Namen, Trenner `|`; Farbe nach Platz (Rot,
-Blau, Grün, Violett, Orange), Ring bei Häusern in mehreren Gruppen; Vergleichsleiste mit Häusern, Einträgen und
-Top-3-Stadtteilen je Eigentümer; „Größte Eigentümer“-Knöpfe, Suchvorschläge (Plus) und der Eigentümer-Knopf in
-Popup und Hausansicht fügen hinzu; CSV mit Spalte `eigentuemer`. Trefferlisten lesen Adresse und Koordinaten aus
-dem Kurzindex `adressen_kurz/<x>.json` (Spec 2026-09-29-eigentuemer-vergleich).
+Vergleich (2026-09-29, Spec 2026-09-29-themenbaum): `vergleich=` nimmt bis zu fünf typisierte Schlüssel
+`eig:<Name>` (Eigentümer) oder `norm:<ohdab_id>` (Berufsnorm), Trenner `|`; alte Links mit `eigentuemer=` und
+`ohdab=` werden gelesen, aber nicht mehr geschrieben. Farbe nach Platz (Rot, Blau, Grün, Violett, Orange), Ring
+bei Häusern in mehreren Gruppen; Vergleichsleiste mit Häusern, Einträgen und Top-3-Stadtteilen je Gruppe, darunter
+die Grundgesamtheit je Schlüsseltyp (Teil I mit geprüftem Beruf, Lücke H–J; Sammelzeilen bei Eigentümern) und
+ein Hinweis, wenn die Gruppen um mehr als das Zehnfache auseinanderliegen. Pills im Themenbaum, Suchvorschläge
+(Plus) und die Knöpfe in Popup und Hausansicht (Eigentümer und Berufsnorm) fügen hinzu; CSV mit Spalte
+`gruppe`. Trefferlisten lesen Adresse und Koordinaten aus dem Kurzindex `adressen_kurz/<x>.json`.
 Hausnummernspannen (2026-09-26): Das Adressbuch (Teil II, Straßen- und Häuserverzeichnis) druckt einen Eigentümer vieler aufeinanderfolgender Häuser
 einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“, danach die Häuser nur mit
 Bewohnern; Faksimile II-335). Der Parser liefert dafür `hausnr`/`hausnr_bis`; `karte_export.gruppiere`
@@ -333,14 +336,21 @@ Stufe 06 kopiert sie nach `site/daten/themen/` und erzeugt dort `index.json`. Me
 jeden Eintrag angehängt und je Adresse gezählt (`m_<merkmal>` in `adressen.pmtiles`). Aktiv über
 `thema=<id>` in der URL, kombinierbar mit Suche und Filtern. Ausnahme in `kuratierung/merkmale/`:
 `bergbau.csv` ist keine Merkmalsregel, sondern die Tabelle Norm → Bergbau-Gruppe (`docs/bergbau.md`).
-Optional `schalter: {praefix, klassen, namen}` (seit 2026-09-28, Thema „Bergbau“): die Legende zeigt je
-Klasse ein Kästchen; abgeschaltete Klassen fallen aus dem Kartenfilter (`any` über `<praefix><klasse> > 0`),
+Optional `schalter: {praefix, klassen, namen}` (seit 2026-09-28, Thema „Bergbau“): die Sidebar zeigt je
+Klasse ein Kästchen (bis 2026-09-29 in der Legende rechts unten); abgeschaltete Klassen fallen aus dem Kartenfilter (`any` über `<praefix><klasse> > 0`),
 die Farbe folgt dem Rang der Reihenfolge in `klassen` über die eingeschalteten; Zustand im URL-Parameter
 `klassen=` (leer = alle, `keine`, sonst Komma-Liste; nur bei einem Thema mit Schaltern).
 Zweite Form `schalter: {feld, klassen}` (seit 2026-09-29, Themen „Besitz“ und „Berufe“): die Klassen sind
 Werte des Farbfelds (ein Wert je Adresse, z. B. Mehrheitsniveau), der Filter ist ein `match` auf das Feld,
 die Farbe bleibt am Feld; `ungeprueft` gehört als eigene Klasse dazu, damit graue Adressen nicht still
 verschwinden. Die Namen kommen aus `site/js/kategorien.js` (je Farbfeld), `namen` im JSON ist optional.
+Themenbaum (seit 2026-09-29, `baum: true`, Themen Besitz, Bergbau, Berufe): die Schalterklassen stehen als
+Oberkategorien in der Sidebar (`site/js/themenbaum.js`), mit Häuserzahl und Klapppfeil; darunter die
+Einzelbezeichnungen aus `themen/<id>_liste.json` als Pills (15, dann „alle n anzeigen“), Klick startet den
+Vergleich. Das Thema Berufe färbt seit 2026-09-29 nach Stellung (Hausfeld `stellung`: Mehrheit der geprüften
+Bewohner, Vorschläge zählen mit, Gleichstand `gemischt`; neun Klassen einschließlich `kaufleute` und
+`unbestimmt`), das Niveau bleibt Feld im Popup und Datenkern der Werkstatt. Die Legende rechts unten erklärt
+nur noch Zeichen (Präzision, Ring, Größe).
 
 ## Berufe (Teilprojekt 4)
 

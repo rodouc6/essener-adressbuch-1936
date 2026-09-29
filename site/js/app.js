@@ -161,6 +161,7 @@ async function wendeThemaAn() {
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
   schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden
+  if (t && mobil() && sidebar.el.dataset.stufe === "griff") sidebar.setzeStufe("halb");
 }
 
 // Eine Ansicht aus der URL auf Karte, Sidebar und Legende legen (Spec §8). Die Ebenendaten
@@ -433,7 +434,8 @@ async function start() {
     const [aid, eid] = zustand.id.split(".");   // "adressId" oder "adressId.eintragId"
     oeffneHaus(aid, eid || null);
   }
-  sidebar.setzeStufe(mobil() ? (zustand.q ? "halb" : "griff") : "halb");
+  // Am Handy öffnet das Blatt bei Suche oder aktivem Thema auf „halb“, damit der Themenbaum erreichbar ist (Spec Themenbaum §2).
+  sidebar.setzeStufe(mobil() ? (zustand.q || zustand.thema ? "halb" : "griff") : "halb");
 }
 // Kein Zurücksetzen des eigCache bei "sourcedata" mehr: Punkteigenschaften sind pro Build
 // unveränderlich, egal ob sie aus der Kachel oder der Adressscherbe stammen (Task 13-Review).
