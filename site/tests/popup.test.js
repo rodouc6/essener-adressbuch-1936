@@ -128,10 +128,10 @@ test("popupZeile: Eigentümer mit Kanon und Klasse, per Regel mit Vermerk; Gewer
   assert.equal(popupZeile(VIELE[5]), `<div class="z" data-eintrag="e1"><b><button class="eiglink" data-schluessel="eig:Fried. Krupp AG">Fried. Krupp AG</button></b> <span class="n">· Industrie</span></div>`);
   const regel = { id: "r", teil: "II", name: "Schmidt", vorname: "W.", firma: "", eigentuemer_kanon: "", kategorie: "privatperson", pruefung: "regel" };
   assert.match(popupZeile(regel), /<b>Schmidt, W\.<\/b> <span class="n">· Privatperson \(Regel\)<\/span>/);
-  assert.equal(popupZeile(VIELE[6]), `<div class="z" data-eintrag="g1"><b>Firma 1</b> <span class="n">· Schneiderin</span></div>`);
+  assert.equal(popupZeile(VIELE[6]), `<div class="z" data-eintrag="g1"><b>Firma 1</b> <span class="n">· <button class="eiglink" data-schluessel="rub:Schneiderin">Schneiderin</button></span></div>`);
   assert.equal(popupZeile({ id: "g0", teil: "III", name: "Meier", vorname: "K.", firma: "", rubrik: "" }), `<div class="z" data-eintrag="g0"><b>Meier, K.</b></div>`);
   // Das Firmenfeld in Teil III endet im Datenpaket auf „, Rubrik“ — der Zusatz darf sie nicht doppeln.
-  assert.equal(popupZeile({ id: "g9", teil: "III", name: "", vorname: "", firma: "Karl Autenrieth, Kunstgewerbe", rubrik: "Kunstgewerbe" }), `<div class="z" data-eintrag="g9"><b>Karl Autenrieth</b> <span class="n">· Kunstgewerbe</span></div>`);
+  assert.equal(popupZeile({ id: "g9", teil: "III", name: "", vorname: "", firma: "Karl Autenrieth, Kunstgewerbe", rubrik: "Kunstgewerbe" }), `<div class="z" data-eintrag="g9"><b>Karl Autenrieth</b> <span class="n">· <button class="eiglink" data-schluessel="rub:Kunstgewerbe">Kunstgewerbe</button></span></div>`);
 });
 
 test("popupZeile: Teil-I-Eintrag ohne Namen nimmt die Firma", () => {
@@ -229,4 +229,9 @@ test("hausHtml mit Gruppen: Treffer-Einträge tragen Balken in Gruppenfarbe und 
   assert.match(hausHtml(EIG, e, null, "auto"), /<button data-teil="alle" aria-pressed="true">/);
   assert.match(hausHtml(EIG, e, null, "alle", [GR[1]]), /<button data-teil="alle" aria-pressed="true">/);
   assert.match(hausHtml(EIG, e, null, "II", [GR[1]]), /<button data-teil="II" aria-pressed="true">/);
+});
+
+test("popupZeile Teil III: Rubrik ist ein Vergleichsknopf rub:<Rubrik>", () => {
+  const e = { id: "7", teil: "III", seite: "III-1", firma: "Müller, K., Schneider für Herren", rubrik: "Schneider für Herren", flags: [], merkmale: [] };
+  assert.equal(popupZeile(e), `<div class="z" data-eintrag="7"><b>Müller, K.</b> <span class="n">· <button class="eiglink" data-schluessel="rub:Schneider für Herren">Schneider für Herren</button></span></div>`);
 });

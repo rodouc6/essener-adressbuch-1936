@@ -22,9 +22,9 @@ function zahl(wert, min, max, standard) {
   return Math.min(Math.max(n, min), max);
 }
 
-// Vergleich (Spec Themenbaum §3): höchstens fünf typisierte Schlüssel eig:<Name> | norm:<ohdab_id>, Trenner |.
+// Vergleich (Spec Themenbaum §3): höchstens fünf typisierte Schlüssel eig:<Name> | norm:<ohdab_id> | rub:<Rubrik>, Trenner |.
 export const MAX_VERGLEICH = 5;
-const TYPEN = ["eig", "norm"];
+const TYPEN = ["eig", "norm", "rub"];
 export function schluessel(s) {
   const i = String(s).indexOf(":");
   return i < 0 ? { typ: "", wert: String(s) } : { typ: s.slice(0, i), wert: s.slice(i + 1) };

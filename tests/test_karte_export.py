@@ -1066,3 +1066,21 @@ def test_berufsnormindex_nur_teil_i_und_pillzahl_gleich_scherbe(tmp_path):
     L = baue_themen_listen(a)
     st = {o_["id"]: o_ for o_ in L["berufe"]["oberkategorien"]}
     assert st["arbeiter"]["eintraege"][0]["adressen"] == len(scherben["be"]["B 21112-100"])
+
+
+def test_rubrikindex_liste_und_scherben():
+    """Suche nach Gewerberubrik (Kartenlink aus den Schlaglichtern, 2026-09-29): Liste [Schlüssel, Rubrik, Betriebe, Branche] nach
+    Betrieben absteigend; Scherbe praefix2(Rubrik) → Rubrik → [[Adress-ID, Betriebe im Haus]]; derselbe Betrieb zählt einmal."""
+    from pipeline.lib.karte_export import baue_rubrikindex
+    def haus(i, eintraege):
+        return dict(id=f"h{i}", eintraege=eintraege)
+    def g(rubrik, gruppe, schluessel):
+        return dict(teil="III", _gewerbe=dict(rubrik=rubrik, firma="F", gruppe=gruppe, art="handwerk", quelle="hand", schluessel=schluessel), _merkmale=[])
+    adressen = {a["id"]: a for a in [
+        haus(1, [g("Schneider für Herren", "textil_bekleidung", "s1"), g("Schneider für Herren", "textil_bekleidung", "s1"), g("Bäcker", "lebensmittel", "b1")]),
+        haus(2, [g("Schneider für Herren", "textil_bekleidung", "s2"), dict(teil="I", _merkmale=[])]),
+    ]}
+    liste, scherben = baue_rubrikindex(adressen)
+    assert liste == [["schneider fuer herren", "Schneider für Herren", 2, "textil_bekleidung"], ["baecker", "Bäcker", 1, "lebensmittel"]]
+    assert scherben["sc"]["Schneider für Herren"] == [["h1", 1], ["h2", 1]]
+    assert scherben["ba"]["Bäcker"] == [["h1", 1]]

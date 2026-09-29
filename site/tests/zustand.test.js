@@ -51,7 +51,7 @@ test("vergleich: typisierte Schlüssel, |-Liste, Dubletten, Kappung auf fünf, u
   assert.deepEqual(liesZustand("?vergleich=eig:Fried.+Krupp+AG").vergleich, ["eig:Fried. Krupp AG"]);
   assert.deepEqual(liesZustand("?vergleich=eig:Fried.+Krupp+AG|norm:B+21112-100").vergleich, ["eig:Fried. Krupp AG", "norm:B 21112-100"]);
   assert.deepEqual(liesZustand("?vergleich=eig:A|eig:A|eig:B|eig:C|eig:D|eig:E|eig:F").vergleich, ["eig:A", "eig:B", "eig:C", "eig:D", "eig:E"]);
-  assert.deepEqual(liesZustand("?vergleich=rub:X|quatsch|eig:|+").vergleich, []);
+  assert.deepEqual(liesZustand("?vergleich=rub:X|quatsch|eig:|+").vergleich, ["rub:X"]);   // rub: = Gewerberubrik (Teil III)
   assert.equal(MAX_VERGLEICH, 5);
   assert.deepEqual(schluesselliste(["norm:B 1", " norm:B 1 ", "eig:x"]), ["norm:B 1", "eig:x"]);
   assert.deepEqual(schluesselliste(null), []);

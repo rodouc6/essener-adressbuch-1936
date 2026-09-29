@@ -6,10 +6,11 @@ import { schluessel } from "./zustand.js";
 const GRUNDGESAMTHEIT = {
   norm: "Berufe: Einträge des Einwohnerverzeichnisses mit geprüftem Beruf; die Namen H bis J fehlen in der Vorlage.",
   eig: "Eigentümer: auch Häuser aus Sammelzeilen des Adressbuchs („2–84 E. …“).",
+  rub: "Gewerbe: Betriebe des Branchenverzeichnisses (Teil III), ein Punkt je Haus mit Betrieb.",
 };
 export function grundgesamtheitSaetze(gruppen) {
   const typen = [...new Set(gruppen.map((g) => schluessel(g.schluessel || "").typ))];
-  return ["norm", "eig"].filter((t) => typen.includes(t)).map((t) => GRUNDGESAMTHEIT[t]);
+  return ["norm", "eig", "rub"].filter((t) => typen.includes(t)).map((t) => GRUNDGESAMTHEIT[t]);
 }
 const zahl = (n) => n.toLocaleString("de-DE");
 // Punkte zeigen Vorkommen, keine Anteile: bei Gruppen über Faktor 10 sagt die Leiste das (Spec §3).

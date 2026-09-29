@@ -89,6 +89,10 @@ export async function treffer(auswahl, lader) {
       if (typ === "eig") {
         const sch = await lader.eigentuemerScherbe(praefix2(wert));
         z = new Map((sch && sch[wert]) || []);
+      } else if (typ === "rub") {
+        // Gewerberubrik (Teil III): Scherbe nach Präfix der Rubrik, Zähler = Betriebe im Haus
+        const sch = await lader.rubrikScherbe(praefix2(wert));
+        z = new Map((sch && sch[wert]) || []);
       } else if (typ === "norm") {
         normen = normen || (await lader.berufeNorm()) || [];
         const eintrag = normen.find((n) => n[2] === wert);

@@ -70,7 +70,7 @@ function popupZusatz(e) {
     if (e.pruefung === "regel") return `${esc(KATEGORIEN.privatperson)} (Regel)`;
     return e.kategorie ? esc(KATEGORIEN[e.kategorie] || e.kategorie) : "";
   }
-  if (e.teil === "III") return esc(e.rubrik || "");
+  if (e.teil === "III") return e.rubrik ? vergleichKnopf(`rub:${e.rubrik}`, e.rubrik) : "";
   const beruf = e.beruf_norm ? normKnopf(e) : e.beruf ? `<i title="${TOOLTIP_ROH}">${esc(e.beruf)}</i>` : "";
   return [beruf, esc(e.stand || "")].filter(Boolean).join(", ");
 }

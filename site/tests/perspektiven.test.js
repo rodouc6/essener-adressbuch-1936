@@ -208,9 +208,11 @@ test("herkunftTabelle und herkunftLink", () => {
   assert.match(t.hinweis, /Berufszählung 1933/); assert.match(t.hinweis, /berufe\.csv/);
   const viele = { x: { ...H_ST.arbeiter, top: Array.from({ length: 12 }, (_, i) => [`S${i}`, 100 - i, "N", "hand"]) } };
   assert.equal(herkunftTabelle({ art: "segment", daten: "stellung", id: "G", gruppe: { name: "G", aus: ["x"] } }, viele, { daten: "stellung", gruppen: [] }).zeilen.length, 10);
-  assert.equal(herkunftLink({ art: "kreis", daten: "stellung", id: "B 21112-100" }), "karte.html?ohdab=B%2021112-100");
-  assert.equal(herkunftLink({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG" }), "karte.html?eigentuemer=Fried.%20Krupp%20AG");
-  assert.equal(herkunftLink({ art: "kreis", daten: "gewerbe", id: "Bäcker" }), "karte.html?q=B%C3%A4cker");
+  // Kartenziel ist der Vergleich (Spec Themenbaum §3): Norm, Eigentümer, Rubrik als typisierter Schlüssel
+  assert.equal(herkunftLink({ art: "kreis", daten: "stellung", id: "B 21112-100" }), "karte.html?vergleich=norm:B%2021112-100");
+  assert.equal(herkunftLink({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG" }), "karte.html?vergleich=eig:Fried.%20Krupp%20AG");
+  assert.equal(herkunftLink({ art: "kreis", daten: "gewerbe", id: "Bäcker" }), "karte.html?vergleich=rub:B%C3%A4cker");
+  assert.equal(herkunftLink({ art: "punkt", id: "x", eigentuemer: "Stadt Essen" }), "karte.html?vergleich=eig:Stadt%20Essen");
   assert.equal(herkunftLink({ art: "segment", daten: "stellung", id: "Arbeiter/Gehilfen" }), null);
   // Einheiten: nur Stadtteile haben ein Kartenziel
   assert.equal(herkunftLink({ art: "einheit", daten: "stellung", id: "Katernberg", ebene: "stadtteil" }), "karte.html?stadtteil=Katernberg");
@@ -280,7 +282,7 @@ test("punktKontext: Hexfeld-Kreis mit Gruppe, Stadtteil und Themenlink; Haus mit
   assert.equal(herkunftDatei(k), null);
   const haus = normalisiere({ daten: "besitz", ebene: "adresse", form: "punktkarte", gruppen: [{ name: "Stinnes", aus: ["gewerkschaft_mathias_stinnes"], farbe: "#e69f00" }], punkte: { zustand: "haeuser" } });
   const h = punktKontext("a1", haus, punkte, hexe);
-  assert.equal(h.titel, "Gewerkschaft Mathias Stinnes"); assert.equal(herkunftLink(h), "karte.html?eigentuemer=Gewerkschaft%20Mathias%20Stinnes");
+  assert.equal(h.titel, "Gewerkschaft Mathias Stinnes"); assert.equal(herkunftLink(h), "karte.html?vergleich=eig:Gewerkschaft%20Mathias%20Stinnes");
   const u = punktKontext("a2", haus, punkte, hexe);
   assert.equal(u.titel, "unbekannter Bergbau-Eigentümer"); assert.equal(herkunftLink(u), null);
   assert.equal(punktKontext("gibtsnicht", haus, punkte, hexe).titel, "gibtsnicht");

@@ -23,6 +23,8 @@ const DATEIEN = {
   "daten/suche/eigentuemer/st.json": { "Stadt Essen": [["b2", 1], ["c3", 3]] },
   "daten/suche/berufe_norm.json": [["bergmann", "Bergmann", "B 21112-100", 3, 2, "fachlich"]],
   "daten/suche/berufe_norm/be.json": { "B 21112-100": [["a1", 2], ["b2", 1]] },
+  "daten/suche/rubriken.json": [["schneider fuer herren", "Schneider für Herren", 2, "textil_bekleidung"]],
+  "daten/suche/rubriken/sc.json": { "Schneider für Herren": [["c3", 1], ["d4", 2]] },
 };
 const fetchFake = async (url) => ({
   ok: url in DATEIEN, status: url in DATEIEN ? 200 : 404, json: async () => DATEIEN[url],
@@ -122,4 +124,10 @@ test("treffer vergleich: unbekannte Norm → Gruppe mit Schlüssel als Name und 
   const t = await treffer({ art: "vergleich", schluessel: ["norm:X 999", "eig:Stadt Essen"] }, lader());
   assert.deepEqual(t.gruppen.map((g) => [g.name, g.adressIds]), [["X 999", []], ["Stadt Essen", ["b2", "c3"]]]);
   assert.equal((await treffer({ art: "beruf", beruf: "Bergm." }, lader())).gruppen, null);
+});
+
+test("treffer vergleich rub: Rubrikscherbe (Teil III), Name = Rubrik; unbekannte Rubrik leer", async () => {
+  const t = await treffer({ art: "vergleich", schluessel: ["rub:Schneider für Herren", "rub:Gibtsnicht"] }, lader());
+  assert.deepEqual(t.gruppen.map((g) => [g.name, g.adressIds]), [["Schneider für Herren", ["c3", "d4"]], ["Gibtsnicht", []]]);
+  assert.equal(t.zaehler.get("d4"), 2);
 });

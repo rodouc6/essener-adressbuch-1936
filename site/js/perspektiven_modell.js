@@ -364,13 +364,14 @@ export function herkunftLink(kontext) {
   if (!k.id) return null;
   if (k.art === "punkt") {
     if (k.klasse) return `karte.html?thema=bergbau&klassen=${encodeURIComponent(k.klasse)}`;
-    return k.eigentuemer ? `karte.html?eigentuemer=${encodeURIComponent(k.eigentuemer)}` : null;
+    return k.eigentuemer ? `karte.html?vergleich=eig:${encodeURIComponent(k.eigentuemer)}` : null;
   }
   if (k.art === "einheit") return k.ebene === "stadtteil" ? `karte.html?stadtteil=${encodeURIComponent(k.id)}` : null;
   if (k.art !== "kreis") return null;
-  if (k.daten === "besitz") return `karte.html?eigentuemer=${encodeURIComponent(k.id)}`;
-  if (k.daten === "gewerbe") return `karte.html?q=${encodeURIComponent(k.id)}`;
-  return `karte.html?ohdab=${encodeURIComponent(k.id)}`;
+  // Kartenziel ist der Vergleich (Spec Themenbaum §3): Eigentümer eig:, Rubrik rub: (Teil III), sonst Norm norm:
+  if (k.daten === "besitz") return `karte.html?vergleich=eig:${encodeURIComponent(k.id)}`;
+  if (k.daten === "gewerbe") return `karte.html?vergleich=rub:${encodeURIComponent(k.id)}`;
+  return `karte.html?vergleich=norm:${encodeURIComponent(k.id)}`;
 }
 
 // Nach dem Nachladen wird der Kasten neu gezeichnet, wenn er sichtbar ist und das, was er gerade zeigt,

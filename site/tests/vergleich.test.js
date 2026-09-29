@@ -42,6 +42,8 @@ test("grundgesamtheitSaetze: je vorhandenem Typ ein Satz; norm nennt Teil I und 
   const n = [{ schluessel: "norm:B 1", name: "Bergmann", farbe: "#000", adressIds: ["a"], zaehler: new Map([["a", 1]]) }];
   assert.deepEqual(grundgesamtheitSaetze(n), ["Berufe: Einträge des Einwohnerverzeichnisses mit geprüftem Beruf; die Namen H bis J fehlen in der Vorlage."]);
   assert.equal(grundgesamtheitSaetze([...n, G[0]]).length, 2);
+  const r = [{ schluessel: "rub:Bäcker", name: "Bäcker", farbe: "#000", adressIds: ["a"], zaehler: new Map([["a", 1]]) }];
+  assert.deepEqual(grundgesamtheitSaetze(r), ["Gewerbe: Betriebe des Branchenverzeichnisses (Teil III), ein Punkt je Haus mit Betrieb."]);
 });
 
 test("ungleichSatz: nur wenn größte > 10 × kleinste Gruppe (Gruppen mit 0 Häusern zählen nicht)", () => {

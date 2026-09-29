@@ -55,6 +55,8 @@ export class Lader {
   berufe() { return this.json("suche/berufe.json"); }
   berufeNorm() { return this.json("suche/berufe_norm.json"); }
   berufeNormScherbe(praefix) { return this.json(`suche/berufe_norm/${praefix}.json`); }
+  rubriken() { return this.json("suche/rubriken.json"); }
+  rubrikScherbe(praefix) { return this.json(`suche/rubriken/${praefix}.json`); }
   eigentuemer() { return this.json("suche/eigentuemer.json"); }
   eigentuemerScherbe(praefix) { return this.json(`suche/eigentuemer/${praefix}.json`); }
   stadtteile() { return this.json("suche/stadtteile.json"); }

@@ -229,7 +229,8 @@ Eigentümer“ aber nur mit `identitaet=sicher`. Schreibweisen aus `kuratierung/
 zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
 „Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL).
 Vergleich (2026-09-29, Spec 2026-09-29-themenbaum): `vergleich=` nimmt bis zu fünf typisierte Schlüssel
-`eig:<Name>` (Eigentümer) oder `norm:<ohdab_id>` (Berufsnorm), Trenner `|`; alte Links mit `eigentuemer=` und
+`eig:<Name>` (Eigentümer), `norm:<ohdab_id>` (Berufsnorm) oder `rub:<Rubrik>` (Gewerberubrik, Teil III, Index
+`suche/rubriken.json` + Scherben `suche/rubriken/<xx>.json`), Trenner `|`; alte Links mit `eigentuemer=` und
 `ohdab=` werden gelesen, aber nicht mehr geschrieben. Farbe nach Platz (Rot, Blau, Grün, Violett, Orange), Ring
 bei Häusern in mehreren Gruppen; Vergleichsleiste mit Häusern, Einträgen und Top-3-Stadtteilen je Gruppe, darunter
 die Grundgesamtheit je Schlüsseltyp (Teil I mit geprüftem Beruf, Lücke H–J; Sammelzeilen bei Eigentümern) und

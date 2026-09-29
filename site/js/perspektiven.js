@@ -283,7 +283,8 @@ function pfadHtml(pfad) {
 // Kartensymbol (gefaltetes Kartenblatt) hinter der Zahlenzeile: führt Einzelobjekte in die Suche der
 // Karte, Stadtteile auf die Karte. Nur im festgestellten Kasten — der flüchtige fängt keinen Klick.
 const KARTE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>`;
-const karteHtml = (link) => link ? ` <a class="kartenlink" href="${esc(link)}" title="Auf der Karte zeigen" aria-label="Auf der Karte zeigen">${KARTE_SVG}</a>` : "";
+// Neuer Tab (Wunsch Christos 2026-09-29): das Schlaglicht bleibt offen, die Karte zeigt die Treffer daneben.
+const karteHtml = (link) => link ? ` <a class="kartenlink" href="${esc(link)}" target="_blank" rel="noopener" title="Auf der Karte zeigen (neuer Tab)" aria-label="Auf der Karte zeigen (neuer Tab)">${KARTE_SVG}</a>` : "";
 
 function tabelleHtml(t) {
   if (!t) return "";

@@ -469,6 +469,25 @@ def baue_berufsnormindex(adressen: dict[str, dict]) -> tuple[list[list], dict[st
     return liste, dict(scherben)
 
 
+def baue_rubrikindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
+    """Rubrikindex (Teil III, Kartenlink aus den Schlaglichtern 2026-09-29): Liste [Schlüssel, Rubrik, Betriebe, Branche]
+    nach Betrieben absteigend, dann Schlüssel; Scherbe praefix2(Rubrik) → Rubrik → [[Adress-ID, Betriebe im Haus]].
+    Derselbe Betrieb (betriebsschluessel) zählt je Rubrik nur einmal."""
+    betriebe: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    gruppe: dict[str, str] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            g = e.get("_gewerbe")
+            if e.get("teil") == "III" and g and g.get("rubrik"):
+                betriebe[g["rubrik"]][a["id"]].add(g.get("schluessel") or e.get("id", ""))
+                gruppe[g["rubrik"]] = g.get("gruppe", "")
+    liste = sorted([[falte(r), r, sum(len(s) for s in je.values()), gruppe[r]] for r, je in betriebe.items()], key=lambda x: (-x[2], x[0]))
+    scherben: dict[str, dict[str, list[list]]] = defaultdict(dict)
+    for r, je in betriebe.items():
+        scherben[praefix2(r)][r] = sorted([[aid, len(s)] for aid, s in je.items()])
+    return liste, dict(scherben)
+
+
 def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[str, dict[str, list[list]]]]:
     """Eigentümerindex (nur geprüfte, Spec §6.4): (Liste [Schlüssel, Name, Häuser, Kategorie] nach Häusern
     absteigend, Scherbe praefix2(Name) → Name → [[Adress-ID, Zähler]]). Trägt derselbe kanonische Name in
@@ -1135,6 +1154,10 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     _json(ausgabe / "suche" / "eigentuemer.json", liste)
     for name, inhalt in scherben.items():
         _json(ausgabe / "suche" / "eigentuemer" / f"{name}.json", inhalt)
+    liste, scherben = baue_rubrikindex(adressen)
+    _json(ausgabe / "suche" / "rubriken.json", liste)
+    for name, inhalt in scherben.items():
+        _json(ausgabe / "suche" / "rubriken" / f"{name}.json", inhalt)
     _json(ausgabe / "suche" / "stadtteile.json", baue_stadtteile(adressen))
     for name, inhalt in baue_themen_listen(adressen).items():
         _json(ausgabe / "themen" / f"{name}_liste.json", inhalt)
