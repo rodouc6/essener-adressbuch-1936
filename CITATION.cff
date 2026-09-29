@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "Bitte zitieren Sie das Projekt mit diesen Angaben."
+type: software
+title: "Essen 1936 – Das Adressbuch auf der Karte"
+abstract: >-
+  Interaktive Karte des Essener Adreßbuchs 1936 auf Grundlage der Transkription
+  des Vereins für Computergenealogie: 240.636 Einträge zu Einwohnern,
+  Hauseigentümern und Betrieben, zu 93 % verortet, mit Themen zu Berufen,
+  sozialer Stellung, Besitz und Bergbau.
+authors:
+  - family-names: Rodouniklis
+    given-names: Christos
+    affiliation: Bergische Universität Wuppertal
+license: MIT
+date-released: "2026-09-29"
+repository-code: "https://github.com/rodouc6/essener-adressbuch-1936"
+url: "https://rodouc6.github.io/essener-adressbuch-1936/"
+keywords:
+  - Adressbuch
+  - Essen
+  - 1936
+  - Stadtgeschichte
+  - Sozialgeschichte
+  - Ruhrgebiet
+  - historische Geodaten
+references:
+  - type: data
+    title: "Historische Adressbücher aus dem Rheinland und Ruhrgebiet (Datensatz Coding da Vinci Nieder.Rhein.Land 2021), darin: Essener Adreßbuch 1936"
+    authors:
+      - name: "Verein für Computergenealogie e. V."
+    year: 2021
+    license: CC-BY-SA-4.0
