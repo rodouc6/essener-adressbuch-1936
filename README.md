@@ -233,7 +233,7 @@ Blau, Grün, Violett, Orange), Ring bei Häusern in mehreren Gruppen; Vergleichs
 Top-3-Stadtteilen je Eigentümer; „Größte Eigentümer“-Knöpfe, Suchvorschläge (Plus) und der Eigentümer-Knopf in
 Popup und Hausansicht fügen hinzu; CSV mit Spalte `eigentuemer`. Trefferlisten lesen Adresse und Koordinaten aus
 dem Kurzindex `adressen_kurz/<x>.json` (Spec 2026-09-29-eigentuemer-vergleich).
-Hausnummernspannen (2026-09-26): Das Häuserbuch druckt einen Eigentümer vieler aufeinanderfolgender Häuser
+Hausnummernspannen (2026-09-26): Das Adressbuch (Teil II, Straßen- und Häuserverzeichnis) druckt einen Eigentümer vieler aufeinanderfolgender Häuser
 einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“, danach die Häuser nur mit
 Bewohnern; Faksimile II-335). Der Parser liefert dafür `hausnr`/`hausnr_bis`; `karte_export.gruppiere`
 überträgt die geprüfte Klasse auf alle Adressen der Spanne derselben Straße (`schl_nr`), bei gleicher Parität

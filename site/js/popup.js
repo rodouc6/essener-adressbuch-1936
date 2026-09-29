@@ -39,7 +39,7 @@ function zaehlerText(eig) {
 function nameZeile(e, mitBeruf = true) {
   const name = e.firma && e.teil === "III" ? e.firma : [e.name, e.vorname].filter(Boolean).join(", ");
   // Kompakt (Popup): bei geprüfter Zuordnung nur „Rohtext → Norm“, ohne Niveau/Status (steht in der
-  // Hausansicht, siehe eintragHtml) — sonst der rohe Beruf wie im Buch.
+  // Hausansicht, siehe eintragHtml) — sonst der rohe Beruf wie im Adressbuch.
   const beruf = e.beruf_norm ? `${e.beruf} → ${e.beruf_norm}` : e.beruf;
   const rest = mitBeruf ? [beruf, e.stand].filter(Boolean).join(", ") : "";
   return `<b>${esc(name)}</b>${rest ? ` · ${esc(rest)}` : ""}${e.etage ? ` <span class="etage">${esc(e.etage)}</span>` : ""}`;
@@ -48,7 +48,7 @@ function nameZeile(e, mitBeruf = true) {
 // ---- Popup: Visitenkarte des Hauses (Spec 2026-09-28 §2/§3). Lesestoff steht in hausHtml. ----
 const TEILE = ["I", "II", "III"];
 const PRAEZ_KURZ = { strasse: "nur straßengenau", stadtplan: "Punkt vom Stadtplan 1935", unbekannt: "Präzision unbekannt" };
-const TOOLTIP_ROH = "Schreibung im Buch, Beruf noch nicht zugeordnet";
+const TOOLTIP_ROH = "Schreibung im Adressbuch, Beruf noch nicht zugeordnet";
 
 function personName(e) { return [e.name, e.vorname].filter(Boolean).join(", "); }
 
@@ -102,14 +102,14 @@ export function popupHtml(eig, eintraege, kompakt, ebenen = TEILE) {
   const kenn = [praez, esc(zaehlerText(eig))].filter(Boolean).join(" · ");
   const teile = TEILE.map((t) => teilHtml(t, eintraege.filter((e) => e.teil === t), max, hervor.has(t))).join("");
   return `<div class="popup-kopf"><b>${esc(heutigeAdresse(eig))}</b>` +
-    (eig.strasse_heute ? `<div class="hist">${esc(eig.historisch)} im Buch</div>` : "") +
+    (eig.strasse_heute ? `<div class="hist">${esc(eig.historisch)} im Adressbuch</div>` : "") +
     `<div class="kennzeile">${kenn}</div></div>${teile}` +
     `<div class="pmehr" data-mehr="1">Haus im Detail ›</div>`;
 }
 
 // Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
 function eintragHtml(e, faksimile) {
-  const felder = [["Beruf", e.beruf_norm ? `${e.beruf} → ${e.beruf_norm} · ${NIVEAUS[e.niveau] || e.niveau}${e.status ? " · " + statusText(e.status) : ""}` : e.beruf], ["Etage laut Buch", e.etage], ["Stand", e.stand],
+  const felder = [["Beruf", e.beruf_norm ? `${e.beruf} → ${e.beruf_norm} · ${NIVEAUS[e.niveau] || e.niveau}${e.status ? " · " + statusText(e.status) : ""}` : e.beruf], ["Etage laut Adressbuch", e.etage], ["Stand", e.stand],
     ["Bezugsperson", [e.bezug_vorname, e.bezug_beruf].filter(Boolean).join(", ")], ["Firma", e.firma],
     ["Eigentümer", e.eigentuemer],
     // Handgeprüft: kanonischer Name und Klasse. Per Regel (Person ohne Firmenname → Privatperson): nur die
@@ -140,10 +140,10 @@ export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle") {
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
     (eig.nummer_unsicher === "ja" ? `<div class="flag">${FLAGTEXT.nummer_unsicher}</div>` : "") +
-    // Besitzklasse aus einer Hausnummernspanne des Häuserbuchs („2—84 E. …“) oder von der Teil-II-Zeile
+    // Besitzklasse aus einer Hausnummernspanne des Adressbuchs (Teil II) („2—84 E. …“) oder von der Teil-II-Zeile
     // eines anderen Adressobjekts derselben Nummer: die Adresse hat keine eigene Teil-II-Zeile, die
     // Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
-    (BESITZ_HERKUNFT[eig.besitz_quelle] ? `<div class="hist">Eigentümer laut Häuserbuch (${BESITZ_HERKUNFT[eig.besitz_quelle]}): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
+    (BESITZ_HERKUNFT[eig.besitz_quelle] ? `<div class="hist">Eigentümer laut Adressbuch (${BESITZ_HERKUNFT[eig.besitz_quelle]}): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
     `</div>${reiterHtml}${gruppen}`;
 }
 

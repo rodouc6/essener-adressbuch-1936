@@ -115,7 +115,7 @@ def _strassenschluessel(e: dict) -> str:
 
 
 def hausnummernspannen(eintraege: list[dict], eigentuemer: dict[str, dict]) -> dict[str, list[dict]]:
-    """Teil-II-Zeilen mit Hausnummernspanne je Straße. Das Häuserbuch druckt einen Eigentümer vieler
+    """Teil-II-Zeilen mit Hausnummernspanne je Straße. Das Adressbuch (Teil II, Straßen- und Häuserverzeichnis) druckt einen Eigentümer vieler
     aufeinanderfolgender Häuser einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“,
     Faksimile II-335); die Häuser dazwischen folgen nur mit Bewohnern. Gleiche Parität von Anfang und Ende
     heißt eine Straßenseite (2—84: nur gerade), sonst gelten alle Nummern dazwischen (2—9). Nur geprüfte

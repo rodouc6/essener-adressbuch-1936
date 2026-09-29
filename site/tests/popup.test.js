@@ -18,7 +18,7 @@ test("hausHtml nennt die Herkunft einer Besitzklasse aus einer Hausnummernspanne
   const h = hausHtml({ ...EIG, besitz: "kirche_stiftung", besitz_quelle: "spanne", besitz_spanne: "Sommerburgstr. 2–84 · Frau-Margarete-Krupp-Stiftung" }, E);
   assert.match(h, /Hausnummernspanne\): Sommerburgstr\. 2–84 · Frau-Margarete-Krupp-Stiftung · /);
   assert.match(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "nummer", besitz_spanne: "Grenzstraße 20 · Fried. Krupp A.G." }, E), /gleiche Hausnummer, andere Schreibung\): Grenzstraße 20 · Fried\. Krupp A\.G\. · /);
-  assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /laut Häuserbuch/);
+  assert.doesNotMatch(hausHtml({ ...EIG, besitz: "industrie", besitz_quelle: "eintrag", besitz_spanne: "" }, E), /Eigentümer laut Adressbuch/);
 });
 
 test("hausHtml nennt bei Regel-Klassifikation die Regel statt eines Namens", () => {
@@ -89,7 +89,7 @@ const VIELE = [
 
 test("popupHtml: Kopf mit Adresse, Buchadresse, Kennzeile; Teile in fester Reihenfolge", () => {
   const h = popupHtml({ ...EIG, stufe: "haus" }, VIELE, false);
-  assert.match(h, /<div class="popup-kopf"><b>Lattenkamp 25, Katernberg<\/b><div class="hist">Grenzstr\. 25, Katernberg im Buch<\/div>/);
+  assert.match(h, /<div class="popup-kopf"><b>Lattenkamp 25, Katernberg<\/b><div class="hist">Grenzstr\. 25, Katernberg im Adressbuch<\/div>/);
   assert.match(h, /<div class="kennzeile">2 Einwohner · 1 Eigentümer<\/div>/);   // hausgenau: kein Präzisionstext
   assert.doesNotMatch(h, /hausgenau verortet/);
   const iE = h.indexOf("<h4>Einwohner · 5</h4>"), iG = h.indexOf("<h4>Eigentümer</h4>"), iW = h.indexOf("<h4>Gewerbe · 5</h4>");
@@ -119,7 +119,7 @@ test("popupHtml: Kappung je Teil, Laptop 4 und Handy 2", () => {
 
 test("popupZeile: Einwohner nur mit Norm, sonst Buchschreibung kursiv mit Tooltip; Stand bleibt", () => {
   assert.equal(popupZeile(VIELE[0]), `<div class="z" data-eintrag="i1"><b>Person1, A.</b> <span class="n">· Bergmann</span></div>`);
-  assert.match(popupZeile(E[0]), /<b>Sepeur, Wilh\.<\/b> <span class="n">· <i title="Schreibung im Buch, Beruf noch nicht zugeordnet">Bergm\.<\/i><\/span>/);
+  assert.match(popupZeile(E[0]), /<b>Sepeur, Wilh\.<\/b> <span class="n">· <i title="Schreibung im Adressbuch, Beruf noch nicht zugeordnet">Bergm\.<\/i><\/span>/);
   assert.match(popupZeile(E[1]), /<i title="[^"]+">Hauer<\/i>, Wwe\.<\/span>/);
   assert.doesNotMatch(popupZeile(VIELE[0]), /→|Erdg\./);
 });

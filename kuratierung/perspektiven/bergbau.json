@@ -9,7 +9,7 @@
  "ausschluss": "Beruf ungeprüft oder keine Bergbau-Norm",
  "einleitung": "Platzhalter. Das Einwohnerverzeichnis nennt zu jeder eingetragenen Person einen Beruf. Wer Bergmann, Hauer, Steiger, Zechenbeamter oder Berginvalide war, lässt sich daran ablesen; wer als Techniker oder Ingenieur auf einer Zeche arbeitete, nicht. Das Kapitel nimmt nur die Berufe, die eindeutig zum Bergbau gehören, und zeigt, wo diese Menschen wohnten, wo ihre Aufsicht und Leitung, und welche Gesellschaften welche Häuser besaßen.",
  "quellen": [
-  "Adreßbuch Essen 1936, Teil I (Einwohner) und Teil II (Häuserbuch)",
+  "Adreßbuch Essen 1936, Teil I (Einwohner) und Teil II (Straßen- und Häuserverzeichnis)",
   "Bergbau-Tabelle kuratierung/merkmale/bergbau.csv",
   "Zechen in Förderung 1936: Historisches Portal Essen (Huske-Auszüge), kuratierung/zechen.csv"
  ],

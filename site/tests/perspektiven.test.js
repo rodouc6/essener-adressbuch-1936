@@ -141,7 +141,7 @@ test("herkunftDatei je Kontext", () => {
 
 test("herkunftPfad: Segment Stellung mit Quellmarken und Top-Schreibweisen", () => {
   const p = herkunftPfad({ art: "segment", daten: "stellung", id: "Arbeiter/Gehilfen", gruppe: G_ST }, H_ST, A_ST);
-  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Buch", "534 Schreibweisen"], ["OhdAB", "419 Berufe"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
+  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Adressbuch", "534 Schreibweisen"], ["OhdAB", "419 Berufe"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
   assert.deepEqual(p[2].marken, [{ art: "hand", anteil: 0.9379, zahl: 70000 }, { art: "vorschlag", anteil: 0.0621, zahl: 4635 }]);
   assert.deepEqual(p.beispiele, [["Bergm.", 27781], ["Arbeiter", 8432], ["Schlosser", 7193]]);
 });
@@ -167,7 +167,7 @@ test("herkunftPfad: Besitz-Segment nennt identifizierte Eigentümer und die Rege
   const besitz = { privatperson: { eigentuemer: 8, zeilen: 25757, haeuser: 40800, quelle: { hand: 8275, regel: 32525 }, spanne: 4077, nummer: 0, top: [["Krupp v. Bohlen u. Halbach", 45]], regel_beispiele: [] } };
   const AB = { daten: "besitz", gruppen: [{ name: "Privatpersonen", aus: ["privatperson"], farbe: "#d97706" }] };
   const p = herkunftPfad({ art: "segment", daten: "besitz", id: "Privatpersonen", gruppe: AB.gruppen[0] }, besitz, AB);
-  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Buch", "25.757 Zeilen im Häuserbuch"], ["Eigentümer", "8 identifiziert"], ["Klasse", "Privatpersonen"], ["Gruppe", "Privatpersonen"]]);
+  assert.deepEqual(p.map((s) => [s.label, s.wert]), [["Adressbuch", "25.757 Eigentümerzeilen im Adressbuch"], ["Eigentümer", "8 identifiziert"], ["Klasse", "Privatpersonen"], ["Gruppe", "Privatpersonen"]]);
   assert.deepEqual(p[2].marken.map((m) => [m.art, m.zahl]), [["hand", 8275], ["regel", 32525]]);
   assert.equal(p.hinweis, "32.525 der 40.800 Häuser per Regel, ohne belegbare Identität des Eigentümers");
   const t = herkunftTabelle({ art: "segment", daten: "besitz", id: "Privatpersonen", gruppe: AB.gruppen[0] }, besitz, AB);
@@ -181,22 +181,22 @@ test("herkunftPfad: Besitz-Segment nennt identifizierte Eigentümer und die Rege
 test("herkunftPfad: Kreis Beruf, Kreis Eigentümer, Kreis Rubrik, Regel-Teil; unbekannte id → leer (Review Focus 3)", () => {
   const berufe = { "B 21112-100": { norm: "Bergmann", nennungen: 24913, schreibweisen_gesamt: 12, schreibweisen: [["Bergm.", 24700, "hand"], ["Bergmann", 213, "vorschlag"]], stellung: "arbeiter", quelle: { hand: 24700, vorschlag: 213 } } };
   const k = herkunftPfad({ art: "kreis", daten: "stellung", id: "B 21112-100", gruppe: null }, berufe, A_ST);
-  assert.deepEqual(k.map((s) => [s.label, s.wert]), [["Buch", "12 Schreibweisen"], ["OhdAB", "Bergmann"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
+  assert.deepEqual(k.map((s) => [s.label, s.wert]), [["Adressbuch", "12 Schreibweisen"], ["OhdAB", "Bergmann"], ["Stellung", "Arbeiter/Gehilfen (nach Schreibung)"], ["Gruppe", "Arbeiter/Gehilfen"]]);
   assert.deepEqual(k[2].marken, [{ art: "hand", anteil: 0.9915, zahl: 24700 }, { art: "vorschlag", anteil: 0.0085, zahl: 213 }]);
   assert.deepEqual(herkunftPfad({ art: "kreis", daten: "stellung", id: "B 99999-000", gruppe: null }, berufe, A_ST), []);
   const eig = { "Fried. Krupp AG": { schreibweisen: [["Fried. Krupp A.G.", 257], ["Fried. Krupp A. G.", 181]], schreibweisen_gesamt: 60, zeilen: 733, haeuser: 3351, spanne: 2600, nummer: 18, kategorie: "industrie", identitaet: true, seite: "II-040" } };
   const AB = { daten: "besitz", gruppen: [{ name: "Zechen und Werke", aus: ["bergbau", "industrie"], farbe: "#111" }, { name: "Privatpersonen", aus: ["privatperson"], farbe: "#d97706" }] };
   const e = herkunftPfad({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG", gruppe: null }, eig, AB);
-  assert.deepEqual(e.map((s) => [s.label, s.wert]), [["Buch", "60 Schreibweisen"], ["Eigentümer", "Fried. Krupp AG"], ["Klasse", "Industrie"], ["Gruppe", "Zechen und Werke"]]);
-  assert.equal(e.zusatz, "733 Zeilen im Häuserbuch, 2.618 Häuser dazu über Hausnummernspannen und gleiche Nummern");
+  assert.deepEqual(e.map((s) => [s.label, s.wert]), [["Adressbuch", "60 Schreibweisen"], ["Eigentümer", "Fried. Krupp AG"], ["Klasse", "Industrie"], ["Gruppe", "Zechen und Werke"]]);
+  assert.equal(e.zusatz, "733 Eigentümerzeilen im Adressbuch, 2.618 Häuser dazu über Hausnummernspannen und gleiche Nummern");
   const rub = { Bäcker: { betriebe: 518, gruppe: "lebensmittel", art: "handwerk", quelle: "hand" } };
   const AG = { daten: "gewerbe", gruppen: [{ name: "Lebensmittel", aus: ["lebensmittel"], farbe: "#d62728" }] };
   const r = herkunftPfad({ art: "kreis", daten: "gewerbe", id: "Bäcker", gruppe: null }, rub, AG);
-  assert.deepEqual(r.map((s) => [s.label, s.wert]), [["Buch", "Bäcker"], ["Branche", "Lebensmittel und Genussmittel · Handwerk"], ["Gruppe", "Lebensmittel"]]);
+  assert.deepEqual(r.map((s) => [s.label, s.wert]), [["Adressbuch", "Bäcker"], ["Branche", "Lebensmittel und Genussmittel · Handwerk"], ["Gruppe", "Lebensmittel"]]);
   assert.deepEqual(r[1].marken, [{ art: "hand", anteil: 1, zahl: 518 }]);
   const besitz = { privatperson: { eigentuemer: 300, zeilen: 41000, haeuser: 40800, quelle: { hand: 8275, regel: 32525 }, spanne: 0, nummer: 0, top: [], regel_beispiele: [["Müller, H.", 12]] } };
   const rg = herkunftPfad({ art: "regel", daten: "besitz", id: "Privatpersonen#regel", gruppe: AB.gruppen[1] }, besitz, AB);
-  assert.deepEqual(rg.map((s) => [s.label, s.wert]), [["Buch", "Person ohne Firmenname"], ["Regel", "→ Privatperson"], ["Gruppe", "Privatpersonen"]]);
+  assert.deepEqual(rg.map((s) => [s.label, s.wert]), [["Adressbuch", "Person ohne Firmenname"], ["Regel", "→ Privatperson"], ["Gruppe", "Privatpersonen"]]);
   assert.deepEqual(rg[1].marken, [{ art: "regel", anteil: 1, zahl: 32525 }]);
   assert.equal(rg.hinweis, "keine Handprüfung, keine Identität");
 });
@@ -217,15 +217,15 @@ test("herkunftTabelle und herkunftLink", () => {
   assert.equal(herkunftLink({ art: "einheit", daten: "stellung", id: "Lattenkamp", ebene: "strasse" }), null);
   const eig = { "Fried. Krupp AG": { schreibweisen: [["Fried. Krupp A.G.", 257]], schreibweisen_gesamt: 60, zeilen: 733, haeuser: 3351, spanne: 2600, nummer: 18, kategorie: "industrie", identitaet: true, seite: "II-040" } };
   const te = herkunftTabelle({ art: "kreis", daten: "besitz", id: "Fried. Krupp AG", gruppe: null }, eig, { daten: "besitz", gruppen: [] });
-  assert.deepEqual(te.kopf, ["Schreibweise im Buch", "Zeilen", "Quelle"]); assert.deepEqual(te.zeilen[0], ["Fried. Krupp A.G.", 257, "hand"]);
+  assert.deepEqual(te.kopf, ["Schreibweise im Adressbuch", "Zeilen", "Quelle"]); assert.deepEqual(te.zeilen[0], ["Fried. Krupp A.G.", 257, "hand"]);
   assert.match(te.hinweis, /733 Zeilen ergeben 3\.351 Häuser/); assert.equal(te.seite, "II-040");
   // Norm: Quelle je Schreibweise, gesamt = alle Schreibweisen (nicht nur die Top 10), damit der Suchlink erscheinen kann
   const berufe = { "B 21112-100": { norm: "Bergmann", nennungen: 24913, schreibweisen_gesamt: 12, schreibweisen: [["Bergm.", 24700, "hand"], ["Bergmann", 213, "vorschlag"]], stellung: "arbeiter", quelle: { hand: 24700, vorschlag: 213 } } };
   const tb = herkunftTabelle({ art: "kreis", daten: "stellung", id: "B 21112-100", gruppe: null }, berufe, A_ST);
   assert.deepEqual(tb.zeilen, [["Bergm.", 24700, "Bergmann", "hand"], ["Bergmann", 213, "Bergmann", "vorschlag"]]); assert.equal(tb.gesamt, 12);
-  // Regel-Beispiele sind Zeilen des Häuserbuchs, keine Häuser
+  // Regel-Beispiele sind Eigentümerzeilen des Adressbuchs, keine Häuser
   const tr = herkunftTabelle({ art: "regel", daten: "besitz", id: "P#regel", gruppe: { name: "P", aus: ["privatperson"] } }, { privatperson: { quelle: { regel: 5 }, regel_beispiele: [["Müller, H.", 2]] } }, { daten: "besitz", gruppen: [] });
-  assert.deepEqual(tr.kopf, ["Schreibweise im Buch", "Zeilen"]);
+  assert.deepEqual(tr.kopf, ["Schreibweise im Adressbuch", "Zeilen"]);
   assert.equal(herkunftTabelle({ art: "einheit", daten: "stellung", id: "Katernberg" }, H_ST, A_ST), null);
 });
 

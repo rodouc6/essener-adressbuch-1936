@@ -126,12 +126,12 @@ den Text. Ein Tippfehler in einem Platzhalternamen fällt erst beim Rendern der 
 Seit 2026-09-27 zeigt der Detailkasten, woher eine Zahl kommt (Spec `2026-09-27-herkunftspfad-design.md`).
 Daten: `site/daten/herkunft/{stellung,gruppe,niveau,berufe,besitz,eigentuemer,gewerbe,rubriken}.json`
 (`baue_herkunft` in `pipeline/lib/karte_export.py`, Grundmenge = verortete Einträge; Häuser je Eigentümer
-wie im Eigentümerindex aus eigenen Häuserbuch-Zeilen und Übernahmen per Spanne oder gleicher Nummer),
+wie im Eigentümerindex aus eigenen Eigentümerzeilen des Adressbuchs und Übernahmen per Spanne oder gleicher Nummer),
 nachgeladen beim ersten Schweben (`Lader.herkunft`). Kontextarten (`kontextVon` in perspektiven.js):
 `segment` (Gruppe im Gesamtbalken, Klassen werden summiert), `regel` (schraffierter Teil, `data-id`
 `<Gruppe>#regel`), `kreis` (Bubbles: Norm, Eigentümer, Rubrik), `einheit` (kein Pfad; Stadtteile nennen bei
 Stellung den von Hand bestimmten Anteil), `ausgeschlossen` (kein Pfad). Schwebend: Kette
-Buch › Norm/Eigentümer/Rubrik › Klasse › Gruppe mit Quellmarken (hand grün, vorschlag grau, claude
+Adressbuch › Norm/Eigentümer/Rubrik › Klasse › Gruppe mit Quellmarken (hand grün, vorschlag grau, claude
 violett, regel orange; Nenner ist die Zahl der Stufe, Nennungen ohne Quelle als „ohne Quelle“) und drei
 häufigsten Schreibweisen (`herkunftPfad`). Klassenbeschriftungen kommen aus `STELLUNG`/`BESITZ`/`GEWERBE_TEXT`
 in ansicht.js (keine eigene Kopie). Besitz-Segmente nennen „n identifiziert“ und die Regel-Häuser ohne

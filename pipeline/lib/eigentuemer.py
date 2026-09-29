@@ -83,7 +83,7 @@ def person_nach_regel(e: dict) -> bool:
 
 
 def hausnummernspanne(e: dict) -> tuple[int, int, int | None] | None:
-    """(von, bis, seite) einer Teil-II-Zeile mit Hausnummernspanne, sonst None. Das Häuserbuch druckt einen
+    """(von, bis, seite) einer Teil-II-Zeile mit Hausnummernspanne, sonst None. Das Adressbuch (Teil II, Straßen- und Häuserverzeichnis) druckt einen
     Eigentümer vieler aufeinanderfolgender Häuser einmal am Anfang der Straßenseite („2—84 E. …“, Faksimile
     II-335). Gleiche Parität von Anfang und Ende heißt eine Straßenseite (seite = 0 gerade, 1 ungerade), sonst
     gelten alle Nummern dazwischen (None). Ein Buchstabe am Ende („1—31a“, „37—37A“ = Haus und Anbau) zählt

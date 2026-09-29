@@ -213,7 +213,7 @@ export const BELEG = {
   stellung: "Stellung nach Berufszählung 1933 / AVG 1911 (docs/stellung.md). Tabelle: kuratierung/berufe.csv, Spalte stellung.",
   gruppe: "Hauptgruppe = OhdAB-Gattung (KldB 2010, 2-stellig), kuratierung/hauptgruppen.csv. Tabelle: kuratierung/berufe.csv, Spalte ohdab_id.",
   niveau: "Anforderungsniveau der OhdAB je Norm; „unsicher“ bei Betriebsangaben statt Beruf. Tabelle: kuratierung/berufe.csv.",
-  besitz: "Klasse je Eigentümer von Hand (kuratierung/eigentuemer.csv); Personen ohne Firmenname per Regel Privatperson. Spannen des Häuserbuchs gelten je Straßenseite.",
+  besitz: "Klasse je Eigentümer von Hand (kuratierung/eigentuemer.csv); Personen ohne Firmenname per Regel Privatperson. Spannen im Adressbuch (Teil II) gelten je Straßenseite.",
   gewerbe: "Branche und Betriebsform je Rubrik nach docs/gewerbe.md. Tabelle: kuratierung/gewerbe.csv, Spalten gruppe, art, geprueft.",
 };
 
@@ -259,14 +259,14 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
     const klassen = k.gruppe.aus.map((r) => klasseText(k.daten, r)).join(", ");
     if (k.daten === "besitz") {
       // `eigentuemer` zählt nur identifizierte Eigentümer; Häuser per Regel (Person ohne Firmenname) haben keinen.
-      pfad.push({ label: "Buch", wert: `${formatZahl(s.zeilen)} Zeilen im Häuserbuch` }, { label: "Eigentümer", wert: `${formatZahl(s.eigentuemer)} identifiziert` },
+      pfad.push({ label: "Adressbuch", wert: `${formatZahl(s.zeilen)} Eigentümerzeilen im Adressbuch` }, { label: "Eigentümer", wert: `${formatZahl(s.eigentuemer)} identifiziert` },
         { label: "Klasse", wert: klassen, marken: marken(s.quelle, s.haeuser) }, { label: "Gruppe", wert: k.gruppe.name });
       if (s.quelle.regel > 0) pfad.hinweis = `${formatZahl(s.quelle.regel)} der ${formatZahl(s.haeuser)} Häuser per Regel, ohne belegbare Identität des Eigentümers`;
     } else if (k.daten === "gewerbe") {
-      pfad.push({ label: "Buch", wert: `${formatZahl(s.rubriken)} Rubriken` }, { label: "Branche", wert: klassen, marken: marken(s.quelle, s.betriebe) }, { label: "Gruppe", wert: k.gruppe.name });
+      pfad.push({ label: "Adressbuch", wert: `${formatZahl(s.rubriken)} Rubriken` }, { label: "Branche", wert: klassen, marken: marken(s.quelle, s.betriebe) }, { label: "Gruppe", wert: k.gruppe.name });
     } else {
       const stufe = k.daten === "gruppe" ? "Hauptgruppe" : k.daten === "niveau" ? "Niveau" : "Stellung";
-      pfad.push({ label: "Buch", wert: `${formatZahl(s.schreibweisen)} Schreibweisen` }, { label: "OhdAB", wert: `${formatZahl(s.normen)} Berufe` },
+      pfad.push({ label: "Adressbuch", wert: `${formatZahl(s.schreibweisen)} Schreibweisen` }, { label: "OhdAB", wert: `${formatZahl(s.normen)} Berufe` },
         { label: stufe, wert: klassen, marken: marken(s.quelle, s.nennungen) }, { label: "Gruppe", wert: k.gruppe.name });
     }
     pfad.beispiele = s.top.slice(0, 3).map((t) => [t[0], t[1]]);
@@ -274,7 +274,7 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
   }
   if (k.art === "regel" && k.gruppe) {
     const s = summeKlassen(herkunft, ["privatperson"]);
-    pfad.push({ label: "Buch", wert: "Person ohne Firmenname" }, { label: "Regel", wert: "→ Privatperson", marken: marken({ regel: s.quelle.regel || 0 }, s.quelle.regel || 0) }, { label: "Gruppe", wert: k.gruppe.name });
+    pfad.push({ label: "Adressbuch", wert: "Person ohne Firmenname" }, { label: "Regel", wert: "→ Privatperson", marken: marken({ regel: s.quelle.regel || 0 }, s.quelle.regel || 0) }, { label: "Gruppe", wert: k.gruppe.name });
     pfad.hinweis = "keine Handprüfung, keine Identität";
     pfad.beispiele = (herkunft.privatperson?.regel_beispiele || []).slice(0, 3);
     return pfad;
@@ -284,21 +284,21 @@ export function herkunftPfad(kontext, herkunft, ansicht) {
     if (!h) return pfad;
     if (k.daten === "besitz") {
       const g = gruppeVon(ansicht, h.kategorie);
-      pfad.push({ label: "Buch", wert: `${formatZahl(h.schreibweisen_gesamt)} Schreibweisen` }, { label: "Eigentümer", wert: k.id },
+      pfad.push({ label: "Adressbuch", wert: `${formatZahl(h.schreibweisen_gesamt)} Schreibweisen` }, { label: "Eigentümer", wert: k.id },
         { label: "Klasse", wert: klasseText("besitz", h.kategorie), marken: marken({ hand: h.haeuser }, h.haeuser) }, { label: "Gruppe", wert: g ? g.name : klasseText("besitz", h.kategorie) });
       const dazu = h.haeuser - h.zeilen;
-      if (dazu > 0) pfad.zusatz = `${formatZahl(h.zeilen)} Zeilen im Häuserbuch, ${formatZahl(dazu)} Häuser dazu über Hausnummernspannen und gleiche Nummern`;
+      if (dazu > 0) pfad.zusatz = `${formatZahl(h.zeilen)} Eigentümerzeilen im Adressbuch, ${formatZahl(dazu)} Häuser dazu über Hausnummernspannen und gleiche Nummern`;
       pfad.beispiele = (h.schreibweisen || []).slice(0, 3);
       return pfad;
     }
     if (k.daten === "gewerbe") {
       const g = gruppeVon(ansicht, h.gruppe);
-      pfad.push({ label: "Buch", wert: k.id }, { label: "Branche", wert: `${klasseText("gewerbe", h.gruppe)} · ${klasseText("art", h.art)}`, marken: marken({ [h.quelle]: h.betriebe }, h.betriebe) },
+      pfad.push({ label: "Adressbuch", wert: k.id }, { label: "Branche", wert: `${klasseText("gewerbe", h.gruppe)} · ${klasseText("art", h.art)}`, marken: marken({ [h.quelle]: h.betriebe }, h.betriebe) },
         { label: "Gruppe", wert: g ? g.name : klasseText("gewerbe", h.gruppe) });
       return pfad;
     }
     const g = gruppeVon(ansicht, h.stellung);
-    pfad.push({ label: "Buch", wert: `${formatZahl(h.schreibweisen_gesamt ?? (h.schreibweisen || []).length)} Schreibweisen` }, { label: "OhdAB", wert: h.norm },
+    pfad.push({ label: "Adressbuch", wert: `${formatZahl(h.schreibweisen_gesamt ?? (h.schreibweisen || []).length)} Schreibweisen` }, { label: "OhdAB", wert: h.norm },
       { label: "Stellung", wert: klasseText("stellung", h.stellung), marken: marken(h.quelle, h.nennungen) },
       { label: "Gruppe", wert: g ? g.name : klasseText("stellung", h.stellung) });
     pfad.beispiele = (h.schreibweisen || []).slice(0, 3);
@@ -322,13 +322,13 @@ export function herkunftTabelle(kontext, herkunft, ansicht) {
   }
   if (k.art === "regel") {
     const h = herkunft.privatperson || {};
-    return { kopf: ["Schreibweise im Buch", "Zeilen"], zeilen: (h.regel_beispiele || []).slice(0, 10), gesamt: h.quelle?.regel || 0,
-      hinweis: "Der Eigentümer steht als Person ohne Firmennamen im Häuserbuch; die Klasse folgt aus der Regel, nicht aus einer Prüfung des Einzelfalls. Ausnahmen: Firmenmuster wie „Gebr.“; „gen.“-Hofnamen zählen als Personen. Export: besitz_pruefung = regel." };
+    return { kopf: ["Schreibweise im Adressbuch", "Zeilen"], zeilen: (h.regel_beispiele || []).slice(0, 10), gesamt: h.quelle?.regel || 0,
+      hinweis: "Der Eigentümer steht als Person ohne Firmennamen im Adressbuch (Teil II); die Klasse folgt aus der Regel, nicht aus einer Prüfung des Einzelfalls. Ausnahmen: Firmenmuster wie „Gebr.“; „gen.“-Hofnamen zählen als Personen. Export: besitz_pruefung = regel." };
   }
   const h = herkunft[k.id];
   if (!h) return null;
   if (k.daten === "besitz") {
-    return { kopf: ["Schreibweise im Buch", "Zeilen", "Quelle"], zeilen: (h.schreibweisen || []).slice(0, 10).map((t) => [t[0], t[1], "hand"]), gesamt: h.schreibweisen_gesamt,
+    return { kopf: ["Schreibweise im Adressbuch", "Zeilen", "Quelle"], zeilen: (h.schreibweisen || []).slice(0, 10).map((t) => [t[0], t[1], "hand"]), gesamt: h.schreibweisen_gesamt,
       hinweis: h.haeuser > h.zeilen ? `${formatZahl(h.zeilen)} Zeilen ergeben ${formatZahl(h.haeuser)} Häuser, weil Spannen („2–84“) einmal je Straßenseite stehen. ${BELEG.besitz}` : BELEG.besitz,
       seite: h.seite || "" };
   }
