@@ -105,6 +105,10 @@ test("setzeFilter: Themenebenen ohne Zoomgrenze, Hauptebenen mit; Radius der The
   assert.ok(JSON.stringify(a.filter["thema-haus"]).includes('"stufe"'));           // Stufe, Ebenen, Stadtteil bleiben
   assert.deepEqual(a.paint["thema-haus.circle-radius"], ["let", "n", ["+", ["coalesce", ["get", "n_I"], 0]], ["interpolate", ["linear"], ["zoom"], 10, 1, 12, 2, 14, RADIUS]]);
   assert.equal(a.paint["thema-haus.circle-color"], a.paint["adressen-haus.circle-color"]);
+  // MapLibre: ein "zoom"-Ausdruck darf nur Eingabe eines äußeren interpolate/step sein (let außen ist erlaubt, "/" nicht).
+  const icon = a.layout["thema-ungenau.icon-size"];
+  assert.equal(icon[0], "let"); assert.equal(icon[3][0], "interpolate"); assert.deepEqual(icon[3][2], ["zoom"]);
+  assert.deepEqual(icon[3].slice(3), [10, 1 / 16, 12, 2 / 16, 14, ["/", RADIUS, 16]]);
 });
 
 test("setzeTreffer und Deckkraft wirken auf Haupt- und Themenquelle", () => {

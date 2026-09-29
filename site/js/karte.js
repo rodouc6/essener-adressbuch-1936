@@ -6,6 +6,8 @@ const WIKIPEDIA_QUELLE = /^https:\/\/de\.wikipedia\.org\//;
 const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 4, Math.log(100), 10];
 // Themenebenen: aus der Vogelperspektive feine Punkte, ab Zoom 14 die Größe nach Zahl der Einträge (Spec Themenkacheln §3).
 const RADIUS_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1, 12, 2, 14, RADIUS];
+// Symbolgröße = Radius / 16, aber der "zoom"-Ausdruck muss außen bleiben (MapLibre erlaubt kein "/" darüber).
+const ICON_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1 / 16, 12, 2 / 16, 14, ["/", RADIUS, 16]];
 const THEMA_EBENEN = ["thema-haus", "thema-ungenau"];
 
 function summeAktiv(ebenen) {
@@ -282,15 +284,15 @@ export class Karte {
     const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], FARBEN.treffer, grund];
     // Hauptebenen: Stadtansicht nicht zulaufen lassen. Themenebenen: keine Zoomgrenze — sie sollen von oben alles zeigen.
     const haupt = [...bedingungen, ["any", [">=", ["zoom"], 12], [">=", n, 5]]];
-    const paare = [["adressen-haus", "adressen-ungenau", haupt, RADIUS], ["thema-haus", "thema-ungenau", bedingungen, RADIUS_THEMA]];
-    for (const [hausId, ungenauId, bed, radiusRegel] of paare) {
+    const paare = [["adressen-haus", "adressen-ungenau", haupt, RADIUS, ["/", RADIUS, 16]], ["thema-haus", "thema-ungenau", bedingungen, RADIUS_THEMA, ICON_THEMA]];
+    for (const [hausId, ungenauId, bed, radiusRegel, iconRegel] of paare) {
       if (!m.getLayer(hausId)) continue;
       m.setFilter(hausId, ["all", ["==", ["get", "stufe"], "haus"], ...bed]);
       m.setFilter(ungenauId, ["all", ["!=", ["get", "stufe"], "haus"], ...bed]);
       m.setPaintProperty(hausId, "circle-color", farbe);
       m.setPaintProperty(hausId, "circle-radius", ["let", "n", n, radiusRegel]);
       m.setPaintProperty(ungenauId, "icon-color", farbe);
-      m.setLayoutProperty(ungenauId, "icon-size", ["/", ["let", "n", n, radiusRegel], 16]);
+      m.setLayoutProperty(ungenauId, "icon-size", ["let", "n", n, iconRegel]);
     }
     this._deckkraftSetzen();
   }
