@@ -112,10 +112,19 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .thema.ansicht { background: #f1f5f9; }
 .thema.ansicht a { display: inline-block; margin-top: 6px; color: var(--blau); font-size: 12px; }
 #themenkopf .gruppe { padding: 8px 12px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
-.eigentuemerliste { max-height: 28vh; overflow: auto; padding: 0 12px 8px; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
-.eigentuemerliste .themaknopf { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; }
-.eigentuemerliste .themaknopf small { color: var(--grau); }
-.eigentuemerliste .themaknopf[aria-pressed="true"] small { color: #fff; opacity: .8; }
+.baum { padding: 4px 12px 6px; }
+.baum .ober { display: flex; align-items: center; gap: 4px; margin: 2px 0; font-size: 13px; }
+.baum .ober label.schalter { display: flex; align-items: center; gap: 6px; flex: 1; cursor: pointer; min-height: 26px; }
+.baum .ober input { margin: 0; } .baum .ober small { color: var(--grau); }
+.baum .ober .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.baum .auf { border: 0; background: none; cursor: pointer; font-size: 14px; padding: 2px 6px; color: var(--grau); min-width: 28px; min-height: 26px; }
+.pills-s { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0 8px 22px; max-height: 28vh; overflow: auto; }
+.pill-s, .pills-s .alle { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; border: 1px solid var(--rand); background: #fff; cursor: pointer; }
+.pill-s small { color: var(--grau); } .pill-s[aria-pressed="true"] small { color: #fff; opacity: .8; }
+.pills-s .alle { color: var(--blau); border-style: dashed; }
+#themenkopf .grundlage { display: block; padding: 0 12px 8px; font-size: 11px; color: var(--grau); }
+#themenkopf { max-height: 55vh; overflow: auto; }
+.themaknopf[aria-pressed="true"] { background: var(--text); color: #fff; border-color: var(--text); }
 
 @media (max-width: 899px) {
   .sidebar { left: 0; right: 0; bottom: 0; border-radius: 14px 14px 0 0; transition: height .2s; }

@@ -53,3 +53,9 @@ test("Lader.adressenKurz mit leerer Liste liefert eine leere Map ohne Ladevorgan
   assert.equal((await l.adressenKurz([])).size, 0);
   assert.equal(n, 0);
 });
+
+test("themaListe lädt themen/<id>_liste.json, null wenn es sie nicht gibt", async () => {
+  const l = new Lader("daten/", async (u) => ({ ok: u === "daten/themen/besitz_liste.json", status: u === "daten/themen/besitz_liste.json" ? 200 : 404, json: async () => ({ oberkategorien: [] }) }));
+  assert.deepEqual(await l.themaListe("besitz"), { oberkategorien: [] });
+  assert.equal(await l.themaListe("bergbau"), null);
+});

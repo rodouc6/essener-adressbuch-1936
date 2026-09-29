@@ -62,6 +62,7 @@ export class Lader {
   startseite() { return this.json("startseite.json"); }
   faksimile() { return this.json("faksimile.json"); }
   thema(id) { return this.json(`themen/${id}.json`); }
+  themaListe(id) { return this.json(`themen/${id}_liste.json`); }   // Klappliste des Themenbaums (Spec Themenbaum §6)
   ebene(name) { return this.json(`ebenen/${name}.json`); }
   layout(name) { return this.json(`layout/${name}.json`); }
   hauptgruppen() { return this.json("hauptgruppen.json"); }

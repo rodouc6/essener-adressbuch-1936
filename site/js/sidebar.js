@@ -3,6 +3,7 @@ import { esc, hausHtml, trefferzeileHtml, heutigeAdresse } from "./popup.js";
 import { ansichtTitel } from "./ansicht_farben.js";
 import { nennerText } from "./formen/skalen.js";
 import { vergleichsleisteHtml, gruppenZuordnung } from "./vergleich.js";
+import { baumHtml, kopfHtml, grundlageHtml } from "./themenbaum.js";
 
 const STUFEN = ["griff", "halb", "voll"];
 
@@ -16,7 +17,15 @@ export class Sidebar {
     this.ansichtkopf = el.querySelector("#ansichtkopf");
     this.suche = el.querySelector("#suche");
     this.stadtteile = []; this.berufe = [];
+    this.baumZustand = { offen: null, alle: null };   // Klappzustand des Themenbaums — nicht in der URL (Spec Themenbaum §2)
     el.querySelector("#griff").addEventListener("click", () => this.naechsteStufe());
+    this.themenkopf.addEventListener("click", (ev) => this._themenKlick(ev));
+    this.themenkopf.addEventListener("change", (ev) => {
+      const cb = ev.target.closest("[data-klasse]"); if (!cb || !this._thema) return;
+      const alle = this._thema.schalter.klassen;
+      const an = alle.filter((k) => this.themenkopf.querySelector(`[data-klasse="${CSS.escape(k)}"]`).checked);
+      this.a.onKlassen(an.length === alle.length ? "" : an.length ? an.join(",") : "keine");
+    });
     this.inhalt.addEventListener("click", (ev) => this._klick(ev));
     this.vorschlaegeEl.addEventListener("click", (ev) => {
       const e = ev.target.closest("[data-index]");
@@ -38,7 +47,7 @@ export class Sidebar {
       if (!g[k].length) continue;
       html += `<div class="gruppe">${titel}</div>`;
       for (const v of g[k]) {
-        const zusatz = plus && k === "eigentuemer" ? `<span class="plus" title="zum Vergleich hinzufügen">+</span>` : "";
+        const zusatz = plus && (k === "eigentuemer" || v.art === "ohdab") ? `<span class="plus" title="zum Vergleich hinzufügen">+</span>` : "";
         html += `<div class="eintrag" data-index="${liste.length}">${esc(v.text)}${zusatz}<small>${esc(v.untertitel)}</small></div>`;
         liste.push(v);
       }
@@ -134,28 +143,28 @@ export class Sidebar {
     }
   }
 
-  zeigeThema(thema, groesste = null, gewaehlt = [], farben = []) {
-    if (!thema) { this.themenkopf.hidden = true; this.themenkopf.innerHTML = ""; return; }
-    this.themenkopf.innerHTML = `<div class="thema"><b>${esc(thema.titel)}</b><p>${esc(thema.text)}</p><small>${esc(thema.grundlage)}</small>` +
-      `<button data-thema-aus="1">Thema verlassen</button></div>`;
+  // Themenkopf (Spec Themenbaum §2): Kopf, Baum (Kästchen = Schalter, Pfeil = Klappliste, Pills = Vergleich), Grundlage.
+  zeigeThema(thema, liste = null, vergleich = [], farben = [], klassen = "") {
+    this._thema = thema; this._liste = liste; this._vergleich = vergleich; this._farben = farben; this._klassen = klassen;
+    if (!thema) { this.themenkopf.hidden = true; this.themenkopf.innerHTML = ""; this.baumZustand = { offen: null, alle: null }; return; }
+    this._baumZeichnen();
     this.themenkopf.hidden = false;
-    this.themenkopf.querySelector("[data-thema-aus]").addEventListener("click", () => this.a.onZustand({ thema: "" }));
-    if (groesste && groesste.length) {
-      this.themenkopf.insertAdjacentHTML("beforeend", `<div class="gruppe">Größte Eigentümer</div><div class="eigentuemerliste">` +
-        groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}" aria-pressed="false">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
-      // Klick schaltet um: gewählt → entfernen, sonst anhängen (app.js prüft die Höchstzahl)
-      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onEigentuemer(b.dataset.eigentuemer, true)));
-      this.markiereEigentuemer(gewaehlt, farben);
-    }
   }
-
-  // Gewählte Eigentümer-Knöpfe in ihrer Gruppenfarbe füllen (Spec 2026-09-29 §6).
-  markiereEigentuemer(namen, farben) {
-    this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => {
-      const i = namen.indexOf(b.dataset.eigentuemer);
-      b.setAttribute("aria-pressed", String(i >= 0));
-      b.style.background = i >= 0 ? farben[i] : ""; b.style.color = i >= 0 ? "#fff" : ""; b.style.borderColor = i >= 0 ? farben[i] : "";
-    });
+  _baumZeichnen() {
+    const t = this._thema;
+    const baum = t.schalter ? baumHtml(t, this._liste, { klassen: this._klassen, vergleich: this._vergleich, farben: this._farben, ...this.baumZustand }) : "";
+    this.themenkopf.innerHTML = kopfHtml(t) + baum + grundlageHtml(t);
+  }
+  // Gewählte Pills in ihrer Gruppenfarbe füllen (Spec Themenbaum §2).
+  markiereVergleich(vergleich, farben) { this._vergleich = vergleich; this._farben = farben; if (this._thema) this._baumZeichnen(); }
+  setzeKlassen(klassen) { this._klassen = klassen; if (this._thema) this._baumZeichnen(); }
+  _themenKlick(ev) {
+    const t = ev.target;
+    if (t.closest("[data-thema-aus]")) return this.a.onZustand({ thema: "" });
+    const auf = t.closest("[data-auf]");
+    if (auf) { const k = auf.dataset.auf; this.baumZustand = { offen: this.baumZustand.offen === k ? null : k, alle: null }; return this._baumZeichnen(); }
+    const alle = t.closest("[data-alle]"); if (alle) { this.baumZustand.alle = alle.dataset.alle; return this._baumZeichnen(); }
+    const s = t.closest("[data-schluessel]"); if (s) return this.a.onVergleich(s.dataset.schluessel, true);
   }
 
   // Kurzer Hinweis oben im Inhalt (z. B. „Höchstens fünf Eigentümer“), verschwindet nach 2 s.
@@ -189,10 +198,10 @@ export class Sidebar {
     el.querySelector("[data-ansicht-aus]").addEventListener("click", () => this.a.onZustand({ ansicht: "" }));
   }
 
-  zeigeThemenliste(themen) {
+  zeigeThemenliste(themen, aktiv = "") {
     const el = this.inhalt.querySelector("#themenliste");
     if (!el || !themen.length) return;
-    el.innerHTML = `<div class="gruppe">Themen</div>` + themen.map((t) => `<button class="themaknopf" data-thema="${esc(t.id)}">${esc(t.titel)}</button>`).join("");
+    el.innerHTML = `<div class="gruppe">Themen</div>` + themen.map((t) => `<button class="themaknopf" data-thema="${esc(t.id)}" aria-pressed="${t.id === aktiv}">${esc(t.titel)}</button>`).join("");
   }
 
   _filterEreignisse(z) {
@@ -209,7 +218,7 @@ export class Sidebar {
       if (praez.length) this.a.onZustand({ praez }); else c.checked = true;
     }));
     const beruf = this.inhalt.querySelector('[data-filter="beruf"]');
-    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), eigentuemer: [], ohdab: "" }));
+    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), vergleich: [] }));
   }
 
   _klick(ev) {
@@ -218,8 +227,8 @@ export class Sidebar {
     if (t.closest("[data-mehr]")) return this._mehrZeilen();
     if (t.closest("[data-export]")) return this.a.onExport();
     const th = t.closest("[data-thema]"); if (th) return this.a.onZustand({ thema: th.dataset.thema });
-    const weg = t.closest("[data-eig-weg]"); if (weg) return this.a.onEigentuemer(weg.dataset.eigWeg, true);
-    const eig = t.closest("[data-eigentuemer]"); if (eig) return this.a.onEigentuemer(eig.dataset.eigentuemer, false);
+    const weg = t.closest("[data-weg]"); if (weg) return this.a.onVergleich(weg.dataset.weg, true);
+    const s = t.closest("[data-schluessel]"); if (s) return this.a.onVergleich(s.dataset.schluessel, false);
     const z = t.closest(".treffer");
     if (z) return z.dataset.eintrag ? this.a.onEintragWaehlen(z.dataset.eintrag, z.dataset.adresse) : this.a.onHausWaehlen(z.dataset.adresse);
   }
