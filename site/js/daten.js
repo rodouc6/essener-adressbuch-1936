@@ -34,6 +34,19 @@ export class Lader {
     const s = await this.json(`adressen/${adressId.slice(0, 2)}.json`);
     return s && s[adressId] ? s[adressId] : null;
   }
+  // Kurzindex (Spec Eigentümer-Vergleich §2): je Datei das erste Zeichen der ID, sieben Werte je Adresse.
+  // Lädt nur die Dateien, die unter den IDs vorkommen; json() hält sie im Cache. Fehlende Datei → keine Einträge.
+  async adressenKurz(ids) {
+    const dateien = [...new Set(ids.map((id) => id[0]))];
+    const geladen = await Promise.all(dateien.map((x) => this.json(`adressen_kurz/${x}.json`)));
+    const je = new Map(dateien.map((x, i) => [x, geladen[i] || {}]));
+    const m = new Map();
+    for (const id of ids) {
+      const w = je.get(id[0])[id];
+      if (w) m.set(id, { id, lon: w[0], lat: w[1], stufe: w[2], stadtteil: w[3], strasse_heute: w[4], hausnr: w[5], historisch: w[6] });
+    }
+    return m;
+  }
   namen(praefix) { return this.json(`suche/namen/${praefix}.json`); }
   firmen(praefix) { return this.json(`suche/firmen/${praefix}.json`); }
   berufeScherbe(praefix) { return this.json(`suche/berufe/${praefix}.json`); }

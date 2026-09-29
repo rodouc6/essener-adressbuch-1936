@@ -30,3 +30,26 @@ test("Lader.ebene lädt ebenen/<name>.json", async () => {
   const s = await l.ebene("strassen");
   assert.deepEqual(s, [{ id: "00001", name: "Aachener Straße" }]);
 });
+
+test("Lader.adressenKurz lädt nur die betroffenen Dateien, einmal, und baut Objekte aus den sieben Werten", async () => {
+  const DATEIEN3 = {
+    "daten/adressen_kurz/a.json": { a1: [7.06, 51.49, "haus", "Katernberg", "Lattenkamp", "25", "Grenzstr. 25, Katernberg"], a2: [7.07, 51.5, "strasse", "Kray", "", "", "Kampstr. 3"] },
+    "daten/adressen_kurz/b.json": { b1: [7.0, 51.4, "stadtplan", "", "", "3", "Alte Str. 3"] },
+  };
+  const geladen = [];
+  const l = new Lader("daten/", async (u) => { geladen.push(u); return { ok: u in DATEIEN3, status: u in DATEIEN3 ? 200 : 404, json: async () => DATEIEN3[u] }; });
+  const m = await l.adressenKurz(["a1", "b1", "a2", "zz"]);
+  assert.deepEqual(m.get("a1"), { id: "a1", lon: 7.06, lat: 51.49, stufe: "haus", stadtteil: "Katernberg", strasse_heute: "Lattenkamp", hausnr: "25", historisch: "Grenzstr. 25, Katernberg" });
+  assert.equal(m.get("b1").stufe, "stadtplan");
+  assert.equal(m.has("zz"), false);                       // Datei fehlt (404) → keine Ausnahme, kein Eintrag
+  assert.deepEqual(geladen.sort(), ["daten/adressen_kurz/a.json", "daten/adressen_kurz/b.json", "daten/adressen_kurz/z.json"]);
+  await l.adressenKurz(["a2"]);
+  assert.equal(geladen.length, 3);                        // zweiter Aufruf lädt nichts nach
+});
+
+test("Lader.adressenKurz mit leerer Liste liefert eine leere Map ohne Ladevorgang", async () => {
+  let n = 0;
+  const l = new Lader("daten/", async () => { n++; return { ok: false, status: 404 }; });
+  assert.equal((await l.adressenKurz([])).size, 0);
+  assert.equal(n, 0);
+});
