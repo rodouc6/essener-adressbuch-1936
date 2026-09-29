@@ -1,9 +1,10 @@
 {
   "id": "besitz",
   "titel": "Besitz",
-  "text": "Häuser nach Art des Eigentümers laut Teil II, einschließlich der Häuser aus Hausnummernspannen („2–84 E. …“), die im Adressbuch keine eigene Zeile haben. Farbig nur Adressen, deren Eigentümer von Hand geprüft wurde; alle anderen grau. Die Kästchen in der Legende schalten Kategorien ab und zu; Adressen ohne eingeschaltete Kategorie verschwinden.",
+  "text": "Häuser nach Art des Eigentümers laut Teil II, einschließlich der Häuser aus Hausnummernspannen („2–84 E. …“), die im Adressbuch keine eigene Zeile haben. Farbig nur Adressen, deren Eigentümer von Hand geprüft wurde; alle anderen grau.",
   "grundlage": "Eigentümer-Kuratierung kuratierung/eigentuemer.csv (Automatik + Handprüfung), Stand 2026-09-23: Körperschaften ab 5 Häusern und Personen geprüft",
   "freigegeben": true,
+  "baum": true,
   "filter": {
     "ebenen": [
       "II"
@@ -27,8 +28,7 @@
     "sonst": "#c8c8c8"
   },
   "zusatz": {
-    "zechen": true,
-    "eigentuemerliste": true
+    "zechen": true
   },
   "legende": "Farbe = Kategorie des geprüften Eigentümers",
   "darstellung": "punkte",

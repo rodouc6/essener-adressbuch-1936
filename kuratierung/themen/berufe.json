@@ -1,45 +1,25 @@
 {
   "id": "berufe",
   "titel": "Berufe",
-  "text": "Häuser nach dem Anforderungsniveau der Berufe ihrer Bewohner (Teil I) laut OhdAB. Farbig nur Adressen, deren Berufsangaben von Hand einem OhdAB-Eintrag zugeordnet wurden; Mehrheitsniveau je Haus, sonst „gemischt“; alle anderen grau. Die Kästchen in der Legende schalten Niveaus ab und zu; Adressen ohne eingeschaltetes Niveau verschwinden.",
-  "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB, Moeller/Uni Halle, FactGrid, CC BY 4.0), Stand 2026-09-24: 1.537 Schreibweisen geprüft (97,8 % der Nennungen)",
+  "text": "Häuser nach der sozialen Stellung ihrer Bewohner (Teil I), abgeleitet aus dem Beruf: Mehrheit der geprüften Bewohner je Haus, bei Gleichstand „gemischt“, ohne geprüften Beruf grau. Stellung nach Rechtslage der Zeit; Vorschläge der Automatik zählen mit und sind in Hausansicht und Popup gekennzeichnet. „Kaufleute“ ohne Zusatz bleiben eigene Klasse: Angestellter oder Selbständiger ist aus der Bezeichnung nicht zu entscheiden.",
+  "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die OhdAB (Moeller/Uni Halle, FactGrid, CC BY 4.0), Stellung je Schreibweise nach Berufszählung 1933 und Angestelltenversicherungsgesetz 1911 (docs/stellung.md), Stand 2026-09-24",
   "freigegeben": true,
-  "filter": {
-    "ebenen": [
-      "I"
-    ]
-  },
+  "baum": true,
+  "filter": { "ebenen": ["I"] },
   "farbe": {
     "art": "kategorien",
-    "feld": "niveau",
+    "feld": "stellung",
     "werte": {
-      "helfer": "#fde68a",
-      "fachlich": "#f59e0b",
-      "spezialist": "#dc2626",
-      "hochkomplex": "#7f1d1d",
-      "aufsicht": "#2563eb",
-      "fuehrung": "#1e3a8a",
-      "keins": "#9ca3af",
-      "gemischt": "#6b7280",
-      "unsicher": "#d6d3a8"
+      "arbeiter": "#e69f00", "angestellte": "#56b4e9", "beamte": "#009e73", "selbstaendige": "#f0e442",
+      "freie_berufe": "#0072b2", "unternehmer": "#d55e00", "kaufleute": "#4b5563", "ohne_erwerb": "#cc79a7",
+      "unbestimmt": "#9ca3af", "gemischt": "#a16207"
     },
     "sonst": "#c8c8c8"
   },
-  "legende": "Farbe = Mehrheitsniveau der geprüften Bewohner",
+  "legende": "Farbe = Mehrheitsstellung der geprüften Bewohner",
   "darstellung": "punkte",
   "schalter": {
-    "feld": "niveau",
-    "klassen": [
-      "helfer",
-      "fachlich",
-      "spezialist",
-      "hochkomplex",
-      "aufsicht",
-      "fuehrung",
-      "keins",
-      "gemischt",
-      "unsicher",
-      "ungeprueft"
-    ]
+    "feld": "stellung",
+    "klassen": ["arbeiter", "angestellte", "beamte", "selbstaendige", "freie_berufe", "unternehmer", "kaufleute", "ohne_erwerb", "unbestimmt", "gemischt", "ungeprueft"]
   }
 }

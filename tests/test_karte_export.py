@@ -1031,3 +1031,16 @@ def test_themen_listen_besitz_bergbau_berufe():
     assert st["angestellte"]["eintraege"] == [dict(schluessel="norm:S1", name="Steiger", adressen=2)]
     assert L["berufe"]["gemischt"] == 1 and L["berufe"]["ungeprueft"] == 1
     assert L["berufe"]["handgeprueft_anteil"] == 0.8      # 4 von 5 Nennungen mit geprüftem Beruf sind handgeprüft
+
+
+def test_themen_definitionen_tragen_baum_und_berufe_faerben_nach_stellung():
+    """Spec Themenbaum §4/§6: Berufe färben nach Stellung (neun Klassen + gemischt + ungeprueft); drei Themen mit Baum."""
+    themen = {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in pathlib.Path("kuratierung/themen").glob("*.json")}
+    b = themen["berufe"]
+    assert b["farbe"]["feld"] == "stellung" and b["schalter"]["feld"] == "stellung"
+    assert b["schalter"]["klassen"] == ["arbeiter", "angestellte", "beamte", "selbstaendige", "freie_berufe", "unternehmer", "kaufleute", "ohne_erwerb", "unbestimmt", "gemischt", "ungeprueft"]
+    assert set(b["farbe"]["werte"]) == set(b["schalter"]["klassen"]) - {"ungeprueft"}
+    assert b["farbe"]["werte"]["kaufleute"] == "#4b5563" and b["farbe"]["sonst"] == "#c8c8c8"
+    assert all(themen[t].get("baum") is True for t in ("besitz", "bergbau", "berufe"))
+    assert "eigentuemerliste" not in themen["besitz"].get("zusatz", {})
+    assert all("Kästchen" not in themen[t]["text"] for t in ("besitz", "bergbau", "berufe"))
