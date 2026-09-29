@@ -204,7 +204,7 @@ export class Sidebar {
     el.innerHTML = `<div class="thema ansicht"><b>${esc(ansichtTitel(ansicht))}</b>` +
       `<p>${ansicht.bezug ? `Bezug: ${esc(ansicht.bezug)}. ` : ""}Gruppen: ${esc(gruppen) || "keine"}.` +
       (ansicht.min_n > 0 ? `<br>Einheiten mit weniger als ${ansicht.min_n} ${esc(nennerText(ansicht))} bleiben grau.` : "") + `</p>` +
-      `<a href="werkstatt.html?ansicht=${encodeURIComponent(roh)}">In der Werkstatt öffnen (folgt)</a> +
+      `<a href="werkstatt.html?ansicht=${encodeURIComponent(roh)}">In der Werkstatt öffnen (folgt)</a>` +
       `<button data-ansicht-aus="1">Ansicht verlassen</button></div>`;
     el.hidden = false;
     el.querySelector("[data-ansicht-aus]").addEventListener("click", () => this.a.onZustand({ ansicht: "" }));
