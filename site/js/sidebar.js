@@ -14,7 +14,8 @@ export class Sidebar {
     this.pills = el.querySelector("#pills");
     this.vorschlaegeEl = el.querySelector("#vorschlaege");
     this.themenkopf = el.querySelector("#themenkopf");
-    this.themenliste = el.querySelector("#themenliste");
+    // Fehlt das Element (altes karte.html aus dem Browser-Cache, Befund 2026-09-29), wird es angelegt statt abzustürzen.
+    this.themenliste = el.querySelector("#themenliste") || this.pills.insertAdjacentElement("afterend", Object.assign(document.createElement("div"), { className: "themenliste", id: "themenliste", hidden: true }));
     this.themenliste.addEventListener("click", (ev) => { const th = ev.target.closest("[data-thema]"); if (th) this.a.onZustand({ thema: th.dataset.thema === this._themaAktiv ? "" : th.dataset.thema }); });
     this.ansichtkopf = el.querySelector("#ansichtkopf");
     this.suche = el.querySelector("#suche");

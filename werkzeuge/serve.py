@@ -219,6 +219,12 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(self.wurzel), **kw)
 
+    def end_headers(self) -> None:
+        # Entwicklungsserver: HTML und ES-Module immer neu prüfen — ein gecachtes karte.html mit neuen Modulen
+        # ließ die Sidebar beim Start abstürzen (Befund 2026-09-29). Die Auslieferung (Pages) regelt Caching selbst.
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def _lade_ohdab_ids(self) -> set[str]:
         """OhdAB-IDs auf der Handler-Klasse zwischenspeichern (jeder POST sonst eine erneute Datei); ein
         neuer Schnappschuss (mtime geändert) lädt trotzdem neu."""
