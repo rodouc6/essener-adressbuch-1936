@@ -397,6 +397,7 @@ function zeichneLegende() {
   html +=
     `<div class="zeile"><span class="punkt" style="background:${f}"></span> hausgenau</div>` +
     `<div class="zeile"><span class="punkt ungenau" style="color:${f}"></span> nur straßengenau / Stadtplan 1935</div>` + treffer +
+    (zustand.ebene.includes("II") ? `<div class="zeile klein">Eigentümer: auch Häuser aus Sammelzeilen des Häuserbuchs („2–84 E. …“)</div>` : "") +
     `<div class="zeile">Größe = Zahl der Einträge</div>`;
 
   document.getElementById("legende").innerHTML = html;

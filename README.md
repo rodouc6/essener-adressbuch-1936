@@ -322,7 +322,8 @@ Stadtplan-1935-Ebene, bis die Stadt Essen bzw. der Historische Verein die Nutzun
 
 Felder: `titel`, `text`, `grundlage` (Quelle, Prüfdatum), `filter` (Merkmale, Ebenen; optional `praesenz`: ein
 Zählfeld, das statt der Ebenen-Summe genügt — Thema Besitz nutzt `n_besitz`, damit Häuser aus Hausnummernspannen
-ohne eigene Teil-II-Zeile erscheinen), `farbe`
+ohne eigene Teil-II-Zeile erscheinen; die Pill „Eigentümer“ nutzt dasselbe Feld, zählt für Punktgröße und Popup aber
+weiter nur echte Teil-II-Zeilen), `farbe`
 (eine Farbe | Kategorien (`art: kategorien`, `feld`, `werte`, `sonst`) | Skala auf Merkmalswert), `zusatz` (z. B. `zechen: true`), `legende`,
 `darstellung` (`punkte`; `strassen` ist für Teilprojekt 4 reserviert), `freigegeben` (nur dann
 erscheint die Kachel auf der Startseite). Die Definitionen liegen versioniert in `kuratierung/themen/`;

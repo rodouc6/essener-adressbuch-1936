@@ -301,9 +301,10 @@ export class Karte {
     const m = this.map;
     if (!m.getLayer("adressen-haus")) return;   // vor dem ersten Stil: Zustand wird beim Aufsetzen angewendet
     const n = summeAktiv(z.ebene);
-    // Präsenzfeld eines Themas (Besitz: n_besitz) genügt statt der Ebenen-Summe — Häuser aus Hausnummernspannen haben n_II = 0.
-    const praesenz = this.farbe && this.farbe.praesenz;
-    const vorhanden = praesenz ? ["any", [">", n, 0], [">", ["coalesce", ["get", praesenz], 0], 0]] : [">", n, 0];
+    // Präsenzfelder genügen statt der Ebenen-Summe: Pill „Eigentümer“ zeigt auch Häuser mit belegtem Besitz aus einer
+    // Sammelzeile des Häuserbuchs (n_besitz, n_II = 0); ein Thema kann ein weiteres Feld nennen (filter.praesenz).
+    const praesenz = new Set([...(z.ebene.includes("II") ? ["n_besitz"] : []), ...(this.farbe && this.farbe.praesenz ? [this.farbe.praesenz] : [])]);
+    const vorhanden = praesenz.size ? ["any", [">", n, 0], ...[...praesenz].map((f) => [">", ["coalesce", ["get", f], 0], 0])] : [">", n, 0];
     const bedingungen = [vorhanden, ["in", ["get", "stufe"], ["literal", z.praez]]];
     if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
     if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);

@@ -255,6 +255,20 @@ test("setzeFilter: Präsenzfeld des Themas ersetzt die Ebenen-Summe als Bedingun
   assert.ok(JSON.stringify(a.filter["adressen-haus"]).includes(erwartet));
   assert.ok(JSON.stringify(a.filter["thema-haus"]).includes(erwartet));
   self.farbe = null;
-  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "" });
+  Karte.prototype.setzeFilter.call(self, { ebene: ["I"], praez: ["haus"], stadtteil: "" });
   assert.ok(!JSON.stringify(a.filter["adressen-haus"]).includes("n_besitz"));
+});
+
+test("Pill Eigentümer: Häuser mit belegtem Besitz (n_besitz) erscheinen auch ohne eigene Teil-II-Zeile; ohne Ebene II nicht", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau"]);
+  const self = { map: a.map, farbe: null, ansicht: null, treffer: new Set(), _deckkraftSetzen() {} };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "" });
+  const erwartet = JSON.stringify(["any", [">", ["+", ["coalesce", ["get", "n_II"], 0]], 0], [">", ["coalesce", ["get", "n_besitz"], 0], 0]]);
+  assert.ok(JSON.stringify(a.filter["adressen-haus"]).includes(erwartet));
+  Karte.prototype.setzeFilter.call(self, { ebene: ["I", "III"], praez: ["haus"], stadtteil: "" });
+  assert.ok(!JSON.stringify(a.filter["adressen-haus"]).includes("n_besitz"));
+  // Thema mit demselben Präsenzfeld: nur einmal in der Bedingung
+  self.farbe = { ausdruck: "#111", filter: null, praesenz: "n_besitz" };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "" });
+  assert.equal((JSON.stringify(a.filter["adressen-haus"]).match(/n_besitz/g) || []).length, 1);
 });
