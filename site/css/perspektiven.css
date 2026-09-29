@@ -147,13 +147,19 @@
   .detail { left: 16px; right: 16px; top: auto; bottom: 16px; max-width: none; }
 }
 
-/* Punktkarte (Bergbau): Kreise wandern per Transition zwischen Packung und Karte; Karten blenden. */
-.buehne svg circle.p { transition: transform .9s cubic-bezier(.4, 0, .2, 1), r .9s cubic-bezier(.4, 0, .2, 1), opacity .5s ease; fill-opacity: .62; }
+/* Punktkarte (Bergbau): Kreise wandern zwischen Packung und Karte auf einem Canvas über dem SVG (perspektiven.js
+   starteUebergang) — eine CSS-Transition auf ≈ 3.000 Kreisen lief mit 2–4 fps. Währenddessen sind die SVG-Kreise
+   unsichtbar; Karten und Titel blenden per CSS. Deckkraft .62 und Dimmung .12 spiegelt punktkarte.js. */
+.buehne svg circle.p { fill-opacity: .62; }
 .buehne svg circle.p.gedimmt { opacity: .12; }
+.buehne .svg { position: relative; }
+.buehne .svg canvas.uebergang { position: absolute; display: none; pointer-events: none; }
+.buehne .svg.laeuft canvas.uebergang { display: block; }
+.buehne .svg.laeuft svg circle.p { visibility: hidden; }
 .buehne svg g.karte { transition: opacity .6s ease; }
 .buehne svg g.karte .umriss { fill: #fff; stroke: #c9c5bc; stroke-width: .7; }
 .buehne svg g.karte .zeche { fill: var(--text); opacity: .85; }
 .buehne svg .karte-titel { font-size: 12px; font-weight: 600; fill: var(--text); }
 .buehne svg .gruppe-titel { font-size: 13px; font-weight: 600; fill: var(--text); transition: opacity .6s ease; }
 .buehne svg .gruppe-titel .wert { font-size: 12px; font-weight: 400; fill: var(--grau); }
-@media (prefers-reduced-motion: reduce) { .buehne svg circle.p, .buehne svg g.karte, .buehne svg .gruppe-titel { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .buehne svg g.karte, .buehne svg .gruppe-titel { transition: none; } }

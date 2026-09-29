@@ -159,10 +159,11 @@ export function zeige(ansicht, daten, optionen = {}) {
   for (const k of b.kreise) t.push(kreisHtml(k));
   for (const ti of b.titel) t.push(`<text class="gruppe-titel" data-g="${esc(ti.gruppe)}" text-anchor="middle" x="${ti.x.toFixed(1)}" y="${ti.y.toFixed(1)}" style="opacity:${ti.sichtbar ? 1 : 0}">${esc(ti.name)}<tspan class="wert" x="${ti.x.toFixed(1)}" dy="15">${esc(ti.wert)}</tspan></text>`);
   t.push("</svg>");
-  return { svg: t.join(""), legende: b.legende, zahlen: b.zahlen };
+  return { svg: t.join(""), legende: b.legende, zahlen: b.zahlen, kreise: b.kreise, breite: b.breite, hoehe: b.hoehe };
 }
 
-// Verschiebt die vorhandenen Kreise auf die Lage des neuen Zustands (Übergang per CSS-Transition auf transform/r).
+// Setzt die vorhandenen Kreise sofort auf die Lage des neuen Zustands; die Bewegung dazwischen zeichnet `uebergang`
+// auf einem Canvas (eine CSS-Transition auf ≈ 3.000 SVG-Kreisen lief mit 2–4 fps).
 // Voraussetzung: das SVG stammt aus `zeige` mit denselben Gruppen und einem Zustand ≠ haeuser (perspektiven.js prüft das).
 export function aktualisiere(svgEl, ansicht, daten, optionen = {}) {
   const b = berechne(ansicht, daten, optionen);
@@ -175,5 +176,48 @@ export function aktualisiere(svgEl, ansicht, daten, optionen = {}) {
   }
   for (const g of svgEl.querySelectorAll("g.karte")) { const k = b.karten.find((c) => c.gruppe === g.dataset.g); g.style.opacity = k && k.sichtbar ? 1 : 0; }
   for (const t of svgEl.querySelectorAll("text.gruppe-titel")) { const ti = b.titel.find((x) => x.gruppe === t.dataset.g); t.style.opacity = ti && ti.sichtbar ? 1 : 0; }
-  return { legende: b.legende, zahlen: b.zahlen };
+  return { legende: b.legende, zahlen: b.zahlen, kreise: b.kreise, breite: b.breite, hoehe: b.hoehe };
+}
+
+const ALPHA_GEDIMMT = 0.12;     // wie .gedimmt in perspektiven.css
+const FUELLUNG = 0.62;          // wie fill-opacity von circle.p
+const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);   // ein-aus, wie cubic-bezier(.4,0,.2,1) grob
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// Zwischenstand der Kreise beim Anteil t ∈ [0, 1], je ID von `von` nach `nach`; Reihenfolge und Menge des Ziels.
+// Ohne Vorgänger steht ein Kreis von Anfang an am Ziel. alpha ist die Deckkraft (gedimmt → 0,12).
+export function zwischen(von, nach, t) {
+  const je = new Map(von.map((k) => [k.id, k]));
+  return nach.map((n) => {
+    const v = je.get(n.id) || n;
+    return { id: n.id, x: lerp(v.x, n.x, t), y: lerp(v.y, n.y, t), r: lerp(v.r, n.r, t), farbe: n.farbe,
+      alpha: lerp(v.alpha ?? (v.gedimmt ? ALPHA_GEDIMMT : 1), n.gedimmt ? ALPHA_GEDIMMT : 1, t) };
+  });
+}
+
+function zeichneKreise(ctx, canvas, kreise, breite, hoehe) {
+  ctx.setTransform(canvas.width / breite, 0, 0, canvas.height / hoehe, 0, 0);
+  ctx.clearRect(0, 0, breite, hoehe);
+  for (const k of kreise) {
+    ctx.globalAlpha = FUELLUNG * k.alpha; ctx.fillStyle = k.farbe;
+    ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, 2 * Math.PI); ctx.fill();
+  }
+}
+
+// Zeichnet die Bewegung von `von` nach `nach` (Kreise aus zeige/aktualisiere) Bild für Bild auf das Canvas, dessen
+// Pixel die Zeichenfläche breite × hoehe abbilden. Liefert abbrechen() und aktuell() (zuletzt gezeichneter Stand),
+// damit ein neuer Schritt mitten in der Bewegung von dort aus weiterläuft. jetzt/raf sind für Tests austauschbar.
+export function uebergang({ canvas, von, nach, breite, hoehe, dauer = 900, fertig = () => {},
+  jetzt = () => performance.now(), raf = (f) => requestAnimationFrame(f) }) {
+  const ctx = canvas.getContext("2d");
+  const t0 = jetzt(); let stand = zwischen(von, nach, 0); let laeuft = true;
+  const bild = () => {
+    if (!laeuft) return;
+    const t = Math.min(1, (jetzt() - t0) / dauer);
+    stand = zwischen(von, nach, ease(t));
+    zeichneKreise(ctx, canvas, stand, breite, hoehe);
+    if (t < 1) raf(bild); else { laeuft = false; fertig(); }
+  };
+  raf(bild);
+  return { abbrechen() { laeuft = false; }, aktuell: () => stand };
 }

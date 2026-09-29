@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { normalisiere, standardGruppen } from "../js/ansicht.js";
-import { aktualisiere, berechne, raster, zeige } from "../js/formen/punktkarte.js";
+import { aktualisiere, berechne, raster, uebergang, zeige, zwischen } from "../js/formen/punktkarte.js";
 
 const G = standardGruppen("bergbau");
 const Q = (id, x, y) => ({ type: "Feature", properties: { id }, geometry: { type: "Polygon", coordinates: [[[x, y], [x + 0.1, y], [x + 0.1, y + 0.1], [x, y + 0.1], [x, y]]] } });
@@ -130,4 +130,63 @@ test("gesammelt unter 760 px: Packungen 2×2, Titel überlappen nicht, alles im 
   for (const t of b.titel) { const nachbarn = b.titel.filter((u) => u !== t && Math.round(u.y) === Math.round(t.y)); for (const u of nachbarn) assert.ok(Math.abs(u.x - t.x) >= 150, `Titelabstand ${Math.abs(u.x - t.x)}`); }
   assert.ok(b.kreise.every((k) => k.x - k.r >= 0 && k.x + k.r <= 360 && k.y - k.r >= 0 && k.y + k.r <= 520));
   assert.ok(b.titel.every((t) => t.y + 16 <= 520));
+});
+
+// Übergang auf Canvas: die CSS-Transition auf 3.000 SVG-Kreisen lief mit 2–4 fps (Messung 2026-09-29).
+test("zwischen interpoliert Lage, Radius und Deckkraft je Kreis-ID, unabhängig von der Reihenfolge", () => {
+  const von = [{ id: "a", x: 0, y: 0, r: 2, farbe: "#111", gedimmt: false }, { id: "b", x: 10, y: 10, r: 4, farbe: "#222", gedimmt: false }];
+  const nach = [{ id: "b", x: 20, y: 30, r: 8, farbe: "#222", gedimmt: true }, { id: "a", x: 100, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  const z = zwischen(von, nach, 0.5);
+  assert.deepEqual(z.map((k) => k.id), ["b", "a"]);                          // Reihenfolge des Ziels
+  assert.deepEqual(z[1], { id: "a", x: 50, y: 0, r: 2, farbe: "#111", alpha: 1 });
+  assert.equal(z[0].x, 15); assert.equal(z[0].y, 20); assert.equal(z[0].r, 6);
+  assert.ok(Math.abs(z[0].alpha - (1 + 0.12) / 2) < 1e-9);                  // gedimmt = Deckkraft .12 (CSS .gedimmt)
+  assert.deepEqual(zwischen(von, nach, 1)[0], { id: "b", x: 20, y: 30, r: 8, farbe: "#222", alpha: 0.12 });
+  assert.equal(zwischen([], nach, 0)[0].x, 20);                              // ohne Vorgänger: Ziel steht fest
+});
+
+test("uebergang zeichnet je Bild alle Kreise mit Easing, meldet das Ende einmal und lässt sich abbrechen", () => {
+  const aufrufe = []; const ctx = { clearRect: (...a) => aufrufe.push(["clear", ...a]), beginPath() {}, moveTo() {}, arc: (x, y, r) => aufrufe.push(["arc", x, y, r]), fill() {}, save() {}, restore() {}, setTransform() {}, set fillStyle(v) { aufrufe.push(["farbe", v]); }, set globalAlpha(v) { aufrufe.push(["alpha", v]); } };
+  const canvas = { width: 200, height: 100, getContext: () => ctx };
+  const von = [{ id: "a", x: 0, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  const nach = [{ id: "a", x: 100, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  let t = 0; const warteschlange = []; const raf = (f) => warteschlange.push(f); let fertig = 0;
+  const u = uebergang({ canvas, von, nach, breite: 100, hoehe: 50, dauer: 1000, jetzt: () => t, raf, fertig: () => fertig++ });
+  assert.equal(warteschlange.length, 1);
+  t = 500; warteschlange.shift()();                                           // Bild bei t = 0,5 → Easing (ein-aus) liegt bei 0,5
+  const arcs = aufrufe.filter((a) => a[0] === "arc");
+  assert.equal(arcs.length, 1); assert.ok(Math.abs(arcs[0][1] - 50) < 1e-9);
+  assert.equal(u.aktuell()[0].x, arcs[0][1]);                                 // aktuell liefert den gezeichneten Stand
+  assert.equal(fertig, 0);
+  t = 1000; warteschlange.shift()();
+  assert.equal(fertig, 1); assert.equal(warteschlange.length, 0);            // Ende: kein weiteres Bild
+  assert.equal(aufrufe.filter((a) => a[0] === "arc").pop()[1], 100);
+  const u2 = uebergang({ canvas, von, nach, breite: 100, hoehe: 50, dauer: 1000, jetzt: () => t, raf, fertig: () => fertig++ });
+  u2.abbrechen(); t = 1500; warteschlange.shift()();
+  assert.equal(fertig, 1);                                                    // nach Abbruch kein fertig und kein Bild
+  assert.equal(aufrufe.filter((a) => a[0] === "arc").length, 2);
+});
+
+test("uebergang skaliert Zeichenflächen-Einheiten auf die Pixel des Canvas", () => {
+  const aufrufe = []; const ctx = { clearRect() {}, beginPath() {}, moveTo() {}, arc() {}, fill() {}, save() {}, restore() {}, setTransform: (...a) => aufrufe.push(a), set fillStyle(v) {}, set globalAlpha(v) {} };
+  const canvas = { width: 400, height: 200, getContext: () => ctx };
+  const k = [{ id: "a", x: 0, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  const q = []; uebergang({ canvas, von: k, nach: k, breite: 100, hoehe: 50, dauer: 1, jetzt: () => 0, raf: (f) => q.push(f), fertig() {} });
+  q[0]();
+  assert.deepEqual(aufrufe[0], [4, 0, 0, 4, 0, 0]);                          // 400 px / 100 Einheiten
+});
+
+test("zeige und aktualisiere liefern die Kreise und die Zeichenfläche für den Übergang", () => {
+  const r = zeige(A({ zustand: "gesammelt" }), DATEN, O);
+  assert.equal(r.kreise.length, 3); assert.equal(r.breite, 1000); assert.equal(r.hoehe, 700);
+  const svgEl = { querySelectorAll: () => [] };
+  const a = aktualisiere(svgEl, A({ zustand: "karten" }), DATEN, O);
+  assert.equal(a.kreise.length, 3); assert.ok(a.kreise.every((k) => "gedimmt" in k)); assert.equal(a.breite, 1000);
+});
+
+test("zwischen nimmt einen Zwischenstand (mit alpha) als Ausgangspunkt, damit ein unterbrochener Übergang weiterläuft", () => {
+  const nach = [{ id: "a", x: 100, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  const stand = [{ id: "a", x: 30, y: 0, r: 2, farbe: "#111", alpha: 0.5 }];
+  const z = zwischen(stand, nach, 0);
+  assert.equal(z[0].x, 30); assert.equal(z[0].alpha, 0.5);
 });

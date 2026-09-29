@@ -29,7 +29,23 @@ let detail = DETAIL_ZU;
 // Rechteck der Einheit, an der der Kasten zuletzt aufgegangen ist; festgestellt bleibt er dort.
 let anker = null;
 // Die gerade gezeichnete Ansicht: ihre Werte füllen den Detailkasten, ihr SVG trägt die Hervorhebung.
-let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "", masse: "" };
+let gezeigt = { werte: [], ansicht: null, svg: null, trichter: false, ausschluss: "", masse: "", kreise: null };
+let laufend = null;   // laufender Punktkarten-Übergang (punktkarte.uebergang), damit ein neuer Schritt ihn ablöst
+
+// Bewegung der Punktkarte auf einem Canvas über dem SVG: die Kreise im SVG sind derweil unsichtbar (.laeuft),
+// Karten und Titel blenden weiter per CSS darunter. Das Canvas deckt genau das SVG ab, in dessen Einheiten gezeichnet wird.
+function starteUebergang(behaelter, von, r) {
+  const svgEl = behaelter.querySelector("svg"); if (!svgEl || !r.kreise) return;
+  let canvas = behaelter.querySelector("canvas.uebergang");
+  if (!canvas) { canvas = document.createElement("canvas"); canvas.className = "uebergang"; canvas.setAttribute("aria-hidden", "true"); behaelter.appendChild(canvas); }
+  const b = behaelter.getBoundingClientRect(), s = svgEl.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  Object.assign(canvas.style, { left: `${s.left - b.left}px`, top: `${s.top - b.top}px`, width: `${s.width}px`, height: `${s.height}px` });
+  canvas.width = Math.round(s.width * dpr); canvas.height = Math.round(s.height * dpr);
+  if (laufend) laufend.abbrechen();
+  behaelter.classList.add("laeuft");
+  laufend = punktkarte.uebergang({ canvas, von: von || [], nach: r.kreise, breite: r.breite, hoehe: r.hoehe, fertig: () => { behaelter.classList.remove("laeuft"); laufend = null; } });
+}
+function beendeUebergang(behaelter) { if (laufend) { laufend.abbrechen(); laufend = null; } behaelter.classList.remove("laeuft"); }
 // Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
 let sichtbar = [];
 // Herkunftsdateien (site/daten/herkunft/*.json), nachgeladen beim ersten Bedarf; undefined = wird
@@ -142,13 +158,16 @@ function zeichne(sec, schritt, k) {
     && ansicht.punkte && ansicht.punkte.zustand !== "haeuser" && vorige.punkte && vorige.punkte.zustand !== "haeuser"
     && JSON.stringify(vorige.gruppen) === JSON.stringify(ansicht.gruppen) && svg.querySelector("circle.p");
   if (gleitet) {
+    const von = laufend ? laufend.aktuell() : gezeigt.kreise;
     const r = punktkarte.aktualisiere(svg, ansicht, daten, { ...zeichenflaeche(svg.clientWidth, svg.clientHeight), ...optionen });
+    if (reduziert) beendeUebergang(svg); else starteUebergang(svg, von, r);
     legende.innerHTML = legendeHtml(r.legende);
     zahlen.textContent = r.zahlen.hinweis;
     svg.setAttribute("aria-label", schritt.beschreibung || "");
-    gezeigt = { ...gezeigt, ansicht, ausschluss: optionen.ausschlussText };
+    gezeigt = { ...gezeigt, ansicht, ausschluss: optionen.ausschlussText, kreise: r.kreise };
     return;
   }
+  beendeUebergang(svg);
   // Vor dem Messen wieder die ganze Bühne freigeben — der vorige Schritt kann sie verkleinert haben.
   svg.style.flex = "";
   // Zwei Durchgänge: Das Bild bekommt, was die Bühne nach Überschrift, Legende und Zahlenzeile
@@ -169,7 +188,7 @@ function zeichne(sec, schritt, k) {
     requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.remove("blass")));
   }
   svg.setAttribute("aria-label", schritt.beschreibung || "");
-  gezeigt = { werte: trichterSchritt ? r.werte : werteJeEinheit(ansicht, daten), ansicht, svg, trichter: trichterSchritt, ausschluss: optionen.ausschlussText, masse };
+  gezeigt = { werte: trichterSchritt ? r.werte : werteJeEinheit(ansicht, daten), ansicht, svg, trichter: trichterSchritt, ausschluss: optionen.ausschlussText, masse, kreise: r.kreise || null };
   svg.querySelectorAll(".einheit").forEach((el) => {
     const zeile = el.dataset.zeile || "";
     el.addEventListener("click", () => melde("klick", el.dataset.id, zeile, el.getBoundingClientRect()));

@@ -615,7 +615,8 @@ ohne DOM-Abhängigkeit, gemeinsame Schnittstelle `zeige(ansicht, daten, optionen
 zahlen}`. Die Punktkarte (Kapitel 4 Bergbau, `docs/bergbau.md`) trägt in der Ansicht das Feld
 `punkte: {zustand: gesammelt | karten | haeuser, hervor: [Gruppenname]}` und zusätzlich `aktualisiere(svgEl, …)`:
 folgen zwei Punktkarten-Schritte mit denselben Gruppen aufeinander, verschiebt die Seite die vorhandenen Kreise
-(CSS-Transition) statt neu zu zeichnen; ihre Kapitellinks führen auf das Thema „Bergbau“ der Karte (`klassen=`). Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
+statt neu zu zeichnen; die Bewegung dazwischen zeichnet `uebergang(…)` auf einem Canvas über dem SVG (eine
+CSS-Transition auf ≈ 3.000 Kreisen lief mit 2–4 fps); ihre Kapitellinks führen auf das Thema „Bergbau“ der Karte (`klassen=`). Einheiten unter `min_n` (zu wenige geprüfte Adressen) werden grau statt eingefärbt
 dargestellt (Grau-Regel); `zahlen` nennt neben N und den ausgeschlossenen Nennungen, wie viele
 Einheiten der Ebene gezeichnet sind und wie viele unter `min_n` grau bleiben — die Perspektiven-Seite
 druckt das als „… · 15 von 50 Einheiten gezeichnet · 8 unter 200 Nennungen (grau, nicht eingefärbt)“,
