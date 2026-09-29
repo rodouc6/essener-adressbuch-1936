@@ -544,9 +544,12 @@ def _normen_je_kategorie(adressen: dict[str, dict], kategorie_von) -> dict[str, 
             k = kategorie_von(b)
             if not k:
                 continue
-            haeuser[b["ohdab"]].add(a["id"])
-            nennungen[b["ohdab"]][k] += 1
-            namen[b["ohdab"]] = b["norm"]
+            o = b.get("ohdab")
+            if not o:
+                continue
+            haeuser[o].add(a["id"])
+            nennungen[o][k] += 1
+            namen[o] = b.get("norm") or o
     je_kat: dict[str, dict[str, dict]] = defaultdict(dict)
     for o, je in nennungen.items():
         k = max(je.items(), key=lambda x: (x[1], x[0]))[0]
@@ -561,7 +564,10 @@ def baue_themen_listen(adressen: dict[str, dict]) -> dict[str, dict]:
     # Besitz: Klasse je Adresse (inkl. Spannen), Eigentümer aus dem Eigentümerindex nach Kategorie
     liste, _ = baue_eigentuemerindex(adressen)
     je_kat: dict[str, dict[str, dict]] = defaultdict(dict)
+    erlaubt = {k for k, _ in OBERKATEGORIEN["besitz"]}
     for _, name, haeuser, kat in liste:
+        if kat not in erlaubt:   # z. B. „gemischt“ (uneinheitliche Kuratierung) — laut statt still verloren (Review 2026-09-29)
+            raise ValueError(f"Themenliste Besitz: Eigentümer {name!r} hat Kategorie {kat!r} ohne Oberkategorie — kuratierung/eigentuemer.csv vereinheitlichen")
         je_kat[kat][f"eig:{name}"] = dict(schluessel=f"eig:{name}", name=name, adressen=haeuser)
     # Zahlen nur für Häuser, die das Thema zeigt (Review 2026-09-29): Besitz = Teil-II-Zeile oder belegter Besitz (n_besitz)
     je_klasse: dict[str, int] = defaultdict(int)

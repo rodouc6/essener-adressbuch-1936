@@ -1,9 +1,10 @@
 import { falte, praefix2 } from "./schluessel.js";
 import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
+import { GEWERBE_TEXT } from "./ansicht.js";
 import { FARBEN } from "./konfig.js";
 import { schluessel } from "./zustand.js";
 
-const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3 };
+const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3, rubriken: 3 };
 
 export function hinweisHJ(q) {
   const k = falte(q);
@@ -26,11 +27,11 @@ function strasse(s) {
 // vorschlaege(); dafür startet der Aufrufer die eigentliche Personensuche (sucheAusText).
 export async function vorschlaege(q, lader, alle = {}) {
   const k = falte(q);
-  const leer = { personen: [], strassen: [], firmen: [], berufe: [], eigentuemer: [], gesamt: 0,
-                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0, gesamt_eigentuemer: 0 };
+  const leer = { personen: [], strassen: [], firmen: [], berufe: [], eigentuemer: [], rubriken: [], gesamt: 0,
+                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0, gesamt_eigentuemer: 0, gesamt_rubriken: 0 };
   if (k.length < 2) return leer;
-  const [namen, firmen, strassen, berufe, berufeNorm, eigentuemer] = await Promise.all([
-    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.berufeNorm(), lader.eigentuemer()]);
+  const [namen, firmen, strassen, berufe, berufeNorm, eigentuemer, rubriken] = await Promise.all([
+    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.berufeNorm(), lader.eigentuemer(), lader.rubriken()]);
   const alleP = (namen || []).filter((z) => z[0].startsWith(k)).map(person);
   const alleS = (strassen || []).filter((s) => s.schluessel.startsWith(k)).map(strasse);
   const alleF = (firmen || []).filter((z) => z[0].startsWith(k))
@@ -44,15 +45,19 @@ export async function vorschlaege(q, lader, alle = {}) {
   ];
   const alleE = (eigentuemer || []).filter((z) => z[0].startsWith(k))
     .map((z) => ({ art: "eigentuemer", text: z[1], untertitel: `${z[2]} Häuser · ${KATEGORIEN[z[3]] || z[3]}`, name: z[1] }));
+  // Gewerberubriken (Teil III, Index suche/rubriken.json): Vorschlagsart "rubrik" → Vergleich rub:<Rubrik>
+  const alleR = (rubriken || []).filter((z) => z[0].startsWith(k))
+    .map((z) => ({ art: "rubrik", text: z[1], untertitel: `${z[2]} Betriebe · ${GEWERBE_TEXT[z[3]] || z[3]}`, name: z[1] }));
   return {
     personen: alleP.slice(0, MAX.personen),
     strassen: alle.strassen ? alleS : alleS.slice(0, MAX.strassen),
     firmen: alle.firmen ? alleF : alleF.slice(0, MAX.firmen),
     berufe: alle.berufe ? alleB : alleB.slice(0, MAX.berufe),
     eigentuemer: alle.eigentuemer ? alleE : alleE.slice(0, MAX.eigentuemer),
-    gesamt: alleP.length + alleS.length + alleF.length + alleB.length + alleE.length,
+    rubriken: alle.rubriken ? alleR : alleR.slice(0, MAX.rubriken),
+    gesamt: alleP.length + alleS.length + alleF.length + alleB.length + alleE.length + alleR.length,
     gesamt_personen: alleP.length, gesamt_strassen: alleS.length,
-    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length, gesamt_eigentuemer: alleE.length,
+    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length, gesamt_eigentuemer: alleE.length, gesamt_rubriken: alleR.length,
   };
 }
 

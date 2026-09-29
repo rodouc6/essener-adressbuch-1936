@@ -1084,3 +1084,16 @@ def test_rubrikindex_liste_und_scherben():
     assert liste == [["schneider fuer herren", "Schneider für Herren", 2, "textil_bekleidung"], ["baecker", "Bäcker", 1, "lebensmittel"]]
     assert scherben["sc"]["Schneider für Herren"] == [["h1", 1], ["h2", 1]]
     assert scherben["ba"]["Bäcker"] == [["h1", 1]]
+
+
+def test_themen_listen_melden_eigentuemer_ohne_oberkategorie():
+    """Review 2026-09-29 (Minor): ein Eigentümer, dessen Indexkategorie keine Oberkategorie ist (z. B. gemischt), fällt nicht still weg."""
+    import pytest
+    from pipeline.lib.karte_export import baue_themen_listen
+    def eig(name, kat):
+        return dict(teil="II", _beruf=None, _merkmale=[], _eigentuemer=name, _identitaet=True, _kategorie=kat)
+    def haus(i, kat):
+        return dict(id=f"h{i}", eintraege=[eig("Mischkonzern", kat)], besitz=kat, besitz_quelle="eintrag", besitz_eigentuemer="", stellung="ungeprueft")
+    adressen = {a["id"]: a for a in [haus(1, "industrie"), haus(2, "bergbau")]}
+    with pytest.raises(ValueError, match="Mischkonzern"):
+        baue_themen_listen(adressen)

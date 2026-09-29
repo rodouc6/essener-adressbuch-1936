@@ -131,3 +131,10 @@ test("treffer vergleich rub: Rubrikscherbe (Teil III), Name = Rubrik; unbekannte
   assert.deepEqual(t.gruppen.map((g) => [g.name, g.adressIds]), [["Schneider für Herren", ["c3", "d4"]], ["Gibtsnicht", []]]);
   assert.equal(t.zaehler.get("d4"), 2);
 });
+
+test("Vorschläge: Rubriken (Teil III) als eigene Gruppe mit Betrieben und Branche; alle=rubriken ungekürzt", async () => {
+  const v = await vorschlaege("schn", lader());
+  assert.deepEqual(v.rubriken, [{ art: "rubrik", text: "Schneider für Herren", untertitel: "2 Betriebe · Textil und Bekleidung", name: "Schneider für Herren" }]);
+  assert.equal(v.gesamt_rubriken, 1);
+  assert.equal((await vorschlaege("xyz", lader())).rubriken.length, 0);
+});

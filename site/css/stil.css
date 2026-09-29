@@ -113,7 +113,11 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 .thema.ansicht { background: #f1f5f9; }
 .thema.ansicht a { display: inline-block; margin-top: 6px; color: var(--blau); font-size: 12px; }
 #themenkopf .gruppe { padding: 8px 12px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
+.themenliste { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 2px 12px 6px; }
+.themenliste .gruppe { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin-right: 4px; }
+.themenliste .themaknopf { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; }
 .baum { padding: 4px 12px 6px; }
+.baum .klein { font-size: 11px; color: var(--grau); margin: 2px 0 4px; }
 .baum .ober { display: flex; align-items: center; gap: 4px; margin: 2px 0; font-size: 13px; }
 .baum .ober label.schalter { display: flex; align-items: center; gap: 6px; flex: 1; cursor: pointer; min-height: 26px; }
 .baum .ober input { margin: 0; } .baum .ober small { color: var(--grau); }

@@ -201,7 +201,7 @@ async function wendeAnsichtAn() {
 
 async function zeigeInhalt() {
   if (ergebnis) sidebar.zeigeTreffer(zustand, ergebnis, await eigMap(ergebnis.adressIds), zustand.q);
-  else { sidebar.zeigeSuche(zustand); themenListe(lader).then((l) => sidebar.zeigeThemenliste(l, zustand.thema)); }
+  else sidebar.zeigeSuche(zustand);
 }
 
 // Kurzindex (Spec 2026-09-29 §2): Adresse, Stadtteil, Koordinaten für Liste, Leiste und Einpassen — kein
@@ -233,6 +233,7 @@ async function waehleVorschlag(v) {
   if (v.art === "beruf") return setzeZustand({ q: "", vergleich: [], beruf: v.beruf }, true);
   if (v.art === "eigentuemer") return vergleichWaehlen(`eig:${v.name}`, false);
   if (v.art === "ohdab") return vergleichWaehlen(`norm:${v.ohdab}`, false);
+  if (v.art === "rubrik") return vergleichWaehlen(`rub:${v.name}`, false);
   // v.art === "strasse": v trägt bereits name/artName/ort/schluessel, treffer() lädt die IDs selbst.
   // q wird als reiner Name geschrieben (nicht v.text mit "(Ort)") — sonst kann strasseAusZustand()
   // die URL bei Reload/Zurück/Vor nicht mehr auflösen (Fix-Runde 1).
@@ -375,7 +376,8 @@ function zeichneLegende() {
     `<div class="zeile"><span class="punkt ungenau" style="color:${f}"></span> nur straßengenau / Stadtplan 1935</div>`;
   if (ergebnis && ergebnis.gruppen) { if (mehrfachZahl(ergebnis.gruppen)) html += `<div class="zeile"><span class="punkt ring"></span> in mehreren Gruppen</div>`; }
   else if (ergebnis) html += `<div class="zeile"><span class="punkt" style="background:${FARBEN.treffer}"></span> Suchtreffer</div>`;
-  html += `<div class="zeile">Größe = Zahl der Einträge</div>`;
+  // Themenkacheln zeichnen unter Zoom 14 gleich große Punkte (RADIUS_THEMA), darüber nach Einträgen wie die Grundkarte.
+  html += `<div class="zeile">${themaAktiv ? "Größe = Zahl der Einträge ab Zoom 14, darunter gleich groß" : "Größe = Zahl der Einträge"}</div>`;
   document.getElementById("legende").innerHTML = html;
 }
 
@@ -412,6 +414,7 @@ window.addEventListener("popstate", async () => {
     if (gespeichert) zustand = { ...zustand, karte: gespeichert };
   }
   sidebar.suche.value = zustand.q || "";
+  document.getElementById("suche-leeren").hidden = !sidebar.suche.value;   // Knopf folgt dem Feld (Review-Minor)
   await start();
 });
 
@@ -419,6 +422,7 @@ async function start() {
   await karte.bereit();
   const [st, be, kz] = await Promise.all([lader.stadtteile(), lader.berufe(), lader.kennzahlen()]);
   sidebar.setzeFilteroptionen(st, be);
+  sidebar.zeigeThemenliste(await themenListe(lader), zustand.thema);
   if (kz) document.getElementById("vermerk").textContent = `Work in progress · Datenstand ${kz.stand} · ${kz.stufen.haus} % hausgenau`;
   await wendeThemaAn();
   await wendeAnsichtAn();

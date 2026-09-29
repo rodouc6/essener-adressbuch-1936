@@ -14,6 +14,8 @@ export class Sidebar {
     this.pills = el.querySelector("#pills");
     this.vorschlaegeEl = el.querySelector("#vorschlaege");
     this.themenkopf = el.querySelector("#themenkopf");
+    this.themenliste = el.querySelector("#themenliste");
+    this.themenliste.addEventListener("click", (ev) => { const th = ev.target.closest("[data-thema]"); if (th) this.a.onZustand({ thema: th.dataset.thema === this._themaAktiv ? "" : th.dataset.thema }); });
     this.ansichtkopf = el.querySelector("#ansichtkopf");
     this.suche = el.querySelector("#suche");
     this.stadtteile = []; this.berufe = [];
@@ -43,11 +45,11 @@ export class Sidebar {
   setzeVorschlaege(g, plus = false) {
     if (!g || g.gesamt === 0) { this.vorschlaegeEl.hidden = true; this._vorschlagListe = []; return; }
     const liste = []; let html = "";
-    for (const [k, titel] of [["personen", "Personen"], ["strassen", "Straßen"], ["firmen", "Firmen"], ["berufe", "Berufe"], ["eigentuemer", "Eigentümer"]]) {
+    for (const [k, titel] of [["personen", "Personen"], ["strassen", "Straßen"], ["firmen", "Firmen"], ["berufe", "Berufe"], ["eigentuemer", "Eigentümer"], ["rubriken", "Rubriken"]]) {
       if (!g[k].length) continue;
       html += `<div class="gruppe">${titel}</div>`;
       for (const v of g[k]) {
-        const zusatz = plus && (k === "eigentuemer" || v.art === "ohdab") ? `<span class="plus" title="zum Vergleich hinzufügen">+</span>` : "";
+        const zusatz = plus && (k === "eigentuemer" || k === "rubriken" || v.art === "ohdab") ? `<span class="plus" title="zum Vergleich hinzufügen">+</span>` : "";
         html += `<div class="eintrag" data-index="${liste.length}">${esc(v.text)}${zusatz}<small>${esc(v.untertitel)}</small></div>`;
         liste.push(v);
       }
@@ -78,8 +80,7 @@ export class Sidebar {
   zeigeSuche(z) {
     this.pills.innerHTML = this._pillsHtml(z);
     this.inhalt.innerHTML = this._filterHtml(z) +
-      `<div class="hinweis">Tippe einen Namen, eine Straße, eine Firma oder einen Beruf. Die Namen H bis J fehlen in der Vorlage.</div>` +
-      `<div class="themenliste" id="themenliste"></div>`;
+      `<div class="hinweis">Tippe einen Namen, eine Straße, eine Firma, einen Beruf oder eine Gewerberubrik. Die Namen H bis J fehlen in der Vorlage.</div>`;
     this._filterEreignisse(z);
   }
 
@@ -145,7 +146,9 @@ export class Sidebar {
 
   // Themenkopf (Spec Themenbaum §2): Kopf, Baum (Kästchen = Schalter, Pfeil = Klappliste, Pills = Vergleich), Grundlage.
   zeigeThema(thema, liste = null, vergleich = [], farben = [], klassen = "") {
+    if (!thema || !this._thema || thema.id !== this._thema.id) this.baumZustand = { offen: null, alle: null };   // anderes Thema: nichts offen (Spec §2)
     this._thema = thema; this._liste = liste; this._vergleich = vergleich; this._farben = farben; this._klassen = klassen;
+    this.markiereThema(thema ? thema.id : "");
     if (!thema) { this.themenkopf.hidden = true; this.themenkopf.innerHTML = ""; this.baumZustand = { offen: null, alle: null }; return; }
     this._baumZeichnen();
     this.themenkopf.hidden = false;
@@ -206,10 +209,17 @@ export class Sidebar {
     el.querySelector("[data-ansicht-aus]").addEventListener("click", () => this.a.onZustand({ ansicht: "" }));
   }
 
+  // Feste Zeile unter den Ebenen-Pills, in jedem Zustand sichtbar (Wunsch Christos 2026-09-29): Klick wechselt das Thema
+  // direkt, ein Klick auf das aktive Thema verlässt es.
   zeigeThemenliste(themen, aktiv = "") {
-    const el = this.inhalt.querySelector("#themenliste");
-    if (!el || !themen.length) return;
-    el.innerHTML = `<div class="gruppe">Themen</div>` + themen.map((t) => `<button class="themaknopf" data-thema="${esc(t.id)}" aria-pressed="${t.id === aktiv}">${esc(t.titel)}</button>`).join("");
+    const el = this.themenliste;
+    if (!themen.length) { el.hidden = true; return; }
+    el.innerHTML = `<span class="gruppe">Themen</span>` + themen.map((t) => `<button class="themaknopf" data-thema="${esc(t.id)}" aria-pressed="${t.id === aktiv}">${esc(t.titel)}</button>`).join("");
+    el.hidden = false; this._themaAktiv = aktiv;
+  }
+  markiereThema(aktiv) {
+    this._themaAktiv = aktiv;
+    this.themenliste.querySelectorAll("[data-thema]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.thema === aktiv)));
   }
 
   _filterEreignisse(z) {

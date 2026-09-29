@@ -18,7 +18,7 @@ function pill(e, vergleich, farben) {
   const i = vergleich.indexOf(e.schluessel);
   const stil = i >= 0 ? ` style="background:${esc(farben[i])};border-color:${esc(farben[i])};color:#fff"` : "";
   const titel = i >= 0 ? "aus dem Vergleich entfernen" : vergleich.length ? "zum Vergleich hinzufügen" : `alle Häuser: ${e.name}`;
-  return `<button class="pill-s" data-schluessel="${esc(e.schluessel)}" aria-pressed="${i >= 0}"${stil} title="${esc(titel)}">${esc(e.name)} <small>${e.adressen}</small></button>`;
+  return `<button class="pill-s" data-schluessel="${esc(e.schluessel)}" aria-pressed="${i >= 0}"${stil} title="${esc(titel)}">${esc(e.name)} <small title="Häuser mit mindestens einer Nennung dieser Bezeichnung">${e.adressen}</small></button>`;
 }
 
 // opt: { klassen (URL-String), vergleich (Schlüssel), farben, offen (Oberkategorie-ID | null), alle (ID, deren Liste voll gezeigt wird | null) }
@@ -27,10 +27,15 @@ export function baumHtml(thema, liste, opt) {
   const namen = anzeigeFuer(thema.farbe?.feld);
   const werte = thema.farbe?.werte || {}, sonst = thema.farbe?.sonst || "#c8c8c8";
   const ober = new Map((liste?.oberkategorien || []).map((o) => [o.id, o]));
-  const klassen = thema.schalter?.klassen || [];
+  const mitSchalter = !!thema.schalter;
+  // Ohne Schalter (Kategorien-Thema, Review-Minor): dieselben Zeilen ohne Kästchen, Farbschlüssel aus farbe.werte + ungeprüft
+  const klassen = mitSchalter ? thema.schalter.klassen || [] : [...Object.keys(werte), "ungeprueft"];
   const alleAn = an.size === klassen.length, alleAus = an.size === 0;
-  let html = `<div class="baum"><div class="zeile alle-klassen"><button data-alle-an="1"${alleAn ? " disabled" : ""}>alle an</button>` +
-    `<button data-alle-aus="1"${alleAus ? " disabled" : ""}>alle aus</button><small>Punkt anklicken = nur diese Klasse</small></div>`;
+  let html = `<div class="baum">` + (thema.legende ? `<div class="zeile klein legende-satz">${esc(thema.legende)}</div>` : "");
+  if (mitSchalter) {
+    html += `<div class="zeile alle-klassen"><button data-alle-an="1"${alleAn ? " disabled" : ""}>alle an</button>` +
+      `<button data-alle-aus="1"${alleAus ? " disabled" : ""}>alle aus</button><small>Punkt anklicken = nur diese Klasse</small></div>`;
+  }
   for (const k of klassen) {
     const o = ober.get(k);
     const zahl = o ? o.adressen : k === "gemischt" && liste ? liste.gemischt : k === "ungeprueft" && liste ? liste.ungeprueft : null;
@@ -38,10 +43,12 @@ export function baumHtml(thema, liste, opt) {
     const tip = TOOLTIP[k] ? ` title="${esc(TOOLTIP[k])}"` : "";
     const auf = !!(o && o.eintraege.length);
     const offen = auf && opt.offen === k;
+    const zahlHtml = zahl == null ? "" : ` <small title="Häuser mit mindestens einem Eintrag dieser Gruppe">${zahl}</small>`;
+    if (!mitSchalter) { html += `<div class="zeile ober"><span class="punkt" style="background:${esc(werte[k] || sonst)}"></span> ${esc(name)}${zahlHtml}</div>`; continue; }
     const nur = `nur ${name} zeigen`;
     html += `<div class="zeile ober"><label class="schalter"${tip}><input type="checkbox" id="klasse-${esc(k)}" data-klasse="${esc(k)}"${an.has(k) ? " checked" : ""}></label>` +
       `<button class="punkt" data-nur="${esc(k)}" style="background:${esc(werte[k] || sonst)}" title="${esc(nur)}" aria-label="${esc(nur)}"></button>` +
-      `<label class="schalter name" for="klasse-${esc(k)}"${tip}> ${esc(name)}${zahl == null ? "" : ` <small>${zahl}</small>`}</label>` +
+      `<label class="schalter name" for="klasse-${esc(k)}"${tip}> ${esc(name)}${zahlHtml}</label>` +
       (auf ? `<button class="auf" data-auf="${esc(k)}" aria-expanded="${offen}" aria-label="${offen ? "zuklappen" : "aufklappen"}">${offen ? "▾" : "▸"}</button>` : "") + `</div>`;
     if (offen) {
       const voll = opt.alle === k;
@@ -50,8 +57,9 @@ export function baumHtml(thema, liste, opt) {
         (voll || o.eintraege.length <= PILLS_KURZ ? "" : `<button class="alle" data-alle="${esc(k)}">alle ${o.eintraege.length} anzeigen</button>`) + `</div>`;
     }
   }
+  if (mitSchalter && alleAus) html += `<div class="zeile klein">Keine Klasse gewählt – alle Adressen in Grundfarbe.</div>`;
   if (liste && typeof liste.handgeprueft_anteil === "number") {
-    html += `<div class="zeile klein">Stellung handgeprüft bei ${Math.round(liste.handgeprueft_anteil * 100)} % der Nennungen, sonst Vorschlag der Automatik.</div>`;
+    html += `<div class="zeile klein">Stellung handgeprüft bei ${Math.round(liste.handgeprueft_anteil * 100)} % der Nennungen mit geprüftem Beruf, sonst Vorschlag der Automatik.</div>`;
   }
   return html + `</div>`;
 }
