@@ -65,11 +65,13 @@ const sidebar = new Sidebar(document.getElementById("sidebar"), lader, {
   onZurueck: () => history.back(),
   onExport: () => exportiere(),
 });
+// Debughilfe für Sichtprüfungen (Playwright): ?debug=1 legt die Karte auf window.
 const karte = new Karte("karte", zustand, {
   onKlick: (id, lngLat) => klickPunkt(id, lngLat),
   onBewegt: (z, c) => setzeZustand({ z, c }, false, true),
   onHover: () => {},
 });
+if (new URLSearchParams(location.search).has("debug")) window.__karte = karte;
 
 // Punkteigenschaften einer Adresse: zuerst der Speicher, dann die geladenen Kartenkacheln (schnell,
 // aber nur im aktuellen Viewport vorhanden), sonst die Adressscherbe (immer vollständig, aber ein

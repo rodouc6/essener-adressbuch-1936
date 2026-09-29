@@ -61,5 +61,7 @@ König Wilhelm und zwei des Mülheimer Bergwerks-Vereins auf je einen Namen gef�
 ## Offen
 
 Betreiber je Zeche (Historisches Portal), Adressabgleich Bergleute in Zechenhäusern, Betriebe des Bergbaus aus
-Teil III nach Handprüfung, Prüfung der Tabelle durch den Projektleiter (`geprueft`), Bildrate des Übergangs am
-Handy (Rückfall auf Canvas, falls unter 30 fps).
+Teil III nach Handprüfung, vier Grenzfälle der Tabelle (Kokereiarbeiter, Koksarbeiter, Schlepper, Oberschaffner;
+Rest geprüft 2026-09-29). Der Übergang der Punktkarte läuft seit 2026-09-29 auf Canvas (59 fps am Rechner,
+33 fps bei vierfach gedrosselter CPU); das Thema Bergbau zeigt seit demselben Tag aus der Vogelperspektive alle
+Treffer-Adressen aus einer eigenen Kacheldatei (README, Themenformat).

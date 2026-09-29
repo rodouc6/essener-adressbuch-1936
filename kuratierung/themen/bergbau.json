@@ -2,7 +2,7 @@
   "id": "bergbau",
   "titel": "Bergbau",
   "text": "Adressen mit Bergbau-Berufen laut Teil I, nach Gruppe: Belegschaft, Aufsicht, Leitung und Beamte, Berginvaliden. Bei mehreren Gruppen im Haus zählt die höchste. Die Kästchen in der Legende schalten Gruppen ab und zu; Adressen ohne eingeschaltete Gruppe verschwinden.",
-  "grundlage": "Bergbau-Tabelle kuratierung/merkmale/bergbau.csv (Norm → Gruppe, noch ungeprüft) über die Berufs-Kuratierung kuratierung/berufe.csv; nur verortete Einträge des Einwohnerverzeichnisses mit geprüftem Beruf",
+  "grundlage": "Bergbau-Tabelle kuratierung/merkmale/bergbau.csv (Norm → Gruppe, geprüft am 2026-09-29 bis auf vier Grenzfälle) über die Berufs-Kuratierung kuratierung/berufe.csv; nur verortete Einträge des Einwohnerverzeichnisses mit geprüftem Beruf",
   "freigegeben": true,
   "filter": {
     "ebenen": [

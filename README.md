@@ -278,6 +278,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `kennzahlen.json` | Einträge je Teil, Anteile je Präzisionsstufe, Zahl offener Zeilen, Build-Datum, dazu Abdeckung Stellung/Gruppen/Gewerbe und `strassen_mit_linie` (Teilprojekt 5a) |
 | `hauptgruppen.json` | Bezeichnungen der OhdAB-Hauptgruppen (`{B21: {bezeichnung, kurz, bereich}}`) aus `kuratierung/hauptgruppen.csv` — Beschriftung der Gruppenachse in Perspektiven und Werkstatt |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
+| `themen/<id>.pmtiles` | Kacheldatei je freigegebenem Thema: nur Treffer-Adressen, nur Filter-, Schalter- und Farbfelder, Zoom 9–15 ohne Ausdünnung (Spec 2026-09-29-themenkacheln) |
 | `herkunft/*.json` | Herkunftspaket für den Detailkasten der Schlaglichter: je Klasse Schreibweisen, Normen, Quellanteile und Top-10; je Norm/Eigentümer/Rubrik die Einzelherkunft (`docs/perspektiven.md`, Abschnitt Herkunftspfad) |
 | `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
@@ -438,6 +439,13 @@ Vierter Datenkern neben Berufen (Teil I), Eigentümern (Teil II) und Merkmalen: 
 Teil III, dazu Berufsgruppen, Aggregationsebenen und Bubble-Layouts als Vorstufe für die Seiten
 Perspektiven und Werkstatt (Teilprojekt 5b/5c, noch nicht gebaut). Spec:
 `docs/superpowers/specs/2026-09-24-perspektiven-werkstatt-design.md`.
+
+Je freigegebenem Thema entsteht `themen/<id>.pmtiles` (Ebene `adressen`, ohne Ausdünnung). Die Karte zeigt bei
+aktivem Thema diese Quelle statt der Hauptpunkte: keine Zoomgrenze, Radius 1 px (Zoom 10) bis zur normalen
+Größe (Zoom 14), damit Ballungen aus der Vogelperspektive sichtbar sind. Felder je Punkt: `id, stufe, stadtteil,
+n_I, n_II, n_III`, das Farbfeld (`kategorien`), `m_<merkmal>` (Merkmalsthemen) und die Schalterfelder.
+`themen/index.json` trägt `kacheln: true`, wenn die Datei geschrieben wurde; fehlt das Flag, verhält sich die
+Karte wie ohne Themenquelle.
 
 ### Berufsgruppen = OhdAB-Hauptgruppen (`kuratierung/hauptgruppen.csv`)
 
