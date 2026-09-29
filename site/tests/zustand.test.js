@@ -45,24 +45,29 @@ test("zustandGleich vergleicht tief", () => {
   assert.ok(!zustandGleich(STANDARD, { ...STANDARD, q: "x" }));
 });
 
-import { MAX_EIGENTUEMER, namensliste } from "../js/zustand.js";
+import { MAX_VERGLEICH, schluesselliste, schluessel } from "../js/zustand.js";
 
-test("eigentuemer ist eine Liste: Einzelname, |-Liste, Dubletten und Kappung auf fünf", () => {
-  assert.deepEqual(liesZustand("?eigentuemer=Fried.+Krupp+AG").eigentuemer, ["Fried. Krupp AG"]);
-  assert.deepEqual(liesZustand("?eigentuemer=Fried.+Krupp+AG|Stadt+Essen").eigentuemer, ["Fried. Krupp AG", "Stadt Essen"]);
-  assert.deepEqual(liesZustand("?eigentuemer=A|A|B|C|D|E|F").eigentuemer, ["A", "B", "C", "D", "E"]);
-  assert.deepEqual(liesZustand("?eigentuemer=|+|").eigentuemer, []);
-  assert.equal(MAX_EIGENTUEMER, 5);
-  assert.deepEqual(namensliste("x| y |x"), ["x", "y"]);
-  assert.deepEqual(namensliste(null), []);
+test("vergleich: typisierte Schlüssel, |-Liste, Dubletten, Kappung auf fünf, unbekannter Typ fällt weg", () => {
+  assert.deepEqual(liesZustand("?vergleich=eig:Fried.+Krupp+AG").vergleich, ["eig:Fried. Krupp AG"]);
+  assert.deepEqual(liesZustand("?vergleich=eig:Fried.+Krupp+AG|norm:B+21112-100").vergleich, ["eig:Fried. Krupp AG", "norm:B 21112-100"]);
+  assert.deepEqual(liesZustand("?vergleich=eig:A|eig:A|eig:B|eig:C|eig:D|eig:E|eig:F").vergleich, ["eig:A", "eig:B", "eig:C", "eig:D", "eig:E"]);
+  assert.deepEqual(liesZustand("?vergleich=rub:X|quatsch|eig:|+").vergleich, []);
+  assert.equal(MAX_VERGLEICH, 5);
+  assert.deepEqual(schluesselliste(["norm:B 1", " norm:B 1 ", "eig:x"]), ["norm:B 1", "eig:x"]);
+  assert.deepEqual(schluesselliste(null), []);
+  assert.deepEqual(schluessel("norm:B 21112-100"), { typ: "norm", wert: "B 21112-100" });
+  assert.deepEqual(schluessel("eig:Fa. Müller: Söhne"), { typ: "eig", wert: "Fa. Müller: Söhne" });   // nur der erste Doppelpunkt trennt
 });
 
-test("eigentuemer wird mit | geschrieben und rund gelesen; leer bleibt weg", () => {
-  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: ["Stadt Essen"] }), "eigentuemer=Stadt+Essen");
-  const s = schreibeZustand({ ...STANDARD, eigentuemer: ["Fried. Krupp AG", "Stadt Essen"] });
-  assert.equal(s, "eigentuemer=Fried.+Krupp+AG|Stadt+Essen");
-  assert.deepEqual(liesZustand("?" + s).eigentuemer, ["Fried. Krupp AG", "Stadt Essen"]);
-  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: [] }), "");
+test("alte URL-Parameter eigentuemer= und ohdab= werden zu vergleich migriert und nie mehr geschrieben (Review Focus 1)", () => {
+  const z = liesZustand("?eigentuemer=Fried.+Krupp+AG|Stadt+Essen&ohdab=B+21112-100");
+  assert.deepEqual(z.vergleich, ["eig:Fried. Krupp AG", "eig:Stadt Essen", "norm:B 21112-100"]);
+  assert.equal(z.eigentuemer, undefined); assert.equal(z.ohdab, undefined);
+  assert.equal(schreibeZustand(z), "vergleich=eig:Fried.+Krupp+AG|eig:Stadt+Essen|norm:B+21112-100");
+  assert.deepEqual(liesZustand("?" + schreibeZustand(z)).vergleich, z.vergleich);
+  // vergleich= hat Vorrang vor den alten Parametern
+  assert.deepEqual(liesZustand("?vergleich=eig:A&eigentuemer=B").vergleich, ["eig:A"]);
+  assert.equal(schreibeZustand(STANDARD), "");
 });
 
 test("ansicht wird roh durchgereicht", () => {
@@ -70,11 +75,6 @@ test("ansicht wird roh durchgereicht", () => {
   assert.equal(z.ansicht, "eyJkYXRlbiI6ImJlc2l0eiJ9");
   assert.equal(schreibeZustand(z), "ansicht=eyJkYXRlbiI6ImJlc2l0eiJ9");
   assert.equal(liesZustand("").ansicht, "");
-});
-
-test("ohdab im Zustand", () => {
-  assert.equal(liesZustand("?ohdab=B+21112-100").ohdab, "B 21112-100");
-  assert.equal(schreibeZustand({ ...STANDARD, ohdab: "B 21112-100" }), "ohdab=B+21112-100");
 });
 
 test("plan mit zwei Nachkommastellen wird gelesen und unverändert geschrieben", () => {
@@ -91,8 +91,3 @@ test("klassen: Komma-Liste oder 'keine', Standard leer, Rundreise", () => {
   assert.equal(schreibeZustand({ ...STANDARD, thema: "bergbau", klassen: "leitung" }), "klassen=leitung&thema=bergbau");
 });
 
-test("namensliste nimmt auch eine Liste oder einen alten Leerstring entgegen (Patch aus der Sidebar)", () => {
-  assert.deepEqual(namensliste(["b", "a", "b"]), ["b", "a"]);
-  assert.deepEqual(namensliste(""), []);
-  assert.deepEqual(namensliste("Stadt Essen"), ["Stadt Essen"]);
-});
