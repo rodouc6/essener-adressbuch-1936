@@ -1,15 +1,49 @@
 {
   "id": "besitz",
   "titel": "Besitz",
-  "text": "Häuser nach Art des Eigentümers laut Teil II. Farbig nur Adressen, deren Eigentümer von Hand geprüft wurde; alle anderen grau.",
+  "text": "Häuser nach Art des Eigentümers laut Teil II. Farbig nur Adressen, deren Eigentümer von Hand geprüft wurde; alle anderen grau. Die Kästchen in der Legende schalten Kategorien ab und zu; Adressen ohne eingeschaltete Kategorie verschwinden.",
   "grundlage": "Eigentümer-Kuratierung kuratierung/eigentuemer.csv (Automatik + Handprüfung), Stand 2026-09-23: Körperschaften ab 5 Häusern und Personen geprüft",
   "freigegeben": true,
-  "filter": {"ebenen": ["II"]},
-  "farbe": {"art": "kategorien", "feld": "besitz", "werte": {
-    "stadt_staat": "#1d4ed8", "bergbau": "#111827", "industrie": "#b91c1c", "genossenschaft_siedlung": "#15803d",
-    "kirche_stiftung": "#7c3aed", "bank_versicherung": "#0e7490", "privatperson": "#d97706", "sonstige": "#6b7280", "gemischt": "#9a3412"},
-    "sonst": "#c8c8c8"},
-  "zusatz": {"zechen": true, "eigentuemerliste": true},
+  "filter": {
+    "ebenen": [
+      "II"
+    ]
+  },
+  "farbe": {
+    "art": "kategorien",
+    "feld": "besitz",
+    "werte": {
+      "stadt_staat": "#1d4ed8",
+      "bergbau": "#111827",
+      "industrie": "#b91c1c",
+      "genossenschaft_siedlung": "#15803d",
+      "kirche_stiftung": "#7c3aed",
+      "bank_versicherung": "#0e7490",
+      "privatperson": "#d97706",
+      "sonstige": "#6b7280",
+      "gemischt": "#9a3412"
+    },
+    "sonst": "#c8c8c8"
+  },
+  "zusatz": {
+    "zechen": true,
+    "eigentuemerliste": true
+  },
   "legende": "Farbe = Kategorie des geprüften Eigentümers",
-  "darstellung": "punkte"
+  "darstellung": "punkte",
+  "schalter": {
+    "feld": "besitz",
+    "klassen": [
+      "stadt_staat",
+      "bergbau",
+      "industrie",
+      "genossenschaft_siedlung",
+      "kirche_stiftung",
+      "bank_versicherung",
+      "privatperson",
+      "sonstige",
+      "gemischt",
+      "ungeprueft"
+    ]
+  }
 }

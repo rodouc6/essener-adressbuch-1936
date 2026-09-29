@@ -327,6 +327,10 @@ Optional `schalter: {praefix, klassen, namen}` (seit 2026-09-28, Thema „Bergba
 Klasse ein Kästchen; abgeschaltete Klassen fallen aus dem Kartenfilter (`any` über `<praefix><klasse> > 0`),
 die Farbe folgt dem Rang der Reihenfolge in `klassen` über die eingeschalteten; Zustand im URL-Parameter
 `klassen=` (leer = alle, `keine`, sonst Komma-Liste; nur bei einem Thema mit Schaltern).
+Zweite Form `schalter: {feld, klassen}` (seit 2026-09-29, Themen „Besitz“ und „Berufe“): die Klassen sind
+Werte des Farbfelds (ein Wert je Adresse, z. B. Mehrheitsniveau), der Filter ist ein `match` auf das Feld,
+die Farbe bleibt am Feld; `ungeprueft` gehört als eigene Klasse dazu, damit graue Adressen nicht still
+verschwinden. Die Namen kommen aus `site/js/kategorien.js` (je Farbfeld), `namen` im JSON ist optional.
 
 ## Berufe (Teilprojekt 4)
 

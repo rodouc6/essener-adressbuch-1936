@@ -1,14 +1,45 @@
 {
   "id": "berufe",
   "titel": "Berufe",
-  "text": "Häuser nach dem Anforderungsniveau der Berufe ihrer Bewohner (Teil I) laut OhdAB. Farbig nur Adressen, deren Berufsangaben von Hand einem OhdAB-Eintrag zugeordnet wurden; Mehrheitsniveau je Haus, sonst „gemischt“; alle anderen grau.",
+  "text": "Häuser nach dem Anforderungsniveau der Berufe ihrer Bewohner (Teil I) laut OhdAB. Farbig nur Adressen, deren Berufsangaben von Hand einem OhdAB-Eintrag zugeordnet wurden; Mehrheitsniveau je Haus, sonst „gemischt“; alle anderen grau. Die Kästchen in der Legende schalten Niveaus ab und zu; Adressen ohne eingeschaltetes Niveau verschwinden.",
   "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB, Moeller/Uni Halle, FactGrid, CC BY 4.0), Stand 2026-09-24: 1.537 Schreibweisen geprüft (97,8 % der Nennungen)",
   "freigegeben": true,
-  "filter": {"ebenen": ["I"]},
-  "farbe": {"art": "kategorien", "feld": "niveau", "werte": {
-    "helfer": "#fde68a", "fachlich": "#f59e0b", "spezialist": "#dc2626", "hochkomplex": "#7f1d1d",
-    "aufsicht": "#2563eb", "fuehrung": "#1e3a8a", "keins": "#9ca3af", "gemischt": "#6b7280", "unsicher": "#d6d3a8"},
-    "sonst": "#c8c8c8"},
+  "filter": {
+    "ebenen": [
+      "I"
+    ]
+  },
+  "farbe": {
+    "art": "kategorien",
+    "feld": "niveau",
+    "werte": {
+      "helfer": "#fde68a",
+      "fachlich": "#f59e0b",
+      "spezialist": "#dc2626",
+      "hochkomplex": "#7f1d1d",
+      "aufsicht": "#2563eb",
+      "fuehrung": "#1e3a8a",
+      "keins": "#9ca3af",
+      "gemischt": "#6b7280",
+      "unsicher": "#d6d3a8"
+    },
+    "sonst": "#c8c8c8"
+  },
   "legende": "Farbe = Mehrheitsniveau der geprüften Bewohner",
-  "darstellung": "punkte"
+  "darstellung": "punkte",
+  "schalter": {
+    "feld": "niveau",
+    "klassen": [
+      "helfer",
+      "fachlich",
+      "spezialist",
+      "hochkomplex",
+      "aufsicht",
+      "fuehrung",
+      "keins",
+      "gemischt",
+      "unsicher",
+      "ungeprueft"
+    ]
+  }
 }
