@@ -85,7 +85,7 @@ test("Vorschlagsart Eigentümer und Treffermenge", async () => {
   const v = await vorschlaege("fried", l);
   assert.deepEqual(v.eigentuemer, [{ art: "eigentuemer", text: "Fried. Krupp AG", untertitel: "2 Häuser · Industrie", name: "Fried. Krupp AG" }]);
   assert.equal(v.gesamt_eigentuemer, 1);
-  const t = await treffer({ art: "eigentuemer", name: "Fried. Krupp AG" }, l);
+  const t = await treffer({ art: "vergleich", schluessel: ["eig:Fried. Krupp AG"] }, l);
   assert.deepEqual(t.adressIds, ["a1", "b2"]);
   assert.equal(t.zaehler.get("b2"), 2);
 });
@@ -94,11 +94,6 @@ test("Vorschläge: Normbezeichnung vor Rohtext, Untertitel mit Niveau", async ()
   const v = await vorschlaege("Berg", lader());
   assert.deepEqual(v.berufe.map((b) => [b.art, b.text]), [["ohdab", "Bergmann"], ["beruf", "Bergm."]]);
   assert.equal(v.berufe[0].untertitel, "3 Einträge · 2 Schreibweisen · Fachliche Tätigkeit");
-});
-
-test("Treffer für ohdab über die Normscherbe", async () => {
-  const t = await treffer({ art: "ohdab", ohdab: "B 21112-100", name: "Bergmann" }, lader());
-  assert.deepEqual(t.adressIds, ["a1", "b2"]); assert.equal(t.zaehler.get("a1"), 2);
 });
 
 test("Hinweis auf Lücke H–J", async () => {
@@ -110,20 +105,21 @@ test("Hinweis auf Lücke H–J", async () => {
   assert.deepEqual(t.adressIds, []);
 });
 
-test("treffer mit mehreren Eigentümern: Gruppen in Reihenfolge mit Farbe, Vereinigung der Häuser, summierte Zähler", async () => {
+test("treffer vergleich: Gruppen je Schlüssel in Reihenfolge mit Farbe; eig: über die Eigentümerscherbe, norm: über Normindex + Normscherbe", async () => {
   const geladen = []; const l = new Lader("daten/", async (u) => { geladen.push(u); return fetchFake(u); });
-  const t = await treffer({ art: "eigentuemer", namen: ["Fried. Krupp AG", "Stadt Essen", "Gibtsnicht GmbH"] }, l);
-  assert.deepEqual(t.gruppen.map((g) => [g.name, g.farbe, g.adressIds]), [
-    ["Fried. Krupp AG", "#dc2626", ["a1", "b2"]], ["Stadt Essen", "#2563eb", ["b2", "c3"]], ["Gibtsnicht GmbH", "#16a34a", []]]);
+  const t = await treffer({ art: "vergleich", schluessel: ["eig:Fried. Krupp AG", "norm:B 21112-100", "eig:Stadt Essen"] }, l);
+  assert.deepEqual(t.gruppen.map((g) => [g.schluessel, g.name, g.farbe, g.adressIds]), [
+    ["eig:Fried. Krupp AG", "Fried. Krupp AG", "#dc2626", ["a1", "b2"]],
+    ["norm:B 21112-100", "Bergmann", "#2563eb", ["a1", "b2"]],
+    ["eig:Stadt Essen", "Stadt Essen", "#16a34a", ["b2", "c3"]]]);
   assert.deepEqual(t.adressIds, ["a1", "b2", "c3"]);
-  assert.equal(t.zaehler.get("b2"), 3);                   // 2 (Krupp) + 1 (Stadt)
-  assert.equal(t.gruppen[1].zaehler.get("c3"), 3);
-  assert.equal(geladen.filter((u) => u.includes("eigentuemer/")).length, 3);   // fr, st, gi — je Präfix einmal
+  assert.equal(t.zaehler.get("b2"), 4);                    // 2 Krupp + 1 Bergmann + 1 Stadt
+  assert.equal(t.gruppen[1].zaehler.get("a1"), 2);
+  assert.equal(geladen.filter((u) => u.includes("berufe_norm/")).length, 1);
 });
 
-test("treffer: alte Auswahlform {name} und andere Arten liefern gruppen null bzw. eine Gruppe", async () => {
-  const alt = await treffer({ art: "eigentuemer", name: "Fried. Krupp AG" }, lader());
-  assert.deepEqual(alt.gruppen.map((g) => g.name), ["Fried. Krupp AG"]);
-  assert.deepEqual(alt.adressIds, ["a1", "b2"]);
+test("treffer vergleich: unbekannte Norm → Gruppe mit Schlüssel als Name und null Häusern; andere Gruppen normal (Review Focus 2)", async () => {
+  const t = await treffer({ art: "vergleich", schluessel: ["norm:X 999", "eig:Stadt Essen"] }, lader());
+  assert.deepEqual(t.gruppen.map((g) => [g.name, g.adressIds]), [["X 999", []], ["Stadt Essen", ["b2", "c3"]]]);
   assert.equal((await treffer({ art: "beruf", beruf: "Bergm." }, lader())).gruppen, null);
 });

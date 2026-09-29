@@ -1,6 +1,7 @@
 import { falte, praefix2 } from "./schluessel.js";
 import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
 import { FARBEN } from "./konfig.js";
+import { schluessel } from "./zustand.js";
 
 const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3 };
 
@@ -78,19 +79,28 @@ export async function treffer(auswahl, lader) {
     hinweis = personen.length === 0 && hinweisHJ(auswahl.q);
   } else if (auswahl.art === "firma") {
     zaehler.set(auswahl.adressId, 1);
-  } else if (auswahl.art === "eigentuemer") {
-    // Eigentümer-Vergleich (Spec 2026-09-29 §4): je Name eine Gruppe mit Farbe nach Platz; die Gesamtmenge ist die Vereinigung.
-    const namen = auswahl.namen || (auswahl.name ? [auswahl.name] : []);
+  } else if (auswahl.art === "vergleich") {
+    // Vergleich (Spec Themenbaum §3): je Schlüssel eine Gruppe mit Farbe nach Platz; die Gesamtmenge ist die Vereinigung.
     gruppen = [];
-    for (const [i, name] of namen.entries()) {
-      const s = await lader.eigentuemerScherbe(praefix2(name));
-      const z = new Map((s && s[name]) || []);
+    let normen = null;
+    for (const [i, s] of (auswahl.schluessel || []).entries()) {
+      const { typ, wert } = schluessel(s);
+      let name = wert, z = new Map();
+      if (typ === "eig") {
+        const sch = await lader.eigentuemerScherbe(praefix2(wert));
+        z = new Map((sch && sch[wert]) || []);
+      } else if (typ === "norm") {
+        normen = normen || (await lader.berufeNorm()) || [];
+        const eintrag = normen.find((n) => n[2] === wert);
+        if (eintrag) {
+          name = eintrag[1];
+          const sch = await lader.berufeNormScherbe(praefix2(name));
+          z = new Map((sch && sch[wert]) || []);
+        }
+      }
       for (const [a, n] of z) zaehler.set(a, (zaehler.get(a) || 0) + n);
-      gruppen.push({ name, farbe: FARBEN.gruppen[i % FARBEN.gruppen.length], adressIds: [...z.keys()], zaehler: z });
+      gruppen.push({ schluessel: s, name, farbe: FARBEN.gruppen[i % FARBEN.gruppen.length], adressIds: [...z.keys()], zaehler: z });
     }
-  } else if (auswahl.art === "ohdab") {
-    const s = await lader.berufeNormScherbe(praefix2(auswahl.name));
-    for (const [a, n] of (s && s[auswahl.ohdab]) || []) zaehler.set(a, n);
   }
   return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis, gruppen };
 }
