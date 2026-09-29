@@ -12,5 +12,6 @@ export const NIVEAUS = {
   gemischt: "mehrere Niveaus", unsicher: "Niveau unsicher", ungeprueft: "ungeprüft",
 };
 
-// Vereinte Beschriftung für die Themenlegende (Eigentümer- und Berufe-Thema teilen sich zeichneLegende()).
-export const ANZEIGE = { ...KATEGORIEN, ...NIVEAUS };
+// Beschriftung je Farbfeld für die Themenlegende. Nicht vereinen: `gemischt` heißt bei Besitz und Niveau verschieden.
+const ANZEIGE_JE_FELD = { besitz: KATEGORIEN, niveau: NIVEAUS };
+export function anzeigeFuer(feld) { return ANZEIGE_JE_FELD[feld] || {}; }

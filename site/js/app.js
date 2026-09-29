@@ -12,7 +12,7 @@ import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
 import { ladeThema, themenListe, themaQuelleFuer } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
-import { ANZEIGE } from "./kategorien.js";
+import { anzeigeFuer } from "./kategorien.js";
 
 const lader = new Lader();
 // PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart: ein manipulierter ?plan=1-Link darf die
@@ -351,14 +351,16 @@ function zeichneLegende() {
       // Schaltbare Klassen (Spec Bergbau §5): Kästchen je Klasse, Zustand aus der Farbregel (klassen=).
       html += `<div class="zeile"><b>${esc(themaAktiv.legende)}</b></div>`;
       const an = new Set(themaAktiv.farbregel.klassen || []);
+      const namen = anzeigeFuer(farbe.feld);   // Besitz/Berufe: Namen aus kategorien.js; Bergbau bringt eigene mit
       for (const k of themaAktiv.schalter.klassen) {
-        html += `<label class="zeile schalter"><input type="checkbox" data-klasse="${esc(k)}"${an.has(k) ? " checked" : ""}><span class="punkt" style="background:${esc(farbe.werte[k] || "#c8c8c8")}"></span> ${esc(themaAktiv.schalter.namen?.[k] || k)}</label>`;
+        html += `<label class="zeile schalter"><input type="checkbox" data-klasse="${esc(k)}"${an.has(k) ? " checked" : ""}><span class="punkt" style="background:${esc(farbe.werte[k] || farbe.sonst || "#c8c8c8")}"></span> ${esc(themaAktiv.schalter.namen?.[k] || namen[k] || k)}</label>`;
       }
       html += an.size ? `<div class="zeile klein">Adressen ohne eingeschaltete Gruppe sind ausgeblendet.</div>` : `<div class="zeile klein">Keine Gruppe gewählt – alle Adressen in Grundfarbe.</div>`;
     } else if (farbe.art === "kategorien") {
       html += `<div class="zeile"><b>${themaAktiv.legende}</b></div>`;
-      for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${ANZEIGE[k] || k}</div>`;
-      html += `<div class="zeile"><span class="punkt" style="background:${farbe.sonst || "#c8c8c8"}"></span> ${ANZEIGE.ungeprueft}</div>`;
+      const namen = anzeigeFuer(farbe.feld);
+      for (const [k, c] of Object.entries(farbe.werte)) html += `<div class="zeile"><span class="punkt" style="background:${c}"></span> ${namen[k] || k}</div>`;
+      html += `<div class="zeile"><span class="punkt" style="background:${farbe.sonst || "#c8c8c8"}"></span> ${namen.ungeprueft || "ungeprüft"}</div>`;
     }
   }
 

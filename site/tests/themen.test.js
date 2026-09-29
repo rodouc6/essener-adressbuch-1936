@@ -96,3 +96,26 @@ test("themaQuelleFuer: Kacheldatei nur, wenn die aktiven Ebenen Teilmenge der Th
   assert.equal(themaQuelleFuer({ id: "alt", kacheln: false, ebenen: ["I"] }, ["I"]), null);
   assert.equal(themaQuelleFuer(null, ["I"]), null);
 });
+
+// Feld-Schalter (Besitz, Berufe): ein Wert je Adresse im Farbfeld; Schalter wählen Werte aus, die Farbe bleibt am Feld.
+const BS = { id: "besitz", titel: "Besitz", freigegeben: true, filter: { ebenen: ["II"] },
+  farbe: { art: "kategorien", feld: "besitz", werte: { bergbau: "#111827", privatperson: "#d97706" }, sonst: "#c8c8c8" },
+  schalter: { feld: "besitz", klassen: ["bergbau", "privatperson", "ungeprueft"] } };
+
+test("schalterFilter im Feld-Modus: match auf das Feld über eingeschaltete Werte; alle aus → null", () => {
+  assert.deepEqual(schalterFilter(BS, "bergbau,ungeprueft"), ["match", ["get", "besitz"], ["bergbau", "ungeprueft"], true, false]);
+  assert.deepEqual(schalterFilter(BS, ""), ["match", ["get", "besitz"], ["bergbau", "privatperson", "ungeprueft"], true, false]);
+  assert.equal(schalterFilter(BS, "keine"), null);
+});
+
+test("schalterFarbe im Feld-Modus: match mit den Farben der eingeschalteten Werte, unbekannte Klasse in sonst-Farbe", () => {
+  assert.deepEqual(schalterFarbe(BS, "bergbau,ungeprueft"), ["match", ["get", "besitz"], "bergbau", "#111827", "ungeprueft", "#c8c8c8", "#c8c8c8"]);
+  assert.equal(schalterFarbe(BS, "keine"), "#c8c8c8");
+});
+
+test("farbregel mit Feld-Schalter trägt filter und klassen; Bergbau (praefix) bleibt beim case-Ausdruck", () => {
+  const r = farbregel(BS, "privatperson");
+  assert.deepEqual(r.filter, ["match", ["get", "besitz"], ["privatperson"], true, false]);
+  assert.deepEqual(r.klassen, ["privatperson"]); assert.equal(r.ausdruck[0], "match");
+  assert.equal(farbregel(BB, "leitung").ausdruck[0], "case");
+});

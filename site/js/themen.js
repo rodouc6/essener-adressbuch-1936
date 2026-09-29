@@ -10,17 +10,23 @@ export function schalterKlassen(thema, klassen = "") {
   const gew = new Set(String(klassen).split(",").map((k) => k.trim()));
   return s.klassen.filter((k) => gew.has(k));
 }
+// Zwei Schalterformen: `praefix` zählt Personen je Klasse (Bergbau: n_bb_<klasse> > 0, Farbe nach Rang);
+// `feld` wählt Adressen nach dem Wert im Farbfeld (Besitz, Berufe: ein Wert je Adresse, Farbe bleibt am Feld).
 const feld = (thema, k) => [">", ["coalesce", ["get", `${thema.schalter.praefix}${k}`], 0], 0];
 export function schalterFilter(thema, klassen = "") {
   const an = schalterKlassen(thema, klassen);
-  return an.length ? ["any", ...an.map((k) => feld(thema, k))] : null;
+  if (!an.length) return null;
+  if (thema.schalter.feld) return ["match", ["get", thema.schalter.feld], an, true, false];
+  return ["any", ...an.map((k) => feld(thema, k))];
 }
 // Farbe nach Rang: die Reihenfolge in schalter.klassen ist der Rang; abgeschaltete Klassen färben nicht.
+// Im Feld-Modus färbt jeder eingeschaltete Wert mit seiner Farbe; ein Wert ohne Farbe (ungeprüft) mit `sonst`.
 export function schalterFarbe(thema, klassen = "") {
   const an = schalterKlassen(thema, klassen);
   const werte = (thema.farbe && thema.farbe.werte) || {};
   const sonst = (thema.farbe && thema.farbe.sonst) || "#c8c8c8";
-  if (!an.length) return sonst;     // ein `case` ohne Bedingung ist für MapLibre ungültig
+  if (!an.length) return sonst;     // ein `case`/`match` ohne Bedingung ist für MapLibre ungültig
+  if (thema.schalter.feld) return ["match", ["get", thema.schalter.feld], ...an.flatMap((k) => [k, werte[k] || sonst]), sonst];
   return ["case", ...an.flatMap((k) => [feld(thema, k), werte[k] || "#c8c8c8"]), sonst];
 }
 
