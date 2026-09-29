@@ -20,6 +20,7 @@ const DATEIEN = {
   "daten/suche/berufe/be.json": { "Bergm.": [["a1", 1], ["b2", 1]] },
   "daten/suche/eigentuemer.json": [["fried krupp ag", "Fried. Krupp AG", 2, "industrie"], ["stadt essen", "Stadt Essen", 1, "stadt_staat"]],
   "daten/suche/eigentuemer/fr.json": { "Fried. Krupp AG": [["a1", 1], ["b2", 2]] },
+  "daten/suche/eigentuemer/st.json": { "Stadt Essen": [["b2", 1], ["c3", 3]] },
   "daten/suche/berufe_norm.json": [["bergmann", "Bergmann", "B 21112-100", 3, 2, "fachlich"]],
   "daten/suche/berufe_norm/be.json": { "B 21112-100": [["a1", 2], ["b2", 1]] },
 };
@@ -107,4 +108,22 @@ test("Hinweis auf Lücke H–J", async () => {
   const t = await treffer({ art: "person", q: "Hoffmann" }, lader());
   assert.equal(t.hinweisHJ, true);
   assert.deepEqual(t.adressIds, []);
+});
+
+test("treffer mit mehreren Eigentümern: Gruppen in Reihenfolge mit Farbe, Vereinigung der Häuser, summierte Zähler", async () => {
+  const geladen = []; const l = new Lader("daten/", async (u) => { geladen.push(u); return fetchFake(u); });
+  const t = await treffer({ art: "eigentuemer", namen: ["Fried. Krupp AG", "Stadt Essen", "Gibtsnicht GmbH"] }, l);
+  assert.deepEqual(t.gruppen.map((g) => [g.name, g.farbe, g.adressIds]), [
+    ["Fried. Krupp AG", "#dc2626", ["a1", "b2"]], ["Stadt Essen", "#2563eb", ["b2", "c3"]], ["Gibtsnicht GmbH", "#16a34a", []]]);
+  assert.deepEqual(t.adressIds, ["a1", "b2", "c3"]);
+  assert.equal(t.zaehler.get("b2"), 3);                   // 2 (Krupp) + 1 (Stadt)
+  assert.equal(t.gruppen[1].zaehler.get("c3"), 3);
+  assert.equal(geladen.filter((u) => u.includes("eigentuemer/")).length, 3);   // fr, st, gi — je Präfix einmal
+});
+
+test("treffer: alte Auswahlform {name} und andere Arten liefern gruppen null bzw. eine Gruppe", async () => {
+  const alt = await treffer({ art: "eigentuemer", name: "Fried. Krupp AG" }, lader());
+  assert.deepEqual(alt.gruppen.map((g) => g.name), ["Fried. Krupp AG"]);
+  assert.deepEqual(alt.adressIds, ["a1", "b2"]);
+  assert.equal((await treffer({ art: "beruf", beruf: "Bergm." }, lader())).gruppen, null);
 });

@@ -1,5 +1,6 @@
 import { falte, praefix2 } from "./schluessel.js";
 import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
+import { FARBEN } from "./konfig.js";
 
 const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3 };
 
@@ -60,6 +61,7 @@ export async function treffer(auswahl, lader) {
   const zaehler = new Map();
   let personen = null;
   let hinweis = false;
+  let gruppen = null;
   if (auswahl.art === "strasse") {
     const scherbe = await lader.strassenScherbe(praefix2(auswahl.name));
     const key = `${auswahl.name}|${auswahl.artName}|${auswahl.ort}`;
@@ -77,11 +79,18 @@ export async function treffer(auswahl, lader) {
   } else if (auswahl.art === "firma") {
     zaehler.set(auswahl.adressId, 1);
   } else if (auswahl.art === "eigentuemer") {
-    const s = await lader.eigentuemerScherbe(praefix2(auswahl.name));
-    for (const [a, n] of (s && s[auswahl.name]) || []) zaehler.set(a, n);
+    // Eigentümer-Vergleich (Spec 2026-09-29 §4): je Name eine Gruppe mit Farbe nach Platz; die Gesamtmenge ist die Vereinigung.
+    const namen = auswahl.namen || (auswahl.name ? [auswahl.name] : []);
+    gruppen = [];
+    for (const [i, name] of namen.entries()) {
+      const s = await lader.eigentuemerScherbe(praefix2(name));
+      const z = new Map((s && s[name]) || []);
+      for (const [a, n] of z) zaehler.set(a, (zaehler.get(a) || 0) + n);
+      gruppen.push({ name, farbe: FARBEN.gruppen[i % FARBEN.gruppen.length], adressIds: [...z.keys()], zaehler: z });
+    }
   } else if (auswahl.art === "ohdab") {
     const s = await lader.berufeNormScherbe(praefix2(auswahl.name));
     for (const [a, n] of (s && s[auswahl.ohdab]) || []) zaehler.set(a, n);
   }
-  return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis };
+  return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis, gruppen };
 }
