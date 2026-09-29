@@ -6,8 +6,8 @@ gegliedert. Dazu die Datenaufbereitung, mit der die Karte entsteht.
 
 **Zur Karte: <https://rodouc6.github.io/essener-adressbuch-1936/>**
 
-> **English abstract.** This project puts the 1936 address book of Essen
-> (Germany) on a map. The transcription by the Verein für Computergenealogie
+> **English abstract.** This project puts the 1936 Essen city directory
+> (*Essener Adreßbuch 1936*) on a map. The transcription by the Verein für Computergenealogie
 > (240,636 entries: residents, house owners, businesses) was cleaned, parsed,
 > matched against the historical street register and geocoded; 93 % of the
 > entries are located. The website shows every address with its residents,
