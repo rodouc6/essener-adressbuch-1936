@@ -136,6 +136,7 @@ async function wendeThemaAn() {
   if (!(t && t.schalter) && zustand.klassen) zustand = { ...zustand, klassen: "" };
   sidebar.zeigeThema(t, t && t.zusatz && t.zusatz.eigentuemerliste ? await lader.eigentuemer() : null);
   karte.setzeFarbe(t ? t.farbregel : null);
+  karte.setzeThemaQuelle(t && t.kacheln ? t.id : null);   // feine Punkte aus der Kacheldatei des Themas (Spec Themenkacheln §3)
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
   schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden

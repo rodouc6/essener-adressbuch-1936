@@ -46,7 +46,11 @@ export function farbregel(thema, klassen = "") {
 export async function ladeThema(lader, id, klassen = "") {
   const t = await lader.thema(id);
   if (!t) return null;
-  return { ...t, farbregel: farbregel(t, klassen), ebenen: t.filter?.ebenen || null };
+  // kacheln: eigene Kacheldatei themen/<id>.pmtiles (Spec Themenkacheln §2); fehlt sie im Index (älteres
+  // Datenpaket), verhält sich die Karte wie ohne Themenquelle.
+  const index = (await lader.json("themen/index.json")) || [];
+  const eintrag = index.find((e) => e.id === id);
+  return { ...t, farbregel: farbregel(t, klassen), ebenen: t.filter?.ebenen || null, kacheln: !!(eintrag && eintrag.kacheln) };
 }
 
 export async function themenListe(lader) {

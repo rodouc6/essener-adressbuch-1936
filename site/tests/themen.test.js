@@ -24,6 +24,18 @@ test("ladeThema hängt farbregel und ebenen an, unbekannt → null", async () =>
   assert.equal(await ladeThema(l, "gibtsnicht"), null);
 });
 
+test("ladeThema liefert kacheln aus dem Index; ohne Index-Eintrag false (altes Datenpaket)", async () => {
+  const thema = { id: "bergbau", titel: "Bergbau", freigegeben: true, farbe: { art: "einfach", wert: "#000" } };
+  const laderMit = { thema: async () => thema, json: async (p) => p === "themen/index.json" ? [{ id: "bergbau", titel: "Bergbau", freigegeben: true, kacheln: true }] : null };
+  assert.equal((await ladeThema(laderMit, "bergbau")).kacheln, true);
+  const laderOhne = { thema: async () => thema, json: async () => [{ id: "bergbau", titel: "Bergbau", freigegeben: true }] };
+  assert.equal((await ladeThema(laderOhne, "bergbau")).kacheln, false);
+  const laderLeer = { thema: async () => thema, json: async () => null };
+  assert.equal((await ladeThema(laderLeer, "bergbau")).kacheln, false);
+  // Lader-Klasse: Index-Eintrag ohne Flag → false
+  assert.equal((await ladeThema(new Lader("daten/", fetchFake), "akademiker")).kacheln, false);
+});
+
 test("themenListe nur freigegebene", async () => {
   assert.deepEqual(await themenListe(new Lader("daten/", fetchFake)), [{ id: "akademiker", titel: "Akademiker" }]);
 });
