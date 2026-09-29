@@ -34,3 +34,17 @@ test("vergleichsleisteHtml: eine Zeile je Gruppe mit Farbe, Zahlen, Stadtteilen 
   assert.doesNotMatch(vergleichsleisteHtml([G[0]], EIG), /Ring/);
   assert.match(vergleichsleisteHtml([{ ...G[1], adressIds: [], zaehler: new Map() }], EIG), /0 Häuser · 0 Einträge/);
 });
+
+import { trefferGeoJson } from "../js/vergleich.js";
+
+test("trefferGeoJson: ein Punkt je Treffer mit Koordinaten aus dem Kurzindex, Gruppe/mehrfach/n; ohne Gruppen gruppe -1; fehlende Koordinaten fallen weg", () => {
+  const punkte = new Map([["a", { id: "a", lon: 7.0, lat: 51.4, stufe: "haus", stadtteil: "Kray" }], ["b", { id: "b", lon: 7.1, lat: 51.5, stufe: "strasse", stadtteil: "Bochold" }]]);
+  const geo = trefferGeoJson(["a", "b", "c"], new Map([["a", 2], ["b", 1], ["c", 1]]), G, punkte);
+  assert.equal(geo.type, "FeatureCollection");
+  assert.deepEqual(geo.features.map((f) => f.properties), [
+    { id: "a", stufe: "haus", stadtteil: "Kray", n: 2, gruppe: 0, mehrfach: false },
+    { id: "b", stufe: "strasse", stadtteil: "Bochold", n: 1, gruppe: 0, mehrfach: true }]);
+  assert.deepEqual(geo.features[0].geometry, { type: "Point", coordinates: [7.0, 51.4] });
+  const ohne = trefferGeoJson(["a"], new Map([["a", 3]]), null, punkte);
+  assert.deepEqual(ohne.features[0].properties, { id: "a", stufe: "haus", stadtteil: "Kray", n: 3, gruppe: -1, mehrfach: false });
+});

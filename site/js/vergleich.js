@@ -38,3 +38,18 @@ export function vergleichsleisteHtml(gruppen, eig) {
   const ring = m ? `<div class="zeile klein">${m} ${m === 1 ? "Haus" : "Häuser"} mit mehreren gewählten Eigentümern (Ring)</div>` : "";
   return `<div class="vergleich">${zeilen.join("")}${ring}</div>`;
 }
+
+// Trefferebene (2026-09-29, Befund Christos): alle Treffer als eigene Punktquelle aus dem Kurzindex — unabhängig
+// von Kachel-Ausdünnung, Thema und Ebenenfilter. gruppe -1 = ohne Gruppen (schlichte Trefferfarbe).
+export function trefferGeoJson(adressIds, zaehler, gruppen, punkte) {
+  const zuordnung = gruppen ? gruppenZuordnung(gruppen) : null;
+  const features = [];
+  for (const id of adressIds) {
+    const p = punkte.get(id);
+    if (!p || p.lon == null || p.lat == null) continue;
+    const z = zuordnung && zuordnung.get(id);
+    features.push({ type: "Feature", geometry: { type: "Point", coordinates: [p.lon, p.lat] },
+      properties: { id, stufe: p.stufe, stadtteil: p.stadtteil, n: zaehler.get(id) || 0, gruppe: z ? z.gruppe : -1, mehrfach: !!(z && z.mehrfach) } });
+  }
+  return { type: "FeatureCollection", features };
+}

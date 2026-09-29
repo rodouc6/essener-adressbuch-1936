@@ -208,3 +208,41 @@ test("Gruppen überleben das Neuaufsetzen: Stilwechsel (ebenenAufsetzen) und The
   assert.deepEqual(nachThema.x, { treffer: true, gruppe: 0, mehrfach: true });
   assert.deepEqual(nachThema.y, { treffer: true, gruppe: 1, mehrfach: false });
 });
+
+const GEO = { type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "Point", coordinates: [7, 51.4] }, properties: { id: "x", stufe: "haus", stadtteil: "Kray", n: 1, gruppe: 1, mehrfach: false } }] };
+
+test("setzeTreffer mit GeoJSON legt die Trefferquelle und zwei Ebenen an; ohne GeoJSON werden sie entfernt", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "adressen-auswahl"]);
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map, ansicht: null, treffer: new Set(), zustand: { ebene: ["II"], praez: ["haus", "strasse", "stadtplan"], stadtteil: "" }, farbe: null });
+  Karte.prototype.setzeTreffer.call(self, ["x"], null, GEO);
+  assert.ok(a.q.has("treffer") && a.layer.has("treffer-haus") && a.layer.has("treffer-ungenau"));
+  assert.equal(self.trefferGeo, GEO);
+  Karte.prototype.setzeTreffer.call(self, null);
+  assert.ok(!a.q.has("treffer") && !a.layer.has("treffer-haus"));
+});
+
+test("setzeFilter auf der Trefferebene: Präzision und Stadtteil, keine Ebenen-Summe; Farbe nach gruppe-Feld, Ring nach mehrfach-Feld", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "treffer-haus", "treffer-ungenau"]);
+  const self = { map: a.map, farbe: null, ansicht: null, treffer: new Set(["x"]), _deckkraftSetzen() {} };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "Kray" });
+  const f = JSON.stringify(a.filter["treffer-haus"]);
+  assert.ok(f.includes('"Kray"') && f.includes('"praez"') === false && f.includes('["get","stufe"]'));
+  assert.ok(!f.includes("n_II"));
+  assert.deepEqual(a.paint["treffer-haus.circle-color"], ["match", ["get", "gruppe"], 0, "#dc2626", 1, "#2563eb", 2, "#16a34a", 3, "#7c3aed", 4, "#f59e0b", "#dc2626"]);
+  assert.deepEqual(a.paint["treffer-haus.circle-stroke-color"], ["case", ["to-boolean", ["get", "mehrfach"]], "#111827", "#fff"]);
+  assert.ok(a.filter["treffer-ungenau"] && a.layout["treffer-ungenau.icon-size"]);
+});
+
+test("Trefferquelle überlebt Stilwechsel und Themenwechsel; Themenebenen liegen unter der Trefferebene", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "adressen-auswahl"]);
+  const vor = []; const addLayer = a.map.addLayer; a.map.addLayer = (l, b) => { vor.push([l.id, b]); addLayer(l); };
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map, zustand: { ebene: ["II"], praez: ["haus"], stadtteil: "", plan: 0, zechen: 0 }, farbe: null, ansicht: null, ansichtWerte: new Map(), treffer: new Set(), auswahl: null, themaId: null, _handlerAngehaengt: true,
+    setzePlan() {}, setzeZechen() {}, setzeAnsicht() {}, setzeAuswahl() {}, _themaQuelle: () => ({ type: "vector" }) });
+  Karte.prototype.setzeTreffer.call(self, ["x"], null, GEO);
+  a.q.delete("treffer"); a.layer.delete("treffer-haus"); a.layer.delete("treffer-ungenau");   // Stilwechsel wirft alles weg
+  Karte.prototype.ebenenAufsetzen.call(self);
+  assert.ok(a.q.has("treffer") && a.layer.has("treffer-haus"));
+  Karte.prototype.setzeThemaQuelle.call(self, "besitz");
+  assert.deepEqual(vor.find(([id]) => id === "thema-haus")[1], "treffer-haus");   // Thema unter den Treffern einfügen
+  assert.ok(a.layer.has("treffer-haus"));
+});

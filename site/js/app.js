@@ -3,7 +3,7 @@ import { Lader } from "./daten.js";
 import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
 import { liesZustand, schreibeZustand, MAX_EIGENTUEMER, namensliste } from "./zustand.js";
-import { mehrfachZahl } from "./vergleich.js";
+import { mehrfachZahl, trefferGeoJson } from "./vergleich.js";
 import { popupHtml, esc } from "./popup.js";
 import { steuerungHtml, abweichend } from "./steuerung.js";
 import { dekodiereOderNull } from "./ansicht.js";
@@ -216,8 +216,8 @@ async function sucheAusfuehren() {
     sidebar.markiereEigentuemer(zustand.eigentuemer, FARBEN.gruppen);
     if (!auswahl) { ergebnis = null; karte.setzeTreffer(null); await zeigeInhalt(); zeichneLegende(); return; }
     ergebnis = await treffer(auswahl, lader);
-    karte.setzeTreffer(ergebnis.adressIds, ergebnis.gruppen);
     const eig = await eigMap(ergebnis.adressIds);
+    karte.setzeTreffer(ergebnis.adressIds, ergebnis.gruppen, trefferGeoJson(ergebnis.adressIds, ergebnis.zaehler, ergebnis.gruppen, eig));
     const koordinaten = new Map([...eig.values()].map((e) => [e.id, [e.lon, e.lat]]));
     if (ergebnis.adressIds.length) karte.passeEin(ergebnis.adressIds, koordinaten);
     sidebar.zeigeTreffer(zustand, ergebnis, eig, zustand.q);
