@@ -411,6 +411,8 @@ Umgesetzt in 5b (Plan `docs/superpowers/plans/2026-09-25-tp5b-perspektiven.md`).
   offen) vektorisieren — Segmentierung des Rasters oder händisches Nachzeichnen je Quartier —
   und füllen; historisch die richtige Geometrie, eigenes Projekt.
 - Abgleich Eigentümer ↔ Bewohner (wohnt der Eigentümer im Haus?), Anteil je Straße.
+- Eigentümer-Vergleich (2026-09-29): Bündelung mehrerer kanonischer Namen zu einer Gruppe mit einer Farbe
+  („Krupp gesamt“), und „Meine Ansichten“ im Browser — beides bewusst nicht im Kartenpaket, sondern hier.
 - **Abgleich Teil I ↔ Teil III über Name + Adresse (vorziehen, Kandidat für 5b):** Wer in
   Teil III als Betrieb an derselben Adresse steht, ist Inhaber → Stellung `selbstaendige`.
   Anlass (2026-09-25): „Friseur“ (724) ist als `arbeiter` vorgeschlagen, Teil III zählt aber

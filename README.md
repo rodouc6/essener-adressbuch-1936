@@ -228,6 +228,11 @@ Eigentümer“ aber nur mit `identitaet=sicher`. Schreibweisen aus `kuratierung/
 „Kath. Kirchengem. ‹Katernberg›“; der Export sucht zuerst diese, dann die einfache Schreibweise. Auf der Karte
 zählt nur `geprueft=ja`: Punktattribut `besitz` (Kategorie | `gemischt` | `ungeprueft`), Hausansicht
 „Zugeordnet“, Suche nach kanonischem Namen (`eigentuemer=` in der URL).
+Eigentümer-Vergleich (2026-09-29): `eigentuemer=` nimmt bis zu fünf Namen, Trenner `|`; Farbe nach Platz (Rot,
+Blau, Grün, Violett, Orange), Ring bei Häusern in mehreren Gruppen; Vergleichsleiste mit Häusern, Einträgen und
+Top-3-Stadtteilen je Eigentümer; „Größte Eigentümer“-Knöpfe, Suchvorschläge (Plus) und der Eigentümer-Knopf in
+Popup und Hausansicht fügen hinzu; CSV mit Spalte `eigentuemer`. Trefferlisten lesen Adresse und Koordinaten aus
+dem Kurzindex `adressen_kurz/<x>.json` (Spec 2026-09-29-eigentuemer-vergleich).
 Hausnummernspannen (2026-09-26): Das Häuserbuch druckt einen Eigentümer vieler aufeinanderfolgender Häuser
 einmal am Anfang der Straßenseite („2—84 E. Frau-Margarete-Krupp-Stiftung“, danach die Häuser nur mit
 Bewohnern; Faksimile II-335). Der Parser liefert dafür `hausnr`/`hausnr_bis`; `karte_export.gruppiere`
