@@ -9,3 +9,4 @@ __pycache__/
 .superpowers/
 site/daten/
 .playwright-mcp/
+docs/pruefung_vor_launch_*.md
