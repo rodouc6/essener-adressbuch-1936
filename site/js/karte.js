@@ -4,6 +4,9 @@ import { esc } from "./popup.js";
 const WIKIPEDIA_QUELLE = /^https:\/\/de\.wikipedia\.org\//;
 
 const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 4, Math.log(100), 10];
+// Themenebenen: aus der Vogelperspektive feine Punkte, ab Zoom 14 die Größe nach Zahl der Einträge (Spec Themenkacheln §3).
+const RADIUS_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1, 12, 2, 14, RADIUS];
+const THEMA_EBENEN = ["thema-haus", "thema-ungenau"];
 
 function summeAktiv(ebenen) {
   // Summe der Einträge über die aktiven Ebenen als Ausdruck
@@ -49,6 +52,7 @@ export class Karte {
     this._ansichtGen = 0;
     this.treffer = new Set();
     this.auswahl = null;
+    this.themaId = null;        // aktives Thema mit eigener Kacheldatei (setzeThemaQuelle)
     this._stilCache = new Map();
     this._stilGen = 0;
     this.protokoll = new pmtiles.Protocol();
@@ -154,6 +158,49 @@ export class Karte {
     this.ebenenAufsetzen();
   }
 
+  _themaQuelle(id) {
+    return { type: "vector", url: `pmtiles://${new URL(DATEN + `themen/${id}.pmtiles`, location.href)}`, promoteId: "id" };
+  }
+
+  // Ebenenpaar der Themenquelle, gleich gebaut wie adressen-haus/adressen-ungenau (Spec Themenkacheln §3).
+  _themaEbenen() {
+    return [
+      { id: "thema-haus", type: "circle", source: "thema", "source-layer": "adressen", filter: ["==", ["get", "stufe"], "haus"],
+        paint: { "circle-stroke-color": "#fff", "circle-stroke-width": HALO } },
+      { id: "thema-ungenau", type: "symbol", source: "thema", "source-layer": "adressen", filter: ["!=", ["get", "stufe"], "haus"],
+        layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
+        paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } },
+    ];
+  }
+
+  // Kacheldatei eines Themas als zweite Punktquelle: bei id anlegen (vorhandene ersetzen) und die Hauptpunkte
+  // ausblenden, bei null entfernen und die Hauptpunkte wieder zeigen. Vor dem ersten Stil nur merken.
+  setzeThemaQuelle(id) {
+    this.themaId = id || null;
+    const m = this.map;
+    if (!m.getLayer("adressen-haus")) return;
+    for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.removeLayer(l);
+    if (m.getSource("thema")) m.removeSource("thema");
+    if (this.themaId) {
+      m.addSource("thema", this._themaQuelle(this.themaId));
+      // Vor adressen-auswahl einfügen, damit der Auswahlring über den Themenpunkten liegt.
+      for (const l of this._themaEbenen()) m.addLayer(l, m.getLayer("adressen-auswahl") ? "adressen-auswahl" : undefined);
+      if (!this._themaHandler) {
+        // Handler hängen an der Ebenen-ID und überleben remove/add der Ebene — einmal registrieren.
+        this._themaHandler = true;
+        for (const l of THEMA_EBENEN) {
+          m.on("click", l, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+          m.on("mouseenter", l, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+          m.on("mouseleave", l, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+        }
+      }
+    }
+    for (const l of ["adressen-haus", "adressen-ungenau"]) m.setLayoutProperty(l, "visibility", this.themaId ? "none" : "visible");
+    for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.setLayoutProperty(l, "visibility", "visible");
+    this.setzeFilter(this.zustand);
+    if (this.themaId) for (const id of this.treffer) m.setFeatureState({ source: "thema", sourceLayer: "adressen", id }, { treffer: true });
+  }
+
   // Zustand (Filter, Plan, Zechen, Treffer, Auswahl) auf die im Stil vorhandenen Ebenen legen.
   ebenenAufsetzen() {
     const m = this.map;
@@ -175,6 +222,7 @@ export class Karte {
     this.setzeZechen(this.zustand.zechen);
     this.setzeTreffer(this.treffer.size ? [...this.treffer] : null);
     this.setzeAuswahl(this.auswahl);
+    this.setzeThemaQuelle(this.themaId);   // Themenquelle ist nicht Teil des Stils — nach dem Wechsel neu anlegen
     // Nach einem Stilwechsel sind Quellen und feature-state neu — Ansicht erneut auflegen.
     this.setzeAnsicht(this.ansicht, this.ansichtWerte);
   }
@@ -230,16 +278,20 @@ export class Karte {
     if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
     if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
     if (this.farbe && this.farbe.filter) bedingungen.push(this.farbe.filter);   // Schalter eines Themas (Spec Bergbau §5)
-    bedingungen.push(["any", [">=", ["zoom"], 12], [">=", n, 5]]);   // Stadtansicht nicht zulaufen lassen
     const grund = this.farbe ? this.farbe.ausdruck : (z.ebene.length === 1 ? FARBEN[z.ebene[0]] : FARBEN.neutral);
     const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], FARBEN.treffer, grund];
-    const radius = ["let", "n", n, RADIUS];
-    m.setFilter("adressen-haus", ["all", ["==", ["get", "stufe"], "haus"], ...bedingungen]);
-    m.setFilter("adressen-ungenau", ["all", ["!=", ["get", "stufe"], "haus"], ...bedingungen]);
-    m.setPaintProperty("adressen-haus", "circle-color", farbe);
-    m.setPaintProperty("adressen-haus", "circle-radius", radius);
-    m.setPaintProperty("adressen-ungenau", "icon-color", farbe);
-    m.setLayoutProperty("adressen-ungenau", "icon-size", ["/", ["let", "n", n, RADIUS], 16]);
+    // Hauptebenen: Stadtansicht nicht zulaufen lassen. Themenebenen: keine Zoomgrenze — sie sollen von oben alles zeigen.
+    const haupt = [...bedingungen, ["any", [">=", ["zoom"], 12], [">=", n, 5]]];
+    const paare = [["adressen-haus", "adressen-ungenau", haupt, RADIUS], ["thema-haus", "thema-ungenau", bedingungen, RADIUS_THEMA]];
+    for (const [hausId, ungenauId, bed, radiusRegel] of paare) {
+      if (!m.getLayer(hausId)) continue;
+      m.setFilter(hausId, ["all", ["==", ["get", "stufe"], "haus"], ...bed]);
+      m.setFilter(ungenauId, ["all", ["!=", ["get", "stufe"], "haus"], ...bed]);
+      m.setPaintProperty(hausId, "circle-color", farbe);
+      m.setPaintProperty(hausId, "circle-radius", ["let", "n", n, radiusRegel]);
+      m.setPaintProperty(ungenauId, "icon-color", farbe);
+      m.setLayoutProperty(ungenauId, "icon-size", ["/", ["let", "n", n, radiusRegel], 16]);
+    }
     this._deckkraftSetzen();
   }
 
@@ -252,6 +304,11 @@ export class Karte {
     this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
     this.map.setPaintProperty("adressen-haus", "circle-stroke-opacity", d);
     this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);
+    if (this.map.getLayer("thema-haus")) {
+      this.map.setPaintProperty("thema-haus", "circle-opacity", d);
+      this.map.setPaintProperty("thema-haus", "circle-stroke-opacity", d);
+      this.map.setPaintProperty("thema-ungenau", "icon-opacity", d);
+    }
   }
 
   setzeFarbe(regel) { this.farbe = regel; this.setzeFilter(this.zustand); }
@@ -260,9 +317,10 @@ export class Karte {
   setzeTreffer(adressIds) {
     const m = this.map;
     if (!m.getSource("adressen")) return;
-    m.removeFeatureState({ source: "adressen", sourceLayer: "adressen" });
+    const quellen = [["adressen", "adressen"], ...(m.getSource("thema") ? [["thema", "adressen"]] : [])];
+    for (const [source, sourceLayer] of quellen) m.removeFeatureState({ source, sourceLayer });
     this.treffer = new Set(adressIds || []);
-    for (const id of this.treffer) m.setFeatureState({ source: "adressen", sourceLayer: "adressen", id }, { treffer: true });
+    for (const [source, sourceLayer] of quellen) for (const id of this.treffer) m.setFeatureState({ source, sourceLayer, id }, { treffer: true });
     this._deckkraftSetzen();
   }
 
