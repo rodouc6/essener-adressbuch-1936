@@ -1,5 +1,25 @@
 // Eigentümer-Vergleich (Spec 2026-09-29 §5/§6): reine Hilfsfunktionen ohne DOM und Karte.
 import { esc } from "./popup.js";
+import { schluessel } from "./zustand.js";
+
+// Grundgesamtheit je Schlüsseltyp (Spec Themenbaum §3): steht unter der Vergleichsleiste, nicht im Popup.
+const GRUNDGESAMTHEIT = {
+  norm: "Berufe: Einträge des Einwohnerverzeichnisses mit geprüftem Beruf; die Namen H bis J fehlen in der Vorlage.",
+  eig: "Eigentümer: auch Häuser aus Sammelzeilen des Adressbuchs („2–84 E. …“).",
+};
+export function grundgesamtheitSaetze(gruppen) {
+  const typen = [...new Set(gruppen.map((g) => schluessel(g.schluessel || "").typ))];
+  return ["norm", "eig"].filter((t) => typen.includes(t)).map((t) => GRUNDGESAMTHEIT[t]);
+}
+const zahl = (n) => n.toLocaleString("de-DE");
+// Punkte zeigen Vorkommen, keine Anteile: bei Gruppen über Faktor 10 sagt die Leiste das (Spec §3).
+export function ungleichSatz(gruppen) {
+  const n = gruppen.map((g) => g.adressIds.length).filter((x) => x > 0);
+  if (n.length < 2) return null;
+  const max = Math.max(...n), min = Math.min(...n);
+  if (max <= 10 * min) return null;
+  return `Die Gruppen sind sehr ungleich groß (${zahl(max)} gegen ${zahl(min)} Häuser); Punkte zeigen Vorkommen, keine Anteile.`;
+}
 
 // Adresse → { gruppe: Index der ersten Gruppe, mehrfach: in mehr als einer Gruppe }
 export function gruppenZuordnung(gruppen) {
@@ -30,13 +50,16 @@ export function vergleichsleisteHtml(gruppen, eig) {
   const zeilen = gruppen.map((g) => {
     const eintraege = [...g.zaehler.values()].reduce((a, b) => a + b, 0);
     const top = verteilung(g.adressIds, g.zaehler, eig).map(([s, n]) => `${esc(s)} ${n}`).join(" · ");
-    return `<div class="zeile"><span class="punkt" style="background:${esc(g.farbe)}"></span> <b>${esc(g.name)}</b> <small>${g.adressIds.length} Häuser · ${eintraege} Einträge</small>` +
+    const titel = schluessel(g.schluessel || "").typ === "norm" ? ` title="${esc(g.schluessel)}"` : "";
+    return `<div class="zeile"><span class="punkt" style="background:${esc(g.farbe)}"></span> <b${titel}>${esc(g.name)}</b> <small>${g.adressIds.length} Häuser · ${eintraege} Einträge</small>` +
       (top ? `<small class="orte">${top}</small>` : "") +
-      `<button class="weg" data-eig-weg="${esc(g.name)}" title="${esc(g.name)} entfernen">×</button></div>`;
+      `<button class="weg" data-weg="${esc(g.schluessel)}" title="${esc(g.name)} entfernen">×</button></div>`;
   });
   const m = mehrfachZahl(gruppen);
-  const ring = m ? `<div class="zeile klein">${m} ${m === 1 ? "Haus" : "Häuser"} mit mehreren gewählten Eigentümern (Ring)</div>` : "";
-  return `<div class="vergleich">${zeilen.join("")}${ring}</div>`;
+  const ring = m ? `<div class="zeile klein">${m} ${m === 1 ? "Haus" : "Häuser"} mit mehreren gewählten Gruppen (Ring)</div>` : "";
+  const saetze = grundgesamtheitSaetze(gruppen).map((s) => `<div class="zeile klein">${esc(s)}</div>`).join("");
+  const u = ungleichSatz(gruppen);
+  return `<div class="vergleich">${zeilen.join("")}${ring}${saetze}${u ? `<div class="zeile klein">${esc(u)}</div>` : ""}</div>`;
 }
 
 // Trefferebene (2026-09-29, Befund Christos): alle Treffer als eigene Punktquelle aus dem Kurzindex — unabhängig
