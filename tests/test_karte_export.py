@@ -878,6 +878,15 @@ BB = dict(id="bergbau", titel="Bergbau", freigegeben=True, filter=dict(ebenen=["
           schalter=dict(praefix="n_bb_", klassen=["leitung", "belegschaft"], namen={}))
 BESITZ = dict(id="besitz", freigegeben=True, filter=dict(ebenen=["II"]), farbe=dict(art="kategorien", feld="besitz", werte={}))
 AKAD = dict(id="akademiker", freigegeben=True, filter=dict(merkmal="akademiker", ebenen=["I"]), farbe=dict(art="einfach", wert="#000"))
+BESITZ_FELD = dict(BESITZ, schalter=dict(feld="besitz", klassen=["bergbau", "ungeprueft"]))
+
+
+def test_thema_felder_und_adressen_im_feld_modus():
+    """Feld-Schalter (Besitz, Berufe): keine Zählfelder in der Kachel, Adressauswahl nach dem Wert im Farbfeld."""
+    from pipeline.lib.karte_export import thema_adressen, thema_felder
+    assert thema_felder(BESITZ_FELD) == ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III", "besitz"]
+    f = [_pf(id="1", n_II=1, besitz="bergbau"), _pf(id="2", n_II=1, besitz="privatperson"), _pf(id="3", n_II=1), _pf(id="4", n_I=1, besitz="bergbau")]
+    assert [x["properties"]["id"] for x in thema_adressen(BESITZ_FELD, f)] == ["1"]   # nur Werte der Klassen, Ebene II; fehlendes Feld ≠ „ungeprueft“
 
 
 def test_thema_felder_aus_filter_schaltern_und_farbe():

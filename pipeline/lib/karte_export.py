@@ -882,18 +882,20 @@ def thema_felder(thema: dict) -> list[str]:
     if merkmal:
         felder.append(f"m_{merkmal}")
     s = thema.get("schalter") or {}
-    felder += [f"{s.get('praefix', '')}{k}" for k in s.get("klassen", [])]
+    if s.get("praefix"):    # Zähl-Schalter (Bergbau); Feld-Schalter (schalter.feld) brauchen nur das Farbfeld
+        felder += [f"{s['praefix']}{k}" for k in s.get("klassen", [])]
     return felder
 
 
 def thema_adressen(thema: dict, features: list[dict]) -> list[dict]:
     """Adresspunkte, die ein Thema betrifft: Summe der Themen-Ebenen > 0, bei Merkmal m_<merkmal> > 0,
-    bei Schaltern mindestens ein Schalterfeld > 0."""
+    bei Zähl-Schaltern (praefix) mindestens ein Schalterfeld > 0, bei Feld-Schaltern (feld) Feldwert in den Klassen."""
     fi = thema.get("filter") or {}
     ebenen = fi.get("ebenen") or ["I", "II", "III"]
     merkmal = (thema.get("farbe") or {}).get("merkmal") or fi.get("merkmal")
     s = thema.get("schalter") or {}
-    schalter = [f"{s.get('praefix', '')}{k}" for k in s.get("klassen", [])]
+    schalter = [f"{s['praefix']}{k}" for k in s.get("klassen", [])] if s.get("praefix") else []
+    feldwerte = set(s.get("klassen", [])) if s.get("feld") else None
     aus = []
     for ft in features:
         p = ft["properties"]
@@ -902,6 +904,8 @@ def thema_adressen(thema: dict, features: list[dict]) -> list[dict]:
         if merkmal and not (p.get(f"m_{merkmal}", 0) or 0) > 0:
             continue
         if schalter and not any((p.get(k, 0) or 0) > 0 for k in schalter):
+            continue
+        if feldwerte is not None and p.get(s["feld"]) not in feldwerte:
             continue
         aus.append(ft)
     return aus
