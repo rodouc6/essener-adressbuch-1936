@@ -203,3 +203,6 @@ footer { text-align: center; font-size: 12px; color: var(--grau); padding: 16px;
 
 .textseite main { max-width: 720px; margin: 0 auto; padding: 16px; line-height: 1.5; }
 .textseite h1 { font-size: 28px; } .textseite h2 { font-size: 18px; margin-top: 24px; }
+
+/* Startseite: Hinweis „in Aufbau“ an einer Kachel */
+.kachel .bau { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: normal; vertical-align: middle; background: rgba(255,255,255,.18); color: #f5f5f5; }
