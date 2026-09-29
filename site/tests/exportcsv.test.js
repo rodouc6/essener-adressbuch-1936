@@ -33,15 +33,15 @@ test("über der Grenze nur Adressebene", async () => {
   assert.equal(csv.split("\r\n")[1], "a1,\"Lattenkamp 25, Katernberg\",\"Grenzstr. 25, Katernberg\",Katernberg,haus,2");
 });
 
-test("Eigentümer-Vergleich: Spalte eigentuemer, Adresse in zwei Gruppen erscheint je Gruppe", async () => {
+test("Vergleich: Spalte gruppe, Adresse in zwei Gruppen erscheint je Gruppe", async () => {
   const gruppen = [{ name: "Krupp", farbe: "#dc2626", adressIds: ["a1"], zaehler: new Map([["a1", 2]]) }, { name: "Stadt", farbe: "#2563eb", adressIds: ["a1"], zaehler: new Map([["a1", 1]]) }];
   const erg = { adressIds: ["a1"], zaehler: new Map([["a1", 3]]), personen: null, gruppen };
   const voll = (await csvAusTreffern(erg, l, EIG)).split("\r\n");
-  assert.ok(voll[0].endsWith(",adress_id,eigentuemer"));
+  assert.ok(voll[0].endsWith(",adress_id,gruppe"));
   assert.equal(voll.filter((z) => z.endsWith(",Krupp")).length, 2);
   assert.equal(voll.filter((z) => z.endsWith(",Stadt")).length, 2);
   const kurz = (await csvAusTreffern(erg, l, EIG, 1)).split("\r\n");
-  assert.equal(kurz[0].replace("﻿", ""), "adress_id,adresse_heute,adresse_1936,stadtteil,praezision,eintraege,eigentuemer");
+  assert.equal(kurz[0].replace("﻿", ""), "adress_id,adresse_heute,adresse_1936,stadtteil,praezision,eintraege,gruppe");
   assert.equal(kurz[1], "a1,\"Lattenkamp 25, Katernberg\",\"Grenzstr. 25, Katernberg\",Katernberg,haus,2,Krupp");
   assert.equal(kurz[2], "a1,\"Lattenkamp 25, Katernberg\",\"Grenzstr. 25, Katernberg\",Katernberg,haus,1,Stadt");
 });
