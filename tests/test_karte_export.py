@@ -348,7 +348,7 @@ def test_schreibe_themen(tmp_path):
     (q / "b.json").write_text('{"id": "b", "titel": "B", "freigegeben": true}', encoding="utf-8")
     (q / "a.json").write_text('{"id": "a", "titel": "A"}', encoding="utf-8")
     idx = schreibe_themen(q, tmp_path / "out")
-    assert idx == [dict(id="a", titel="A", freigegeben=False), dict(id="b", titel="B", freigegeben=True)]
+    assert idx == [dict(id="a", titel="A", freigegeben=False, kacheln=False), dict(id="b", titel="B", freigegeben=True, kacheln=False)]
     assert json.loads((tmp_path / "out" / "themen" / "index.json").read_text(encoding="utf-8")) == idx
     assert json.loads((tmp_path / "out" / "themen" / "b.json").read_text(encoding="utf-8"))["titel"] == "B"
 
@@ -866,3 +866,69 @@ def test_kennzahl_bergbau_gesellschaften():
                                       adr(3, "bergbau", spanne="Zeche Langenbrahm"), adr(4, "bergbau"), adr(5, "privatperson", "Müller")]}
     kz = baue_kennzahlen([], adressen, "2026-09-28")
     assert kz["bergbau_gesellschaften_n"] == 2 and kz["bergbau_haeuser_n"] == 4 and kz["bergbau_haeuser_ohne_name_n"] == 1
+
+
+def _pf(**p):
+    basis = dict(id="a", stufe="haus", stadtteil="Kray", n_I=0, n_II=0, n_III=0)
+    basis.update(p)
+    return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [7.0, 51.4]}, "properties": basis}
+
+
+BB = dict(id="bergbau", titel="Bergbau", freigegeben=True, filter=dict(ebenen=["I"]), farbe=dict(art="kategorien", feld="bergbau", werte={}),
+          schalter=dict(praefix="n_bb_", klassen=["leitung", "belegschaft"], namen={}))
+BESITZ = dict(id="besitz", freigegeben=True, filter=dict(ebenen=["II"]), farbe=dict(art="kategorien", feld="besitz", werte={}))
+AKAD = dict(id="akademiker", freigegeben=True, filter=dict(merkmal="akademiker", ebenen=["I"]), farbe=dict(art="einfach", wert="#000"))
+
+
+def test_thema_felder_aus_filter_schaltern_und_farbe():
+    from pipeline.lib.karte_export import thema_felder
+    assert thema_felder(BB) == ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III", "bergbau", "n_bb_leitung", "n_bb_belegschaft"]
+    assert thema_felder(BESITZ) == ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III", "besitz"]
+    assert thema_felder(AKAD) == ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III", "m_akademiker"]
+
+
+def test_thema_adressen_filtert_nach_ebenen_merkmal_und_schaltern():
+    from pipeline.lib.karte_export import thema_adressen
+    f = [_pf(id="1", n_I=3, n_bb_belegschaft=2, bergbau="belegschaft"), _pf(id="2", n_I=3), _pf(id="3", n_II=1, n_bb_leitung=1),
+         _pf(id="4", n_II=2, besitz="bergbau"), _pf(id="5", n_I=1, m_akademiker=1)]
+    assert [x["properties"]["id"] for x in thema_adressen(BB, f)] == ["1"]          # Ebene I und ein Schalterfeld > 0
+    assert [x["properties"]["id"] for x in thema_adressen(BESITZ, f)] == ["3", "4"]  # Ebene II
+    assert [x["properties"]["id"] for x in thema_adressen(AKAD, f)] == ["5"]         # Ebene I und Merkmal
+
+
+def test_thema_geojson_traegt_nur_die_themenfelder_und_meldet_leere_themen():
+    from pipeline.lib.karte_export import thema_geojson
+    f = [_pf(id="1", n_I=3, n_bb_belegschaft=2, bergbau="belegschaft", strasse_heute="Grenzstraße", besitz="privatperson")]
+    g = thema_geojson(BB, f)
+    assert g["type"] == "FeatureCollection" and len(g["features"]) == 1
+    assert g["features"][0]["properties"] == dict(id="1", stufe="haus", stadtteil="Kray", n_I=3, n_II=0, n_III=0, bergbau="belegschaft", n_bb_belegschaft=2)
+    assert g["features"][0]["geometry"] == f[0]["geometry"]
+    with pytest.raises(ValueError, match="bergbau"):
+        thema_geojson(BB, [_pf(id="2", n_I=3)])
+
+
+def test_tippecanoe_thema_befehl_ohne_ausduennung():
+    from pipeline.lib.karte_export import tippecanoe_thema_befehl
+    b = tippecanoe_thema_befehl(pathlib.Path("t.geojson"), pathlib.Path("t.pmtiles"))
+    assert b[0] == "tippecanoe" and "-r1" in b and "--minimum-zoom=9" in b and "--maximum-zoom=15" in b
+    assert "--no-feature-limit" in b and "--no-tile-size-limit" in b and "--drop-densest-as-needed" not in b
+    assert "-L" in b and "adressen:t.geojson" in b and "t.pmtiles" in b
+
+
+def test_schreibe_themen_mit_kacheln_schreibt_geojson_und_index(tmp_path, monkeypatch):
+    from pipeline.lib import karte_export
+    q = tmp_path / "q"; q.mkdir()
+    (q / "bergbau.json").write_text(json.dumps(BB), encoding="utf-8")
+    (q / "a.json").write_text('{"id": "a", "titel": "A"}', encoding="utf-8")
+    aufrufe = []
+    monkeypatch.setattr(karte_export.subprocess, "run", lambda cmd, check: aufrufe.append(cmd))
+    f = [_pf(id="1", n_I=3, n_bb_belegschaft=2, bergbau="belegschaft")]
+    idx = karte_export.schreibe_themen(q, tmp_path / "out", features=f, kacheln=True)
+    assert idx == [dict(id="a", titel="A", freigegeben=False, kacheln=False), dict(id="bergbau", titel="Bergbau", freigegeben=True, kacheln=True)]
+    assert (tmp_path / "out" / "themen" / "bergbau.geojson").exists()
+    assert json.loads((tmp_path / "out" / "themen" / "index.json").read_text(encoding="utf-8")) == idx
+    assert len(aufrufe) == 1 and str(tmp_path / "out" / "themen" / "bergbau.pmtiles") in aufrufe[0]
+    # ohne kacheln: kein tippecanoe, Index ohne Kachelflag true
+    aufrufe.clear()
+    idx2 = karte_export.schreibe_themen(q, tmp_path / "out2", features=f, kacheln=False)
+    assert aufrufe == [] and all(e["kacheln"] is False for e in idx2)

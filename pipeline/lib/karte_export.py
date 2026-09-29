@@ -866,14 +866,80 @@ def startseite_beispiele(zeilen: list[dict], adressen: dict[str, dict]) -> list[
     return beispiele
 
 
-def schreibe_themen(quelle: Path, ausgabe: Path) -> list[dict]:
-    """Kopiert die Thema-Definitionen aus kuratierung/themen/*.json nach ausgabe/themen/ und schreibt
-    dort index.json (id, titel, freigegeben); gibt den Index zurück."""
+FELDER_IMMER = ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III"]
+
+
+def thema_felder(thema: dict) -> list[str]:
+    """Felder je Punkt in der Kacheldatei eines Themas (Spec Themenkacheln §2): Filterfelder der Karte,
+    Farbfeld bzw. Merkmalsfeld, Schalterfelder — sonst nichts."""
+    felder = list(FELDER_IMMER)
+    f = thema.get("farbe") or {}
+    fi = thema.get("filter") or {}
+    if f.get("art") == "kategorien" and f.get("feld"):
+        felder.append(f["feld"])
+    merkmal = f.get("merkmal") or fi.get("merkmal")
+    if merkmal:
+        felder.append(f"m_{merkmal}")
+    s = thema.get("schalter") or {}
+    felder += [f"{s.get('praefix', '')}{k}" for k in s.get("klassen", [])]
+    return felder
+
+
+def thema_adressen(thema: dict, features: list[dict]) -> list[dict]:
+    """Adresspunkte, die ein Thema betrifft: Summe der Themen-Ebenen > 0, bei Merkmal m_<merkmal> > 0,
+    bei Schaltern mindestens ein Schalterfeld > 0."""
+    fi = thema.get("filter") or {}
+    ebenen = fi.get("ebenen") or ["I", "II", "III"]
+    merkmal = (thema.get("farbe") or {}).get("merkmal") or fi.get("merkmal")
+    s = thema.get("schalter") or {}
+    schalter = [f"{s.get('praefix', '')}{k}" for k in s.get("klassen", [])]
+    aus = []
+    for ft in features:
+        p = ft["properties"]
+        if sum(p.get(f"n_{e}", 0) or 0 for e in ebenen) <= 0:
+            continue
+        if merkmal and not (p.get(f"m_{merkmal}", 0) or 0) > 0:
+            continue
+        if schalter and not any((p.get(k, 0) or 0) > 0 for k in schalter):
+            continue
+        aus.append(ft)
+    return aus
+
+
+def thema_geojson(thema: dict, features: list[dict]) -> dict:
+    """FeatureCollection der Themenkacheln: nur Treffer-Adressen, nur die Themenfelder. Ein Thema ohne
+    Treffer ist ein Fehler — sonst zeigte die Karte still nichts."""
+    felder = thema_felder(thema)
+    treffer = thema_adressen(thema, features)
+    if not treffer:
+        raise ValueError(f"Thema '{thema.get('id')}': keine Adresse trägt seine Felder {felder[len(FELDER_IMMER):]}")
+    aus = [{"type": "Feature", "geometry": ft["geometry"],
+            "properties": {k: ft["properties"][k] for k in felder if k in ft["properties"]}} for ft in treffer]
+    return {"type": "FeatureCollection", "features": aus}
+
+
+def tippecanoe_thema_befehl(geojson: Path, pmtiles: Path) -> list[str]:
+    return ["tippecanoe", "-o", str(pmtiles), "--force", "--minimum-zoom=9", "--maximum-zoom=15", "-r1",
+            "--no-feature-limit", "--no-tile-size-limit", "--quiet", "-L", f"adressen:{geojson}"]
+
+
+def schreibe_themen(quelle: Path, ausgabe: Path, features: list[dict] | None = None, kacheln: bool = False) -> list[dict]:
+    """Kopiert die Thema-Definitionen aus kuratierung/themen/*.json nach ausgabe/themen/ und schreibt dort
+    index.json (id, titel, freigegeben, kacheln). Mit `features` (Adresspunkte aus punkt_feature) und
+    `kacheln=True` entsteht je freigegebenem Thema ausgabe/themen/<id>.geojson und <id>.pmtiles
+    (Spec Themenkacheln §2); das GeoJSON bleibt als Zwischenstand liegen (site/daten/ ist nicht versioniert)."""
     index = []
     for pfad in sorted(Path(quelle).glob("*.json")):
         t = json.loads(pfad.read_text(encoding="utf-8"))
         _json(ausgabe / "themen" / pfad.name, t)
-        index.append(dict(id=t["id"], titel=t["titel"], freigegeben=bool(t.get("freigegeben"))))
+        frei = bool(t.get("freigegeben"))
+        mit_kacheln = False
+        if frei and features is not None and kacheln:
+            geo = ausgabe / "themen" / f"{t['id']}.geojson"
+            _json(geo, thema_geojson(t, features))
+            subprocess.run(tippecanoe_thema_befehl(geo, ausgabe / "themen" / f"{t['id']}.pmtiles"), check=True)
+            mit_kacheln = True
+        index.append(dict(id=t["id"], titel=t.get("titel", ""), freigegeben=frei, kacheln=mit_kacheln))
     _json(ausgabe / "themen" / "index.json", index)
     return index
 
@@ -894,8 +960,6 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         if fehlt:
             raise ValueError(f"kuratierung/hauptgruppen.csv: Bezeichnung fehlt für {sorted(fehlt)}")
     _json(ausgabe / "hauptgruppen.json", {k: dict(bezeichnung=v["bezeichnung"], kurz=v["kurz"], bereich=v["bereich"]) for k, v in hg.items()})
-    if themen is not None:
-        schreibe_themen(themen, ausgabe)
     _json(ausgabe / "faksimile.json", faksimile_tabelle(faksimile or []))
     bb_tabelle = lade_bergbau(bergbau or [])
     if bb_tabelle and berufe:
@@ -908,6 +972,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     _json(ausgabe / "startseite.json", startseite_beispiele(beispiele or [], adressen))
     geo = {"type": "FeatureCollection", "features": [punkt_feature(a) for a in adressen.values()]}
     _json(ausgabe / "adressen.geojson", geo)
+    if themen is not None:
+        schreibe_themen(themen, ausgabe, features=geo["features"], kacheln=kacheln)
     strassen_agg = aggregiere(adressen, "strasse")
     sf = strassen_features(strassen_agg, osm_linien or {})
     _json(ausgabe / "strassen.geojson", {"type": "FeatureCollection", "features": sf})
