@@ -195,27 +195,30 @@ export function zwischen(von, nach, t) {
   });
 }
 
-function zeichneKreise(ctx, canvas, kreise, breite, hoehe) {
-  ctx.setTransform(canvas.width / breite, 0, 0, canvas.height / hoehe, 0, 0);
-  ctx.clearRect(0, 0, breite, hoehe);
+function zeichneKreise(ctx, canvas, kreise, abbildung) {
+  const { a, d, e, f } = abbildung;
+  ctx.setTransform(a, 0, 0, d, e, f);
+  ctx.clearRect(-e / a || 0, -f / d || 0, canvas.width / a, canvas.height / d);   // ganzes Canvas, in Zeichenflächen-Einheiten (|| 0: kein -0)
   for (const k of kreise) {
     ctx.globalAlpha = FUELLUNG * k.alpha; ctx.fillStyle = k.farbe;
     ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, 2 * Math.PI); ctx.fill();
   }
 }
 
-// Zeichnet die Bewegung von `von` nach `nach` (Kreise aus zeige/aktualisiere) Bild für Bild auf das Canvas, dessen
-// Pixel die Zeichenfläche breite × hoehe abbilden. Liefert abbrechen() und aktuell() (zuletzt gezeichneter Stand),
-// damit ein neuer Schritt mitten in der Bewegung von dort aus weiterläuft. jetzt/raf sind für Tests austauschbar.
-export function uebergang({ canvas, von, nach, breite, hoehe, dauer = 900, fertig = () => {},
+// Zeichnet die Bewegung von `von` nach `nach` (Kreise aus zeige/aktualisiere) Bild für Bild auf das Canvas.
+// `abbildung` {a, d, e, f} ist die Matrix von Zeichenflächen-Einheiten in Canvas-Pixel (aus getScreenCTM des SVG,
+// mal Pixeldichte); ohne sie füllt die Zeichenfläche breite × hoehe das ganze Canvas. Liefert abbrechen() und
+// aktuell() (zuletzt gezeichneter Stand), damit ein neuer Schritt mitten in der Bewegung von dort aus weiterläuft.
+export function uebergang({ canvas, von, nach, breite, hoehe, abbildung, dauer = 900, fertig = () => {},
   jetzt = () => performance.now(), raf = (f) => requestAnimationFrame(f) }) {
   const ctx = canvas.getContext("2d");
+  const abb = abbildung || { a: canvas.width / breite, d: canvas.height / hoehe, e: 0, f: 0 };
   const t0 = jetzt(); let stand = zwischen(von, nach, 0); let laeuft = true;
   const bild = () => {
     if (!laeuft) return;
     const t = Math.min(1, (jetzt() - t0) / dauer);
     stand = zwischen(von, nach, ease(t));
-    zeichneKreise(ctx, canvas, stand, breite, hoehe);
+    zeichneKreise(ctx, canvas, stand, abb);
     if (t < 1) raf(bild); else { laeuft = false; fertig(); }
   };
   raf(bild);

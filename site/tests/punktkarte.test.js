@@ -190,3 +190,13 @@ test("zwischen nimmt einen Zwischenstand (mit alpha) als Ausgangspunkt, damit ei
   const z = zwischen(stand, nach, 0);
   assert.equal(z[0].x, 30); assert.equal(z[0].alpha, 0.5);
 });
+
+test("uebergang nimmt eine vorgegebene Abbildung (SVG zentriert im Kästchen, preserveAspectRatio) statt der vollen Fläche", () => {
+  const aufrufe = []; const ctx = { clearRect: (...a) => aufrufe.push(["clear", ...a]), beginPath() {}, moveTo() {}, arc() {}, fill() {}, setTransform: (...a) => aufrufe.push(["m", ...a]), set fillStyle(v) {}, set globalAlpha(v) {} };
+  const canvas = { width: 1000, height: 400, getContext: () => ctx };
+  const k = [{ id: "a", x: 0, y: 0, r: 2, farbe: "#111", gedimmt: false }];
+  const q = []; uebergang({ canvas, von: k, nach: k, breite: 100, hoehe: 50, abbildung: { a: 8, d: 8, e: 100, f: 0 }, dauer: 1, jetzt: () => 0, raf: (f) => q.push(f), fertig() {} });
+  q[0]();
+  assert.deepEqual(aufrufe.filter((a) => a[0] === "m")[0], ["m", 8, 0, 0, 8, 100, 0]);
+  assert.deepEqual(aufrufe.filter((a) => a[0] === "clear")[0].slice(1), [-12.5, 0, 125, 50]);   // ganzes Canvas in Einheiten
+});

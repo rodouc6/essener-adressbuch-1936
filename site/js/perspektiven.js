@@ -41,9 +41,12 @@ function starteUebergang(behaelter, von, r) {
   const b = behaelter.getBoundingClientRect(), s = svgEl.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
   Object.assign(canvas.style, { left: `${s.left - b.left}px`, top: `${s.top - b.top}px`, width: `${s.width}px`, height: `${s.height}px` });
   canvas.width = Math.round(s.width * dpr); canvas.height = Math.round(s.height * dpr);
+  // Einheiten → Canvas-Pixel über die echte Abbildung des SVG (preserveAspectRatio kann es im Kästchen zentrieren).
+  const m = svgEl.getScreenCTM();
+  const abbildung = m ? { a: m.a * dpr, d: m.d * dpr, e: (m.e - s.left) * dpr, f: (m.f - s.top) * dpr } : undefined;
   if (laufend) laufend.abbrechen();
   behaelter.classList.add("laeuft");
-  laufend = punktkarte.uebergang({ canvas, von: von || [], nach: r.kreise, breite: r.breite, hoehe: r.hoehe, fertig: () => { behaelter.classList.remove("laeuft"); laufend = null; } });
+  laufend = punktkarte.uebergang({ canvas, von: von || [], nach: r.kreise, breite: r.breite, hoehe: r.hoehe, abbildung, fertig: () => { behaelter.classList.remove("laeuft"); laufend = null; } });
 }
 function beendeUebergang(behaelter) { if (laufend) { laufend.abbrechen(); laufend = null; } behaelter.classList.remove("laeuft"); }
 // Sichtbarer Kapitelindex — die Datenbasis-Zeile verlinkt nur, wenn Kapitel 0 darin steht.
