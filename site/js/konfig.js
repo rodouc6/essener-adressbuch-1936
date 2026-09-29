@@ -6,7 +6,9 @@ export const STILE = {
   positron: "https://tiles.openfreemap.org/styles/positron",
   liberty: "https://tiles.openfreemap.org/styles/liberty",
 };
-export const FARBEN = { I: "#1d4ed8", II: "#ca8a04", III: "#c2410c", neutral: "#1f2937", treffer: "#dc2626", auswahl: "#111827" };
+export const FARBEN = { I: "#1d4ed8", II: "#ca8a04", III: "#c2410c", neutral: "#1f2937", treffer: "#dc2626", auswahl: "#111827",
+  // Eigentümer-Vergleich: Farbe je Platz in der Auswahl (Rot, Blau, Grün, Violett, Orange)
+  gruppen: ["#dc2626", "#2563eb", "#16a34a", "#7c3aed", "#f59e0b"] };
 export const EBENEN = { I: "Einwohner", II: "Eigentümer", III: "Gewerbe" };
 export const PRAEZISION = {
   haus: "hausgenau verortet",

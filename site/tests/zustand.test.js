@@ -45,10 +45,24 @@ test("zustandGleich vergleicht tief", () => {
   assert.ok(!zustandGleich(STANDARD, { ...STANDARD, q: "x" }));
 });
 
-test("eigentuemer im Zustand", () => {
-  const z = liesZustand("?eigentuemer=Fried.+Krupp+AG");
-  assert.equal(z.eigentuemer, "Fried. Krupp AG");
-  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: "Stadt Essen" }), "eigentuemer=Stadt+Essen");
+import { MAX_EIGENTUEMER, namensliste } from "../js/zustand.js";
+
+test("eigentuemer ist eine Liste: Einzelname, |-Liste, Dubletten und Kappung auf fünf", () => {
+  assert.deepEqual(liesZustand("?eigentuemer=Fried.+Krupp+AG").eigentuemer, ["Fried. Krupp AG"]);
+  assert.deepEqual(liesZustand("?eigentuemer=Fried.+Krupp+AG|Stadt+Essen").eigentuemer, ["Fried. Krupp AG", "Stadt Essen"]);
+  assert.deepEqual(liesZustand("?eigentuemer=A|A|B|C|D|E|F").eigentuemer, ["A", "B", "C", "D", "E"]);
+  assert.deepEqual(liesZustand("?eigentuemer=|+|").eigentuemer, []);
+  assert.equal(MAX_EIGENTUEMER, 5);
+  assert.deepEqual(namensliste("x| y |x"), ["x", "y"]);
+  assert.deepEqual(namensliste(null), []);
+});
+
+test("eigentuemer wird mit | geschrieben und rund gelesen; leer bleibt weg", () => {
+  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: ["Stadt Essen"] }), "eigentuemer=Stadt+Essen");
+  const s = schreibeZustand({ ...STANDARD, eigentuemer: ["Fried. Krupp AG", "Stadt Essen"] });
+  assert.equal(s, "eigentuemer=Fried.+Krupp+AG|Stadt+Essen");
+  assert.deepEqual(liesZustand("?" + s).eigentuemer, ["Fried. Krupp AG", "Stadt Essen"]);
+  assert.equal(schreibeZustand({ ...STANDARD, eigentuemer: [] }), "");
 });
 
 test("ansicht wird roh durchgereicht", () => {
