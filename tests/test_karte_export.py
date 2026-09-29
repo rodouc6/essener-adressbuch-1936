@@ -975,3 +975,18 @@ def test_thema_praesenzfeld_nimmt_adressen_ohne_teil_ii_zeile_auf():
     f = [_pf(id="1", n_II=1, besitz="bergbau"), _pf(id="2", n_I=2, n_besitz=1, besitz="industrie"), _pf(id="3", n_I=1, besitz="ungeprueft")]
     assert [x["properties"]["id"] for x in thema_adressen(t, f)] == ["1", "2"]
     assert [x["properties"]["id"] for x in thema_adressen(BESITZ, f)] == ["1"]   # ohne Präsenzfeld wie bisher
+
+
+def test_stellung_je_adresse_mehrheit_gemischt_ungeprueft():
+    """Spec Themenbaum §4: Mehrheitsstellung der geprüften Bewohner; Vorschlag zählt wie Hand; 1:1 → gemischt; nichts geprüft → ungeprueft."""
+    from pipeline.lib.karte_export import _stellung, punkt_feature
+    def b(st, q="hand"):
+        return dict(teil="I", _beruf=dict(stellung=st, stellung_quelle=q, niveau="fachlich"), _merkmale=[])
+    ohne = dict(teil="I", _beruf=None, _merkmale=[])
+    assert _stellung([b("arbeiter"), b("arbeiter", "vorschlag"), b("beamte"), ohne]) == ("arbeiter", {"arbeiter": 2, "beamte": 1})
+    assert _stellung([b("arbeiter"), b("beamte"), ohne]) == ("gemischt", {"arbeiter": 1, "beamte": 1})
+    assert _stellung([ohne, dict(teil="II", _beruf=dict(stellung="arbeiter", stellung_quelle="hand"), _merkmale=[])]) == ("ungeprueft", {})
+    a = dict(id="x", lat=51.4, lon=7.0, stufe="haus", stadtteil="Kray", strasse_heute="A", hausnr="1", hausnr_zusatz="", historisch="A 1",
+             nummer_unsicher="nein", eintraege=[b("arbeiter"), b("arbeiter", "vorschlag"), b("beamte")], besitz="ungeprueft", niveau="fachlich")
+    a["stellung"], a["n_stellung"] = _stellung(a["eintraege"])
+    assert punkt_feature(a)["properties"]["stellung"] == "arbeiter"

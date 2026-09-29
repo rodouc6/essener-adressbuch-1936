@@ -21,7 +21,7 @@ from pipeline.lib.layout import beeswarm, packe_gruppen, packe_kreise, radius
 from pipeline.lib.merkmale import Regel, merkmale_fuer
 from pipeline.lib.perspektiven import kapitel_index, lade_kapitel, pruefe_datenbasis_bezug, pruefe_kapitel, pruefe_kennzahlen_bezug, pruefe_punkte_bezug
 from pipeline.lib.stadtteile import Stadtteile
-from pipeline.lib.stellung import STELLUNGEN
+from pipeline.lib.stellung import STELLUNGEN, UNBESTIMMT
 from pipeline.lib.stufen import ADRESSSCHLUESSEL
 
 _UMLAUTE = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss", "Ä": "ae", "Ö": "oe", "Ü": "ue"})
@@ -244,6 +244,7 @@ def gruppiere(eintraege: list[dict], regeln: list[Regel], eigentuemer: dict[str,
         a["besitz_spanne"] = ""
         a["besitz_eigentuemer"] = ""
         a["niveau"], a["n_niveau"] = _niveau(a["eintraege"])
+        a["stellung"], a["n_stellung"] = _stellung(a["eintraege"])
     # Zweiter Durchgang für Adressen ohne eigene Teil-II-Zeile, in dieser Rangfolge: die Zeile eines anderen
     # Adressobjekts derselben Hausnummer, dann Hausnummernspannen („2—84 E. …“) der Straße. besitz_quelle
     # sagt je Adresse, woher die Klasse kommt: eintrag | nummer | spanne | "" (ungeprüft).
@@ -273,12 +274,27 @@ def _niveau(eintraege: list[dict]) -> tuple[str, dict[str, int]]:
     return (beste if anzahl * 2 > gesamt else "gemischt"), dict(n)
 
 
+def _stellung(eintraege: list[dict]) -> tuple[str, dict[str, int]]:
+    """Punktattribut je Adresse (Spec Themenbaum §4): nur Teil I mit geprüftem Beruf; Vorschläge der Automatik
+    zählen wie Handentscheidungen; eine Klasse mit mehr als der Hälfte → Klasse; sonst gemischt; nichts
+    geprüft → ungeprueft."""
+    n: dict[str, int] = defaultdict(int)
+    for e in eintraege:
+        if e.get("teil") == "I" and e.get("_beruf"):
+            n[e["_beruf"].get("stellung") or UNBESTIMMT] += 1
+    gesamt = sum(n.values())
+    if not gesamt:
+        return "ungeprueft", {}
+    beste, anzahl = max(n.items(), key=lambda x: x[1])
+    return (beste if anzahl * 2 > gesamt else "gemischt"), dict(n)
+
+
 def punkt_feature(a: dict) -> dict:
     p = dict(id=a["id"], stufe=a["stufe"], stadtteil=a["stadtteil"], strasse_heute=a["strasse_heute"],
              hausnr=a["hausnr"] + (a["hausnr_zusatz"] or ""), historisch=a["historisch"],
              nummer_unsicher=a["nummer_unsicher"], besitz=a.get("besitz", "ungeprueft"),
              besitz_quelle=a.get("besitz_quelle", ""), besitz_spanne=a.get("besitz_spanne", ""), besitz_pruefung=a.get("besitz_pruefung", ""),
-             niveau=a.get("niveau", "ungeprueft"), n_I=0, n_II=0, n_III=0)
+             niveau=a.get("niveau", "ungeprueft"), stellung=a.get("stellung", "ungeprueft"), n_I=0, n_II=0, n_III=0)
     merkmale: dict[str, int] = defaultdict(int)
     for e in a["eintraege"]:
         for m in e["_merkmale"]:
