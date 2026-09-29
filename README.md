@@ -266,6 +266,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `adressen.pmtiles` | Ein Punkt je verorteter Adresse (Stufe `haus`/`strasse`, inkl. `stadtplan`), gekachelt mit tippecanoe |
 | `haus/<xx>.json` | Einträge je Adress-ID, nach den ersten zwei Hex-Zeichen der ID gehasht (256 Dateien) |
 | `adressen/<xx>.json` | Punkteigenschaften je Adress-ID, gleiches Schema wie `haus/<xx>.json`-Schlüssel; unabhängig vom Kachel-Viewport für Export, Liste und Hausansicht |
+| `adressen_kurz/<x>.json` | Kurzindex je erstem Zeichen der Adress-ID: `[lon, lat, stufe, stadtteil, strasse_heute, hausnr, historisch]` — für Trefferlisten und Einpassen ohne Kachelabfrage (Spec 2026-09-29-eigentuemer-vergleich) |
 | `suche/namen/<ab>.json`, `suche/firmen/<ab>.json` | Personen bzw. Firmen nach den ersten zwei Schlüsselzeichen (Schlüsselfaltung: Kleinschreibung, ä/ö/ü/ß transkribiert, Satzzeichen entfernt) |
 | `suche/strassen.json` | Heutige und 1936er Straßennamen mit Vorort und Zeilenzahl (keine Adress-IDs) |
 | `suche/strassen/<ab>.json` | Je Straße (Name\|Art\|Ort) die sortierten Adress-IDs, Scherbe nach den ersten zwei Schlüsselzeichen |

@@ -943,3 +943,25 @@ def test_schreibe_themen_mit_kacheln_schreibt_geojson_und_index(tmp_path, monkey
     aufrufe.clear()
     idx2 = karte_export.schreibe_themen(q, tmp_path / "out2", features=f, kacheln=False)
     assert aufrufe == [] and all(e["kacheln"] is False for e in idx2)
+
+
+def test_baue_adressen_kurz_verteilt_nach_erstem_zeichen_und_traegt_sieben_werte():
+    from pipeline.lib.karte_export import baue_adressen_kurz
+    adressen = {
+        "a1b2": dict(id="a1b2", lat=51.4912345678, lon=7.0612345678, stufe="haus", stadtteil="Katernberg", strasse_heute="Lattenkamp", hausnr="25", hausnr_zusatz="a", historisch="Grenzstr. 25, Katernberg"),
+        "a9ff": dict(id="a9ff", lat=51.5, lon=7.1, stufe="stadtplan", stadtteil="", strasse_heute="", hausnr="3", hausnr_zusatz="", historisch="Alte Str. 3"),
+        "b000": dict(id="b000", lat=51.6, lon=7.2, stufe="strasse", stadtteil="Kray", strasse_heute="Kampstr.", hausnr="", hausnr_zusatz=None, historisch="Kampstr."),
+    }
+    k = baue_adressen_kurz(adressen)
+    assert sorted(k) == ["a", "b"]
+    assert k["a"]["a1b2"] == [7.061235, 51.491235, "haus", "Katernberg", "Lattenkamp", "25a", "Grenzstr. 25, Katernberg"]
+    assert k["a"]["a9ff"] == [7.1, 51.5, "stadtplan", "", "", "3", "Alte Str. 3"]
+    assert k["b"]["b000"] == [7.2, 51.6, "strasse", "Kray", "Kampstr.", "", "Kampstr."]
+
+
+def test_schreibe_paket_schreibt_kurzindex(tmp_path):
+    e = [_v(id="1", lastname="Sepeur", firstname="Wilh.", teil="I")]
+    schreibe_paket(tmp_path, e, [], lies_csv(FIX / "zechen.csv"), "2026-09-21", kacheln=False)
+    aid = adress_id(e[0])
+    kurz = json.loads((tmp_path / "adressen_kurz" / f"{aid[0]}.json").read_text())
+    assert kurz[aid][:3] == [7.06, 51.49, "haus"] and kurz[aid][4] == "Lattenkamp"

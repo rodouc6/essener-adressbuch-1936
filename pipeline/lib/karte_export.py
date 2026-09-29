@@ -327,6 +327,18 @@ def baue_adressscherben(adressen: dict[str, dict]) -> dict[str, dict[str, dict]]
     return dict(scherben)
 
 
+def baue_adressen_kurz(adressen: dict[str, dict]) -> dict[str, dict[str, list]]:
+    """Kurzindex für Trefferlisten (Spec Eigentümer-Vergleich §2): Datei = erstes Zeichen der Adress-ID,
+    je Adresse [lon, lat, stufe, stadtteil, strasse_heute, hausnr, historisch] — sieben Werte, keine Zählfelder.
+    Ersetzt die Kachelabfrage und die fetten Adressscherben beim Aufbau der Liste."""
+    kurz: dict[str, dict[str, list]] = defaultdict(dict)
+    for aid, a in adressen.items():
+        kurz[aid[0]][aid] = [round(a["lon"], 6), round(a["lat"], 6), a["stufe"], a.get("stadtteil") or "",
+                             a.get("strasse_heute") or "", (a.get("hausnr") or "") + (a.get("hausnr_zusatz") or ""),
+                             a.get("historisch") or ""]
+    return dict(kurz)
+
+
 def anzeige_adresse(a: dict) -> str:
     """Adresse zur Anzeige: heutige Straße, Nummer, Stadtteil; bei Stadtplan die historische Schreibung."""
     if a["stufe"] == "stadtplan" or not a["strasse_heute"]:
@@ -993,6 +1005,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
         _json(ausgabe / "haus" / f"{name}.json", inhalt)
     for name, inhalt in baue_adressscherben(adressen).items():
         _json(ausgabe / "adressen" / f"{name}.json", inhalt)
+    for name, inhalt in baue_adressen_kurz(adressen).items():
+        _json(ausgabe / "adressen_kurz" / f"{name}.json", inhalt)
     for name, zeilen in baue_namensindex(adressen).items():
         _json(ausgabe / "suche" / "namen" / f"{name}.json", zeilen)
     for name, zeilen in baue_firmenindex(adressen).items():
