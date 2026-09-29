@@ -2,6 +2,7 @@ import { EBENEN } from "./konfig.js";
 import { esc, hausHtml, trefferzeileHtml, heutigeAdresse } from "./popup.js";
 import { ansichtTitel } from "./ansicht_farben.js";
 import { nennerText } from "./formen/skalen.js";
+import { vergleichsleisteHtml, gruppenZuordnung } from "./vergleich.js";
 
 const STUFEN = ["griff", "halb", "voll"];
 
@@ -29,14 +30,16 @@ export class Sidebar {
   naechsteStufe() { const i = STUFEN.indexOf(this.el.dataset.stufe); this.setzeStufe(STUFEN[(i + 1) % STUFEN.length]); }
   setzeFilteroptionen(stadtteile, berufe) { this.stadtteile = stadtteile || []; this.berufe = berufe || []; }
 
-  setzeVorschlaege(g) {
+  // plus: mindestens ein Eigentümer ist gewählt — Eigentümer-Vorschläge fügen dann hinzu statt zu ersetzen (Spec 2026-09-29 §6).
+  setzeVorschlaege(g, plus = false) {
     if (!g || g.gesamt === 0) { this.vorschlaegeEl.hidden = true; this._vorschlagListe = []; return; }
     const liste = []; let html = "";
     for (const [k, titel] of [["personen", "Personen"], ["strassen", "Straßen"], ["firmen", "Firmen"], ["berufe", "Berufe"], ["eigentuemer", "Eigentümer"]]) {
       if (!g[k].length) continue;
       html += `<div class="gruppe">${titel}</div>`;
       for (const v of g[k]) {
-        html += `<div class="eintrag" data-index="${liste.length}">${esc(v.text)}<small>${esc(v.untertitel)}</small></div>`;
+        const zusatz = plus && k === "eigentuemer" ? `<span class="plus" title="zum Vergleich hinzufügen">+</span>` : "";
+        html += `<div class="eintrag" data-index="${liste.length}">${esc(v.text)}${zusatz}<small>${esc(v.untertitel)}</small></div>`;
         liste.push(v);
       }
       const gesamt = g[`gesamt_${k}`] ?? g[k].length;
@@ -75,18 +78,25 @@ export class Sidebar {
   zeigeTreffer(z, ergebnis, eig, titel) {
     this.pills.innerHTML = this._pillsHtml(z);
     const n = ergebnis.personen ? ergebnis.personen.length : [...ergebnis.zaehler.values()].reduce((a, b) => a + b, 0);
-    let html = this._filterHtml(z) + `<div class="kopf"><b>${n} Treffer</b> · ${ergebnis.adressIds.length} Häuser` +
+    let html = this._filterHtml(z);
+    // Eigentümer-Vergleich (Spec 2026-09-29 §6): Leiste je Gruppe vor der Kopfzeile, Farbpunkt je Zeile, Gruppenreihenfolge.
+    const zuordnung = ergebnis.gruppen ? gruppenZuordnung(ergebnis.gruppen) : null;
+    if (ergebnis.gruppen) html += vergleichsleisteHtml(ergebnis.gruppen, eig);
+    html += `<div class="kopf"><b>${n} Treffer</b> · ${ergebnis.adressIds.length} Häuser` +
       `<button class="export" data-export="1">CSV</button></div>`;
     if (ergebnis.hinweisHJ) html += `<div class="hinweis warn">Keine Treffer. Die Namen H bis J fehlen in der Vorlage (Seiten 186–258 des Teils I). Straßen und Firmen sind nicht betroffen.</div>`;
+    const ids = zuordnung ? [...ergebnis.adressIds].sort((a, b) => zuordnung.get(a).gruppe - zuordnung.get(b).gruppe) : ergebnis.adressIds;
     const zeilen = ergebnis.personen
       ? ergebnis.personen.map((p) => ({ adressId: p.adressId, eintragId: p.eintragId, titel: p.text, untertitel: p.untertitel, stufe: (eig.get(p.adressId) || {}).stufe || "unbekannt" }))
-      : ergebnis.adressIds.map((id) => { const e = eig.get(id) || {}; return { adressId: id, titel: e.historisch ? heutigeAdresse(e) : id, untertitel: `${ergebnis.zaehler.get(id)} Einträge${e.historisch ? " · " + e.historisch : ""}`, stufe: e.stufe || "unbekannt" }; });
+      : ids.map((id) => { const e = eig.get(id) || {}; const g = zuordnung && zuordnung.get(id);
+          return { adressId: id, titel: e.historisch ? heutigeAdresse(e) : id, untertitel: `${ergebnis.zaehler.get(id)} Einträge${e.historisch ? " · " + e.historisch : ""}`, stufe: e.stufe || "unbekannt",
+                   farbe: g ? ergebnis.gruppen[g.gruppe].farbe : undefined, mehrfach: !!(g && g.mehrfach) }; });
     this._alleZeilen = zeilen; this._gezeigt = 0;
     html += `<div class="liste" id="liste"></div><button class="mehr" data-mehr="1" hidden>weitere 50</button>`;
     this.inhalt.innerHTML = html;
     this._filterEreignisse(z);
     this._mehrZeilen();
-    if (ergebnis.adressIds.length >= 500) this._verteilung(ergebnis, eig);
+    if (!ergebnis.gruppen && ergebnis.adressIds.length >= 500) this._verteilung(ergebnis, eig);
   }
 
   _mehrZeilen() {
@@ -124,7 +134,7 @@ export class Sidebar {
     }
   }
 
-  zeigeThema(thema, groesste = null) {
+  zeigeThema(thema, groesste = null, gewaehlt = [], farben = []) {
     if (!thema) { this.themenkopf.hidden = true; this.themenkopf.innerHTML = ""; return; }
     this.themenkopf.innerHTML = `<div class="thema"><b>${esc(thema.titel)}</b><p>${esc(thema.text)}</p><small>${esc(thema.grundlage)}</small>` +
       `<button data-thema-aus="1">Thema verlassen</button></div>`;
@@ -132,9 +142,27 @@ export class Sidebar {
     this.themenkopf.querySelector("[data-thema-aus]").addEventListener("click", () => this.a.onZustand({ thema: "" }));
     if (groesste && groesste.length) {
       this.themenkopf.insertAdjacentHTML("beforeend", `<div class="gruppe">Größte Eigentümer</div><div class="eigentuemerliste">` +
-        groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
-      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onZustand({ q: "", beruf: "", ohdab: "", eigentuemer: b.dataset.eigentuemer, id: "" })));
+        groesste.slice(0, 30).map((z) => `<button class="themaknopf" data-eigentuemer="${esc(z[1])}" aria-pressed="false">${esc(z[1])} <small>${z[2]}</small></button>`).join("") + `</div>`);
+      // Klick schaltet um: gewählt → entfernen, sonst anhängen (app.js prüft die Höchstzahl)
+      this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => b.addEventListener("click", () => this.a.onEigentuemer(b.dataset.eigentuemer, true)));
+      this.markiereEigentuemer(gewaehlt, farben);
     }
+  }
+
+  // Gewählte Eigentümer-Knöpfe in ihrer Gruppenfarbe füllen (Spec 2026-09-29 §6).
+  markiereEigentuemer(namen, farben) {
+    this.themenkopf.querySelectorAll("[data-eigentuemer]").forEach((b) => {
+      const i = namen.indexOf(b.dataset.eigentuemer);
+      b.setAttribute("aria-pressed", String(i >= 0));
+      b.style.background = i >= 0 ? farben[i] : ""; b.style.color = i >= 0 ? "#fff" : ""; b.style.borderColor = i >= 0 ? farben[i] : "";
+    });
+  }
+
+  // Kurzer Hinweis oben im Inhalt (z. B. „Höchstens fünf Eigentümer“), verschwindet nach 2 s.
+  zeigeHinweis(text) {
+    const el = document.createElement("div"); el.className = "hinweis warn fluechtig"; el.textContent = text;
+    this.inhalt.prepend(el);
+    setTimeout(() => el.remove(), 2000);
   }
 
   // Kopf einer aktiven Ansicht (Spec §8). `roh` ist der unveränderte URL-String, damit der Link in
@@ -190,6 +218,8 @@ export class Sidebar {
     if (t.closest("[data-mehr]")) return this._mehrZeilen();
     if (t.closest("[data-export]")) return this.a.onExport();
     const th = t.closest("[data-thema]"); if (th) return this.a.onZustand({ thema: th.dataset.thema });
+    const weg = t.closest("[data-eig-weg]"); if (weg) return this.a.onEigentuemer(weg.dataset.eigWeg, true);
+    const eig = t.closest("[data-eigentuemer]"); if (eig) return this.a.onEigentuemer(eig.dataset.eigentuemer, false);
     const z = t.closest(".treffer");
     if (z) return z.dataset.eintrag ? this.a.onEintragWaehlen(z.dataset.eintrag, z.dataset.adresse) : this.a.onHausWaehlen(z.dataset.adresse);
   }
