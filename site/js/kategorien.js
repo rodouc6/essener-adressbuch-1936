@@ -12,6 +12,13 @@ export const NIVEAUS = {
   gemischt: "mehrere Niveaus", unsicher: "Niveau unsicher", ungeprueft: "ungeprüft",
 };
 
-// Beschriftung je Farbfeld für die Themenlegende. Nicht vereinen: `gemischt` heißt bei Besitz und Niveau verschieden.
-const ANZEIGE_JE_FELD = { besitz: KATEGORIEN, niveau: NIVEAUS };
+// Anzeigenamen der Stellung (Spec Themenbaum §4); Schlüssel wie pipeline/lib/stellung.py.
+export const STELLUNGEN = {
+  arbeiter: "Arbeiter", angestellte: "Angestellte", beamte: "Beamte", selbstaendige: "Selbständige (Handwerk, Handel, Gastgewerbe)",
+  freie_berufe: "Freie Berufe und Akademiker", unternehmer: "Unternehmer und Leitende", kaufleute: "Kaufleute (Stellung unbestimmt)",
+  ohne_erwerb: "Ohne Erwerbsberuf", unbestimmt: "unbestimmt", gemischt: "mehrere Stellungen", ungeprueft: "ungeprüft",
+};
+
+// Beschriftung je Farbfeld für Themenbaum und Legende. Nicht vereinen: `gemischt` heißt je Feld verschieden.
+const ANZEIGE_JE_FELD = { besitz: KATEGORIEN, niveau: NIVEAUS, stellung: STELLUNGEN };
 export function anzeigeFuer(feld) { return ANZEIGE_JE_FELD[feld] || {}; }
