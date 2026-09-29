@@ -385,7 +385,7 @@ async function exportiere() {
   if (!ergebnis) return;
   const csv = await csvAusTreffern(ergebnis, lader, await eigMap(ergebnis.adressIds));
   const name = zustand.q || zustand.beruf || (ergebnis.gruppen && ergebnis.gruppen[0] && ergebnis.gruppen[0].name) || "treffer";
-  herunterladen(csv, zustand.vergleich.length > 1 ? "essen1936-vergleich.csv" : `essen1936-${name.replace(/[^\w]+/g, "_")}.csv`);
+  herunterladen(csv, zustand.vergleich.length > 1 ? "essen1936-vergleich_CC-BY-SA.csv" : `essen1936-${name.replace(/[^\w]+/g, "_")}_CC-BY-SA.csv`);
 }
 
 // Suchfeld

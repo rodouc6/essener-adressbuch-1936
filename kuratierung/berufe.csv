@@ -96,10 +96,10 @@ Bahnwärter,9,Bahnwärter,,B 51522-107,,ja,exakt,christos,2026-09-24,,unbestimmt
 Bandagist,10,Bandagist,,B 82512-103,,ja,exakt,christos,2026-09-24,,arbeiter,
 Bankangest.,30,Bankangestellter,,B 72112-100,,ja,,christos,2026-09-25,,angestellte,ja
 Bankarb.,29,Bankarb.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
-Bankbeamt.,286,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
+Bankbeamt.,286,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-29,"Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Bankbeamt. a. D.,5,Bankbeamter,ruhestand,B 72182-102,ja,ja,hand,christos,2026-09-24,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,ohne_erwerb,
-Bankbeamter,10,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
-Bankbeamtin,8,Bankbeamtin,,B 72182-102,ja,ja,hand,christos,2026-09-25,Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen,beamte,ja
+Bankbeamter,10,Bankbeamter,,B 72182-102,ja,ja,hand,christos,2026-09-29,"Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
+Bankbeamtin,8,Bankbeamtin,,B 72182-102,ja,ja,hand,christos,2026-09-29,"Dienststufe in der Vorlage nicht angegeben; mittlerer Dienst angenommen; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Bankdir.,5,Bankdirektor,,B 72194-101,,ja,,christos,2026-09-25,,unternehmer,ja
 Bankdirekt.,28,Bankdirektor,,B 72194-101,,ja,katalog; exakt,christos,2026-09-25,,unternehmer,ja
 Bankdirekt. a. D.,16,Bankdirektor,ruhestand,B 72194-101,,ja,katalog; exakt,christos,2026-09-23,,ohne_erwerb,
@@ -173,7 +173,7 @@ Bergmann,220,Bergmann,,B 21112-100,,ja,exakt,christos,2026-09-25,,arbeiter,ja
 Bergrat,16,Bergrat,,B 21193-502,,ja,exakt,christos,2026-09-23,,beamte,
 Bergrevierinspekt.,5,Bergrevierinspekt.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Bergtagelöhn.,16,Bergtagelöhner,,B 21111-510,,ja,aehnlich 0.93,christos,2026-09-23,,arbeiter,
-Bergw. Beamt.,8,Bergwerksbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-25,Laufbahn nicht angegeben; Bergbeamte/r,beamte,ja
+Bergw. Beamt.,8,Bergwerksbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-29,"Laufbahn nicht angegeben; Bergbeamte/r; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Bergw. Direkt.,18,Bergwerksdirektor,,B 21194-104,,ja,katalog; exakt,christos,2026-09-23,,unternehmer,
 Bergw. Direkt. a. D.,6,Bergwerksdirektor,ruhestand,B 21194-104,,,katalog; exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
 Bergwerksdirekt.,10,Bergwerksdirektor,,B 21194-104,,ja,katalog; exakt,christos,2026-09-24,,unternehmer,
@@ -182,7 +182,7 @@ Berichterstatter,6,Berichterstatter,,B 92414-111,,,exakt,berufe_vorschlag,2026-0
 Betonmstr.,6,Betonmstr.,,,,,,berufe_vorschlag,2026-09-23,,angestellte,
 Betr. Assist.,92,Betriebsassistent,,B 71302-117,,ja,katalog; exakt,christos,2026-09-23,,beamte,
 Betr. Assist. a. D.,13,Betriebsassistent,ruhestand,B 71302-117,,,katalog; exakt,berufe_vorschlag,2026-09-23,,ohne_erwerb,
-Betr. Beamt.,6,Betriebsbeamter,,B 71324-105,,,katalog; aehnlich 0.93,berufe_vorschlag,2026-09-23,Prüfen: Ähnlichkeitstreffer falsch (Betriebsberater/in); Betriebsbeamter fehlt in OhdAB,beamte,
+Betr. Beamt.,6,Betriebsbeamter,,B 71324-105,,,katalog; aehnlich 0.93,christos,2026-09-29,"Prüfen: Ähnlichkeitstreffer falsch (Betriebsberater/in); Betriebsbeamter fehlt in OhdAB; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Betr. Buchhalt.,5,Betriebsbuchhalter,,B 72213-129,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
 Betr. Direkt.,9,Betriebsdirektor,,B 71104-102,,ja,katalog; exakt,christos,2026-09-24,,unternehmer,
 Betr. Führ.,45,Betriebsführer,,B 71104-124,,ja,katalog; exakt,christos,2026-09-25,,unternehmer,ja
@@ -273,10 +273,10 @@ Bürgermstr. a. D.,5,Bürgermeister,ruhestand,B 71214-101,,ja,katalog; exakt,chr
 Büroangest.,229,Büroangestellter,,B 71402-500,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Büroangestellt.,9,Büroangestellt.,,B 71402-500,,ja,aehnlich 0.97,christos,2026-09-25,,angestellte,ja
 Büroassist.,9,Büroassistent,,B 71402-115,,ja,katalog; exakt,christos,2026-09-24,,beamte,
-Bürobeamt.,1143,Bürobeamter,,B 71403-501,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
+Bürobeamt.,1143,Bürobeamter,,B 71403-501,,ja,katalog; exakt,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Bürobeamt. a. D.,47,Bürobeamter,ruhestand,B 71403-501,,ja,katalog; exakt,christos,2026-09-25,,ohne_erwerb,ja
-Bürobeamter,50,Bürobeamter,,B 71403-501,,ja,exakt,christos,2026-09-25,,beamte,ja
-Bürobeamtin,12,Bürobeamtin,,,,,,berufe_vorschlag,2026-09-23,,beamte,
+Bürobeamter,50,Bürobeamter,,B 71403-501,,ja,exakt,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
+Bürobeamtin,12,Bürobeamtin,,,,,,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Bürobedarf,20,Bürobedarfshändler,gewerbe,,,,gewerbe,claude,2026-09-24,Gewerbebezeichnung; kein OhdAB-Item für den Berufsträger gefunden,selbstaendige,
 Bürodien.,54,Bürodiener,,B 71401-129,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Bürodiener,40,Bürodiener,,B 71401-129,,ja,exakt,christos,2026-09-25,,arbeiter,ja
@@ -580,7 +580,7 @@ Grabsteingesch.,5,Grabsteinmetz,gewerbe,B 21232-101,ja,ja,gewerbe; hand,christos
 Graphiker,17,Grafiker,,B 23223-124,,ja,,christos,2026-09-23,,angestellte,
 Graveur,28,Graveur,,B 93532-101,,ja,exakt,christos,2026-09-23,,arbeiter,
 Großschlachterei,5,Großschlächter,gewerbe,B 29232-135,ja,ja,gewerbe; aehnlich 0.97,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
-Grubenbeamt.,37,Grubenbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-25,Laufbahn nicht angegeben; Bergbeamte/r,beamte,ja
+Grubenbeamt.,37,Grubenbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-29,"Laufbahn nicht angegeben; Bergbeamte/r; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Grubenbeamt. a. D.,15,Grubenbeamter,ruhestand,B 21113-527,ja,ja,hand,christos,2026-09-24,Laufbahn nicht angegeben; Bergbeamte/r,ohne_erwerb,
 Grubeninspekt.,5,Grubeninspektor,,B 21194-107,,,katalog; exakt,berufe_vorschlag,2026-09-24,,beamte,
 Grubenlok. Führ.,6,Grubenlokomotivführer,,,,,,berufe_vorschlag,2026-09-23,,beamte,
@@ -699,7 +699,7 @@ Händlerin,58,Händlerin,,B 62102-503,,ja,exakt,christos,2026-09-25,,selbstaendi
 Härter,16,Härter,,B 24302-101,,ja,exakt,christos,2026-09-23,,arbeiter,
 Hühnerfarm,7,Hühnerfarm,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Hüttenarb.,34,Hüttenarbeiter,,B 24101-510,,ja,,christos,2026-09-25,,arbeiter,ja
-Hüttenbeamt.,9,Hüttenbeamter,,B 24113-500,,ja,katalog; exakt,christos,2026-09-24,,beamte,
+Hüttenbeamt.,9,Hüttenbeamter,,B 24113-500,,ja,katalog; exakt,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Hüttendirekt. a. D.,5,Hüttendirektor,ruhestand,B 24194-518,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
 Immobilien,27,Immobilienmakler,gewerbe,B 61313-104,ja,ja,gewerbe; hand,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 Industriebed.,5,Industriebed.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
@@ -791,7 +791,7 @@ Kfm,12,Kfm,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Kfm.,1868,Kaufmann,,B 61203-504,ja,ja,katalog; exakt,christos,2026-09-25,,kaufleute,ja
 Kfm. Angest.,134,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 Kfm. Beamt.,13,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
-Kfm. Grubenbeamt.,5,kaufmännischer Grubenbeamter,,B 21113-527,ja,,hand,claude,2026-09-24,Laufbahn nicht angegeben; Bergbeamte/r,beamte,
+Kfm. Grubenbeamt.,5,kaufmännischer Grubenbeamter,,B 21113-527,ja,,hand,christos,2026-09-29,"Laufbahn nicht angegeben; Bergbeamte/r; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Kinderarzt,6,Kinderarzt,,B 81414-105,,,exakt,berufe_vorschlag,2026-09-23,,freie_berufe,
 Kindergärtnerin,8,Kindergärtnerin,,B 83112-142,,ja,exakt,christos,2026-09-24,,arbeiter,
 Kinobes.,11,Kinobesitzer,,B 94594-500,,ja,katalog; exakt,christos,2026-09-24,,unbestimmt,
@@ -1636,7 +1636,7 @@ Straßenb. Beamt.,26,Straßenbahnbeamter,,B 51413-509,,ja,katalog; exakt,christo
 Straßenb. Bedienst.,161,Straßenbahnbediensteter,,B 51411-523,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
 Straßenb. Führ.,228,Straßenbahnführer,,B 52132-119,,ja,katalog; exakt,christos,2026-09-23,,arbeiter,
 Straßenb. Kontroll.,10,Straßenbahnkontrolleur,,B 27312-155,,ja,hand,christos,2026-09-25,allgemeines Kontrolleur-Item,arbeiter,ja
-Straßenb. Schaffn.,330,Straßenbahnschaffner,,B 51412-122,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
+Straßenb. Schaffn.,330,Straßenbahnschaffner,,B 51412-122,,ja,katalog; exakt,christos,2026-09-29,Regel Straßenbahn → Arbeiter (docs/stellung.md),arbeiter,ja
 Straßenb. Schaffner,14,Straßenbahnschaffner,,B 51412-122,,,katalog; exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Straßenb. Wagenführ.,13,Straßenbahnwagenführer,,B 52132-119,,ja,hand,christos,2026-09-24,,arbeiter,
 Straßenbahn.,7,Straßenbahn.,,,,,,berufe_vorschlag,2026-09-23,,arbeiter,
@@ -1894,9 +1894,9 @@ Zahntechn.,38,Zahntechniker,,B 82542-101,,ja,,christos,2026-09-25,,angestellte,j
 Zahntechniker,6,Zahntechniker,,B 82542-101,,ja,exakt,christos,2026-09-25,,angestellte,ja
 Zechenangest.,9,Zechenangest.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 Zechenarb.,66,Zechenarbeiter,,B 21112-506,,ja,katalog; exakt,christos,2026-09-25,,arbeiter,ja
-Zechenbeamt.,161,Zechenbeamter,,B 21193-512,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
+Zechenbeamt.,161,Zechenbeamter,,B 21193-512,,ja,katalog; exakt,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Zechenbeamt. a. D.,7,Zechenbeamter,ruhestand,B 21193-512,,ja,katalog; exakt,christos,2026-09-24,,ohne_erwerb,
-Zechenbeamter,8,Zechenbeamter,,B 21193-512,,ja,exakt,christos,2026-09-25,,beamte,ja
+Zechenbeamter,8,Zechenbeamter,,B 21193-512,,ja,exakt,christos,2026-09-29,"Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 Zechenbote,5,Zechenbote,,B 51321-560,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Zechenschlosser,5,Zechenschlosser,,B 21112-507,,,exakt,berufe_vorschlag,2026-09-23,,arbeiter,
 Zechenschmied,16,Zechenschmied,,B 21113-506,,ja,exakt,christos,2026-09-23,,angestellte,
@@ -1946,7 +1946,7 @@ kaufm. Beamt.,15,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christo
 kfm. Angest.,548,kaufmännischer Angestellter,,B 71302-123,,ja,katalog; exakt,christos,2026-09-25,,angestellte,ja
 kfm. Angestellt.,14,kaufmännischer Angestellter,,B 71302-123,,,katalog; exakt,berufe_vorschlag,2026-09-23,,angestellte,
 kfm. Beamt.,45,kaufmännischer Beamter,,B 71303-506,,ja,katalog; exakt,christos,2026-09-25,,beamte,ja
-kfm. Grubenbeamt.,13,kaufmännischer Grubenbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-25,Laufbahn nicht angegeben; Bergbeamte/r,beamte,ja
+kfm. Grubenbeamt.,13,kaufmännischer Grubenbeamter,,B 21113-527,ja,ja,hand,christos,2026-09-29,"Laufbahn nicht angegeben; Bergbeamte/r; Privatbeamter = Angestellter (AVG 1911), kein öffentlicher Dienst",angestellte,ja
 mech. Schreinerei,23,Schreiner,gewerbe,B 22342-203,ja,ja,gewerbe; exakt,christos,2026-09-24,"Gewerbebezeichnung der Vorlage; Berufsträger angenommen, Inhaberstellung im Niveau nicht abgebildet",selbstaendige,
 o. B.,6,o. B.,,,,,,berufe_vorschlag,2026-09-23,,unbestimmt,
 o. G.,106,ohne Gewerbe,,A 10100-501,,ja,hand,christos,2026-09-25,o. G. = ohne Gewerbe,ohne_erwerb,ja

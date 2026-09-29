@@ -8,7 +8,7 @@
     "Essener Adreßbuch 1936. Unter Benutzung amtlicher Quellen. Essen: August Scherl, Deutsche Adreßbuch-Gesellschaft, 1936 (Stadtarchiv Essen; Deutsche Nationalbibliothek Leipzig, ZC 2510)",
     "Digitalisat: Digitale Bibliothek des Vereins für Computergenealogie, https://www.digibib.genealogy.net/viewer/image/857439804_1936/",
     "Transkription: DES-Projekt „Adressbuch Essen 1936“, Verein für Computergenealogie, abgeschlossen 2020; Datensatz „Historische Adressbücher aus dem Rheinland und Ruhrgebiet“ (Coding da Vinci Nieder.Rhein.Land 2021), CC BY-SA 4.0",
-    "Straßennamen: Essener Straßennamen (Dickhoff 2015), Datensatz DOI 10.5281/zenodo.22757900",
+    "Straßennamen: Essener Straßenverzeichnis: Namen und Umbenennungen (Rodouniklis 2026, erschlossen aus Dickhoff 2015), DOI 10.5281/zenodo.22757900",
     "Stadtplan von Groß-Essen 1935, Stadt Essen / Historischer Verein (ArcGIS-Dienst geo.essen.de)",
     "Berufe: Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB), Moeller/Uni Halle, FactGrid, CC BY 4.0"
   ],
@@ -26,7 +26,7 @@
          {"name": "Teil III: Betriebe", "aus": "eintraege_III", "farbe": "#c2410c"}],
        "erklaerungen": {
          "eintraege": "Jede Zeile der Transkription ist ein Eintrag des Buches: eine Person, ein Haus mit Eigentümer oder ein Betrieb.",
-         "eintraege_I": "Eingetragene Personen mit Beruf und Adresse: Erwerbstätige, Witwen, Rentner, auch erwachsene Söhne im selben Haus. Die Namen H bis J fehlen in der Vorlage.",
+         "eintraege_I": "Eingetragene Personen mit Beruf und Adresse: Erwerbstätige, Witwen, Rentner, auch erwachsene Söhne im selben Haus. Die Namen H bis J fehlen in der Transkription.",
          "eintraege_II": "Ein Eintrag je Haus, mit dem Eigentümer; Eigentümer vieler Häuser stehen oft einmal je Straßenseite.",
          "eintraege_III": "Betriebe nach Branchen, mit Firmenname und Adresse."}}},
     {"id": "weg",

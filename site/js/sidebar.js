@@ -81,7 +81,7 @@ export class Sidebar {
   zeigeSuche(z) {
     this.pills.innerHTML = this._pillsHtml(z);
     this.inhalt.innerHTML = this._filterHtml(z) +
-      `<div class="hinweis">Tippe einen Namen, eine Straße, eine Firma, einen Beruf oder eine Gewerberubrik. Die Namen H bis J fehlen in der Vorlage.</div>`;
+      `<div class="hinweis">Tippe einen Namen, eine Straße, eine Firma, einen Beruf oder eine Gewerberubrik. Die Namen H bis J fehlen in der Transkription.</div>`;
     this._filterEreignisse(z);
   }
 
@@ -95,7 +95,7 @@ export class Sidebar {
     if (ergebnis.gruppen) html += vergleichsleisteHtml(ergebnis.gruppen, eig);
     html += `<div class="kopf"><b>${n} Treffer</b> · ${ergebnis.adressIds.length} Häuser` +
       `<button class="export" data-export="1">CSV</button></div>`;
-    if (ergebnis.hinweisHJ) html += `<div class="hinweis warn">Keine Treffer. Die Namen H bis J fehlen in der Vorlage (Seiten 186–258 des Teils I). Straßen und Firmen sind nicht betroffen.</div>`;
+    if (ergebnis.hinweisHJ) html += `<div class="hinweis warn">Keine Treffer. Die Namen H bis J fehlen in der Transkription (Seiten 186–258 des Teils I). Straßen und Firmen sind nicht betroffen.</div>`;
     const ids = zuordnung ? [...ergebnis.adressIds].sort((a, b) => zuordnung.get(a).gruppe - zuordnung.get(b).gruppe) : ergebnis.adressIds;
     const zeilen = ergebnis.personen
       ? ergebnis.personen.map((p) => ({ adressId: p.adressId, eintragId: p.eintragId, titel: p.text, untertitel: p.untertitel, stufe: (eig.get(p.adressId) || {}).stufe || "unbekannt" }))

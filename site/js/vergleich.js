@@ -4,7 +4,7 @@ import { schluessel } from "./zustand.js";
 
 // Grundgesamtheit je Schlüsseltyp (Spec Themenbaum §3): steht unter der Vergleichsleiste, nicht im Popup.
 const GRUNDGESAMTHEIT = {
-  norm: "Berufe: Einträge des Einwohnerverzeichnisses mit geprüftem Beruf; die Namen H bis J fehlen in der Vorlage.",
+  norm: "Berufe: Einträge des Einwohnerverzeichnisses mit geprüftem Beruf; die Namen H bis J fehlen in der Transkription.",
   eig: "Eigentümer: auch Häuser aus Sammelzeilen des Adressbuchs („2–84 E. …“).",
   rub: "Gewerbe: Betriebe des Branchenverzeichnisses (Teil III), ein Punkt je Haus mit Betrieb.",
 };
