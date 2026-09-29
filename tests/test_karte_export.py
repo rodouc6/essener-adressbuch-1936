@@ -990,3 +990,44 @@ def test_stellung_je_adresse_mehrheit_gemischt_ungeprueft():
              nummer_unsicher="nein", eintraege=[b("arbeiter"), b("arbeiter", "vorschlag"), b("beamte")], besitz="ungeprueft", niveau="fachlich")
     a["stellung"], a["n_stellung"] = _stellung(a["eintraege"])
     assert punkt_feature(a)["properties"]["stellung"] == "arbeiter"
+
+
+def test_themen_listen_besitz_bergbau_berufe():
+    """Spec Themenbaum §6: je Thema Oberkategorie → Einträge (Schlüssel, Name, Häuser); ein OhdAB-Schlüssel steht in genau einer
+    Bergbau-Gruppe (die mit den meisten Nennungen) und bei genau einer Stellung; Anteil handgeprüft nach Nennungen."""
+    from pipeline.lib.karte_export import baue_themen_listen
+    def haus(i, eintraege, **f):
+        a = dict(id=f"h{i}", lat=51.4, lon=7.0, stufe="haus", stadtteil="Kray", strasse_heute="A", hausnr=str(i), hausnr_zusatz="", historisch=f"A {i}",
+                 nummer_unsicher="nein", eintraege=eintraege, besitz="ungeprueft", besitz_quelle="", besitz_eigentuemer="", stellung="ungeprueft")
+        a.update(f)
+        return a
+    def p(ohdab, norm, st, q="hand", bb=None):
+        b = dict(ohdab=ohdab, norm=norm, stellung=st, stellung_quelle=q, niveau="fachlich")
+        if bb:
+            b["bergbau"] = bb
+        return dict(teil="I", _beruf=b, _merkmale=[], _eigentuemer="", _identitaet=False, _kategorie="")
+    def eig(name, kat):
+        return dict(teil="II", _beruf=None, _merkmale=[], _eigentuemer=name, _identitaet=True, _kategorie=kat)
+    adressen = {a["id"]: a for a in [
+        haus(1, [p("B1", "Bergmann", "arbeiter", bb="belegschaft"), p("B1", "Bergmann", "arbeiter", "vorschlag", bb="invaliden"), eig("Krupp", "industrie")], besitz="industrie", besitz_quelle="eintrag", stellung="arbeiter"),
+        haus(2, [p("B1", "Bergmann", "arbeiter", bb="belegschaft"), p("S1", "Steiger", "angestellte", bb="aufsicht")], stellung="gemischt"),
+        haus(3, [p("S1", "Steiger", "angestellte", bb="aufsicht"), eig("Stadt Essen", "stadt_staat")], besitz="stadt_staat", besitz_quelle="eintrag", stellung="angestellte"),
+        haus(4, [dict(teil="I", _beruf=None, _merkmale=[], _eigentuemer="", _identitaet=False, _kategorie="")], besitz="industrie", besitz_quelle="spanne", besitz_eigentuemer="Krupp"),
+    ]}
+    L = baue_themen_listen(adressen)
+    bs = {o["id"]: o for o in L["besitz"]["oberkategorien"]}
+    assert bs["industrie"]["adressen"] == 2 and bs["industrie"]["eintraege"] == [dict(schluessel="eig:Krupp", name="Krupp", adressen=2)]
+    assert bs["stadt_staat"]["eintraege"] == [dict(schluessel="eig:Stadt Essen", name="Stadt Essen", adressen=1)]
+    assert bs["privatperson"]["adressen"] == 0 and bs["privatperson"]["eintraege"] == []
+    assert L["besitz"]["ungeprueft"] == 1 and L["besitz"]["handgeprueft_anteil"] is None
+    bb = {o["id"]: o for o in L["bergbau"]["oberkategorien"]}
+    assert [o["id"] for o in L["bergbau"]["oberkategorien"]] == ["leitung", "aufsicht", "belegschaft", "invaliden"]
+    assert bb["belegschaft"]["adressen"] == 2 and bb["belegschaft"]["eintraege"] == [dict(schluessel="norm:B1", name="Bergmann", adressen=2)]
+    assert bb["invaliden"]["adressen"] == 1 and bb["invaliden"]["eintraege"] == []          # Bergmann steht nur einmal: 2 Nennungen Belegschaft, 1 Invaliden
+    assert bb["aufsicht"]["eintraege"] == [dict(schluessel="norm:S1", name="Steiger", adressen=2)]
+    st = {o["id"]: o for o in L["berufe"]["oberkategorien"]}
+    assert [o["id"] for o in L["berufe"]["oberkategorien"]][:3] == ["arbeiter", "angestellte", "beamte"]
+    assert st["arbeiter"]["adressen"] == 2 and st["arbeiter"]["eintraege"][0]["schluessel"] == "norm:B1"
+    assert st["angestellte"]["eintraege"] == [dict(schluessel="norm:S1", name="Steiger", adressen=2)]
+    assert L["berufe"]["gemischt"] == 1 and L["berufe"]["ungeprueft"] == 1
+    assert L["berufe"]["handgeprueft_anteil"] == 0.8      # 4 von 5 Nennungen mit geprüftem Beruf sind handgeprüft

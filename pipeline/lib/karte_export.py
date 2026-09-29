@@ -11,10 +11,10 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline.lib.bergbau import GRUPPEN as BB_GRUPPEN, lade_bergbau, pruefe_gegen_berufe, rang_gruppe
+from pipeline.lib.bergbau import GRUPPEN as BB_GRUPPEN, NAMEN as BB_NAMEN, RANG as BB_RANG, lade_bergbau, pruefe_gegen_berufe, rang_gruppe
 from pipeline.lib.berufe import lade_kuratierung as lade_berufe, zuordnung as berufszuordnung
 from pipeline.lib.ebenen import EBENEN, aggregiere, hex_polygon, hex_zelle, zaehlfelder
-from pipeline.lib.eigentuemer import hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, person_nach_regel, schreibweise_von
+from pipeline.lib.eigentuemer import KATEGORIEN as BESITZ_KATEGORIEN, hausnummernspanne, identitaet_sicher, lade_kuratierung, mit_stadtteil, person_nach_regel, schreibweise_von
 from pipeline.lib.gewerbe import gewerbe_quelle, betriebsschluessel, gewerbe_export, lade_gewerbe, rubrik_von
 from pipeline.lib.gruppen import fehlende_bezeichnungen, hauptgruppe, lade_hauptgruppen
 from pipeline.lib.layout import beeswarm, packe_gruppen, packe_kreise, radius
@@ -488,6 +488,90 @@ def baue_eigentuemerindex(adressen: dict[str, dict]) -> tuple[list[list], dict[s
     for n, z in zaehler.items():
         scherben[praefix2(n)][n] = sorted([[aid, k] for aid, k in z.items()])
     return liste, dict(scherben)
+
+
+# Oberkategorien je Thema mit Baum (Spec Themenbaum §6) in fester Reihenfolge; gemischt/ungeprueft stehen daneben.
+OBERKATEGORIEN = {
+    "besitz": [(k, BESITZ_KATEGORIEN[k]) for k in ("stadt_staat", "bergbau", "industrie", "genossenschaft_siedlung", "kirche_stiftung", "bank_versicherung", "privatperson", "sonstige")],
+    "bergbau": [(k, BB_NAMEN[k]) for k in BB_RANG],
+    "berufe": [(k, STELLUNGEN[k]) for k in ("arbeiter", "angestellte", "beamte", "selbstaendige", "freie_berufe", "unternehmer", "kaufleute", "ohne_erwerb", "unbestimmt")],
+}
+
+
+def _liste(thema: str, je_kat: dict[str, dict[str, dict]], adressen_je_kat: dict[str, int], gemischt: int, ungeprueft: int,
+           handgeprueft_anteil: float | None) -> dict:
+    """je_kat: Oberkategorie → Schlüssel → dict(schluessel, name, adressen). Einträge nach Häusern absteigend, dann Name."""
+    ober = []
+    for k, name in OBERKATEGORIEN[thema]:
+        eintraege = sorted(je_kat.get(k, {}).values(), key=lambda e: (-e["adressen"], e["name"]))
+        ober.append(dict(id=k, name=name, adressen=adressen_je_kat.get(k, 0), eintraege=eintraege))
+    return dict(oberkategorien=ober, gemischt=gemischt, ungeprueft=ungeprueft, handgeprueft_anteil=handgeprueft_anteil)
+
+
+def _normen_je_kategorie(adressen: dict[str, dict], kategorie_von) -> dict[str, dict[str, dict]]:
+    """OhdAB-Schlüssel → (Häuser, Name, Nennungen je Oberkategorie); jeder Schlüssel landet in der Oberkategorie mit
+    den meisten Nennungen (Review Focus 5: „Berginvalide“-Bezeichnungen hängen an der Norm Bergmann). kategorie_von(b)
+    liefert die Oberkategorie eines Berufsdatensatzes oder None (zählt dann nicht)."""
+    haeuser: dict[str, set[str]] = defaultdict(set)
+    nennungen: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    namen: dict[str, str] = {}
+    for a in adressen.values():
+        for e in a["eintraege"]:
+            b = e.get("_beruf")
+            if e.get("teil") != "I" or not b:
+                continue
+            k = kategorie_von(b)
+            if not k:
+                continue
+            haeuser[b["ohdab"]].add(a["id"])
+            nennungen[b["ohdab"]][k] += 1
+            namen[b["ohdab"]] = b["norm"]
+    je_kat: dict[str, dict[str, dict]] = defaultdict(dict)
+    for o, je in nennungen.items():
+        k = max(je.items(), key=lambda x: (x[1], x[0]))[0]
+        je_kat[k][o] = dict(schluessel=f"norm:{o}", name=namen[o], adressen=len(haeuser[o]))
+    return je_kat
+
+
+def baue_themen_listen(adressen: dict[str, dict]) -> dict[str, dict]:
+    """Klapplisten der Themen Besitz, Bergbau, Berufe (Spec Themenbaum §6): Oberkategorie → Einzelbezeichnungen mit
+    Schlüssel (eig:<Name> | norm:<ohdab_id>), Name und Häuserzahl; Zahl je Oberkategorie = Häuser, die sie tragen."""
+    aus: dict[str, dict] = {}
+    # Besitz: Klasse je Adresse (inkl. Spannen), Eigentümer aus dem Eigentümerindex nach Kategorie
+    liste, _ = baue_eigentuemerindex(adressen)
+    je_kat: dict[str, dict[str, dict]] = defaultdict(dict)
+    for _, name, haeuser, kat in liste:
+        je_kat[kat][f"eig:{name}"] = dict(schluessel=f"eig:{name}", name=name, adressen=haeuser)
+    je_klasse: dict[str, int] = defaultdict(int)
+    for a in adressen.values():
+        je_klasse[a.get("besitz", "ungeprueft")] += 1
+    aus["besitz"] = _liste("besitz", je_kat, je_klasse, je_klasse.get("gemischt", 0), je_klasse.get("ungeprueft", 0), None)
+    # Bergbau: Häuser je Gruppe = n_bb_<g> > 0; Normen je Gruppe nach den meisten Nennungen
+    je_gruppe: dict[str, int] = defaultdict(int)
+    for a in adressen.values():
+        z = zaehlfelder(a)
+        for g in BB_RANG:
+            if z.get(f"n_bb_{g}", 0) > 0:
+                je_gruppe[g] += 1
+    aus["bergbau"] = _liste("bergbau", _normen_je_kategorie(adressen, lambda b: b.get("bergbau")), je_gruppe, 0, 0, None)
+    # Berufe: Häuser je Stellung = mindestens ein geprüfter Bewohner dieser Stellung; Anteil handgeprüft nach Nennungen
+    je_st: dict[str, int] = defaultdict(int)
+    hand = geprueft = 0
+    for a in adressen.values():
+        klassen = set()
+        for e in a["eintraege"]:
+            b = e.get("_beruf")
+            if e.get("teil") == "I" and b:
+                klassen.add(b.get("stellung") or UNBESTIMMT)
+                geprueft += 1
+                hand += b.get("stellung_quelle") == "hand"
+        for k in klassen:
+            je_st[k] += 1
+    gemischt = sum(1 for a in adressen.values() if a.get("stellung") == "gemischt")
+    ungeprueft = sum(1 for a in adressen.values() if a.get("stellung", "ungeprueft") == "ungeprueft")
+    anteil = round(hand / geprueft, 3) if geprueft else None
+    aus["berufe"] = _liste("berufe", _normen_je_kategorie(adressen, lambda b: b.get("stellung") or UNBESTIMMT), je_st, gemischt, ungeprueft, anteil)
+    return aus
 
 
 def baue_stadtteile(adressen: dict[str, dict]) -> list[dict]:
@@ -1047,6 +1131,8 @@ def schreibe_paket(ausgabe: Path, eintraege: list[dict], regeln: list[Regel], ze
     for name, inhalt in scherben.items():
         _json(ausgabe / "suche" / "eigentuemer" / f"{name}.json", inhalt)
     _json(ausgabe / "suche" / "stadtteile.json", baue_stadtteile(adressen))
+    for name, inhalt in baue_themen_listen(adressen).items():
+        _json(ausgabe / "themen" / f"{name}_liste.json", inhalt)
     _json(ausgabe / "zechen.geojson", zechen_geojson(zechen))
     _EBENEN_DATEI = {"strasse": "strassen", "stadtteil": "stadtteile", "hex": "hex"}
     for ebene in EBENEN:

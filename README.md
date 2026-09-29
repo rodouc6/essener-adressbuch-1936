@@ -285,6 +285,7 @@ einmalig installieren: `python3 -m playwright install chromium` (Paket über `pi
 | `hauptgruppen.json` | Bezeichnungen der OhdAB-Hauptgruppen (`{B21: {bezeichnung, kurz, bereich}}`) aus `kuratierung/hauptgruppen.csv` — Beschriftung der Gruppenachse in Perspektiven und Werkstatt |
 | `themen/<id>.json` | Thema-Definitionen (siehe Themenformat unten) |
 | `themen/<id>.pmtiles` | Kacheldatei je freigegebenem Thema: nur Treffer-Adressen, nur Filter-, Schalter- und Farbfelder, Zoom 9–15 ohne Ausdünnung (Spec 2026-09-29-themenkacheln) |
+| `themen/<id>_liste.json` | Klappliste des Themenbaums (Spec 2026-09-29-themenbaum §6): Oberkategorie → Einzelbezeichnungen mit Schlüssel `eig:<Name>`/`norm:<ohdab_id>` und Häuserzahl; `handgeprueft_anteil` nur bei Berufen |
 | `herkunft/*.json` | Herkunftspaket für den Detailkasten der Schlaglichter: je Klasse Schreibweisen, Normen, Quellanteile und Top-10; je Norm/Eigentümer/Rubrik die Einzelherkunft (`docs/perspektiven.md`, Abschnitt Herkunftspfad) |
 | `ebenen/strassen.json`, `ebenen/stadtteile.json`, `ebenen/hex.json` | Zählfelder je Straße, Stadtteil und Hexzelle (Teilprojekt 5a, s. u.) |
 | `layout/berufe.json`, `layout/eigentuemer.json`, `layout/gewerbe.json` | Vorberechnete Bubble-Layouts für Perspektiven/Werkstatt (Teilprojekt 5a, s. u.) |
