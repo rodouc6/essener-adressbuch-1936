@@ -37,7 +37,7 @@ sind Platzhalter, bis sie geprüft sind. Die darin verwendeten Stadtteilgrenzen 
 import { Lader } from "./js/daten.js";
 try {
   const kz = await new Lader().kennzahlen();
-  if (kz) document.getElementById("zahlen").innerHTML = [[kz.eintraege_je_teil.I, "Einwohner"], [kz.eintraege_je_teil.II, "Eigentümereinträge"], [kz.eintraege_je_teil.III, "Firmen"],
+  if (kz) document.getElementById("zahlen").innerHTML = [[kz.eintraege_je_teil.I, "Einträge im Einwohnerverzeichnis"], [kz.eintraege_je_teil.II, "Eigentümereinträge"], [kz.eintraege_je_teil.III, "Firmen"],
     [kz.adressen, "verortete Adressen"], [kz.besitz_geprueft, "Adressen mit Besitzklasse"], [kz.besitz_hand, "davon von Hand geprüft"], [kz.eigentuemer_geprueft, "geprüfte Eigentümer"],
     [kz.berufe_geprueft + " %", "Einwohner mit geprüftem Beruf"],
     [kz.stufen.haus + " %", "hausgenau"], [kz.stufen.strasse + " %", "straßengenau"], [kz.stufen.stadtplan + " %", "Stadtplan 1935"], [kz.stufen.offen + " %", "nicht verortet"], [kz.stand, "Datenstand"]]

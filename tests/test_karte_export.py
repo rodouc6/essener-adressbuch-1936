@@ -239,7 +239,7 @@ def test_export_bricht_bei_totem_datenbasis_schritt_ab(tmp_path):
 
 def test_zechen_geojson_laesst_zeilen_ohne_koordinaten_weg():
     g = zechen_geojson(lies_csv(FIX / "zechen.csv"))
-    assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt", "Zeche Jahre Unbekannt"]
+    assert [f["properties"]["name"] for f in g["features"]] == ["Zeche Zollverein", "Zeche Alt", "Zeche Jahre Unbekannt", "Zeche Unsicher", "Zeche Handgeprueft"]
     p = g["features"][0]["properties"]
     assert p["aktiv_1936"] is True and p["status_1936"] == "aktiv" and p["jahre_unbekannt"] is False
     # Betriebsjahre aus dem Artikel; die abweichende Liste bleibt als Widerspruch sichtbar
@@ -256,6 +256,15 @@ def test_zechen_geojson_status_unklar_zaehlt_nicht_als_aktiv():
     # ohne status_1936-Spalte (alte Tabelle) ist nichts aktiv — kein Rückfall auf die Listenjahre
     g2 = zechen_geojson([dict(name="X", lat="51.4", lon="7.0", betrieb_von="1900", betrieb_bis="1950")])
     assert g2["features"][0]["properties"]["aktiv_1936"] is False
+
+
+def test_zechen_geojson_aktiv_nur_mit_huske_beleg_oder_handpruefung():
+    """status_1936=aktiv allein reicht nicht: ohne Huske-Beleg (huske_status=aktiv) und ohne Handprüfung
+    (status_geprueft=ja) bleibt die Zeche unsichtbar, ihr Status wird als „unsicher“ ausgewiesen."""
+    g = {f["properties"]["name"]: f["properties"] for f in zechen_geojson(lies_csv(FIX / "zechen.csv"))["features"]}
+    assert g["Zeche Zollverein"]["aktiv_1936"] is True and g["Zeche Zollverein"]["status_1936"] == "aktiv"
+    assert g["Zeche Handgeprueft"]["aktiv_1936"] is True
+    assert g["Zeche Unsicher"]["aktiv_1936"] is False and g["Zeche Unsicher"]["status_1936"] == "unsicher"
 
 
 def test_tippecanoe_befehl():
@@ -302,7 +311,7 @@ def test_schreibe_paket(tmp_path):
     assert json.loads((tmp_path / "suche" / "strassen.json").read_text())[0]["name"] in ("Grenzstr.", "Lattenkamp")
     assert (tmp_path / "suche" / "strassen" / "gr.json").exists()
     assert json.loads((tmp_path / "kennzahlen.json").read_text()) == k
-    assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 3
+    assert len(json.loads((tmp_path / "zechen.geojson").read_text())["features"]) == 5
     geo = json.loads((tmp_path / "adressen.geojson").read_text())
     assert geo["features"][0]["properties"]["n_I"] == 1
     scherbe_inhalt = json.loads((tmp_path / "adressen" / f"{aid[:2]}.json").read_text())

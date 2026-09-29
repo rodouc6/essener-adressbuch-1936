@@ -929,6 +929,9 @@ def baue_bergbau_punkte(adressen: dict[str, dict]) -> dict:
 def zechen_geojson(zeilen: list[dict]) -> dict:
     """`aktiv_1936` kommt aus dem kuratierten `status_1936` (werkzeuge/zechen_abgleich.py: Wikipedia-Liste,
     Artikel-Infobox und Stadtplan 1935 müssen übereinstimmen); „unklar“ und „stillgelegt“ sind nicht aktiv.
+    Zusätzlich muss der Betrieb 1936 belegt sein: Huske-Chronik (`huske_status` = aktiv) oder Handprüfung
+    (`status_geprueft` = ja). Fehlt beides, wird `status_1936` als „unsicher“ ausgewiesen und die Zeche
+    nicht gezeigt (Precision first).
     Betriebsjahre: die des Artikels, ersatzweise die der Liste; `jahre_widerspruch`, wenn beide bekannt
     sind und abweichen; `jahre_unbekannt`, wenn keine Quelle beide Jahre nennt (Precision first)."""
     features = []
@@ -940,14 +943,18 @@ def zechen_geojson(zeilen: list[dict]) -> dict:
         von, bis = artikel if all(artikel) else liste
         jahre_unbekannt = not von or not bis
         jahre_widerspruch = all(artikel) and all(liste) and artikel != liste
+        status = z.get("status_1936", "unklar")
+        belegt = z.get("huske_status") == "aktiv" or z.get("status_geprueft") == "ja"
+        if status == "aktiv" and not belegt:
+            status = "unsicher"
         features.append({"type": "Feature",
                          "geometry": {"type": "Point", "coordinates": [float(z["lon"]), float(z["lat"])]},
                          "properties": dict(name=z["name"], stadtteil=z.get("stadtteil", ""),
                                             betrieb_von=von, betrieb_bis=bis,
                                             liste_von=liste[0], liste_bis=liste[1],
                                             plan_1935=z.get("plan_1935", ""),
-                                            quelle=z.get("quelle", ""), status_1936=z.get("status_1936", "unklar"),
-                                            aktiv_1936=z.get("status_1936") == "aktiv",
+                                            quelle=z.get("quelle", ""), status_1936=status,
+                                            aktiv_1936=status == "aktiv",
                                             jahre_unbekannt=jahre_unbekannt, jahre_widerspruch=jahre_widerspruch)})
     return {"type": "FeatureCollection", "features": features}
 
