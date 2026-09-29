@@ -18,21 +18,26 @@ export async function csvAusTreffern(ergebnis, lader, eig, maxEintraege = 5000) 
   const gesamt = [...ergebnis.zaehler.values()].reduce((a, b) => a + b, 0);
   const zeilen = [];
   const adr = (id) => { const e = eig.get(id) || {}; return [e.historisch ? heutigeAdresse(e) : "", e.historisch || "", e.stadtteil || "", e.stufe || ""]; };
+  // Eigentümer-Vergleich (Spec 2026-09-29 §8): eine Spalte mit dem Gruppennamen; ohne Gruppen ein Block ohne Zusatzspalte.
+  const bloecke = ergebnis.gruppen
+    ? ergebnis.gruppen.map((g) => ({ ids: g.adressIds, zaehler: g.zaehler, zusatz: [g.name] }))
+    : [{ ids: ergebnis.adressIds, zaehler: ergebnis.zaehler, zusatz: [] }];
+  const kopfZusatz = ergebnis.gruppen ? ["eigentuemer"] : [];
   if (gesamt <= maxEintraege) {
-    zeilen.push(csvZeile(KOPF_E));
+    zeilen.push(csvZeile([...KOPF_E, ...kopfZusatz]));
     const nurIds = ergebnis.personen ? new Set(ergebnis.personen.map((p) => p.eintragId)) : null;
-    for (const id of ergebnis.adressIds) {
+    for (const b of bloecke) for (const id of b.ids) {
       const eintraege = (await lader.scherbe(id)) || [];
       for (const e of eintraege) {
         if (nurIds && !nurIds.has(e.id)) continue;
-        zeilen.push(csvZeile([e.id, e.teil, e.seite, e.name, e.vorname, e.beruf, e.etage, e.stand, ...adr(id), (e.flags || []).join(";"), id]));
+        zeilen.push(csvZeile([e.id, e.teil, e.seite, e.name, e.vorname, e.beruf, e.etage, e.stand, ...adr(id), (e.flags || []).join(";"), id, ...b.zusatz]));
       }
     }
   } else {
-    zeilen.push(csvZeile(KOPF_A));
-    for (const id of ergebnis.adressIds) zeilen.push(csvZeile([id, ...adr(id), ergebnis.zaehler.get(id)]));
+    zeilen.push(csvZeile([...KOPF_A, ...kopfZusatz]));
+    for (const b of bloecke) for (const id of b.ids) zeilen.push(csvZeile([id, ...adr(id), b.zaehler.get(id), ...b.zusatz]));
   }
-  return "﻿" + zeilen.join("\r\n") + "\r\n";
+  return "\ufeff" + zeilen.join("\r\n") + "\r\n";
 }
 
 export function herunterladen(text, dateiname) {
