@@ -90,3 +90,9 @@ test("klassen: Komma-Liste oder 'keine', Standard leer, Rundreise", () => {
   assert.equal(liesZustand("").klassen, "");
   assert.equal(schreibeZustand({ ...STANDARD, thema: "bergbau", klassen: "leitung" }), "klassen=leitung&thema=bergbau");
 });
+
+test("namensliste nimmt auch eine Liste oder einen alten Leerstring entgegen (Patch aus der Sidebar)", () => {
+  assert.deepEqual(namensliste(["b", "a", "b"]), ["b", "a"]);
+  assert.deepEqual(namensliste(""), []);
+  assert.deepEqual(namensliste("Stadt Essen"), ["Stadt Essen"]);
+});

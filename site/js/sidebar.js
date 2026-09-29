@@ -209,7 +209,7 @@ export class Sidebar {
       if (praez.length) this.a.onZustand({ praez }); else c.checked = true;
     }));
     const beruf = this.inhalt.querySelector('[data-filter="beruf"]');
-    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), eigentuemer: "", ohdab: "" }));
+    if (beruf) beruf.addEventListener("change", () => this.a.onZustand({ beruf: beruf.value.trim(), eigentuemer: [], ohdab: "" }));
   }
 
   _klick(ev) {

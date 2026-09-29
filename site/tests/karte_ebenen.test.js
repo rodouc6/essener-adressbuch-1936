@@ -190,3 +190,21 @@ test("passeEin mit Koordinaten aus dem Kurzindex braucht keine Kachelabfrage", (
   assert.equal(fit[0], rahmen); assert.equal(fit[1].maxZoom, 16);
   assert.equal(Karte.prototype.passeEin.call(self, ["c"], new Map()), false);
 });
+
+test("Gruppen überleben das Neuaufsetzen: Stilwechsel (ebenenAufsetzen) und Themenquelle (setzeThemaQuelle) tragen gruppe/mehrfach weiter", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "stadtteile-flaeche"]);
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map, zustand: { ebene: ["II"], praez: ["haus"], stadtteil: "", plan: 0, zechen: 0 }, farbe: null, ansicht: null, ansichtWerte: new Map(), treffer: new Set(), auswahl: null, themaId: null, _handlerAngehaengt: true,
+    setzePlan() {}, setzeZechen() {}, setzeAnsicht() {}, setzeAuswahl() {}, _themaQuelle: () => ({ type: "vector" }) });
+  const gruppen = [{ name: "K", farbe: "#dc2626", adressIds: ["x"], zaehler: new Map() }, { name: "S", farbe: "#2563eb", adressIds: ["x", "y"], zaehler: new Map() }];
+  Karte.prototype.setzeTreffer.call(self, ["x", "y"], gruppen);
+  a.state.length = 0;
+  Karte.prototype.ebenenAufsetzen.call(self);
+  const nachStil = Object.fromEntries(a.state.filter((s) => s[0] === "adressen" && s[1] !== "alle").map((s) => [s[1], s[2]]));
+  assert.deepEqual(nachStil.y, { treffer: true, gruppe: 1, mehrfach: false });
+  a.state.length = 0;
+  self.themaId = null;
+  Karte.prototype.setzeThemaQuelle.call(self, "besitz");
+  const nachThema = Object.fromEntries(a.state.filter((s) => s[0] === "thema" && s[1] !== "alle").map((s) => [s[1], s[2]]));
+  assert.deepEqual(nachThema.x, { treffer: true, gruppe: 0, mehrfach: true });
+  assert.deepEqual(nachThema.y, { treffer: true, gruppe: 1, mehrfach: false });
+});

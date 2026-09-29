@@ -62,6 +62,7 @@ export class Karte {
     this.ansichtWerte = new Map();
     this._ansichtGen = 0;
     this.treffer = new Set();
+    this.gruppen = null;        // Eigentümer-Gruppen der Treffer (für Neuaufsetzen nach Stil-/Themenwechsel)
     this.auswahl = null;
     this.themaId = null;        // aktives Thema mit eigener Kacheldatei (setzeThemaQuelle)
     this._stilCache = new Map();
@@ -217,7 +218,7 @@ export class Karte {
     for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.setLayoutProperty(l, "visibility", "visible");
     if (m.getLayer("thema-auswahl")) m.setFilter("thema-auswahl", ["==", ["get", "id"], this.auswahl || ""]);
     this.setzeFilter(this.zustand);
-    if (this.themaId) for (const id of this.treffer) m.setFeatureState({ source: "thema", sourceLayer: "adressen", id }, { treffer: true });
+    if (this.themaId && this.treffer.size) this.setzeTreffer([...this.treffer], this.gruppen);   // Gruppenfarben und Ring auch auf der neuen Quelle
   }
 
   // Zustand (Filter, Plan, Zechen, Treffer, Auswahl) auf die im Stil vorhandenen Ebenen legen.
@@ -239,7 +240,7 @@ export class Karte {
     this.setzeFilter(this.zustand);
     this.setzePlan(this.zustand.plan);
     this.setzeZechen(this.zustand.zechen);
-    this.setzeTreffer(this.treffer.size ? [...this.treffer] : null);
+    this.setzeTreffer(this.treffer.size ? [...this.treffer] : null, this.gruppen);
     this.setzeAuswahl(this.auswahl);
     this.setzeThemaQuelle(this.themaId);   // Themenquelle ist nicht Teil des Stils — nach dem Wechsel neu anlegen
     // Nach einem Stilwechsel sind Quellen und feature-state neu — Ansicht erneut auflegen.
@@ -344,6 +345,7 @@ export class Karte {
     const quellen = [["adressen", "adressen"], ...(m.getSource("thema") ? [["thema", "adressen"]] : [])];
     for (const [source, sourceLayer] of quellen) m.removeFeatureState({ source, sourceLayer });
     this.treffer = new Set(adressIds || []);
+    this.gruppen = gruppen;
     const zuordnung = gruppen ? gruppenZuordnung(gruppen) : null;
     for (const [source, sourceLayer] of quellen) for (const id of this.treffer) {
       const z = zuordnung && zuordnung.get(id);

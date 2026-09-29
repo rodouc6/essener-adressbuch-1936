@@ -2,7 +2,7 @@ import { Karte } from "./karte.js";
 import { Lader } from "./daten.js";
 import { Sidebar } from "./sidebar.js";
 import { vorschlaege, treffer } from "./suche.js";
-import { liesZustand, schreibeZustand, MAX_EIGENTUEMER } from "./zustand.js";
+import { liesZustand, schreibeZustand, MAX_EIGENTUEMER, namensliste } from "./zustand.js";
 import { mehrfachZahl } from "./vergleich.js";
 import { popupHtml, esc } from "./popup.js";
 import { steuerungHtml, abweichend } from "./steuerung.js";
@@ -99,6 +99,12 @@ function eigentuemerWaehlen(name, umschalten) {
   setzeZustand({ eigentuemer: neu, q: "", beruf: "", ohdab: "", id: "" }, true);
 }
 
+// Titel des Eigentümer-Knopfs in Popup und Hausansicht (Spec 2026-09-29 §7).
+function eigKnopfTitel(name) {
+  if (zustand.eigentuemer.includes(name)) return "bereits im Vergleich";
+  return zustand.eigentuemer.length ? "zum Vergleich hinzufügen" : "alle Häuser dieses Eigentümers";
+}
+
 function schreibeUrl(push) {
   const q = schreibeZustand(zustand);
   const url = location.pathname + (q ? "?" + q : "");
@@ -107,7 +113,7 @@ function schreibeUrl(push) {
 
 async function setzeZustand(patch, push, nurKarte = false) {
   const alt = zustand;
-  zustand = { ...zustand, ...patch };
+  zustand = { ...zustand, ...patch, eigentuemer: namensliste(patch.eigentuemer === undefined ? zustand.eigentuemer : patch.eigentuemer) };   // kein Aufrufer kann einen String einschleusen
   schreibeUrl(push);
   if (nurKarte) return;
   // setzeStil() kann bei schnell aufeinanderfolgenden Wechseln nie auflösen (Karte meldet den
@@ -134,7 +140,8 @@ async function setzeZustand(patch, push, nurKarte = false) {
     // Aus „Größte Eigentümer“ gewählt (sidebar.js) setzt nur den Zustand, nicht das Suchfeld — ohne das
     // hier nachzuholen bliebe der aktive Filter unsichtbar und „Suche leeren“ hätte nichts zum Leeren.
     if (zustand.eigentuemer.length) sidebar.suche.value = zustand.eigentuemer.length === 1 ? zustand.eigentuemer[0] : "";
-    sidebar.markiereEigentuemer(zustand.eigentuemer, FARBEN.gruppen);
+    else if (!zustand.q && !zustand.ohdab && !zustand.beruf) sidebar.suche.value = "";   // letzter Eigentümer entfernt
+    document.getElementById("suche-leeren").hidden = !sidebar.suche.value;
     if (zustand.ohdab) sidebar.suche.value = auswahl.name;
     await sucheAusfuehren();
   }
@@ -206,7 +213,8 @@ async function eigMap(ids) { return lader.adressenKurz(ids); }
 
 async function sucheAusfuehren() {
   try {
-    if (!auswahl) { ergebnis = null; karte.setzeTreffer(null); await zeigeInhalt(); return; }
+    sidebar.markiereEigentuemer(zustand.eigentuemer, FARBEN.gruppen);
+    if (!auswahl) { ergebnis = null; karte.setzeTreffer(null); await zeigeInhalt(); zeichneLegende(); return; }
     ergebnis = await treffer(auswahl, lader);
     karte.setzeTreffer(ergebnis.adressIds, ergebnis.gruppen);
     const eig = await eigMap(ergebnis.adressIds);
@@ -223,7 +231,7 @@ async function sucheAusfuehren() {
 async function waehleVorschlag(v) {
   sidebar.setzeVorschlaege(null);
   sidebar.suche.value = v.text;
-  if (v.art === "person" || v.art === "firma") { setzeZustand({ q: v.text, id: v.adressId }, true, true); return oeffneHaus(v.adressId, v.eintragId); }
+  if (v.art === "person" || v.art === "firma") { setzeZustand({ q: v.text, id: v.adressId, eigentuemer: [], beruf: "", ohdab: "" }, true, true); return oeffneHaus(v.adressId, v.eintragId); }
   if (v.art === "beruf") return setzeZustand({ q: "", eigentuemer: [], ohdab: "", beruf: v.beruf }, true);
   if (v.art === "eigentuemer") return eigentuemerWaehlen(v.name, false);
   if (v.art === "ohdab") return setzeZustand({ q: "", beruf: "", eigentuemer: [], ohdab: v.ohdab }, true);
@@ -231,7 +239,7 @@ async function waehleVorschlag(v) {
   // q wird als reiner Name geschrieben (nicht v.text mit "(Ort)") — sonst kann strasseAusZustand()
   // die URL bei Reload/Zurück/Vor nicht mehr auflösen (Fix-Runde 1).
   auswahl = v;
-  setzeZustand({ q: v.name, id: "" }, true, true);
+  setzeZustand({ q: v.name, id: "", eigentuemer: [], beruf: "", ohdab: "" }, true, true);
   await sucheAusfuehren();
 }
 
@@ -275,6 +283,7 @@ async function oeffneHaus(id, eintragId) {
     const pos = karte.position(id) || (eig && eig.lon != null && eig.lat != null ? [eig.lon, eig.lat] : null);
     if (pos) karte.fliegeZu(pos);
     sidebar.zeigeHaus(e, eintraege, eintragId, await lader.faksimile(), zustand.ebene);
+    sidebar.inhalt.querySelectorAll("[data-eigentuemer]").forEach((n) => { n.title = eigKnopfTitel(n.dataset.eigentuemer); });
   } catch (fehler) {
     fehlerHinweis(fehler, "Hausansicht fehlgeschlagen");
   }
@@ -290,7 +299,7 @@ async function klickPunkt(id, lngLat) {
     el.querySelectorAll("[data-eintrag]").forEach((n) => n.addEventListener("click", () => oeffneHaus(id, n.dataset.eintrag)));
     el.querySelectorAll("[data-mehr]").forEach((n) => n.addEventListener("click", () => oeffneHaus(id, null)));
     // stopPropagation: der Knopf liegt in der Eintragszeile, deren Klick die Hausansicht öffnet (Sichtprüfung 2026-09-29).
-    el.querySelectorAll("[data-eigentuemer]").forEach((n) => n.addEventListener("click", (ev) => { ev.stopPropagation(); eigentuemerWaehlen(n.dataset.eigentuemer, false); }));
+    el.querySelectorAll("[data-eigentuemer]").forEach((n) => { n.title = eigKnopfTitel(n.dataset.eigentuemer); n.addEventListener("click", (ev) => { ev.stopPropagation(); eigentuemerWaehlen(n.dataset.eigentuemer, false); }); });
   } catch (fehler) {
     fehlerHinweis(fehler, "Popup fehlgeschlagen");
   }

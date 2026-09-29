@@ -27,7 +27,7 @@ export const MAX_EIGENTUEMER = 5;
 export function namensliste(wert) {
   if (!wert) return [];
   const aus = [];
-  for (const t of wert.split("|")) { const n = t.trim(); if (n && !aus.includes(n)) aus.push(n); }
+  for (const t of Array.isArray(wert) ? wert : String(wert).split("|")) { const n = t.trim(); if (n && !aus.includes(n)) aus.push(n); }
   return aus.slice(0, MAX_EIGENTUEMER);
 }
 
