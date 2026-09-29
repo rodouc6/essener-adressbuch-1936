@@ -151,3 +151,42 @@ test("Auswahlring liegt auch auf der Themenquelle; setzeAuswahl filtert beide Ri
   Karte.prototype.setzeAuswahl.call(self2, null);                                       // ohne Themenebene kein Fehler
   assert.deepEqual(b.filter["adressen-auswahl"], ["==", ["get", "id"], ""]);
 });
+
+test("setzeTreffer mit Gruppen: Feature-State trägt gruppe (erste) und mehrfach", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "thema-haus", "thema-ungenau"]);
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map, ansicht: null, treffer: new Set() });
+  const gruppen = [{ name: "K", farbe: "#dc2626", adressIds: ["x", "y"], zaehler: new Map() }, { name: "S", farbe: "#2563eb", adressIds: ["y", "z"], zaehler: new Map() }];
+  Karte.prototype.setzeTreffer.call(self, ["x", "y", "z"], gruppen);
+  const st = Object.fromEntries(a.state.map((s) => [s[1], s[2]]));
+  assert.deepEqual(st.x, { treffer: true, gruppe: 0, mehrfach: false });
+  assert.deepEqual(st.y, { treffer: true, gruppe: 0, mehrfach: true });
+  assert.deepEqual(st.z, { treffer: true, gruppe: 1, mehrfach: false });
+  Karte.prototype.setzeTreffer.call(self, ["x"]);
+  assert.deepEqual(a.state.at(-1)[2], { treffer: true });     // ohne Gruppen wie bisher
+});
+
+test("setzeFilter: Trefferfarbe nach Gruppe, Rot ohne Gruppe; Ring über mehrfach auf Kreis und Symbol", () => {
+  const filter = {}; const paint = {}; const layout = {};
+  const map = { getLayer: () => true, setFilter: (l, f) => { filter[l] = f; }, setPaintProperty: (l, k, v) => { paint[`${l}.${k}`] = v; }, setLayoutProperty: (l, k, v) => { layout[`${l}.${k}`] = v; } };
+  const self = { map, farbe: null, ansicht: null, treffer: new Set(), _deckkraftSetzen() {} };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["I"], praez: ["haus"], stadtteil: "" });
+  const farbe = paint["adressen-haus.circle-color"];
+  assert.equal(farbe[0], "case");
+  assert.deepEqual(farbe[2], ["match", ["coalesce", ["feature-state", "gruppe"], -1], 0, "#dc2626", 1, "#2563eb", 2, "#16a34a", 3, "#7c3aed", 4, "#f59e0b", "#dc2626"]);
+  const mehrfach = ["boolean", ["feature-state", "mehrfach"], false];
+  assert.deepEqual(paint["adressen-haus.circle-stroke-color"], ["case", mehrfach, "#111827", "#fff"]);
+  assert.deepEqual(paint["adressen-haus.circle-stroke-width"], ["interpolate", ["linear"], ["zoom"], 12, ["case", mehrfach, 2, 0], 14, ["case", mehrfach, 2, 1], 16, ["case", mehrfach, 2.4, 1.6]]);
+  assert.deepEqual(paint["adressen-ungenau.icon-halo-color"], ["case", mehrfach, "#111827", "#fff"]);
+  assert.deepEqual(paint["thema-haus.circle-stroke-color"], paint["adressen-haus.circle-stroke-color"]);
+});
+
+test("passeEin mit Koordinaten aus dem Kurzindex braucht keine Kachelabfrage", () => {
+  const punkte = []; let fit = null;
+  const rahmen = { extend: (p) => punkte.push(p) };
+  const self = { map: { querySourceFeatures: () => { throw new Error("nicht erwartet"); }, fitBounds: (b, o) => { fit = [b, o]; } }, _rahmen: () => rahmen };
+  const ok = Karte.prototype.passeEin.call(self, ["a", "b", "c"], new Map([["a", [7.0, 51.4]], ["b", [7.1, 51.5]]]));
+  assert.equal(ok, true);
+  assert.deepEqual(punkte, [[7.0, 51.4], [7.1, 51.5]]);     // c fehlt im Kurzindex → übersprungen
+  assert.equal(fit[0], rahmen); assert.equal(fit[1].maxZoom, 16);
+  assert.equal(Karte.prototype.passeEin.call(self, ["c"], new Map()), false);
+});

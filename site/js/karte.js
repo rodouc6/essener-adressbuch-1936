@@ -1,5 +1,6 @@
 import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN, PLAN_FREIGEGEBEN } from "./konfig.js";
 import { esc } from "./popup.js";
+import { gruppenZuordnung } from "./vergleich.js";
 
 const WIKIPEDIA_QUELLE = /^https:\/\/de\.wikipedia\.org\//;
 
@@ -40,6 +41,14 @@ const GRAU_KARTE = "#c8c8c8";
 // Weißer Rand um jeden Adresspunkt (Spec 2026-09-28 §4): in der Stadtansicht keiner (sonst weiße
 // Flecken), ab Straßenzoom sichtbar — trennt überlappende Punkte und hält den Kontrast auf Liberty.
 const HALO = ["interpolate", ["linear"], ["zoom"], 12, 0, 14, 1, 16, 1.6];
+
+// Eigentümer-Vergleich (Spec 2026-09-29 §5): Trefferfarbe nach Gruppe (Feature-State), Rot ohne Gruppe.
+const TREFFER_FARBE = ["match", ["coalesce", ["feature-state", "gruppe"], -1], ...FARBEN.gruppen.flatMap((f, i) => [i, f]), FARBEN.treffer];
+// Ring um Häuser in mehreren gewählten Gruppen. Der Zoom-Ausdruck muss außen bleiben (MapLibre), die
+// Fallunterscheidung sitzt deshalb in den Stützwerten.
+const MEHRFACH = ["boolean", ["feature-state", "mehrfach"], false];
+const RING_FARBE = ["case", MEHRFACH, FARBEN.auswahl, "#fff"];
+const RING_BREITE = ["interpolate", ["linear"], ["zoom"], 12, ["case", MEHRFACH, 2, 0], 14, ["case", MEHRFACH, 2, 1], 16, ["case", MEHRFACH, 2.4, 1.6]];
 
 const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", true] };
 const LEERER_STIL = { version: 8, sources: {}, layers: [] };
@@ -289,7 +298,7 @@ export class Karte {
     if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
     if (this.farbe && this.farbe.filter) bedingungen.push(this.farbe.filter);   // Schalter eines Themas (Spec Bergbau §5)
     const grund = this.farbe ? this.farbe.ausdruck : (z.ebene.length === 1 ? FARBEN[z.ebene[0]] : FARBEN.neutral);
-    const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], FARBEN.treffer, grund];
+    const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], TREFFER_FARBE, grund];
     // Hauptebenen: Stadtansicht nicht zulaufen lassen. Themenebenen: keine Zoomgrenze — sie sollen von oben alles zeigen.
     const haupt = [...bedingungen, ["any", [">=", ["zoom"], 12], [">=", n, 5]]];
     const paare = [["adressen-haus", "adressen-ungenau", haupt, RADIUS, ["/", RADIUS, 16]], ["thema-haus", "thema-ungenau", bedingungen, RADIUS_THEMA, ICON_THEMA]];
@@ -299,6 +308,10 @@ export class Karte {
       m.setFilter(ungenauId, ["all", ["!=", ["get", "stufe"], "haus"], ...bed]);
       m.setPaintProperty(hausId, "circle-color", farbe);
       m.setPaintProperty(hausId, "circle-radius", ["let", "n", n, radiusRegel]);
+      m.setPaintProperty(hausId, "circle-stroke-color", RING_FARBE);
+      m.setPaintProperty(hausId, "circle-stroke-width", RING_BREITE);
+      m.setPaintProperty(ungenauId, "icon-halo-color", RING_FARBE);
+      m.setPaintProperty(ungenauId, "icon-halo-width", RING_BREITE);
       m.setPaintProperty(ungenauId, "icon-color", farbe);
       m.setLayoutProperty(ungenauId, "icon-size", ["let", "n", n, iconRegel]);
     }
@@ -323,14 +336,19 @@ export class Karte {
 
   setzeFarbe(regel) { this.farbe = regel; this.setzeFilter(this.zustand); }
 
-  // Treffer per Feature-State: alle bisherigen zurücksetzen, neue setzen, Rest dimmen.
-  setzeTreffer(adressIds) {
+  // Treffer per Feature-State: alle bisherigen zurücksetzen, neue setzen, Rest dimmen. Mit Gruppen
+  // (Eigentümer-Vergleich) trägt jede Adresse ihre erste Gruppe und ob sie in mehreren liegt.
+  setzeTreffer(adressIds, gruppen = null) {
     const m = this.map;
     if (!m.getSource("adressen")) return;
     const quellen = [["adressen", "adressen"], ...(m.getSource("thema") ? [["thema", "adressen"]] : [])];
     for (const [source, sourceLayer] of quellen) m.removeFeatureState({ source, sourceLayer });
     this.treffer = new Set(adressIds || []);
-    for (const [source, sourceLayer] of quellen) for (const id of this.treffer) m.setFeatureState({ source, sourceLayer, id }, { treffer: true });
+    const zuordnung = gruppen ? gruppenZuordnung(gruppen) : null;
+    for (const [source, sourceLayer] of quellen) for (const id of this.treffer) {
+      const z = zuordnung && zuordnung.get(id);
+      m.setFeatureState({ source, sourceLayer, id }, z ? { treffer: true, gruppe: z.gruppe, mehrfach: z.mehrfach } : { treffer: true });
+    }
     this._deckkraftSetzen();
   }
 
@@ -351,13 +369,20 @@ export class Karte {
 
   fliegeZu(lngLat, zoom = 16) { this.map.flyTo({ center: lngLat, zoom: Math.max(this.map.getZoom(), zoom), duration: 600 }); }
 
-  // Auf die geladenen Treffer einpassen; nicht geladene Kacheln kennen wir nicht → dann kein Zoom.
-  passeEin(adressIds) {
-    const ids = new Set(adressIds);
-    const f = this.map.querySourceFeatures("adressen", { sourceLayer: "adressen" }).filter((x) => ids.has(x.properties.id));
-    if (!f.length) return false;
-    const b = new maplibregl.LngLatBounds();
-    for (const x of f) b.extend(x.geometry.coordinates);
+  _rahmen() { return new maplibregl.LngLatBounds(); }
+
+  // Auf die Treffer einpassen. Mit Koordinaten (Kurzindex) ohne Kachelabfrage; sonst nur auf die
+  // geladenen Treffer — nicht geladene Kacheln kennen wir nicht → dann kein Zoom.
+  passeEin(adressIds, koordinaten = null) {
+    const b = this._rahmen();
+    let n = 0;
+    if (koordinaten) {
+      for (const id of adressIds) { const k = koordinaten.get(id); if (k) { b.extend(k); n++; } }
+    } else {
+      const ids = new Set(adressIds);
+      for (const x of this.map.querySourceFeatures("adressen", { sourceLayer: "adressen" })) if (ids.has(x.properties.id)) { b.extend(x.geometry.coordinates); n++; }
+    }
+    if (!n) return false;
     this.map.fitBounds(b, { padding: 60, maxZoom: 16, duration: 600 });
     return true;
   }
