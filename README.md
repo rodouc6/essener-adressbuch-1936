@@ -2,6 +2,10 @@
 
 Erzeugt aus dem DES-Export des Essener Adreßbuchs 1936 (`data/essen1936.csv`, Tab-getrennt)
 eine geokodierte Tabelle mit ausgewiesener Präzisionsstufe je Eintrag.
+Quelle und Lizenz der Transkription: Verein für Computergenealogie e. V., Datensatz „Historische Adressbücher aus
+dem Rheinland und Ruhrgebiet“ (Coding da Vinci Nieder.Rhein.Land 2021), **CC BY-SA 4.0**; unsere Datei ist
+byteidentisch mit `essen1936.csv` dieses Datensatzes (Beleg: `docs/datenquelle_lizenz.md`). Ableitungen, die die
+Transkription enthalten (`build/`, `site/daten/`, CSV-Exporte), stehen deshalb ebenfalls unter CC BY-SA 4.0.
 Leitprinzip: Präzision vor Vollständigkeit — nichts Falsches als richtig, Unsicheres wird gekennzeichnet.
 
 ## Voraussetzungen
