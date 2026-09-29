@@ -166,6 +166,9 @@ export class Sidebar {
   _themenKlick(ev) {
     const t = ev.target;
     if (t.closest("[data-thema-aus]")) return this.a.onZustand({ thema: "" });
+    if (t.closest("[data-alle-an]")) return this.a.onKlassen("");
+    if (t.closest("[data-alle-aus]")) return this.a.onKlassen("keine");
+    const nur = t.closest("[data-nur]"); if (nur) return this.a.onKlassen(nur.dataset.nur);   // Farbpunkt = nur diese Klasse
     const auf = t.closest("[data-auf]");
     if (auf) { const k = auf.dataset.auf; this.baumZustand = { offen: this.baumZustand.offen === k ? null : k, alle: null }; return this._baumZeichnen(); }
     const alle = t.closest("[data-alle]"); if (alle) { this.baumZustand.alle = alle.dataset.alle; return this._baumZeichnen(); }

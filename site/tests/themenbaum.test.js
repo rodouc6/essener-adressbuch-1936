@@ -14,7 +14,7 @@ const opt = { klassen: "", vergleich: [], farben: ["#dc2626", "#2563eb"], offen:
 
 test("baumHtml: eine Zeile je Schalterklasse mit Kästchen, Farbpunkt, Name, Zahl; Pfeil nur mit Einträgen (Review Focus 4)", () => {
   const h = baumHtml(T, L, opt);
-  assert.match(h, /<input type="checkbox" data-klasse="bergbau" checked><span class="punkt" style="background:#111827"><\/span> Bergbau <small>2<\/small>/);
+  assert.match(h, /<input type="checkbox" id="klasse-bergbau" data-klasse="bergbau" checked><\/label><button class="punkt" data-nur="bergbau" style="background:#111827"[^>]*><\/button><label class="schalter name" for="klasse-bergbau"> Bergbau <small>2<\/small><\/label>/);
   assert.match(h, /data-auf="bergbau"/); assert.match(h, /data-auf="privatperson"/);
   assert.doesNotMatch(h, /data-auf="gemischt"/); assert.doesNotMatch(h, /data-auf="ungeprueft"/);
   assert.match(h, /data-klasse="gemischt" checked>.*mehrere Kategorien <small>4<\/small>/);
@@ -58,4 +58,15 @@ test("baumHtml Berufe: Anteil handgeprüft als Zeile unter dem Baum", () => {
   const B = { id: "berufe", farbe: { art: "kategorien", feld: "stellung", werte: { arbeiter: "#e69f00" } }, schalter: { feld: "stellung", klassen: ["arbeiter", "ungeprueft"] } };
   const h = baumHtml(B, { oberkategorien: [{ id: "arbeiter", name: "Arbeiter", adressen: 10, eintraege: [] }], gemischt: 0, ungeprueft: 1, handgeprueft_anteil: 0.437 }, opt);
   assert.match(h, /<div class="zeile klein">Stellung handgeprüft bei 44 % der Nennungen, sonst Vorschlag der Automatik.<\/div>/);
+});
+
+test("baumHtml: Zeile „alle an / alle aus“ über dem Baum, der wirkungslose Knopf ist deaktiviert; Farbpunkt = „nur diese“", () => {
+  const alle = baumHtml(T, L, opt);
+  assert.match(alle, /<div class="zeile alle-klassen"><button data-alle-an="1" disabled>alle an<\/button><button data-alle-aus="1">alle aus<\/button><small>Punkt anklicken = nur diese Klasse<\/small><\/div>/);
+  const keine = baumHtml(T, L, { ...opt, klassen: "keine" });
+  assert.match(keine, /<button data-alle-an="1">alle an<\/button><button data-alle-aus="1" disabled>alle aus<\/button>/);
+  const teil = baumHtml(T, L, { ...opt, klassen: "bergbau" });
+  assert.match(teil, /<button data-alle-an="1">alle an<\/button><button data-alle-aus="1">alle aus<\/button>/);
+  assert.match(alle, /<button class="punkt" data-nur="bergbau" style="background:#111827" title="nur Bergbau zeigen" aria-label="nur Bergbau zeigen"><\/button>/);
+  assert.match(baumHtml(T, null, opt), /data-nur="privatperson"/);
 });
