@@ -448,14 +448,16 @@ def baue_berufsnormindex(adressen: dict[str, dict]) -> tuple[list[list], dict[st
     Nennungen, Schreibweisen, Niveau] nach Nennungen absteigend; Scherbe praefix2(Beruf) → ohdab_id →
     [[Adress-ID, Zähler]]. Label/Schlüssel/Scherbe kommen aus der OhdAB-Normbezeichnung (`norm`), nicht aus
     dem kuratierten `beruf` — sonst hätte dieselbe Zuordnung unter verschiedenen Schreibweisen (mit
-    unterschiedlich kuratiertem `beruf`) verschiedene Indexeinträge bekommen können."""
+    unterschiedlich kuratiertem `beruf`) verschiedene Indexeinträge bekommen können. Nur Teil I (Review
+    2026-09-29): Eigentümerzeilen mit Beruf zählen nicht, die Grundgesamtheit der Vergleichsleiste und die Zahl
+    an der Pill (Themenliste) meinen dieselben Häuser."""
     zaehler: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     info: dict[str, dict] = {}
     schreibweisen: dict[str, set[str]] = defaultdict(set)
     for a in adressen.values():
         for e in a["eintraege"]:
             b = e.get("_beruf")
-            if b:
+            if b and e.get("teil") == "I":
                 zaehler[b["ohdab"]][a["id"]] += 1
                 info[b["ohdab"]] = b
                 schreibweisen[b["ohdab"]].add(e.get("Beruf o. ä.", ""))
@@ -542,9 +544,11 @@ def baue_themen_listen(adressen: dict[str, dict]) -> dict[str, dict]:
     je_kat: dict[str, dict[str, dict]] = defaultdict(dict)
     for _, name, haeuser, kat in liste:
         je_kat[kat][f"eig:{name}"] = dict(schluessel=f"eig:{name}", name=name, adressen=haeuser)
+    # Zahlen nur für Häuser, die das Thema zeigt (Review 2026-09-29): Besitz = Teil-II-Zeile oder belegter Besitz (n_besitz)
     je_klasse: dict[str, int] = defaultdict(int)
     for a in adressen.values():
-        je_klasse[a.get("besitz", "ungeprueft")] += 1
+        if a.get("besitz_quelle") or any(e.get("teil") == "II" for e in a["eintraege"]):
+            je_klasse[a.get("besitz", "ungeprueft")] += 1
     aus["besitz"] = _liste("besitz", je_kat, je_klasse, je_klasse.get("gemischt", 0), je_klasse.get("ungeprueft", 0), None)
     # Bergbau: Häuser je Gruppe = n_bb_<g> > 0; Normen je Gruppe nach den meisten Nennungen
     je_gruppe: dict[str, int] = defaultdict(int)
@@ -568,7 +572,8 @@ def baue_themen_listen(adressen: dict[str, dict]) -> dict[str, dict]:
         for k in klassen:
             je_st[k] += 1
     gemischt = sum(1 for a in adressen.values() if a.get("stellung") == "gemischt")
-    ungeprueft = sum(1 for a in adressen.values() if a.get("stellung", "ungeprueft") == "ungeprueft")
+    # nur Häuser mit Teil-I-Eintrag: die Kacheln des Themas tragen keine anderen (Review 2026-09-29)
+    ungeprueft = sum(1 for a in adressen.values() if a.get("stellung", "ungeprueft") == "ungeprueft" and any(e.get("teil") == "I" for e in a["eintraege"]))
     anteil = round(hand / geprueft, 3) if geprueft else None
     aus["berufe"] = _liste("berufe", _normen_je_kategorie(adressen, lambda b: b.get("stellung") or UNBESTIMMT), je_st, gemischt, ungeprueft, anteil)
     return aus

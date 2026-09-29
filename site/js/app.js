@@ -113,6 +113,8 @@ function schreibeUrl(push) {
 async function setzeZustand(patch, push, nurKarte = false) {
   const alt = zustand;
   zustand = { ...zustand, ...patch, vergleich: schluesselliste(patch.vergleich === undefined ? zustand.vergleich : patch.vergleich) };   // kein Aufrufer kann einen String einschleusen
+  // Themenwechsel nimmt klassen= nicht mit (Review 2026-09-29): die Klassen des alten Themas passen nicht zum neuen.
+  if (patch.thema !== undefined && patch.thema !== alt.thema && patch.klassen === undefined) zustand = { ...zustand, klassen: "" };
   schreibeUrl(push);
   if (nurKarte) return;
   // setzeStil() kann bei schnell aufeinanderfolgenden Wechseln nie auflösen (Karte meldet den

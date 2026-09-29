@@ -1013,13 +1013,15 @@ def test_themen_listen_besitz_bergbau_berufe():
         haus(2, [p("B1", "Bergmann", "arbeiter", bb="belegschaft"), p("S1", "Steiger", "angestellte", bb="aufsicht")], stellung="gemischt"),
         haus(3, [p("S1", "Steiger", "angestellte", bb="aufsicht"), eig("Stadt Essen", "stadt_staat")], besitz="stadt_staat", besitz_quelle="eintrag", stellung="angestellte"),
         haus(4, [dict(teil="I", _beruf=None, _merkmale=[], _eigentuemer="", _identitaet=False, _kategorie="")], besitz="industrie", besitz_quelle="spanne", besitz_eigentuemer="Krupp"),
+        haus(5, [dict(teil="III", _beruf=None, _merkmale=[], _eigentuemer="", _identitaet=False, _kategorie="")]),   # nur Gewerbe: in keinem der drei Themen sichtbar
     ]}
     L = baue_themen_listen(adressen)
     bs = {o["id"]: o for o in L["besitz"]["oberkategorien"]}
     assert bs["industrie"]["adressen"] == 2 and bs["industrie"]["eintraege"] == [dict(schluessel="eig:Krupp", name="Krupp", adressen=2)]
     assert bs["stadt_staat"]["eintraege"] == [dict(schluessel="eig:Stadt Essen", name="Stadt Essen", adressen=1)]
     assert bs["privatperson"]["adressen"] == 0 and bs["privatperson"]["eintraege"] == []
-    assert L["besitz"]["ungeprueft"] == 1 and L["besitz"]["handgeprueft_anteil"] is None
+    # Review 2026-09-29: „ungeprüft“ zählt nur Häuser, die das Thema zeigt (Besitz: Teil-II-Zeile oder belegter Besitz; Berufe: Teil-I-Eintrag)
+    assert L["besitz"]["ungeprueft"] == 0 and L["besitz"]["handgeprueft_anteil"] is None
     bb = {o["id"]: o for o in L["bergbau"]["oberkategorien"]}
     assert [o["id"] for o in L["bergbau"]["oberkategorien"]] == ["leitung", "aufsicht", "belegschaft", "invaliden"]
     assert bb["belegschaft"]["adressen"] == 2 and bb["belegschaft"]["eintraege"] == [dict(schluessel="norm:B1", name="Bergmann", adressen=2)]
@@ -1029,7 +1031,7 @@ def test_themen_listen_besitz_bergbau_berufe():
     assert [o["id"] for o in L["berufe"]["oberkategorien"]][:3] == ["arbeiter", "angestellte", "beamte"]
     assert st["arbeiter"]["adressen"] == 2 and st["arbeiter"]["eintraege"][0]["schluessel"] == "norm:B1"
     assert st["angestellte"]["eintraege"] == [dict(schluessel="norm:S1", name="Steiger", adressen=2)]
-    assert L["berufe"]["gemischt"] == 1 and L["berufe"]["ungeprueft"] == 1
+    assert L["berufe"]["gemischt"] == 1 and L["berufe"]["ungeprueft"] == 1      # Haus 4 (Teil I ohne geprüften Beruf), nicht Haus 5
     assert L["berufe"]["handgeprueft_anteil"] == 0.8      # 4 von 5 Nennungen mit geprüftem Beruf sind handgeprüft
 
 
@@ -1044,3 +1046,23 @@ def test_themen_definitionen_tragen_baum_und_berufe_faerben_nach_stellung():
     assert all(themen[t].get("baum") is True for t in ("besitz", "bergbau", "berufe"))
     assert "eigentuemerliste" not in themen["besitz"].get("zusatz", {})
     assert all("Kästchen" not in themen[t]["text"] for t in ("besitz", "bergbau", "berufe"))
+    assert "Popup" not in b["text"]      # Review 2026-09-29: das Popup kennzeichnet Vorschläge nicht, nur die Hausansicht
+
+
+def test_berufsnormindex_nur_teil_i_und_pillzahl_gleich_scherbe(tmp_path):
+    """Review 2026-09-29 (Important 1): Die Normscherbe (Treffer der Pill) und die Themenliste (Zahl an der Pill) zählen dieselben
+    Häuser — nur Teil I mit geprüftem Beruf, wie es die Grundgesamtheit in der Vergleichsleiste sagt."""
+    from pipeline.lib.berufe import lade_ohdab, lade_kuratierung as lade_berufe
+    from pipeline.lib.karte_export import baue_berufsnormindex, baue_themen_listen, gruppiere
+    from tests.test_berufe import OHDAB_KOPF, OHDAB_ZEILEN
+    p = tmp_path / "o.csv"; p.write_text(OHDAB_KOPF + OHDAB_ZEILEN, encoding="utf-8"); o = lade_ohdab(p)
+    b = lade_berufe([dict(schreibweise="Bergm.", beruf="Bergmann", status="", ohdab_id="B 21112-100", niveau_unsicher="", geprueft="ja", stellung="arbeiter", stellung_geprueft="ja")])
+    basis = dict(stufe="haus", lat="51.4", lon="7.0", strasse_norm="x", strasse_roh="X", Vorort="", stadtteil="Kray", lastname="N", firstname="", page="I-1")
+    def e(i, teil, hausnr):
+        return dict(basis, id=str(i), teil=teil, hausnr=hausnr, **{"Beruf o. ä.": "Bergm."})
+    a = gruppiere([e(1, "I", "1"), e(2, "II", "2"), e(3, "I", "3"), e(4, "II", "3")], [], None, berufe=b, ohdab=o)   # Haus 2: nur Eigentümer mit Beruf
+    liste, scherben = baue_berufsnormindex(a)
+    assert liste[0][3] == 2 and len(scherben["be"]["B 21112-100"]) == 2                     # Nennungen und Häuser: nur Teil I
+    L = baue_themen_listen(a)
+    st = {o_["id"]: o_ for o_ in L["berufe"]["oberkategorien"]}
+    assert st["arbeiter"]["eintraege"][0]["adressen"] == len(scherben["be"]["B 21112-100"])

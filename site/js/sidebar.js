@@ -153,7 +153,12 @@ export class Sidebar {
   _baumZeichnen() {
     const t = this._thema;
     const baum = t.schalter ? baumHtml(t, this._liste, { klassen: this._klassen, vergleich: this._vergleich, farben: this._farben, ...this.baumZustand }) : "";
+    // Neurendern darf die Scrollposition der offenen Pill-Liste nicht verlieren (Review 2026-09-29).
+    const alt = this.themenkopf.querySelector(".pills-s");
+    const scroll = alt ? alt.scrollTop : 0;
     this.themenkopf.innerHTML = kopfHtml(t) + baum + grundlageHtml(t);
+    const neu = this.themenkopf.querySelector(".pills-s");
+    if (neu && scroll) neu.scrollTop = scroll;
   }
   // Gewählte Pills in ihrer Gruppenfarbe füllen (Spec Themenbaum §2).
   markiereVergleich(vergleich, farben) { this._vergleich = vergleich; this._farben = farben; if (this._thema) this._baumZeichnen(); }

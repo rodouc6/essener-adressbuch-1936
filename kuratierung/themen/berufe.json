@@ -1,7 +1,7 @@
 {
   "id": "berufe",
   "titel": "Berufe",
-  "text": "Häuser nach der sozialen Stellung ihrer Bewohner (Teil I), abgeleitet aus dem Beruf: Mehrheit der geprüften Bewohner je Haus, bei Gleichstand „gemischt“, ohne geprüften Beruf grau. Stellung nach Rechtslage der Zeit; Vorschläge der Automatik zählen mit und sind in Hausansicht und Popup gekennzeichnet. „Kaufleute“ ohne Zusatz bleiben eigene Klasse: Angestellter oder Selbständiger ist aus der Bezeichnung nicht zu entscheiden.",
+  "text": "Häuser nach der sozialen Stellung ihrer Bewohner (Teil I), abgeleitet aus dem Beruf: Mehrheit der geprüften Bewohner je Haus, bei Gleichstand „gemischt“, ohne geprüften Beruf grau. Stellung nach Rechtslage der Zeit; Vorschläge der Automatik zählen mit und sind in der Hausansicht gekennzeichnet. „Kaufleute“ ohne Zusatz bleiben eigene Klasse: Angestellter oder Selbständiger ist aus der Bezeichnung nicht zu entscheiden.",
   "grundlage": "Berufs-Kuratierung kuratierung/berufe.csv (Abkürzungskatalog + Handprüfung) gegen die OhdAB (Moeller/Uni Halle, FactGrid, CC BY 4.0), Stellung je Schreibweise nach Berufszählung 1933 und Angestelltenversicherungsgesetz 1911 (docs/stellung.md), Stand 2026-09-24",
   "freigegeben": true,
   "baum": true,
