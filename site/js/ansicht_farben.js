@@ -34,7 +34,7 @@ export function legendeFuer(ansicht, werte = [], zusatz = {}) {
   const max = ansicht.mass === "dichte" ? hoechstwert(werte) : 0;
   const l = legendeNachMass(ansicht, { max });
   const unterMin = werte.filter((w) => w.unter_min).length;
-  l.push({ art: "unter_min", name: "zu dünne Grundlage", farbe: null,
+  if (ansicht.min_n > 0) l.push({ art: "unter_min", name: "zu dünne Grundlage", farbe: null,
            text: `davon ${formatZahl(unterMin)} ${unterMin === 1 ? "Einheit" : "Einheiten"} unter ${formatZahl(ansicht.min_n)} (grau)` });
   if (ansicht.ebene === "strasse" && Number.isFinite(zusatz.ohne_linie) && zusatz.ohne_linie > 0) {
     l.push({ art: "ohne_linie", name: "ohne Linie", farbe: null,
@@ -47,5 +47,9 @@ export function legendeFuer(ansicht, werte = [], zusatz = {}) {
   return l;
 }
 
-// Kopfzeile der Sidebar unter einer Ansicht.
-export const ansichtTitel = (a) => `Ansicht: ${a.daten} · ${a.ebene} · ${a.mass}`;
+// Kopfzeile der Sidebar unter einer Ansicht — Klartext statt roher Schlüssel; unbekannte Schlüssel bleiben roh sichtbar.
+const TITEL_DATEN = { bergbau: "Bergbau", besitz: "Eigentümer", gewerbe: "Gewerbe", kennzahlen: "Kennzahlen", stellung: "Stellung" };
+const TITEL_EBENE = { adresse: "je Adresse", hex: "im Wabenraster", stadtteil: "nach Stadtteil", strasse: "nach Straße" };
+const TITEL_MASS = { anteil: "Anteil", dichte: "Dichte", mischung: "Mischung" };
+export const ansichtTitel = (a) =>
+  `Ansicht: ${TITEL_DATEN[a.daten] || a.daten} ${TITEL_EBENE[a.ebene] || a.ebene}, ${TITEL_MASS[a.mass] || a.mass}`;

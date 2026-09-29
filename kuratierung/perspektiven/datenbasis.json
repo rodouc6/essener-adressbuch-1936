@@ -84,20 +84,20 @@
          "stellung_hand_n": "Die Stellung wurde je Berufsschreibweise von Hand entschieden (Berufszählung 1933, Angestelltenversicherungsgesetz 1911).",
          "stellung_vorschlag_n": "Die Stellung stammt aus einer Wortregel und wurde nicht von Hand geprüft."}}},
     {"id": "gewerbe",
-     "text": "Teil III führt die Betriebe nach Rubriken, von „Bäcker“ bis „Zigarren“. Jede Rubrik haben wir einer Branche und einer Betriebsform zugeordnet. Die großen Rubriken sind von Hand entschieden; die mittleren nach dokumentierten Prinzipien, etwa dass ein Zulieferer zur belieferten Branche zählt; die vielen kleinen über eine Wortregel. Auch hier zeigt die Schraffur, was nicht von Hand geprüft ist.",
-     "beschreibung": "Trichter: verortete Betriebe, Branche von Hand, nach Prinzipien oder per Wortregel zugeordnet.",
+     "text": "Teil III führt die Betriebe nach Rubriken, von „Bäcker“ bis „Zigarren“. Jede Rubrik haben wir einer Branche und einer Betriebsform zugeordnet. Die großen Rubriken sind von Hand entschieden; die mittleren hat ein Sprachmodell nach festgehaltenen Prinzipien zugeordnet, etwa dass ein Zulieferer zur belieferten Branche zählt; die vielen kleinen über eine Wortregel. Auch hier zeigt die Schraffur, was nicht von Hand geprüft ist.",
+     "beschreibung": "Trichter: verortete Betriebe, Branche von Hand, per Sprachmodell nach Prinzipien oder per Wortregel zugeordnet.",
      "hervorheben": [],
      "ansicht": {"daten": "kennzahlen", "form": "trichter",
        "stufen": [
          {"name": "Betriebe (Teil III, verortet), Branche zugeordnet", "aus": "betriebe_n", "farbe": "#c2410c",
           "segmente": [
             {"name": "von Hand", "aus": "gewerbe_hand_n", "farbe": "#c2410c"},
-            {"name": "nach dokumentierten Prinzipien", "aus": "gewerbe_claude_n", "farbe": "#c2410c", "muster": "schraffur"},
+            {"name": "Sprachmodell nach Prinzipien", "aus": "gewerbe_claude_n", "farbe": "#c2410c", "muster": "schraffur"},
             {"name": "per Wortregel", "aus": "gewerbe_regel_n", "farbe": "#f59e0b", "muster": "schraffur"}]}],
        "erklaerungen": {
          "betriebe_n": "Alle verorteten Einträge des Branchenverzeichnisses.",
-         "gewerbe_hand_n": "Rubriken, die der Projektleiter selbst zugeordnet hat (die größten, rund zwei Drittel der Betriebe).",
-         "gewerbe_claude_n": "Rubriken, die nach den in docs/gewerbe.md festgehaltenen Prinzipien zugeordnet wurden.",
+         "gewerbe_hand_n": "Rubriken, die von Hand zugeordnet wurden (die größten, rund zwei Drittel der Betriebe).",
+         "gewerbe_claude_n": "Rubriken, die ein Sprachmodell nach den festgehaltenen Prinzipien zugeordnet hat, nicht einzeln geprüft.",
          "gewerbe_regel_n": "Rubriken, deren Branche eine Wortregel aus dem Rubriknamen ableitet."}}}
   ]
 }

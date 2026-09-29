@@ -85,3 +85,18 @@ test("Legende bei dichte nennt absolute Stufen je 1.000, ohne Prozent", () => {
     ["0–18 je 1.000", "18–36 je 1.000", "36–54 je 1.000", "54–72 je 1.000", "72–90 je 1.000"]);
   assert.equal(l.find((e) => e.art === "min_n").text, "unter 200 Teil-I-Einträgen");
 });
+
+test("ansichtTitel nennt die Ansicht in Klartext statt mit rohen Schlüsseln", async () => {
+  const { ansichtTitel } = await import("../js/ansicht_farben.js");
+  assert.equal(ansichtTitel({ daten: "besitz", ebene: "stadtteil", mass: "anteil" }), "Ansicht: Eigentümer nach Stadtteil, Anteil");
+  assert.equal(ansichtTitel({ daten: "stellung", ebene: "hex", mass: "anteil" }), "Ansicht: Stellung im Wabenraster, Anteil");
+  assert.equal(ansichtTitel({ daten: "gewerbe", ebene: "strasse", mass: "dichte" }), "Ansicht: Gewerbe nach Straße, Dichte");
+  // unbekannter Schlüssel bleibt roh sichtbar, statt still zu verschwinden
+  assert.equal(ansichtTitel({ daten: "xy", ebene: "stadtteil", mass: "anteil" }), "Ansicht: xy nach Stadtteil, Anteil");
+});
+
+test("legendeFuer lässt die Zeile „unter min_n“ weg, wenn es keine Schwelle gibt", () => {
+  const werte = [{ id: "a", wert: 0.5, N: 10, n_aus: 5 }];
+  assert.ok(!legendeFuer(ANSICHT({ min_n: 0 }), werte).some((e) => e.art === "unter_min"));
+  assert.ok(legendeFuer(ANSICHT({ min_n: 30 }), werte).some((e) => e.art === "unter_min"));
+});

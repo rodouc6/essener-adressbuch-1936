@@ -113,7 +113,7 @@ function kapitelHtml(k) {
     const a = normalisiere(s.ansicht);
     // Punktkarten (Bergbau) führen auf das Thema der Karte, nicht in die Werkstatt; die hausgenaue Karte hat keinen Link.
     const lk = linkKarte(a);
-    const links = [lk ? `<a href="${esc(lk)}">Auf der Karte öffnen</a>` : "", a.form === "punktkarte" ? "" : `<a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen</a>`].filter(Boolean).join(" · ");
+    const links = [lk ? `<a href="${esc(lk)}">Auf der Karte öffnen</a>` : "", a.form === "punktkarte" ? "" : `<a href="${esc(linkWerkstatt(a))}">In der Werkstatt öffnen (folgt)</a>`].filter(Boolean).join(" · ");
     return `${kopf}${links ? `<p class="links">${links}</p>` : ""}</article>`;
   }).join("");
   const quellen = (Array.isArray(k.quellen) ? k.quellen : []).map((q) => esc(q)).join(" · ");
@@ -268,7 +268,7 @@ function ladeHerkunft(name) {
   }).catch((e) => { herkunft.set(name, null); console.warn(`Herkunft ${name}:`, e); });
 }
 
-const MARKE = { hand: "Hand", vorschlag: "Vorschlag", claude: "Prinzipien", regel: "Regel", ohne: "ohne Quelle" };
+const MARKE = { hand: "Hand", vorschlag: "Vorschlag", claude: "Sprachmodell", regel: "Regel", ohne: "ohne Quelle" };
 const markeHtml = (m) => `<span class="q ${esc(m.art)}">${m.anteil < 1 ? `${Math.round(m.anteil * 100)} % ` : ""}${MARKE[m.art] || m.art}</span>`;
 
 function pfadHtml(pfad) {

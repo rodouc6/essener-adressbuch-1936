@@ -70,7 +70,7 @@ try {
   if (kz) {
     const t = kz.eintraege_je_teil;
     const verortet = (kz.stufen.haus + kz.stufen.strasse + kz.stufen.stadtplan).toFixed(0);
-    document.getElementById("zahlen").innerHTML = [[t.I, "Einträge im Einwohnerverzeichnis"], [t.II, "Eigentümereinträge"], [t.III, "Firmen"], [verortet + " %", "verortet"]]
+    document.getElementById("zahlen").innerHTML = [[t.I, "Einträge im Einwohnerverzeichnis"], [t.II, "Eigentümereinträge"], [t.III, "Einträge im Branchenverzeichnis"], [verortet + " %", "verortet"]]
       .map(([n, l]) => `<div><b>${typeof n === "number" ? n.toLocaleString("de-DE") : n}</b><small>${l}</small></div>`).join("");
   }
   const st = await lader.stadtteile();
