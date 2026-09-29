@@ -1,5 +1,5 @@
 import { EBENEN, PRAEZISION, DIGIBIB_WERK, FARBEN } from "./konfig.js";
-import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
+import { KATEGORIEN, NIVEAUS, STELLUNGEN } from "./kategorien.js";
 
 // Statustexte der Berufsangabe (mehrere, durch ";" getrennt, einzeln übersetzt und mit ", " verbunden).
 const STATUS_TEXT = { ruhestand: "Ruhestand", invalide: "Invalide", witwe: "Witwe", gewerbe: "Gewerbebetrieb" };
@@ -71,12 +71,15 @@ function popupZusatz(e) {
     return e.kategorie ? esc(KATEGORIEN[e.kategorie] || e.kategorie) : "";
   }
   if (e.teil === "III") return esc(e.rubrik || "");
-  const beruf = e.beruf_norm ? esc(e.beruf_norm) : e.beruf ? `<i title="${TOOLTIP_ROH}">${esc(e.beruf)}</i>` : "";
+  const beruf = e.beruf_norm ? normKnopf(e) : e.beruf ? `<i title="${TOOLTIP_ROH}">${esc(e.beruf)}</i>` : "";
   return [beruf, esc(e.stand || "")].filter(Boolean).join(", ");
 }
 
-// Geprüfter Eigentümer als Knopf (Spec Eigentümer-Vergleich §7): app.js hängt den Klick an (alle Häuser / zum Vergleich).
-function eigKnopf(name) { return `<button class="eiglink" data-eigentuemer="${esc(name)}">${esc(name)}</button>`; }
+// Vergleichsknopf (Spec Themenbaum §3): app.js hängt den Klick an (alle Häuser / zum Vergleich). Eigentümer nur geprüft
+// (eigentuemer_kanon), Berufe nur mit Norm und OhdAB-Schlüssel.
+function vergleichKnopf(schluessel, name) { return `<button class="eiglink" data-schluessel="${esc(schluessel)}">${esc(name)}</button>`; }
+const eigKnopf = (name) => vergleichKnopf(`eig:${name}`, name);
+const normKnopf = (e) => e.beruf_norm && e.ohdab ? vergleichKnopf(`norm:${e.ohdab}`, e.beruf_norm) : esc(e.beruf_norm || "");
 
 export function popupZeile(e) {
   const z = popupZusatz(e);
@@ -109,7 +112,10 @@ export function popupHtml(eig, eintraege, kompakt, ebenen = TEILE) {
 
 // Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
 function eintragHtml(e, faksimile) {
-  const felder = [["Beruf", e.beruf_norm ? `${e.beruf} → ${e.beruf_norm} · ${NIVEAUS[e.niveau] || e.niveau}${e.status ? " · " + statusText(e.status) : ""}` : e.beruf], ["Etage laut Adressbuch", e.etage], ["Stand", e.stand],
+  const felder = [["Beruf", e.beruf_norm ? `${esc(e.beruf)} → ${normKnopf(e)} · ${esc(NIVEAUS[e.niveau] || e.niveau)}${e.status ? " · " + esc(statusText(e.status)) : ""}` : esc(e.beruf), true],
+    // Stellung (Spec Themenbaum §4): Vorschläge der Automatik zählen im Thema mit, sind aber hier gekennzeichnet.
+    ["Stellung", e.stellung ? `${esc(STELLUNGEN[e.stellung] || e.stellung)}${e.stellung_quelle === "vorschlag" ? " (Vorschlag der Automatik, nicht handgeprüft)" : ""}` : "", true],
+    ["Etage laut Adressbuch", e.etage], ["Stand", e.stand],
     ["Bezugsperson", [e.bezug_vorname, e.bezug_beruf].filter(Boolean).join(", ")], ["Firma", e.firma],
     ["Eigentümer", e.eigentuemer],
     // Handgeprüft: kanonischer Name und Klasse. Per Regel (Person ohne Firmenname → Privatperson): nur die

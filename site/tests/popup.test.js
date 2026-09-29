@@ -61,14 +61,14 @@ test("Hausansicht zeigt geprüften Eigentümer mit Kategorie, sonst nur Buchschr
   const e = [{ id: "1", teil: "II", seite: "II-1", name: "", vorname: "", firma: "Fried. Krupp A.G.", eigentuemer: "Eigentümer", eigentuemer_kanon: "Fried. Krupp AG", kategorie: "industrie", flags: [], merkmale: [] },
              { id: "2", teil: "II", seite: "II-1", name: "", vorname: "", firma: "Bauverein GmbH", eigentuemer: "Eigentümer", eigentuemer_kanon: "", kategorie: "", flags: [], merkmale: [] }];
   const h = hausHtml(eig, e);
-  assert.match(h, /Zugeordnet<\/span> <button class="eiglink" data-eigentuemer="Fried\. Krupp AG">Fried\. Krupp AG<\/button> · Industrie/);
+  assert.match(h, /Zugeordnet<\/span> <button class="eiglink" data-schluessel="eig:Fried\. Krupp AG">Fried\. Krupp AG<\/button> · Industrie/);
   assert.match(h, /Firma<\/span> Fried\. Krupp A\.G\./);
   assert.equal((h.match(/Zugeordnet/g) || []).length, 1);
 });
 
 test("Hausansicht zeigt die Berufszuordnung mit Niveau und Status", () => {
   const h = hausHtml(EIG, [{ id: "9", teil: "I", seite: "I-1", name: "A", vorname: "", beruf: "Bergm. i. R.", beruf_norm: "Bergmann", ohdab: "B 21112-100", niveau: "fachlich", status: "ruhestand", etage: "", stand: "", flags: [], merkmale: [] }]);
-  assert.match(h, /Bergm\. i\. R\. → Bergmann · Fachliche Tätigkeit · Ruhestand/);
+  assert.match(h, /Bergm\. i\. R\. → <button class="eiglink" data-schluessel="norm:B 21112-100">Bergmann<\/button> · Fachliche Tätigkeit · Ruhestand/);
   const u = hausHtml(EIG, [{ id: "9", teil: "I", seite: "I-1", name: "A", vorname: "", beruf: "Kfm.", etage: "", stand: "", flags: [], merkmale: [] }]);
   assert.match(u, /<span class="k">Beruf<\/span> Kfm\.<\/div>/);
 });
@@ -77,7 +77,7 @@ test("popupHtml zeigt bei geprüfter Zuordnung nur die Norm, ohne Rohtext, Nivea
   const eintraege = [{ id: "9", teil: "I", seite: "I-1", name: "Sepeur", vorname: "Wilh.", beruf: "Bergm.",
     beruf_norm: "Bergmann", ohdab: "B 21112-100", niveau: "fachlich", status: "ruhestand", etage: "", stand: "", flags: [], merkmale: [] }];
   const h = popupHtml(EIG, eintraege, true);
-  assert.match(h, /· Bergmann</);
+  assert.match(h, /· <button class="eiglink" data-schluessel="norm:B 21112-100">Bergmann<\/button></);
   assert.doesNotMatch(h, /Bergm\.|→|Fachliche Tätigkeit|Ruhestand/);
 });
 
@@ -125,7 +125,7 @@ test("popupZeile: Einwohner nur mit Norm, sonst Buchschreibung kursiv mit Toolti
 });
 
 test("popupZeile: Eigentümer mit Kanon und Klasse, per Regel mit Vermerk; Gewerbe mit Firma und Rubrik", () => {
-  assert.equal(popupZeile(VIELE[5]), `<div class="z" data-eintrag="e1"><b><button class="eiglink" data-eigentuemer="Fried. Krupp AG">Fried. Krupp AG</button></b> <span class="n">· Industrie</span></div>`);
+  assert.equal(popupZeile(VIELE[5]), `<div class="z" data-eintrag="e1"><b><button class="eiglink" data-schluessel="eig:Fried. Krupp AG">Fried. Krupp AG</button></b> <span class="n">· Industrie</span></div>`);
   const regel = { id: "r", teil: "II", name: "Schmidt", vorname: "W.", firma: "", eigentuemer_kanon: "", kategorie: "privatperson", pruefung: "regel" };
   assert.match(popupZeile(regel), /<b>Schmidt, W\.<\/b> <span class="n">· Privatperson \(Regel\)<\/span>/);
   assert.equal(popupZeile(VIELE[6]), `<div class="z" data-eintrag="g1"><b>Firma 1</b> <span class="n">· Schneiderin</span></div>`);
@@ -180,7 +180,7 @@ test("trefferzeileHtml: Farbpunkt und Ring-Klasse bei Gruppen", () => {
 });
 
 test("Eigentümer-Knopf: nur bei geprüftem Eigentümer (eigentuemer_kanon), im Popup und in der Hausansicht", () => {
-  const knopf = `<button class="eiglink" data-eigentuemer="Fried. Krupp AG">Fried. Krupp AG</button>`;
+  const knopf = `<button class="eiglink" data-schluessel="eig:Fried. Krupp AG">Fried. Krupp AG</button>`;
   assert.equal(popupZeile(VIELE[5]), `<div class="z" data-eintrag="e1"><b>${knopf}</b> <span class="n">· Industrie</span></div>`);
   const eig = { id: "a1", stufe: "haus", strasse_heute: "Lattenkamp", hausnr: "25", stadtteil: "Katernberg", historisch: "Grenzstr. 25", n_I: 0, n_II: 2, n_III: 0 };
   const e = [{ id: "1", teil: "II", seite: "II-1", name: "", vorname: "", firma: "Fried. Krupp A.G.", eigentuemer: "Eigentümer", eigentuemer_kanon: "Fried. Krupp AG", kategorie: "industrie", flags: [], merkmale: [] },
@@ -188,4 +188,15 @@ test("Eigentümer-Knopf: nur bei geprüftem Eigentümer (eigentuemer_kanon), im 
   const h = hausHtml(eig, e);
   assert.ok(h.includes(`Zugeordnet</span> ${knopf} · Industrie`), h);
   assert.equal((h.match(/eiglink/g) || []).length, 1);
+});
+
+test("popupZeile und eintragHtml: Beruf mit Norm ist ein Vergleichsknopf norm:<ohdab>; ohne Norm kursiver Rohtext ohne Knopf", () => {
+  const e = { id: "1", teil: "I", seite: "I-1", name: "Sepeur", vorname: "W.", beruf: "Bergm.", beruf_norm: "Bergmann", ohdab: "B 21112-100", niveau: "fachlich", stellung: "arbeiter", stellung_quelle: "vorschlag", etage: "", stand: "", flags: [], merkmale: [] };
+  assert.match(popupZeile(e), /<span class="n">· <button class="eiglink" data-schluessel="norm:B 21112-100">Bergmann<\/button><\/span>/);
+  assert.doesNotMatch(popupZeile(E[0]), /data-schluessel/);
+  const h = hausHtml(EIG, [e]);
+  assert.match(h, /<span class="k">Beruf<\/span> Bergm\. → <button class="eiglink" data-schluessel="norm:B 21112-100">Bergmann<\/button> · Fachliche Tätigkeit/);
+  assert.match(h, /<span class="k">Stellung<\/span> Arbeiter \(Vorschlag der Automatik, nicht handgeprüft\)/);
+  assert.match(hausHtml(EIG, [{ ...e, stellung_quelle: "hand" }]), /<span class="k">Stellung<\/span> Arbeiter<\/div>/);
+  assert.doesNotMatch(hausHtml(EIG, [{ ...e, stellung: "", stellung_quelle: "" }]), /Stellung<\/span>/);
 });
