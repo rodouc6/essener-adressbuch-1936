@@ -75,9 +75,13 @@ function popupZusatz(e) {
   return [beruf, esc(e.stand || "")].filter(Boolean).join(", ");
 }
 
+// Geprüfter Eigentümer als Knopf (Spec Eigentümer-Vergleich §7): app.js hängt den Klick an (alle Häuser / zum Vergleich).
+function eigKnopf(name) { return `<button class="eiglink" data-eigentuemer="${esc(name)}">${esc(name)}</button>`; }
+
 export function popupZeile(e) {
   const z = popupZusatz(e);
-  return `<div class="z" data-eintrag="${esc(e.id)}"><b>${esc(popupName(e))}</b>${z ? ` <span class="n">· ${z}</span>` : ""}</div>`;
+  const name = e.teil === "II" && e.eigentuemer_kanon ? eigKnopf(e.eigentuemer_kanon) : esc(popupName(e));
+  return `<div class="z" data-eintrag="${esc(e.id)}"><b>${name}</b>${z ? ` <span class="n">· ${z}</span>` : ""}</div>`;
 }
 
 function teilHtml(teil, liste, max, hervor) {
@@ -110,10 +114,10 @@ function eintragHtml(e, faksimile) {
     ["Eigentümer", e.eigentuemer],
     // Handgeprüft: kanonischer Name und Klasse. Per Regel (Person ohne Firmenname → Privatperson): nur die
     // Klasse, mit der Regel als Herkunft — ohne Namen, denn die Identität ist nicht belegt.
-    ["Zugeordnet", e.eigentuemer_kanon ? `${e.eigentuemer_kanon} · ${KATEGORIEN[e.kategorie] || e.kategorie}`
-      : e.pruefung === "regel" ? `${KATEGORIEN[e.kategorie] || e.kategorie} (Regel: Person ohne Firmenname → Privatperson, keine Handprüfung)` : ""],
+    ["Zugeordnet", e.eigentuemer_kanon ? `${eigKnopf(e.eigentuemer_kanon)} · ${esc(KATEGORIEN[e.kategorie] || e.kategorie)}`
+      : e.pruefung === "regel" ? esc(`${KATEGORIEN[e.kategorie] || e.kategorie} (Regel: Person ohne Firmenname → Privatperson, keine Handprüfung)`) : "", true],
     ["Verwalter", e.verwalter], ["Wohnort", e.wohnort]]
-    .filter(([, w]) => w).map(([k, w]) => `<div><span class="k">${k}</span> ${esc(w)}</div>`).join("");
+    .filter(([, w]) => w).map(([k, w, roh]) => `<div><span class="k">${k}</span> ${roh ? w : esc(w)}</div>`).join("");
   const flags = (e.flags || []).map((f) => `<div class="flag">${esc(FLAGTEXT[f] || f)}</div>`).join("");
   return `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e, false)}</div>${felder}${flags}` +
     quelleHtml(e.seite, faksimile ? faksimile[e.seite] : null) + `</div>`;
@@ -144,9 +148,10 @@ export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle") {
 }
 
 export function trefferzeileHtml(t) {
-  // t = { adressId, titel, untertitel, stufe, n, eintragId? }
+  // t = { adressId, titel, untertitel, stufe, n, eintragId?, farbe?, mehrfach? } — farbe/mehrfach beim Eigentümer-Vergleich
   const kennText = t.stufe === "stadtplan" ? "Stadtplan 1935" : t.stufe === "unbekannt" ? "Präzision unbekannt" : "nur Straße";
   const kenn = t.stufe === "haus" ? "" : `<span class="kenn">${kennText}</span>`;
-  return `<div class="treffer" data-adresse="${esc(t.adressId)}"${t.eintragId ? ` data-eintrag="${esc(t.eintragId)}"` : ""}>` +
-    `<b>${esc(t.titel)}</b>${kenn}<small>${esc(t.untertitel)}</small></div>`;
+  const punkt = t.farbe ? `<span class="punkt" style="background:${esc(t.farbe)}"></span>` : "";
+  return `<div class="treffer${t.mehrfach ? " mehrfach" : ""}" data-adresse="${esc(t.adressId)}"${t.eintragId ? ` data-eintrag="${esc(t.eintragId)}"` : ""}>` +
+    `${punkt}<b>${esc(t.titel)}</b>${kenn}<small>${esc(t.untertitel)}</small></div>`;
 }
