@@ -148,8 +148,7 @@ Spalte „Huske-Auszug (Hist. Portal Essen)“ = wörtliche/gekürzte Zitate der
 
 Zusatzbefunde, die für die Kartierung nützlich sind:
 
-- **Carl Funke** (Heisingen, ID 1212712): „1935 354664 t, 1079 B / **1936 Jahresanfang:
-  Stilllegung Brikettfabrik** / 1937 Berechtsame: 14 km²“ → 1936 klar in Förderung.
+- **Carl Funke** (Heisingen, ID 1212712): Jahre im Auszug: 1935, 1936 (Zitat entfernt, siehe Portal-Seite) — Betrieb 1936 belegt.
 - **Victoria Mathias, Graf Beust und Friedrich Ernestine** (ID 1214405) ist ein
   **Verbundname erst ab 1957** – wer ihn auf 1936 anwendet, liegt falsch.
 - Die Geo-Felder `ABGETAEUFT`/`STILLGELEGT` sind bei vielen Schächten `null`
