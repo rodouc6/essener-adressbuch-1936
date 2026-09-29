@@ -1,4 +1,7 @@
-import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN, PLAN_FREIGEGEBEN } from "./konfig.js";
+import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN, PLAN_FREIGEGEBEN, VERSION } from "./konfig.js";
+
+// Cache-Busting wie im Lader: Versionsmarke an den GeoJSON-Quellen, lokal ("dev") keine.
+const MARKE = VERSION && VERSION !== "dev" ? `?v=${VERSION}` : "";
 import { esc } from "./popup.js";
 import { gruppenZuordnung } from "./vergleich.js";
 
@@ -103,10 +106,10 @@ export class Karte {
   _eigeneQuellen() {
     const q = {
       adressen: { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" },
-      zechen: { type: "geojson", data: new URL(DATEN + "zechen.geojson", location.href).href },
+      zechen: { type: "geojson", data: new URL(DATEN + "zechen.geojson" + MARKE, location.href).href },
       // Flächen der Ansichten (Spec §8); promoteId hebt die Eigenschaft `id` zur Feature-ID,
       // damit Farben per feature-state gesetzt werden können.
-      stadtteile: { type: "geojson", data: new URL(DATEN + "stadtteile.geojson", location.href).href, promoteId: "id" },
+      stadtteile: { type: "geojson", data: new URL(DATEN + "stadtteile.geojson" + MARKE, location.href).href, promoteId: "id" },
     };
     // Solange PLAN_FREIGEGEBEN false ist (Rechte am Dienst geo.essen.de ungeklärt), weder Quelle
     // noch Ebene anlegen — kein einziger Request an den Dienst, auch nicht über ?plan=1 (C1).
