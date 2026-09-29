@@ -246,3 +246,15 @@ test("Trefferquelle überlebt Stilwechsel und Themenwechsel; Themenebenen liegen
   assert.deepEqual(vor.find(([id]) => id === "thema-haus")[1], "treffer-haus");   // Thema unter den Treffern einfügen
   assert.ok(a.layer.has("treffer-haus"));
 });
+
+test("setzeFilter: Präsenzfeld des Themas ersetzt die Ebenen-Summe als Bedingung (Spannen-Häuser mit n_II = 0)", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau", "thema-haus", "thema-ungenau"]);
+  const self = { map: a.map, farbe: { ausdruck: "#111", filter: null, praesenz: "n_besitz" }, ansicht: null, treffer: new Set(), _deckkraftSetzen() {} };
+  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "" });
+  const erwartet = JSON.stringify(["any", [">", ["+", ["coalesce", ["get", "n_II"], 0]], 0], [">", ["coalesce", ["get", "n_besitz"], 0], 0]]);
+  assert.ok(JSON.stringify(a.filter["adressen-haus"]).includes(erwartet));
+  assert.ok(JSON.stringify(a.filter["thema-haus"]).includes(erwartet));
+  self.farbe = null;
+  Karte.prototype.setzeFilter.call(self, { ebene: ["II"], praez: ["haus"], stadtteil: "" });
+  assert.ok(!JSON.stringify(a.filter["adressen-haus"]).includes("n_besitz"));
+});

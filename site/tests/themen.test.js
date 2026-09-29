@@ -119,3 +119,11 @@ test("farbregel mit Feld-Schalter trägt filter und klassen; Bergbau (praefix) b
   assert.deepEqual(r.klassen, ["privatperson"]); assert.equal(r.ausdruck[0], "match");
   assert.equal(farbregel(BB, "leitung").ausdruck[0], "case");
 });
+
+test("farbregel trägt das Präsenzfeld des Themas (filter.praesenz), sonst null", () => {
+  const t = { ...BS, filter: { ebenen: ["II"], praesenz: "n_besitz" } };
+  assert.equal(farbregel(t).praesenz, "n_besitz");
+  assert.equal(farbregel(BS).praesenz, null);
+  assert.equal(farbregel(BB, "leitung").praesenz, null);
+  assert.equal(farbregel(AK).praesenz, undefined);   // einfach/skala: kein Präsenzfeld
+});

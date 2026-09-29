@@ -77,3 +77,12 @@ def test_zaehlfelder_bergbau():
     assert z["n_bb_belegschaft"] == 2 and z["n_bb_aufsicht"] == 1
     assert "n_bb_leitung" not in z and z["n_gr_ungeprueft"] == 1       # ungeprüfter Beruf: kein n_bb_, bleibt Ausschluss
     assert sum(1 for k in z if k.startswith("n_bb_")) == 2
+
+
+def test_zaehlfelder_praesenz_besitz_aus_eintrag_spanne_oder_nummer():
+    """n_besitz = 1, wenn der Besitz belegt ist — auch für Häuser aus einer Hausnummernspanne ohne eigene Teil-II-Zeile."""
+    spanne = dict(_adresse(9, 51.4, 7.0, besitz="industrie", eintraege=[("I", None, None)]), besitz_quelle="spanne")
+    assert zaehlfelder(spanne)["n_besitz"] == 1 and "n_II" not in zaehlfelder(spanne)
+    eintrag = dict(_adresse(8, 51.4, 7.0, besitz="bergbau", eintraege=[("II", None, None)]), besitz_quelle="eintrag")
+    assert zaehlfelder(eintrag)["n_besitz"] == 1
+    assert "n_besitz" not in zaehlfelder(_adresse(7, 51.4, 7.0, eintraege=[("I", None, None)]))

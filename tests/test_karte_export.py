@@ -965,3 +965,13 @@ def test_schreibe_paket_schreibt_kurzindex(tmp_path):
     aid = adress_id(e[0])
     kurz = json.loads((tmp_path / "adressen_kurz" / f"{aid[0]}.json").read_text())
     assert kurz[aid][:3] == [7.06, 51.49, "haus"] and kurz[aid][4] == "Lattenkamp"
+
+
+def test_thema_praesenzfeld_nimmt_adressen_ohne_teil_ii_zeile_auf():
+    """Thema Besitz (Spannen-Häuser): filter.praesenz nennt ein Zählfeld, das statt der Ebenen-Summe genügt."""
+    from pipeline.lib.karte_export import thema_adressen, thema_felder
+    t = dict(BESITZ, filter=dict(ebenen=["II"], praesenz="n_besitz"))
+    assert thema_felder(t) == ["id", "stufe", "stadtteil", "n_I", "n_II", "n_III", "n_besitz", "besitz"]
+    f = [_pf(id="1", n_II=1, besitz="bergbau"), _pf(id="2", n_I=2, n_besitz=1, besitz="industrie"), _pf(id="3", n_I=1, besitz="ungeprueft")]
+    assert [x["properties"]["id"] for x in thema_adressen(t, f)] == ["1", "2"]
+    assert [x["properties"]["id"] for x in thema_adressen(BESITZ, f)] == ["1"]   # ohne Präsenzfeld wie bisher

@@ -893,6 +893,8 @@ def thema_felder(thema: dict) -> list[str]:
     merkmal = f.get("merkmal") or fi.get("merkmal")
     if merkmal:
         felder.append(f"m_{merkmal}")
+    if fi.get("praesenz"):    # Präsenzfeld (Thema Besitz: n_besitz, auch ohne Teil-II-Zeile)
+        felder.insert(len(FELDER_IMMER), fi["praesenz"])
     s = thema.get("schalter") or {}
     if s.get("praefix"):    # Zähl-Schalter (Bergbau); Feld-Schalter (schalter.feld) brauchen nur das Farbfeld
         felder += [f"{s['praefix']}{k}" for k in s.get("klassen", [])]
@@ -901,9 +903,11 @@ def thema_felder(thema: dict) -> list[str]:
 
 def thema_adressen(thema: dict, features: list[dict]) -> list[dict]:
     """Adresspunkte, die ein Thema betrifft: Summe der Themen-Ebenen > 0, bei Merkmal m_<merkmal> > 0,
-    bei Zähl-Schaltern (praefix) mindestens ein Schalterfeld > 0, bei Feld-Schaltern (feld) Feldwert in den Klassen."""
+    bei Zähl-Schaltern (praefix) mindestens ein Schalterfeld > 0, bei Feld-Schaltern (feld) Feldwert in den Klassen.
+    Ein Präsenzfeld (filter.praesenz > 0) genügt statt der Ebenen-Summe (Spannen-Häuser ohne Teil-II-Zeile)."""
     fi = thema.get("filter") or {}
     ebenen = fi.get("ebenen") or ["I", "II", "III"]
+    praesenz = fi.get("praesenz")
     merkmal = (thema.get("farbe") or {}).get("merkmal") or fi.get("merkmal")
     s = thema.get("schalter") or {}
     schalter = [f"{s['praefix']}{k}" for k in s.get("klassen", [])] if s.get("praefix") else []
@@ -911,7 +915,7 @@ def thema_adressen(thema: dict, features: list[dict]) -> list[dict]:
     aus = []
     for ft in features:
         p = ft["properties"]
-        if sum(p.get(f"n_{e}", 0) or 0 for e in ebenen) <= 0:
+        if sum(p.get(f"n_{e}", 0) or 0 for e in ebenen) <= 0 and not (praesenz and (p.get(praesenz, 0) or 0) > 0):
             continue
         if merkmal and not (p.get(f"m_{merkmal}", 0) or 0) > 0:
             continue

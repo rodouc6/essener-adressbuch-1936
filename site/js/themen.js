@@ -39,12 +39,14 @@ export function farbregel(thema, klassen = "") {
     return { merkmal: f.merkmal, ausdruck: ["interpolate", ["linear"], ["coalesce", ["get", `m_${f.merkmal}`], 0], ...stufen] };
   }
   if (f.art === "kategorien") {
+    // praesenz: Zählfeld, das statt der Ebenen-Summe genügt (Thema Besitz: n_besitz, Spannen-Häuser ohne Teil-II-Zeile)
+    const praesenz = thema.filter?.praesenz || null;
     if (thema.schalter) {
       return { merkmal: null, ausdruck: schalterFarbe(thema, klassen), kategorien: f.werte || {}, sonst: f.sonst || "#c8c8c8",
-               filter: schalterFilter(thema, klassen), klassen: schalterKlassen(thema, klassen) };
+               filter: schalterFilter(thema, klassen), klassen: schalterKlassen(thema, klassen), praesenz };
     }
     const paare = Object.entries(f.werte || {}).flatMap(([k, farbe]) => [k, farbe]);
-    return { merkmal: null, ausdruck: ["match", ["get", f.feld], ...paare, f.sonst || "#c8c8c8"], kategorien: f.werte || {}, sonst: f.sonst || "#c8c8c8", filter: null };
+    return { merkmal: null, ausdruck: ["match", ["get", f.feld], ...paare, f.sonst || "#c8c8c8"], kategorien: f.werte || {}, sonst: f.sonst || "#c8c8c8", filter: null, praesenz };
   }
   return null;
 }

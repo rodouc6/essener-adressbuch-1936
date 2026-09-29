@@ -301,7 +301,10 @@ export class Karte {
     const m = this.map;
     if (!m.getLayer("adressen-haus")) return;   // vor dem ersten Stil: Zustand wird beim Aufsetzen angewendet
     const n = summeAktiv(z.ebene);
-    const bedingungen = [[">", n, 0], ["in", ["get", "stufe"], ["literal", z.praez]]];
+    // Präsenzfeld eines Themas (Besitz: n_besitz) genügt statt der Ebenen-Summe — Häuser aus Hausnummernspannen haben n_II = 0.
+    const praesenz = this.farbe && this.farbe.praesenz;
+    const vorhanden = praesenz ? ["any", [">", n, 0], [">", ["coalesce", ["get", praesenz], 0], 0]] : [">", n, 0];
+    const bedingungen = [vorhanden, ["in", ["get", "stufe"], ["literal", z.praez]]];
     if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
     if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
     if (this.farbe && this.farbe.filter) bedingungen.push(this.farbe.filter);   // Schalter eines Themas (Spec Bergbau §5)
