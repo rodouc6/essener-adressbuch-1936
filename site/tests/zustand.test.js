@@ -91,3 +91,15 @@ test("klassen: Komma-Liste oder 'keine', Standard leer, Rundreise", () => {
   assert.equal(schreibeZustand({ ...STANDARD, thema: "bergbau", klassen: "leitung" }), "klassen=leitung&thema=bergbau");
 });
 
+
+test("Koordinaten und Zoom außerhalb des gültigen Bereichs fallen auf Standard zurück", () => {
+  // Breite 1000 würde MapLibre im Konstruktor werfen — die Karte bliebe tot
+  assert.equal(liesZustand("?c=7,1000").c, null);
+  assert.equal(liesZustand("?c=1e400,51").c, null);
+  assert.equal(liesZustand("?c=200,51").c, null);
+  assert.deepEqual(liesZustand("?c=7.01,51.45").c, [7.01, 51.45]);
+  assert.equal(liesZustand("?z=Infinity").z, null);
+  assert.equal(liesZustand("?z=99").z, 18);
+  assert.equal(liesZustand("?z=-3").z, 9);
+  assert.equal(liesZustand("?z=12.5").z, 12.5);
+});

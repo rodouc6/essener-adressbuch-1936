@@ -23,3 +23,6 @@ export const DES_PROJEKT = "https://des.genealogy.net/essen1936/";
 // Faksimile in der DigiBib des CompGen: Bildnummer je Seite kommt aus daten/faksimile.json.
 export const DIGIBIB_WERK = "https://www.digibib.genealogy.net/viewer/image/857439804_1936/";
 export const DATEN = "daten/";
+// Versionsmarke für Cache-Busting: "dev" lokal; werkzeuge/deploy.sh ersetzt sie im Schnappschuss durch den
+// Commit-Hash, Lader hängt sie dann als ?v= an jede Daten-URL, die HTML-Seiten an Skripte und Stile.
+export const VERSION = "dev";

@@ -25,9 +25,19 @@ export GIT_INDEX_FILE
 GIT_INDEX_FILE="$(mktemp)"
 rm -f "$GIT_INDEX_FILE"   # git will eine leere Datei nicht als Index lesen; der Pfad genügt
 trap 'rm -f "$GIT_INDEX_FILE"' EXIT
-git add --force -- site ':!site/tests' ':!site/package.json' ':!site/daten/adressen.geojson'
-baum="$(git write-tree --prefix=site/)"
+git add --force -- site ':!site/tests' ':!site/package.json' ':!site/daten/adressen.geojson' ':!site/daten/hex.geojson' ':!site/daten/strassen.geojson'
 quelle="$(git rev-parse --short HEAD)"
+
+# 3. Cache-Busting (werkzeuge/versioniere.py): Skript- und Stil-URLs, Import-Map und konfig.js im
+#    Schnappschuss tragen den Commit als Marke; der Arbeitsbaum bleibt unverändert.
+module="$(cd site && find js -name '*.js' | sort | tr '\n' ' ')"
+for datei in site/*.html; do
+  blob="$(python3 werkzeuge/versioniere.py html "$quelle" $module < "$datei" | git hash-object -w --stdin)"
+  git update-index --cacheinfo "100644,$blob,$datei"
+done
+blob="$(python3 werkzeuge/versioniere.py konfig "$quelle" < site/js/konfig.js | git hash-object -w --stdin)"
+git update-index --cacheinfo "100644,$blob,site/js/konfig.js"
+baum="$(git write-tree --prefix=site/)"
 stand="$(python3 -c 'import json;print(json.load(open("site/daten/kennzahlen.json"))["stand"])')"
 commit="$(git commit-tree "$baum" -m "Pages-Schnappschuss von main@$quelle, Datenstand $stand")"
 echo "Schnappschuss $commit (Baum $baum, main@$quelle, Datenstand $stand)"

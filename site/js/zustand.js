@@ -65,8 +65,10 @@ export function liesZustand(search) {
     karte: KARTEN.includes(p.get("karte")) ? p.get("karte") : STANDARD.karte,
     plan: zahl(p.get("plan"), 0, 1, 0),
     zechen: p.get("zechen") === "1" ? 1 : 0,
-    z: p.get("z") ? (!Number.isNaN(Number(p.get("z"))) ? Number(p.get("z")) : null) : null,
-    c: c && c.length === 2 && c.every((x) => !Number.isNaN(x)) ? c : null,
+    // Zoom auf den Bereich der Karte begrenzt, Koordinaten nur, wenn sie eine gültige Länge/Breite sind —
+    // MapLibre wirft sonst im Konstruktor und die Seite bleibt tot.
+    z: p.get("z") && Number.isFinite(Number(p.get("z"))) ? Math.min(Math.max(Number(p.get("z")), 9), 18) : null,
+    c: c && c.length === 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]) && Math.abs(c[0]) <= 180 && Math.abs(c[1]) <= 90 ? c : null,
   };
 }
 

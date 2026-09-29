@@ -59,3 +59,12 @@ test("themaListe lädt themen/<id>_liste.json, null wenn es sie nicht gibt", asy
   assert.deepEqual(await l.themaListe("besitz"), { oberkategorien: [] });
   assert.equal(await l.themaListe("bergbau"), null);
 });
+
+test("Lader hängt die Versionsmarke an jede Daten-URL, im Entwicklungsmodus nicht", async () => {
+  const { Lader } = await import("../js/daten.js");
+  const urls = [];
+  const fetchFn = (u) => { urls.push(u); return Promise.resolve({ ok: true, json: () => Promise.resolve({}) }); };
+  await new Lader("daten/", fetchFn, "abc1234").json("kennzahlen.json");
+  await new Lader("daten/", fetchFn, "dev").json("kennzahlen.json");
+  assert.deepEqual(urls, ["daten/kennzahlen.json?v=abc1234", "daten/kennzahlen.json"]);
+});

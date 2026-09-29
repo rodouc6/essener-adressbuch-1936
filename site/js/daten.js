@@ -1,16 +1,17 @@
-import { DATEN } from "./konfig.js";
+import { DATEN, VERSION } from "./konfig.js";
 
 // Lädt Dateien des Datenpakets und hält sie im Speicher. Ein 404 (Scherbe existiert nicht) ist
 // kein Fehler, sondern "keine Daten" → null.
 export class Lader {
-  constructor(basis = DATEN, fetchFn = (u) => fetch(u)) {
+  constructor(basis = DATEN, fetchFn = (u) => fetch(u), version = VERSION) {
     this.basis = basis;
     this.fetchFn = fetchFn;
+    this.version = version;
     this.cache = new Map();
   }
 
   async json(pfad) {
-    const url = this.basis + pfad;
+    const url = this.basis + pfad + (this.version && this.version !== "dev" ? `?v=${this.version}` : "");
     if (!this.cache.has(url)) {
       this.cache.set(url, (async () => {
         const r = await this.fetchFn(url);
