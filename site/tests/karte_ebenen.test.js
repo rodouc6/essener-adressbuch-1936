@@ -63,7 +63,7 @@ const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 
 
 test("Themenebenen: gleiches Paar wie die Hauptpunkte, Quelle thema, Radius wächst mit dem Zoom", () => {
   const e = Karte.prototype._themaEbenen.call(null);
-  assert.deepEqual(e.map((l) => l.id), ["thema-haus", "thema-ungenau"]);
+  assert.deepEqual(e.map((l) => l.id).slice(0, 2), ["thema-haus", "thema-ungenau"]);
   assert.ok(e.every((l) => l.source === "thema" && l["source-layer"] === "adressen"));
   assert.deepEqual(e[0].paint["circle-stroke-width"], HALO);
   assert.equal(e[1].layout["icon-image"], "kreis-gestrichelt");
@@ -125,4 +125,29 @@ test("ebenenAufsetzen legt die Themenquelle nach einem Stilwechsel neu an", () =
     setzePlan() {}, setzeZechen() {}, setzeAnsicht() {}, setzeAuswahl() {}, _themaQuelle: () => ({ type: "vector" }) });
   Karte.prototype.ebenenAufsetzen.call(self);
   assert.ok(a.q.has("thema") && a.layer.has("thema-haus"));
+});
+
+test("setzeThemaQuelle mit derselben ID baut die Quelle nicht neu auf (Legendenklick soll nicht flackern)", () => {
+  const a = kartenAttrappe(["adressen-haus", "adressen-ungenau"]); let adds = 0; const addSource = a.map.addSource; a.map.addSource = (s, d) => { adds++; addSource(s, d); };
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map, zustand: { ebene: ["I"], praez: ["haus"], stadtteil: "" }, farbe: null, ansicht: null, treffer: new Set(), themaId: null, _handlerAngehaengt: true, _themaQuelle: () => ({ type: "vector" }) });
+  Karte.prototype.setzeThemaQuelle.call(self, "bergbau");
+  Karte.prototype.setzeThemaQuelle.call(self, "bergbau");
+  assert.equal(adds, 1); assert.ok(a.q.has("thema") && a.layer.has("thema-haus"));
+  Karte.prototype.setzeThemaQuelle.call(self, "besitz");
+  assert.equal(adds, 2);
+});
+
+test("Auswahlring liegt auch auf der Themenquelle; setzeAuswahl filtert beide Ringe", () => {
+  const e = Karte.prototype._themaEbenen.call(null);
+  const ring = e.find((l) => l.id === "thema-auswahl");
+  assert.ok(ring && ring.source === "thema" && ring.type === "circle" && ring.paint["circle-radius"] === 14);
+  assert.equal(e[e.length - 1].id, "thema-auswahl");                                  // zuoberst der Themenebenen
+  const a = kartenAttrappe(["adressen-auswahl", "thema-auswahl"]);
+  const self = Object.assign(Object.create(Karte.prototype), { map: a.map });
+  Karte.prototype.setzeAuswahl.call(self, "x1");
+  assert.deepEqual(a.filter["adressen-auswahl"], ["==", ["get", "id"], "x1"]);
+  assert.deepEqual(a.filter["thema-auswahl"], ["==", ["get", "id"], "x1"]);
+  const b = kartenAttrappe(["adressen-auswahl"]); const self2 = Object.assign(Object.create(Karte.prototype), { map: b.map });
+  Karte.prototype.setzeAuswahl.call(self2, null);                                       // ohne Themenebene kein Fehler
+  assert.deepEqual(b.filter["adressen-auswahl"], ["==", ["get", "id"], ""]);
 });

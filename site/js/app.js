@@ -9,7 +9,7 @@ import { dekodiereOderNull } from "./ansicht.js";
 import { ladeEbenen, werteJeEinheit } from "./daten_ebenen.js";
 import { ansichtTitel, werteFarben, legendeFuer } from "./ansicht_farben.js";
 import { FARBEN, PLAN_FREIGEGEBEN, STILE } from "./konfig.js";
-import { ladeThema, themenListe } from "./themen.js";
+import { ladeThema, themenListe, themaQuelleFuer } from "./themen.js";
 import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
 import { ANZEIGE } from "./kategorien.js";
@@ -107,6 +107,8 @@ async function setzeZustand(patch, push, nurKarte = false) {
   // gerade abgebauten Layer zielen ("Cannot filter non-existing layer"). Nur anwenden, wenn sich
   // der Kartenstil in diesem Aufruf nicht geändert hat.
   if (alt.karte === zustand.karte) {
+    // Ebenenwechsel bei aktivem Thema: Themenquelle nur, solange die Ebenen zu den Kacheln passen (Review 2026-09-29).
+    if (alt.ebene !== zustand.ebene && themaAktiv) karte.setzeThemaQuelle(themaQuelleFuer(themaAktiv, zustand.ebene));
     karte.setzeFilter(zustand);
     karte.setzePlan(zustand.plan); karte.setzeZechen(zustand.zechen);
   }
@@ -138,7 +140,8 @@ async function wendeThemaAn() {
   if (!(t && t.schalter) && zustand.klassen) zustand = { ...zustand, klassen: "" };
   sidebar.zeigeThema(t, t && t.zusatz && t.zusatz.eigentuemerliste ? await lader.eigentuemer() : null);
   karte.setzeFarbe(t ? t.farbregel : null);
-  karte.setzeThemaQuelle(t && t.kacheln ? t.id : null);   // feine Punkte aus der Kacheldatei des Themas (Spec Themenkacheln §3)
+  if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
+  karte.setzeThemaQuelle(themaQuelleFuer(t, zustand.ebene));   // feine Punkte aus der Kacheldatei des Themas (Spec Themenkacheln §3)
   if (t && t.zusatz && t.zusatz.zechen && !zustand.zechen) zustand = { ...zustand, zechen: 1 };
   if (t && t.ebenen) zustand = { ...zustand, ebene: t.ebenen };
   schreibeUrl(false);   // vom Thema erzwungene Ebenen/Zechen auch in der URL abbilden

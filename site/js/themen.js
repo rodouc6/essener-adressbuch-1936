@@ -53,6 +53,14 @@ export async function ladeThema(lader, id, klassen = "") {
   return { ...t, farbregel: farbregel(t, klassen), ebenen: t.filter?.ebenen || null, kacheln: !!(eintrag && eintrag.kacheln) };
 }
 
+// ID der Themenquelle für die Karte: nur mit Kacheldatei und nur, wenn die aktiven Ebenen Teilmenge der
+// Themen-Ebenen sind — die Kacheln tragen nur Adressen der Themen-Ebenen, sonst zeigte die Karte still weniger.
+export function themaQuelleFuer(thema, ebene) {
+  if (!thema || !thema.kacheln) return null;
+  if (thema.ebenen && !(ebene || []).every((e) => thema.ebenen.includes(e))) return null;
+  return thema.id;
+}
+
 export async function themenListe(lader) {
   const l = (await lader.json("themen/index.json")) || [];
   return l.filter((t) => t.freigegeben).map((t) => ({ id: t.id, titel: t.titel }));

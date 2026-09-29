@@ -925,9 +925,11 @@ def test_schreibe_themen_mit_kacheln_schreibt_geojson_und_index(tmp_path, monkey
     f = [_pf(id="1", n_I=3, n_bb_belegschaft=2, bergbau="belegschaft")]
     idx = karte_export.schreibe_themen(q, tmp_path / "out", features=f, kacheln=True)
     assert idx == [dict(id="a", titel="A", freigegeben=False, kacheln=False), dict(id="bergbau", titel="Bergbau", freigegeben=True, kacheln=True)]
-    assert (tmp_path / "out" / "themen" / "bergbau.geojson").exists()
+    assert not list((tmp_path / "out" / "themen").glob("*.geojson"))          # Zwischenstand bleibt nicht im Datenpaket (Deploy!)
     assert json.loads((tmp_path / "out" / "themen" / "index.json").read_text(encoding="utf-8")) == idx
     assert len(aufrufe) == 1 and str(tmp_path / "out" / "themen" / "bergbau.pmtiles") in aufrufe[0]
+    geo = [a for a in aufrufe[0] if a.startswith("adressen:")][0][len("adressen:"):]
+    assert geo.endswith("bergbau.geojson") and not geo.startswith(str(tmp_path / "out"))
     # ohne kacheln: kein tippecanoe, Index ohne Kachelflag true
     aufrufe.clear()
     idx2 = karte_export.schreibe_themen(q, tmp_path / "out2", features=f, kacheln=False)

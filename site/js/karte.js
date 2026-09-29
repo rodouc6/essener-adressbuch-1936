@@ -8,7 +8,7 @@ const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 
 const RADIUS_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1, 12, 2, 14, RADIUS];
 // Symbolgröße = Radius / 16, aber der "zoom"-Ausdruck muss außen bleiben (MapLibre erlaubt kein "/" darüber).
 const ICON_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1 / 16, 12, 2 / 16, 14, ["/", RADIUS, 16]];
-const THEMA_EBENEN = ["thema-haus", "thema-ungenau"];
+const THEMA_EBENEN = ["thema-haus", "thema-ungenau", "thema-auswahl"];
 
 function summeAktiv(ebenen) {
   // Summe der Einträge über die aktiven Ebenen als Ausdruck
@@ -172,15 +172,22 @@ export class Karte {
       { id: "thema-ungenau", type: "symbol", source: "thema", "source-layer": "adressen", filter: ["!=", ["get", "stufe"], "haus"],
         layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
         paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } },
+      // Auswahlring auf der Themenquelle: die Hauptquelle ist ausgedünnt, dort fehlt der geklickte Punkt oft.
+      { id: "thema-auswahl", type: "circle", source: "thema", "source-layer": "adressen", filter: ["==", ["get", "id"], ""],
+        paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } },
     ];
   }
 
   // Kacheldatei eines Themas als zweite Punktquelle: bei id anlegen (vorhandene ersetzen) und die Hauptpunkte
   // ausblenden, bei null entfernen und die Hauptpunkte wieder zeigen. Vor dem ersten Stil nur merken.
   setzeThemaQuelle(id) {
+    const vorher = this.themaId;
     this.themaId = id || null;
     const m = this.map;
     if (!m.getLayer("adressen-haus")) return;
+    // Gleiche Quelle schon da (Legendenklick, Ebenenwechsel): nur Filter neu, kein Neuaufbau — sonst
+    // flackern die Punkte und alle Kacheln werden neu geholt.
+    if (this.themaId && this.themaId === vorher && m.getSource("thema") && m.getLayer("thema-haus")) { this.setzeFilter(this.zustand); return; }
     for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.removeLayer(l);
     if (m.getSource("thema")) m.removeSource("thema");
     if (this.themaId) {
@@ -199,6 +206,7 @@ export class Karte {
     }
     for (const l of ["adressen-haus", "adressen-ungenau"]) m.setLayoutProperty(l, "visibility", this.themaId ? "none" : "visible");
     for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.setLayoutProperty(l, "visibility", "visible");
+    if (m.getLayer("thema-auswahl")) m.setFilter("thema-auswahl", ["==", ["get", "id"], this.auswahl || ""]);
     this.setzeFilter(this.zustand);
     if (this.themaId) for (const id of this.treffer) m.setFeatureState({ source: "thema", sourceLayer: "adressen", id }, { treffer: true });
   }
@@ -328,7 +336,7 @@ export class Karte {
 
   setzeAuswahl(adressId) {
     this.auswahl = adressId;
-    if (this.map.getLayer("adressen-auswahl")) this.map.setFilter("adressen-auswahl", ["==", ["get", "id"], adressId || ""]);
+    for (const l of ["adressen-auswahl", "thema-auswahl"]) if (this.map.getLayer(l)) this.map.setFilter(l, ["==", ["get", "id"], adressId || ""]);
   }
 
   setzePlan(deckkraft) {

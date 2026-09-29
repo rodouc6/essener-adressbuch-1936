@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { farbregel, ladeThema, themenListe } from "../js/themen.js";
+import { farbregel, ladeThema, themaQuelleFuer, themenListe } from "../js/themen.js";
 import { Lader } from "../js/daten.js";
 
 const AK = { id: "akademiker", titel: "Akademiker", text: "…", grundlage: "Titelliste", freigegeben: true,
@@ -86,4 +86,13 @@ test("farbregel mit Schalter trägt filter und klassen; ohne Schalter ignoriert 
 test("schalterFarbe ohne eingeschaltete Klasse: schlichte Grundfarbe, kein leeres case (MapLibre lehnt case mit einem Argument ab)", () => {
   assert.equal(schalterFarbe(BB, "keine"), "#c8c8c8");
   assert.equal(farbregel(BB, "keine").ausdruck, "#c8c8c8");
+});
+
+test("themaQuelleFuer: Kacheldatei nur, wenn die aktiven Ebenen Teilmenge der Themen-Ebenen sind", () => {
+  const besitz = { id: "besitz", kacheln: true, ebenen: ["II"] };
+  assert.equal(themaQuelleFuer(besitz, ["II"]), "besitz");
+  assert.equal(themaQuelleFuer(besitz, ["I", "II"]), null);        // Ebene I zugeschaltet: Kacheln hätten nur Teil-II-Adressen
+  assert.equal(themaQuelleFuer({ id: "alle", kacheln: true, ebenen: null }, ["I", "II", "III"]), "alle");
+  assert.equal(themaQuelleFuer({ id: "alt", kacheln: false, ebenen: ["I"] }, ["I"]), null);
+  assert.equal(themaQuelleFuer(null, ["I"]), null);
 });

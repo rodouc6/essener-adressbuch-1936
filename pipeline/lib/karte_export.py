@@ -6,6 +6,7 @@ import json
 import math
 import re
 import subprocess
+import tempfile
 import unicodedata
 from collections import defaultdict
 from pathlib import Path
@@ -926,8 +927,8 @@ def tippecanoe_thema_befehl(geojson: Path, pmtiles: Path) -> list[str]:
 def schreibe_themen(quelle: Path, ausgabe: Path, features: list[dict] | None = None, kacheln: bool = False) -> list[dict]:
     """Kopiert die Thema-Definitionen aus kuratierung/themen/*.json nach ausgabe/themen/ und schreibt dort
     index.json (id, titel, freigegeben, kacheln). Mit `features` (Adresspunkte aus punkt_feature) und
-    `kacheln=True` entsteht je freigegebenem Thema ausgabe/themen/<id>.geojson und <id>.pmtiles
-    (Spec Themenkacheln §2); das GeoJSON bleibt als Zwischenstand liegen (site/daten/ ist nicht versioniert)."""
+    `kacheln=True` entsteht je freigegebenem Thema ausgabe/themen/<id>.pmtiles (Spec Themenkacheln §2); das
+    GeoJSON dazu ist ein Zwischenstand im Tempverzeichnis."""
     index = []
     for pfad in sorted(Path(quelle).glob("*.json")):
         t = json.loads(pfad.read_text(encoding="utf-8"))
@@ -935,9 +936,11 @@ def schreibe_themen(quelle: Path, ausgabe: Path, features: list[dict] | None = N
         frei = bool(t.get("freigegeben"))
         mit_kacheln = False
         if frei and features is not None and kacheln:
-            geo = ausgabe / "themen" / f"{t['id']}.geojson"
-            _json(geo, thema_geojson(t, features))
-            subprocess.run(tippecanoe_thema_befehl(geo, ausgabe / "themen" / f"{t['id']}.pmtiles"), check=True)
+            # Zwischenstand im Tempverzeichnis: site/daten/ geht mit dem Deploy nach außen, das GeoJSON nicht.
+            with tempfile.TemporaryDirectory() as tmp:
+                geo = Path(tmp) / f"{t['id']}.geojson"
+                _json(geo, thema_geojson(t, features))
+                subprocess.run(tippecanoe_thema_befehl(geo, ausgabe / "themen" / f"{t['id']}.pmtiles"), check=True)
             mit_kacheln = True
         index.append(dict(id=t["id"], titel=t.get("titel", ""), freigegeben=frei, kacheln=mit_kacheln))
     _json(ausgabe / "themen" / "index.json", index)
