@@ -200,3 +200,33 @@ test("popupZeile und eintragHtml: Beruf mit Norm ist ein Vergleichsknopf norm:<o
   assert.match(hausHtml(EIG, [{ ...e, stellung_quelle: "hand" }]), /<span class="k">Stellung<\/span> Arbeiter<\/div>/);
   assert.doesNotMatch(hausHtml(EIG, [{ ...e, stellung: "", stellung_quelle: "" }]), /Stellung<\/span>/);
 });
+
+import { gruppeFuerEintrag } from "../js/popup.js";
+const GR = [{ schluessel: "eig:Zeche Zollverein", name: "Zeche Zollverein", farbe: "#dc2626" }, { schluessel: "norm:B 21112-100", name: "Bergmann", farbe: "#2563eb" }];
+
+test("gruppeFuerEintrag: Eigentümerzeile über eigentuemer_kanon, Teil-I-Eintrag über ohdab, sonst null", () => {
+  assert.deepEqual(gruppeFuerEintrag({ teil: "II", eigentuemer_kanon: "Zeche Zollverein" }, GR), { index: 0, name: "Zeche Zollverein", farbe: "#dc2626" });
+  assert.deepEqual(gruppeFuerEintrag({ teil: "I", beruf_norm: "Bergmann", ohdab: "B 21112-100" }, GR), { index: 1, name: "Bergmann", farbe: "#2563eb" });
+  assert.equal(gruppeFuerEintrag({ teil: "I", beruf_norm: "Hauer", ohdab: "B 21112-105" }, GR), null);
+  assert.equal(gruppeFuerEintrag({ teil: "II", eigentuemer_kanon: "Zeche Zollverein" }, null), null);
+  assert.equal(gruppeFuerEintrag({ teil: "I", ohdab: "B 21112-100" }, [GR[0]]), null);   // Teil I trifft keine Eigentümergruppe
+});
+
+test("hausHtml mit Gruppen: Treffer-Einträge tragen Balken in Gruppenfarbe und Etikett; Reiter springt auf den Teil des ersten Treffers", () => {
+  const e = [
+    { id: "1", teil: "I", seite: "I-1", name: "Meurer", vorname: "P.", beruf: "Ing.", beruf_norm: "Ingenieur", ohdab: "B 99", etage: "", stand: "", flags: [], merkmale: [] },
+    { id: "2", teil: "I", seite: "I-2", name: "Sepeur", vorname: "W.", beruf: "Bergm.", beruf_norm: "Bergmann", ohdab: "B 21112-100", etage: "", stand: "", flags: [], merkmale: [] },
+    { id: "3", teil: "II", seite: "II-1", name: "Zeche Zollverein", vorname: "", eigentuemer: "Eigentümer", eigentuemer_kanon: "Zeche Zollverein", kategorie: "bergbau", flags: [], merkmale: [] },
+  ];
+  const h = hausHtml(EIG, e, null, "alle", GR);
+  assert.match(h, /<div class="eintrag hervor" id="e-2" style="--f:#2563eb"><div class="ename"><b>Sepeur, W\.<\/b><span class="etikett" style="background:#2563eb">Bergmann<\/span><\/div>/);
+  assert.match(h, /<div class="eintrag hervor" id="e-3" style="--f:#dc2626">/);
+  assert.match(h, /<div class="eintrag" id="e-1">/);
+  assert.doesNotMatch(hausHtml(EIG, e, null, "alle"), /hervor|etikett/);
+  // Reiter "auto": Teil des ersten Treffers; ohne Gruppen "alle"; ein ausdrücklich gewählter Reiter (auch "alle") gewinnt
+  assert.match(hausHtml(EIG, e, null, "auto", [GR[1]]), /<button data-teil="I" aria-pressed="true">/);
+  assert.match(hausHtml(EIG, e, null, "auto", [GR[0]]), /<button data-teil="II" aria-pressed="true">/);
+  assert.match(hausHtml(EIG, e, null, "auto"), /<button data-teil="alle" aria-pressed="true">/);
+  assert.match(hausHtml(EIG, e, null, "alle", [GR[1]]), /<button data-teil="alle" aria-pressed="true">/);
+  assert.match(hausHtml(EIG, e, null, "II", [GR[1]]), /<button data-teil="II" aria-pressed="true">/);
+});

@@ -280,7 +280,7 @@ async function oeffneHaus(id, eintragId) {
     // geladen) liefert die Adressscherbe lat/lon als Fallback (Task 13-Review).
     const pos = karte.position(id) || (eig && eig.lon != null && eig.lat != null ? [eig.lon, eig.lat] : null);
     if (pos) karte.fliegeZu(pos);
-    sidebar.zeigeHaus(e, eintraege, eintragId, await lader.faksimile(), zustand.ebene);
+    sidebar.zeigeHaus(e, eintraege, eintragId, await lader.faksimile(), zustand.ebene, ergebnis && ergebnis.gruppen);
     sidebar.inhalt.querySelectorAll("[data-schluessel]").forEach((n) => { n.title = knopfTitel(n.dataset.schluessel); });
   } catch (fehler) {
     fehlerHinweis(fehler, "Hausansicht fehlgeschlagen");

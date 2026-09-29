@@ -110,8 +110,19 @@ export function popupHtml(eig, eintraege, kompakt, ebenen = TEILE) {
     `<div class="pmehr" data-mehr="1">Haus im Detail ›</div>`;
 }
 
+// Gruppe des laufenden Vergleichs, zu der ein Eintrag gehört (Hausansicht, 2026-09-29): Eigentümerzeile über den
+// kanonischen Namen (eig:), Teil-I-Eintrag über den OhdAB-Schlüssel (norm:); sonst null.
+export function gruppeFuerEintrag(e, gruppen) {
+  if (!gruppen || !gruppen.length) return null;
+  const s = e.teil === "II" && e.eigentuemer_kanon ? `eig:${e.eigentuemer_kanon}` : e.teil === "I" && e.ohdab ? `norm:${e.ohdab}` : null;
+  if (!s) return null;
+  const i = gruppen.findIndex((g) => g.schluessel === s);
+  return i < 0 ? null : { index: i, name: gruppen[i].name, farbe: gruppen[i].farbe };
+}
+
 // Hausansicht: die Namenszeile ohne Beruf/Stand, die stehen als Felder darunter (keine Dopplung).
-function eintragHtml(e, faksimile) {
+// gruppen: Gruppen des laufenden Vergleichs — Treffer bekommen Balken in Gruppenfarbe und Etikett.
+function eintragHtml(e, faksimile, gruppen = null) {
   const felder = [["Beruf", e.beruf_norm ? `${esc(e.beruf)} → ${normKnopf(e)} · ${esc(NIVEAUS[e.niveau] || e.niveau)}${e.status ? " · " + esc(statusText(e.status)) : ""}` : esc(e.beruf), true],
     // Stellung (Spec Themenbaum §4): Vorschläge der Automatik zählen im Thema mit, sind aber hier gekennzeichnet.
     ["Stellung", e.stellung ? `${esc(STELLUNGEN[e.stellung] || e.stellung)}${e.stellung_quelle === "vorschlag" ? " (Vorschlag der Automatik, nicht handgeprüft)" : ""}` : "", true],
@@ -125,23 +136,28 @@ function eintragHtml(e, faksimile) {
     ["Verwalter", e.verwalter], ["Wohnort", e.wohnort]]
     .filter(([, w]) => w).map(([k, w, roh]) => `<div><span class="k">${k}</span> ${roh ? w : esc(w)}</div>`).join("");
   const flags = (e.flags || []).map((f) => `<div class="flag">${esc(FLAGTEXT[f] || f)}</div>`).join("");
-  return `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e, false)}</div>${felder}${flags}` +
+  const g = gruppeFuerEintrag(e, gruppen);
+  const kopf = g ? `<div class="eintrag hervor" id="e-${esc(e.id)}" style="--f:${esc(g.farbe)}"><div class="ename">${nameZeile(e, false)}<span class="etikett" style="background:${esc(g.farbe)}">${esc(g.name)}</span></div>`
+                 : `<div class="eintrag" id="e-${esc(e.id)}"><div class="ename">${nameZeile(e, false)}</div>`;
+  return kopf + `${felder}${flags}` +
     quelleHtml(e.seite, faksimile ? faksimile[e.seite] : null) + `</div>`;
 }
 
 // faksimile: Seite → Bildnummer (daten/faksimile.json); ohne Tabelle keine Links.
 // reiter: "alle" oder ein Teil (I/II/III) — zeigt nur dessen Einträge; ein Teil ohne Einträge fällt auf
-// "alle" zurück. Die Reiterzeile erscheint nur, wenn das Haus Einträge in mehr als einem Teil hat.
-export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle") {
+// "alle" zurück; "auto" = Teil des ersten Vergleichstreffers, sonst "alle". Die Reiterzeile erscheint nur,
+// wenn das Haus Einträge in mehr als einem Teil hat.
+export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle", gruppen = null) {
   const je = new Map(TEILE.map((t) => [t, eintraege.filter((e) => e.teil === t)]));
   const vorhanden = TEILE.filter((t) => je.get(t).length);
+  if (reiter === "auto") { const erster = eintraege.find((e) => gruppeFuerEintrag(e, gruppen)); reiter = erster ? erster.teil : "alle"; }
   const aktiv = vorhanden.includes(reiter) ? reiter : "alle";
   const reiterHtml = vorhanden.length > 1
     ? `<div class="reiter">` + [["alle", `Alle ${eintraege.length}`], ...vorhanden.map((t) => [t, `${EBENEN[t]} ${je.get(t).length}`])]
         .map(([k, text]) => `<button data-teil="${k}" aria-pressed="${k === aktiv}">${text}</button>`).join("") + `</div>`
     : "";
-  const gruppen = vorhanden.filter((t) => aktiv === "alle" || t === aktiv).map((t) =>
-    `<h3>${EBENEN[t]} (${je.get(t).length})</h3>${je.get(t).map((e) => eintragHtml(e, faksimile)).join("")}`).join("");
+  const teile = vorhanden.filter((t) => aktiv === "alle" || t === aktiv).map((t) =>
+    `<h3>${EBENEN[t]} (${je.get(t).length})</h3>${je.get(t).map((e) => eintragHtml(e, faksimile, gruppen)).join("")}`).join("");
   return `<div class="haus-kopf"><h2>${esc(heutigeAdresse(eig))}</h2>` +
     (eig.strasse_heute ? `<div class="hist">historische Adresse: ${esc(eig.historisch)}</div>` : "") +
     `<div class="praez praez-${esc(eig.stufe)}">${esc(praezisionText(eig.stufe))}</div>` +
@@ -150,7 +166,7 @@ export function hausHtml(eig, eintraege, faksimile = null, reiter = "alle") {
     // eines anderen Adressobjekts derselben Nummer: die Adresse hat keine eigene Teil-II-Zeile, die
     // Herkunft muss deshalb hier stehen, sonst wäre die Klasse nicht nachprüfbar.
     (BESITZ_HERKUNFT[eig.besitz_quelle] ? `<div class="hist">Eigentümer laut Adressbuch (${BESITZ_HERKUNFT[eig.besitz_quelle]}): ${esc(eig.besitz_spanne)} · ${esc(KATEGORIEN[eig.besitz] || eig.besitz)}</div>` : "") +
-    `</div>${reiterHtml}${gruppen}`;
+    `</div>${reiterHtml}${teile}`;
 }
 
 export function trefferzeileHtml(t) {

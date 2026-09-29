@@ -125,22 +125,22 @@ export class Sidebar {
 
   // ebenen: aktive Kartenebenen — bei genau einer startet die Hausansicht im Reiter dieses Teils; ein
   // hervorgehobener Eintrag zieht seinen Teil vor, damit er sichtbar ist.
-  zeigeHaus(eig, eintraege, hervorgehoben, faksimile = null, ebenen = []) {
+  // gruppen: Gruppen des laufenden Vergleichs — deren Treffer werden farbig hervorgehoben, der Reiter springt auf
+  // den Teil des ersten Treffers, und die Ansicht scrollt dorthin (Sichtprüfung Christos 2026-09-29).
+  zeigeHaus(eig, eintraege, hervorgehoben, faksimile = null, ebenen = [], gruppen = null) {
     const hv = hervorgehoben ? eintraege.find((e) => e.id === hervorgehoben) : null;
-    const reiter = hv ? hv.teil : ebenen.length === 1 ? ebenen[0] : "alle";
-    this._haus = { eig, eintraege, faksimile };
+    const reiter = hv ? hv.teil : ebenen.length === 1 ? ebenen[0] : "auto";
+    this._haus = { eig, eintraege, faksimile, gruppen };
     this._hausZeichnen(reiter, hervorgehoben);
     this.setzeStufe("voll");
   }
 
   _hausZeichnen(reiter, hervorgehoben = null) {
-    const { eig, eintraege, faksimile } = this._haus;
-    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege, faksimile, reiter);
+    const { eig, eintraege, faksimile, gruppen } = this._haus;
+    this.inhalt.innerHTML = `<button class="zurueck" data-zurueck="1">‹ zurück</button>` + hausHtml(eig, eintraege, faksimile, reiter, gruppen);
     this.inhalt.querySelectorAll("[data-teil]").forEach((b) => b.addEventListener("click", () => { this._hausZeichnen(b.dataset.teil); this.inhalt.scrollTop = 0; }));
-    if (hervorgehoben) {
-      const e = this.inhalt.querySelector(`#e-${CSS.escape(hervorgehoben)}`);
-      if (e) { e.classList.add("hervor"); e.scrollIntoView({ block: "center" }); }
-    }
+    const ziel = hervorgehoben ? this.inhalt.querySelector(`#e-${CSS.escape(hervorgehoben)}`) : this.inhalt.querySelector(".eintrag.hervor");
+    if (ziel) { ziel.classList.add("hervor"); ziel.scrollIntoView({ block: "center" }); }
   }
 
   // Themenkopf (Spec Themenbaum §2): Kopf, Baum (Kästchen = Schalter, Pfeil = Klappliste, Pills = Vergleich), Grundlage.
