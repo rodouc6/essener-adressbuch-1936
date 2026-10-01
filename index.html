@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essen 1936 – Das Adressbuch auf der Karte</title>
+<meta name="description" content="Das Essener Adressbuch von 1936 auf der Karte: Einwohner, Hauseigentümer und Gewerbe suchen und verorten.">
+<link rel="stylesheet" href="css/stil.css?v=89fc0b9">
+</head>
+<body class="startseite">
+<div class="hintergrund" aria-hidden="true"></div>
+<main>
+  <div class="startkopf"><h1>Essen 1936</h1><p>Das Adressbuch auf der Karte</p></div>
+  <div class="suchkasten">
+    <div class="suchfeld">
+      <input id="suche" type="search" placeholder="Name, Straße, Firma, Beruf …" autocomplete="off" aria-label="Suche" autofocus>
+      <div id="vorschlaege" class="vorschlaege" hidden></div>
+    </div>
+    <p class="hinweis" id="hinweis-hj" hidden>Die Namen H bis J fehlen in der Transkription (Seiten 186–258). Straßen und Firmen sind nicht betroffen.</p>
+  </div>
+  <div class="zahlen" id="zahlen"></div>
+  <nav class="kacheln" id="kacheln">
+    <a class="kachel" href="karte.html"><b>Karte öffnen</b><small>alle Ebenen, ohne Suche</small></a>
+    <a class="kachel" href="karte.html#stadtteil" id="kachel-stadtteil"><b>Stadtteil wählen</b><small>Katernberg, Steele, Werden …</small></a>
+    <a class="kachel" href="karte.html?thema=bergbau&z=11"><b>Bergmann, Steiger, Bergassessor</b><small>Wer wo wohnte, von der Kolonie bis zur Villa · mit 18 Zechen, deren Betrieb 1936 belegt ist</small></a>
+    <a class="kachel" href="schlaglichter.html" id="kachel-schlaglichter"><b>Schlaglichter <span class="bau">im Aufbau</span></b><small>Wohneigentum, soziale Stellung, Gewerbe</small></a>
+  </nav>
+  <p class="luecke">Die Namen H bis J fehlen in der Transkription. Wer dort sucht, findet nichts – nicht, weil es diese Menschen nicht gab, sondern weil die Seiten noch nicht abgeschrieben sind. <a href="ueber.html#luecken">Mehr dazu</a></p>
+</main>
+<footer><a href="ueber.html">Über das Projekt</a> · Quelle: Adreßbuch Essen 1936 (Scherl), Transkription Verein für Computergenealogie (<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" rel="noopener">CC BY-SA 4.0</a>) · <a href="impressum.html">Impressum</a> · <a href="impressum.html#datenschutz">Datenschutz</a></footer>
+<script type="importmap">{"imports": {"./js/ansicht.js": "./js/ansicht.js?v=89fc0b9", "./js/ansicht_farben.js": "./js/ansicht_farben.js?v=89fc0b9", "./js/app.js": "./js/app.js?v=89fc0b9", "./js/daten.js": "./js/daten.js?v=89fc0b9", "./js/daten_ebenen.js": "./js/daten_ebenen.js?v=89fc0b9", "./js/exportcsv.js": "./js/exportcsv.js?v=89fc0b9", "./js/formen/balken.js": "./js/formen/balken.js?v=89fc0b9", "./js/formen/bubbles.js": "./js/formen/bubbles.js?v=89fc0b9", "./js/formen/punktkarte.js": "./js/formen/punktkarte.js?v=89fc0b9", "./js/formen/rangliste.js": "./js/formen/rangliste.js?v=89fc0b9", "./js/formen/skalen.js": "./js/formen/skalen.js?v=89fc0b9", "./js/formen/stadtteilkarte.js": "./js/formen/stadtteilkarte.js?v=89fc0b9", "./js/formen/trichter.js": "./js/formen/trichter.js?v=89fc0b9", "./js/karte.js": "./js/karte.js?v=89fc0b9", "./js/kategorien.js": "./js/kategorien.js?v=89fc0b9", "./js/konfig.js": "./js/konfig.js?v=89fc0b9", "./js/perspektiven.js": "./js/perspektiven.js?v=89fc0b9", "./js/perspektiven_modell.js": "./js/perspektiven_modell.js?v=89fc0b9", "./js/popup.js": "./js/popup.js?v=89fc0b9", "./js/schluessel.js": "./js/schluessel.js?v=89fc0b9", "./js/sidebar.js": "./js/sidebar.js?v=89fc0b9", "./js/start.js": "./js/start.js?v=89fc0b9", "./js/steuerung.js": "./js/steuerung.js?v=89fc0b9", "./js/strassenwahl.js": "./js/strassenwahl.js?v=89fc0b9", "./js/suche.js": "./js/suche.js?v=89fc0b9", "./js/themen.js": "./js/themen.js?v=89fc0b9", "./js/themenbaum.js": "./js/themenbaum.js?v=89fc0b9", "./js/vergleich.js": "./js/vergleich.js?v=89fc0b9", "./js/zustand.js": "./js/zustand.js?v=89fc0b9"}}</script>
+<script type="module" src="js/start.js?v=89fc0b9"></script>
+</body>
+</html>
