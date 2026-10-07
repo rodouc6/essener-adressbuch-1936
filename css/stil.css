@@ -1,0 +1,208 @@
+:root { --blau: #1d4ed8; --gold: #ca8a04; --rot: #c2410c; --neutral: #1f2937; --rand: #d8d4cc; --papier: #faf8f3; --text: #1f2328; --grau: #6b7280; --breite-sidebar: 360px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); background: var(--papier); }
+a { color: var(--blau); }
+.kartenseite { overflow: hidden; }
+.karte { position: fixed; inset: 0; }
+.logo { position: fixed; top: 10px; left: 10px; z-index: 5; background: #fff; padding: 6px 10px; border-radius: 8px; text-decoration: none; font-weight: 700; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.sidebar { position: fixed; z-index: 4; background: #fff; display: flex; flex-direction: column; box-shadow: 0 0 12px rgba(0,0,0,.2); }
+.griff { display: none; }
+.suchfeld { position: relative; padding: 10px 12px 6px; }
+.suchfeld input { width: 100%; padding: 10px 36px 10px 12px; border: 1px solid var(--rand); border-radius: 8px; font-size: 16px; }
+.suchfeld button { position: absolute; right: 18px; top: 16px; border: 0; background: none; font-size: 16px; cursor: pointer; min-width: 32px; min-height: 32px; }
+.vorschlaege { position: absolute; left: 12px; right: 12px; top: 52px; background: #fff; border: 1px solid var(--rand); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.15); z-index: 6; max-height: 60vh; overflow: auto; }
+.vorschlaege .gruppe { padding: 6px 10px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
+.vorschlaege .eintrag { padding: 6px 10px; cursor: pointer; border-top: 1px solid #f1f1f1; min-height: 44px; }
+.vorschlaege .eintrag:hover, .vorschlaege .eintrag.aktiv { background: #eef2ff; }
+.vorschlaege small { display: block; color: var(--grau); }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 12px 8px; }
+.pill { border: 1px solid #999; background: #fff; border-radius: 16px; padding: 6px 12px; font-size: 13px; cursor: pointer; min-height: 32px; }
+.pill[aria-pressed="true"] { color: #fff; border-color: transparent; }
+.pill.I[aria-pressed="true"] { background: var(--blau); } .pill.II[aria-pressed="true"] { background: var(--gold); } .pill.III[aria-pressed="true"] { background: var(--rot); }
+.inhalt { flex: 1; overflow: auto; padding: 0 12px 12px; }
+.steuerung { position: fixed; z-index: 4; right: 10px; top: 110px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.ebenenknopf { position: relative; width: 32px; height: 32px; padding: 0; display: grid; place-items: center; background: #fff; border: 0; border-radius: 6px; box-shadow: 0 0 0 2px rgba(0,0,0,.1); cursor: pointer; color: var(--text); font-size: 16px; }
+.ebenenknopf[aria-expanded="true"] { background: #eef2ff; }
+.ebenenknopf.aktiv::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--blau); }
+.ebenenfeld { position: absolute; right: 40px; top: 0; width: 240px; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.2); padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ebenenfeld[hidden] { display: none; }
+.ebenenfeld .zeile { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ebenenfeld .gruppe { display: inline-flex; }
+.ebenenfeld .gruppe button, .ebenenfeld .schalter { background: #fff; border: 1px solid var(--rand); padding: 4px 8px; font-size: 12px; cursor: pointer; min-height: 28px; color: var(--text); }
+.ebenenfeld .gruppe button:first-child { border-radius: 6px 0 0 6px; } .ebenenfeld .gruppe button:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.ebenenfeld .schalter { border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; }
+.ebenenfeld .gruppe button[aria-pressed="true"], .ebenenfeld .schalter[aria-pressed="true"] { background: var(--text); color: #fff; border-color: var(--text); }
+.ebenenfeld input[type=range] { width: 100px; vertical-align: middle; }
+.ebenenfeld .prozent { min-width: 36px; text-align: right; color: var(--grau); }
+.legende { position: fixed; z-index: 4; right: 10px; bottom: 28px; background: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.2); max-width: 220px; }
+.legende .zeile { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.legende .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.legende .punkt.ungenau { background: none !important; border: 2px dashed currentColor; }
+.legende .punkt.ring { background: none !important; border: 2px solid #111827; }
+.legende label.schalter { cursor: pointer; } .legende label.schalter input { margin: 0 2px 0 0; }
+/* Flächenansichten (Spec §8): Farbstufen als Quadrate, Grundlage-/Herkunftszeilen kleiner. */
+.legende .flaeche { width: 14px; height: 10px; border: 1px solid rgba(0,0,0,.15); display: inline-block; flex: none; }
+.legende .klein { display: block; font-size: 11px; color: var(--grau); margin: 2px 0; }
+.vermerk { position: fixed; z-index: 4; left: 10px; bottom: 6px; font-size: 11px; color: var(--grau); background: rgba(255,255,255,.8); padding: 2px 6px; border-radius: 4px; }
+.maplibregl-popup-content { font-size: 13px; line-height: 1.35; padding: 10px 12px; }
+
+@media (min-width: 900px) {
+  .sidebar { top: 0; bottom: 0; left: 0; width: var(--breite-sidebar); }
+  [data-legende] { display: none; }
+  .logo { left: calc(var(--breite-sidebar) + 10px); }
+  .suchfeld { padding-top: 14px; }
+}
+.filter { border: 1px solid var(--rand); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; }
+.filter summary { cursor: pointer; font-weight: 600; }
+.filter label { display: block; margin: 6px 0; }
+.filter select, .filter input[type=text] { width: 100%; padding: 6px; border: 1px solid var(--rand); border-radius: 6px; font-size: 14px; }
+.praez-filter label { display: inline-block; margin-right: 8px; }
+.hinweis { font-size: 13px; color: var(--grau); margin: 8px 0; }
+.hinweis.warn { background: #fff7e0; border-left: 3px solid #d4a017; padding: 6px 10px; color: var(--text); }
+.kopf { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--rand); }
+.kopf .export { margin-left: auto; font-size: 12px; }
+.verteilung { font-size: 12px; color: var(--grau); padding: 4px 0 8px; }
+.treffer { padding: 8px 4px; border-bottom: 1px solid #f0f0f0; cursor: pointer; min-height: 44px; }
+.treffer:hover { background: #f5f7ff; }
+.treffer b { display: block; } .treffer small { color: var(--grau); }
+.treffer .punkt { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+.treffer.mehrfach .punkt { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111827; }
+.vergleich { padding: 6px 0 2px; border-bottom: 1px solid var(--rand); }
+.vergleich .zeile { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; flex-wrap: wrap; }
+.vergleich .zeile .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.vergleich .zeile small { color: var(--grau); }
+.vergleich .zeile .orte { flex-basis: 100%; padding-left: 18px; order: 9; }   /* Stadtteile in die zweite Zeile, × bleibt oben rechts */
+.vergleich .weg { margin-left: auto; border: 0; background: none; font-size: 16px; cursor: pointer; color: var(--grau); }
+.vergleich .zeile.klein { font-size: 12px; color: var(--grau); }
+.eiglink { border: 0; background: none; padding: 0; font: inherit; color: var(--blau); cursor: pointer; text-decoration: underline dotted; }
+.vorschlaege .plus { margin-left: 6px; color: var(--blau); font-weight: bold; }
+.hinweis.fluechtig { margin: 4px 0; }
+.kenn { font-size: 10px; border: 1px dashed #777; border-radius: 3px; padding: 0 4px; margin-left: 6px; color: #555; }
+.mehr, .zurueck, .themaknopf, .thema button { display: block; margin: 8px 0; padding: 8px 12px; border: 1px solid var(--rand); border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
+.haus-kopf h2 { font-size: 17px; margin: 6px 0 2px; }
+.hist { color: var(--grau); font-size: 13px; }
+.praez { font-size: 12px; margin-top: 2px; } .praez-strasse, .praez-stadtplan { color: #92400e; }
+.flag { font-size: 12px; color: #92400e; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin: 14px 0 4px; }
+.reiter { display: flex; gap: 2px; border-bottom: 1px solid var(--rand); margin: 10px 0 4px; overflow-x: auto; }
+.reiter button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 8px; font-size: 12px; color: var(--grau); cursor: pointer; white-space: nowrap; min-height: 32px; }
+.reiter button[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+.eintrag { padding: 8px 6px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.eintrag.hervor { background: #eef2ff; border-left: 3px solid var(--f, var(--blau)); }
+.eintrag .etikett { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 9px; font-size: 11px; color: #fff; vertical-align: middle; }
+.eintrag .k { color: var(--grau); }
+.quelle { font-size: 12px; color: var(--grau); margin-top: 4px; }
+.kein-bild { color: #92400e; }
+.etage { font-size: 11px; background: #eee; border-radius: 3px; padding: 0 4px; }
+.popup-kopf b { font-size: 14px; }
+.popup-kopf .kennzeile { color: var(--grau); font-size: 12px; margin: 2px 0 4px; }
+.popup-kopf .kennzeile .praez-strasse, .popup-kopf .kennzeile .praez-stadtplan, .popup-kopf .kennzeile .praez-unbekannt { color: #92400e; }
+.teil { margin-top: 6px; }
+.teil h4 { margin: 4px 0 1px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); font-weight: 600; }
+.teil .z { padding: 2px 0; cursor: pointer; } .teil .z:hover b { text-decoration: underline; }
+.teil .z .n { color: var(--grau); } .teil .z i { color: var(--grau); }
+.teil .weitere { color: var(--grau); font-size: 12px; padding: 2px 0; }
+.teil.hervor { border-left: 3px solid var(--f); margin-left: -12px; padding-left: 9px; }
+.teil.hervor h4 { color: var(--f); }
+.pmehr { color: var(--blau); cursor: pointer; margin-top: 8px; padding-top: 6px; border-top: 1px solid #eee; }
+.thema { background: #eef2ff; border-radius: 8px; padding: 8px 12px; margin: 10px 12px 0; font-size: 13px; }
+/* Themenkopf darf die Trefferliste (.inhalt) nicht verdrängen: feste Höhe, Eigentümerliste scrollt für sich. */
+#themenkopf { flex: none; }
+/* Kopf einer aktiven Ansicht (Spec §8) — eigener Kasten, damit er den Themenkopf nicht verdrängt. */
+#ansichtkopf { flex: none; }
+.thema.ansicht { background: #f1f5f9; }
+.thema.ansicht a { display: inline-block; margin-top: 6px; color: var(--blau); font-size: 12px; }
+#themenkopf .gruppe { padding: 8px 12px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); }
+.themenliste { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 2px 12px 6px; }
+.themenliste .gruppe { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--grau); margin-right: 4px; }
+.themenliste .themaknopf { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; }
+.baum { padding: 4px 12px 6px; }
+.baum .klein { font-size: 11px; color: var(--grau); margin: 2px 0 4px; }
+.baum .ober { display: flex; align-items: center; gap: 4px; margin: 2px 0; font-size: 13px; }
+.baum .ober label.schalter { display: flex; align-items: center; gap: 6px; flex: 1; cursor: pointer; min-height: 26px; }
+.baum .ober input { margin: 0; } .baum .ober small { color: var(--grau); }
+.baum .ober .punkt { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex: none; border: 0; padding: 0; cursor: pointer; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+.baum .ober .punkt:hover { box-shadow: 0 0 0 2px var(--text); }
+.baum .ober label.schalter:first-child { flex: none; }
+.baum .alle-klassen { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-size: 12px; }
+.baum .alle-klassen button { border: 1px solid var(--rand); background: #fff; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.baum .alle-klassen button:disabled { color: var(--grau); cursor: default; opacity: .6; }
+.baum .alle-klassen small { color: var(--grau); margin-left: auto; }
+.baum .auf { border: 0; background: none; cursor: pointer; font-size: 14px; padding: 2px 6px; color: var(--grau); min-width: 28px; min-height: 26px; }
+.pills-s { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0 8px 22px; max-height: 28vh; overflow: auto; }
+.pill-s, .pills-s .alle { display: inline-block; margin: 0; padding: 3px 9px; font-size: 12px; border-radius: 12px; border: 1px solid var(--rand); background: #fff; cursor: pointer; }
+.pill-s small { color: var(--grau); } .pill-s[aria-pressed="true"] small { color: #fff; opacity: .8; }
+.pills-s .alle { color: var(--blau); border-style: dashed; }
+#themenkopf .grundlage { display: block; padding: 0 12px 8px; font-size: 11px; color: var(--grau); }
+#themenkopf { max-height: 55vh; overflow: auto; }
+.themaknopf[aria-pressed="true"] { background: var(--text); color: #fff; border-color: var(--text); }
+
+@media (max-width: 899px) {
+  .sidebar { left: 0; right: 0; bottom: 0; border-radius: 14px 14px 0 0; transition: height .2s; }
+  .sidebar[data-stufe="griff"] { height: 120px; }
+  .sidebar[data-stufe="halb"] { height: 45vh; }
+  .sidebar[data-stufe="voll"] { height: 92vh; }
+  .griff { display: block; flex-shrink: 0; width: 40px; height: 5px; border-radius: 3px; background: #bbb; margin: 8px auto 0; cursor: grab; }
+  .ebenenfeld { right: 0; top: 76px; }
+  .legende { display: none; }
+  .legende.offen { display: block; bottom: auto; top: 60px; right: 56px; }
+  .vermerk { display: none; }
+}
+
+/* Startseite: der Stadtplan 1935 liegt abgedunkelt und entsättigt als feststehender Hintergrund über der
+   ganzen Seite (eigenes Element hinter dem Inhalt, damit der Filter nur das Bild trifft); Text weiß. */
+.startseite { background: #2b2620; color: #fff; min-height: 100vh; }
+.startseite .hintergrund { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url(../bilder/startplan-1935-1600.jpg) 30% center / cover no-repeat;
+  background-image: image-set(url(../bilder/startplan-1935-1600.webp) type("image/webp"), url(../bilder/startplan-1935-1600.jpg) type("image/jpeg"));
+  filter: sepia(.6) saturate(.5) brightness(.42) contrast(1.05); }
+.startseite main, .startseite footer { position: relative; z-index: 1; }
+.startseite main { max-width: 760px; margin: 0 auto; padding: 12vh 16px 24px; }
+.startkopf h1 { margin: 0; font-size: 48px; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.startkopf p { margin: 4px 0 18px; color: #e8e2d4; font-size: 18px; }
+/* Schwebende Elemente: Kennzahlen, Kacheln und Hinweis als Glas (halbtransparent, Hintergrund weichgezeichnet,
+   helle Kante, weicher Schatten); die Suche bleibt opak weiß als einziger Akzent. Einheitlich: Radius 14 px,
+   eine Schattenstufe. Beim Laden blenden die Blöcke gestaffelt ein (bei „Bewegung reduzieren“ aus). */
+.startseite .suchkasten .suchfeld input { border: 1px solid rgba(255,255,255,.6); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.startseite .zahlen { margin: 18px 0 12px; padding: 12px 18px; border-radius: 14px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.startseite .zahlen small { color: #d9d3c5; }
+.startseite .kachel { color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); border-radius: 14px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,.25); transition: transform .2s, background .2s; }
+.startseite .kachel small { color: #e0dacc; }
+.startseite .kachel:hover, .startseite .kachel:focus-visible { transform: translateY(-2px); background: rgba(255,255,255,.22); }
+.startseite .kachel select { color: var(--text); }
+.kachel[hidden] { display: none; }
+.startseite .luecke { color: #fbe9b8; background: rgba(212,160,23,.18); border: 1px solid rgba(212,160,23,.45); border-left-width: 3px; border-radius: 10px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.startseite .luecke a { color: #fff; }
+.startseite footer { color: #cfc9bb; } .startseite footer a { color: #fff; }
+.startseite .vorschlaege { color: var(--text); }
+.startseite main > * { animation: aufblenden .6s ease-out both; }
+.startseite main > :nth-child(2) { animation-delay: .08s; } .startseite main > :nth-child(3) { animation-delay: .16s; }
+.startseite main > :nth-child(4) { animation-delay: .24s; } .startseite main > :nth-child(5) { animation-delay: .32s; }
+@keyframes aufblenden { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .startseite main > * { animation: none; } .startseite .kachel { transition: none; } }
+@media (max-width: 900px) {
+  .startseite .hintergrund { background-image: image-set(url(../bilder/startplan-1935-1000.webp) type("image/webp"), url(../bilder/startplan-1935-1000.jpg) type("image/jpeg")); }
+  .startseite main { padding-top: 7vh; }
+  .startkopf h1 { font-size: 34px; }
+}
+.suchkasten { position: relative; z-index: 2; }
+.suchkasten .suchfeld { padding: 0; } .suchkasten .suchfeld input { font-size: 18px; padding: 13px 16px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.suchkasten .vorschlaege .eintrag { display: block; text-decoration: none; color: var(--text); }
+.zahlen { display: flex; gap: 20px; justify-content: center; margin: 22px 0 14px; flex-wrap: wrap; }
+.zahlen div { text-align: center; } .zahlen b { font-size: 22px; display: block; } .zahlen small { color: var(--grau); }
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kachel { display: block; background: #fff; border: 1px solid var(--rand); border-radius: 10px; padding: 12px 14px; text-decoration: none; color: var(--text); min-height: 64px; }
+.kachel b { display: block; } .kachel small { color: var(--grau); }
+.kachel select { width: 100%; margin-top: 4px; font-size: 14px; }
+.luecke { background: #fff7e0; border-left: 3px solid #d4a017; padding: 8px 12px; font-size: 14px; margin-top: 18px; }
+footer { text-align: center; font-size: 12px; color: var(--grau); padding: 16px; }
+@media (max-width: 520px) { .kacheln { grid-template-columns: 1fr; } }
+
+.textseite main { max-width: 720px; margin: 0 auto; padding: 16px; line-height: 1.5; }
+.textseite h1 { font-size: 28px; } .textseite h2 { font-size: 18px; margin-top: 24px; }
+
+/* Startseite: Hinweis „im Aufbau“ an einer Kachel */
+.kachel .bau { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: normal; vertical-align: middle; background: rgba(255,255,255,.18); color: #f5f5f5; }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essen 1936 – Karte</title>
+<link rel="stylesheet" href="vendor/maplibre-gl.css?v=0ded0a7">
+<link rel="stylesheet" href="css/stil.css?v=0ded0a7">
+</head>
+<body class="kartenseite">
+<a class="logo" href="index.html">Essen 1936</a>
+<aside id="sidebar" class="sidebar" data-stufe="halb" aria-label="Suche und Ergebnisse">
+  <div class="griff" id="griff" role="button" aria-label="Ergebnisse ein- oder ausklappen"></div>
+  <div id="themenkopf" hidden></div>
+  <div id="ansichtkopf" hidden></div>
+  <div class="suchfeld">
+    <input id="suche" type="search" placeholder="Name, Straße, Firma, Beruf …" autocomplete="off" aria-label="Suche">
+    <button id="suche-leeren" type="button" aria-label="Suche leeren" hidden>✕</button>
+    <div id="vorschlaege" class="vorschlaege" hidden></div>
+  </div>
+  <div class="pills" id="pills"></div>
+  <div class="themenliste" id="themenliste" hidden></div>
+  <div id="inhalt" class="inhalt"></div>
+</aside>
+<div id="karte" class="karte"></div>
+<div id="steuerung" class="steuerung"></div>
+<div id="legende" class="legende"></div>
+<div class="vermerk" id="vermerk"></div>
+<script src="vendor/maplibre-gl.js?v=0ded0a7"></script>
+<script src="vendor/pmtiles.js?v=0ded0a7"></script>
+<script type="importmap">{"imports": {"./js/ansicht.js": "./js/ansicht.js?v=0ded0a7", "./js/ansicht_farben.js": "./js/ansicht_farben.js?v=0ded0a7", "./js/app.js": "./js/app.js?v=0ded0a7", "./js/daten.js": "./js/daten.js?v=0ded0a7", "./js/daten_ebenen.js": "./js/daten_ebenen.js?v=0ded0a7", "./js/exportcsv.js": "./js/exportcsv.js?v=0ded0a7", "./js/formen/balken.js": "./js/formen/balken.js?v=0ded0a7", "./js/formen/bubbles.js": "./js/formen/bubbles.js?v=0ded0a7", "./js/formen/punktkarte.js": "./js/formen/punktkarte.js?v=0ded0a7", "./js/formen/rangliste.js": "./js/formen/rangliste.js?v=0ded0a7", "./js/formen/skalen.js": "./js/formen/skalen.js?v=0ded0a7", "./js/formen/stadtteilkarte.js": "./js/formen/stadtteilkarte.js?v=0ded0a7", "./js/formen/trichter.js": "./js/formen/trichter.js?v=0ded0a7", "./js/karte.js": "./js/karte.js?v=0ded0a7", "./js/kategorien.js": "./js/kategorien.js?v=0ded0a7", "./js/konfig.js": "./js/konfig.js?v=0ded0a7", "./js/perspektiven.js": "./js/perspektiven.js?v=0ded0a7", "./js/perspektiven_modell.js": "./js/perspektiven_modell.js?v=0ded0a7", "./js/popup.js": "./js/popup.js?v=0ded0a7", "./js/schluessel.js": "./js/schluessel.js?v=0ded0a7", "./js/sidebar.js": "./js/sidebar.js?v=0ded0a7", "./js/start.js": "./js/start.js?v=0ded0a7", "./js/steuerung.js": "./js/steuerung.js?v=0ded0a7", "./js/strassenwahl.js": "./js/strassenwahl.js?v=0ded0a7", "./js/suche.js": "./js/suche.js?v=0ded0a7", "./js/themen.js": "./js/themen.js?v=0ded0a7", "./js/themenbaum.js": "./js/themenbaum.js?v=0ded0a7", "./js/vergleich.js": "./js/vergleich.js?v=0ded0a7", "./js/zustand.js": "./js/zustand.js?v=0ded0a7"}}</script>
+<script type="module" src="js/app.js?v=0ded0a7"></script>
+</body>
+</html>

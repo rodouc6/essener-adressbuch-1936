@@ -1,0 +1,115 @@
+import { falte, praefix2 } from "./schluessel.js";
+import { KATEGORIEN, NIVEAUS } from "./kategorien.js";
+import { GEWERBE_TEXT } from "./ansicht.js";
+import { FARBEN } from "./konfig.js";
+import { schluessel } from "./zustand.js";
+
+const MAX = { personen: 5, strassen: 3, firmen: 3, berufe: 3, eigentuemer: 3, rubriken: 3 };
+
+export function hinweisHJ(q) {
+  const k = falte(q);
+  return /^[hij]/.test(k);
+}
+
+function person(z) {
+  return { art: "person", text: `${z[1]}, ${z[2]}`.replace(/, $/, ""), untertitel: [z[3], z[4]].filter(Boolean).join(" · "),
+           eintragId: z[5], adressId: z[6], teil: z[7], q: z[1] };
+}
+
+function strasse(s) {
+  const art = s.art === "1936" ? "Name 1936" : "heutiger Name";
+  return { art: "strasse", text: `${s.name} (${s.ort})`, untertitel: `${art} · ${s.zeilen} Einträge`,
+           name: s.name, artName: s.art, ort: s.ort, schluessel: s.schluessel };
+}
+
+// alle: { strassen?, firmen?, berufe? } — für die betroffenen Gruppen die volle Liste statt der
+// Kurzliste liefern (Klick auf "alle n anzeigen", Spec §6). Personen laufen nie ungekürzt über
+// vorschlaege(); dafür startet der Aufrufer die eigentliche Personensuche (sucheAusText).
+export async function vorschlaege(q, lader, alle = {}) {
+  const k = falte(q);
+  const leer = { personen: [], strassen: [], firmen: [], berufe: [], eigentuemer: [], rubriken: [], gesamt: 0,
+                 gesamt_personen: 0, gesamt_strassen: 0, gesamt_firmen: 0, gesamt_berufe: 0, gesamt_eigentuemer: 0, gesamt_rubriken: 0 };
+  if (k.length < 2) return leer;
+  const [namen, firmen, strassen, berufe, berufeNorm, eigentuemer, rubriken] = await Promise.all([
+    lader.namen(praefix2(k)), lader.firmen(praefix2(k)), lader.strassen(), lader.berufe(), lader.berufeNorm(), lader.eigentuemer(), lader.rubriken()]);
+  const alleP = (namen || []).filter((z) => z[0].startsWith(k)).map(person);
+  const alleS = (strassen || []).filter((s) => s.schluessel.startsWith(k)).map(strasse);
+  const alleF = (firmen || []).filter((z) => z[0].startsWith(k))
+    .map((z) => ({ art: "firma", text: z[1], untertitel: z[2], eintragId: z[3], adressId: z[4] }));
+  // Normbezeichnungen (Vorschlagsart "ohdab") zuerst, danach die ungeprüften Rohtexte — Task 11.
+  const alleB = [
+    ...(berufeNorm || []).filter((z) => z[0].startsWith(k))
+      .map((z) => ({ art: "ohdab", text: z[1], untertitel: `${z[3]} Einträge · ${z[4]} Schreibweisen · ${NIVEAUS[z[5]] || z[5]}`, ohdab: z[2], name: z[1] })),
+    ...(berufe || []).filter((z) => z[0].startsWith(k))
+      .map((z) => ({ art: "beruf", text: z[1], untertitel: `${z[2]} Einträge`, beruf: z[1] })),
+  ];
+  const alleE = (eigentuemer || []).filter((z) => z[0].startsWith(k))
+    .map((z) => ({ art: "eigentuemer", text: z[1], untertitel: `${z[2]} Häuser · ${KATEGORIEN[z[3]] || z[3]}`, name: z[1] }));
+  // Gewerberubriken (Teil III, Index suche/rubriken.json): Vorschlagsart "rubrik" → Vergleich rub:<Rubrik>
+  const alleR = (rubriken || []).filter((z) => z[0].startsWith(k))
+    .map((z) => ({ art: "rubrik", text: z[1], untertitel: `${z[2]} Betriebe · ${GEWERBE_TEXT[z[3]] || z[3]}`, name: z[1] }));
+  return {
+    personen: alleP.slice(0, MAX.personen),
+    strassen: alle.strassen ? alleS : alleS.slice(0, MAX.strassen),
+    firmen: alle.firmen ? alleF : alleF.slice(0, MAX.firmen),
+    berufe: alle.berufe ? alleB : alleB.slice(0, MAX.berufe),
+    eigentuemer: alle.eigentuemer ? alleE : alleE.slice(0, MAX.eigentuemer),
+    rubriken: alle.rubriken ? alleR : alleR.slice(0, MAX.rubriken),
+    gesamt: alleP.length + alleS.length + alleF.length + alleB.length + alleE.length + alleR.length,
+    gesamt_personen: alleP.length, gesamt_strassen: alleS.length,
+    gesamt_firmen: alleF.length, gesamt_berufe: alleB.length, gesamt_eigentuemer: alleE.length, gesamt_rubriken: alleR.length,
+  };
+}
+
+// Auswahl → Treffermenge. adressIds sind die Häuser, die die Karte hervorhebt; zaehler zählt
+// Einträge je Haus; personen ist nur bei Namenssuche gefüllt (Liste zeigt dann Personen).
+export async function treffer(auswahl, lader) {
+  const zaehler = new Map();
+  let personen = null;
+  let hinweis = false;
+  let gruppen = null;
+  if (auswahl.art === "strasse") {
+    const scherbe = await lader.strassenScherbe(praefix2(auswahl.name));
+    const key = `${auswahl.name}|${auswahl.artName}|${auswahl.ort}`;
+    const ids = (scherbe && scherbe[key]) || [];
+    for (const a of ids) zaehler.set(a, (zaehler.get(a) || 0) + 1);
+  } else if (auswahl.art === "beruf") {
+    const s = await lader.berufeScherbe(praefix2(auswahl.beruf));
+    for (const [a, n] of (s && s[auswahl.beruf]) || []) zaehler.set(a, n);
+  } else if (auswahl.art === "person") {
+    const k = falte(auswahl.q);
+    const namen = (await lader.namen(praefix2(k))) || [];
+    personen = namen.filter((z) => z[0].startsWith(k)).map(person);
+    for (const p of personen) zaehler.set(p.adressId, (zaehler.get(p.adressId) || 0) + 1);
+    hinweis = personen.length === 0 && hinweisHJ(auswahl.q);
+  } else if (auswahl.art === "firma") {
+    zaehler.set(auswahl.adressId, 1);
+  } else if (auswahl.art === "vergleich") {
+    // Vergleich (Spec Themenbaum §3): je Schlüssel eine Gruppe mit Farbe nach Platz; die Gesamtmenge ist die Vereinigung.
+    gruppen = [];
+    let normen = null;
+    for (const [i, s] of (auswahl.schluessel || []).entries()) {
+      const { typ, wert } = schluessel(s);
+      let name = wert, z = new Map();
+      if (typ === "eig") {
+        const sch = await lader.eigentuemerScherbe(praefix2(wert));
+        z = new Map((sch && sch[wert]) || []);
+      } else if (typ === "rub") {
+        // Gewerberubrik (Teil III): Scherbe nach Präfix der Rubrik, Zähler = Betriebe im Haus
+        const sch = await lader.rubrikScherbe(praefix2(wert));
+        z = new Map((sch && sch[wert]) || []);
+      } else if (typ === "norm") {
+        normen = normen || (await lader.berufeNorm()) || [];
+        const eintrag = normen.find((n) => n[2] === wert);
+        if (eintrag) {
+          name = eintrag[1];
+          const sch = await lader.berufeNormScherbe(praefix2(name));
+          z = new Map((sch && sch[wert]) || []);
+        }
+      }
+      for (const [a, n] of z) zaehler.set(a, (zaehler.get(a) || 0) + n);
+      gruppen.push({ schluessel: s, name, farbe: FARBEN.gruppen[i % FARBEN.gruppen.length], adressIds: [...z.keys()], zaehler: z });
+    }
+  }
+  return { adressIds: [...zaehler.keys()], zaehler, personen, hinweisHJ: hinweis, gruppen };
+}

@@ -1,0 +1,481 @@
+import { STILE, FARBEN, STADTPLAN_EXPORT, ESSEN_MITTE, DATEN, PLAN_FREIGEGEBEN, VERSION } from "./konfig.js";
+
+// Cache-Busting wie im Lader: Versionsmarke an den GeoJSON-Quellen, lokal ("dev") keine.
+const MARKE = VERSION && VERSION !== "dev" ? `?v=${VERSION}` : "";
+import { esc } from "./popup.js";
+import { gruppenZuordnung } from "./vergleich.js";
+
+const WIKIPEDIA_QUELLE = /^https:\/\/de\.wikipedia\.org\//;
+
+const RADIUS = ["interpolate", ["linear"], ["ln", ["max", ["var", "n"], 1]], 0, 4, Math.log(100), 10];
+// Themenebenen: aus der Vogelperspektive feine Punkte, ab Zoom 14 die Größe nach Zahl der Einträge (Spec Themenkacheln §3).
+const RADIUS_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1, 12, 2, 14, RADIUS];
+// Symbolgröße = Radius / 16, aber der "zoom"-Ausdruck muss außen bleiben (MapLibre erlaubt kein "/" darüber).
+const ICON_THEMA = ["interpolate", ["linear"], ["zoom"], 10, 1 / 16, 12, 2 / 16, 14, ["/", RADIUS, 16]];
+const THEMA_EBENEN = ["thema-haus", "thema-ungenau", "thema-auswahl"];
+const TREFFER_EBENEN = ["treffer-haus", "treffer-ungenau"];
+
+function summeAktiv(ebenen) {
+  // Summe der Einträge über die aktiven Ebenen als Ausdruck
+  return ["+", ...ebenen.map((e) => ["coalesce", ["get", `n_${e}`], 0])];
+}
+
+async function ladeIcon(map, name, url, sdf) {
+  const img = new Image(64, 64);
+  await new Promise((ok, nein) => { img.onload = ok; img.onerror = nein; img.src = url; });
+  if (!map.hasImage(name)) map.addImage(name, img, { sdf, pixelRatio: 2 });
+}
+
+// Popup einer Zeche. Betriebsjahre stammen aus dem Wikipedia-Artikel (ersatzweise der Liste); weicht die
+// Liste ab, wird das gesagt statt eine Angabe als sicher zu zeigen. Nur auf de.wikipedia.org verlinken —
+// quelle ist Rohdaten aus der Kuratierung, kein beliebiges Ziel soll unbeaufsichtigt verlinkt werden (I1).
+export function zechePopupHtml(p) {
+  const jahre = p.jahre_unbekannt ? "Betriebsjahre unbekannt" : `in Betrieb ${esc(p.betrieb_von)}–${esc(p.betrieb_bis)}`;
+  const widerspruch = p.jahre_widerspruch
+    ? `<br><small>Wikipedia-Liste abweichend: ${esc(p.liste_von)}–${esc(p.liste_bis)}</small>` : "";
+  const plan = p.plan_1935 ? `<br><small>Stadtplan 1935: „${esc(p.plan_1935)}“</small>` : "";
+  const link = p.quelle && WIKIPEDIA_QUELLE.test(p.quelle)
+    ? `<br><a href="${esc(p.quelle)}" target="_blank" rel="noopener">Wikipedia</a>` : "";
+  return `<b>${esc(p.name)}</b><br>${esc(p.stadtteil || "")}<br>${jahre}${widerspruch}${plan}${link}`;
+}
+
+// Grau der Einheiten ohne Farbe (unter min_n oder gar nicht in den Ebenendaten) — wie GRAU in formen/skalen.js.
+const GRAU_KARTE = "#c8c8c8";
+
+// Weißer Rand um jeden Adresspunkt (Spec 2026-09-28 §4): in der Stadtansicht keiner (sonst weiße
+// Flecken), ab Straßenzoom sichtbar — trennt überlappende Punkte und hält den Kontrast auf Liberty.
+const HALO = ["interpolate", ["linear"], ["zoom"], 12, 0, 14, 1, 16, 1.6];
+
+// Eigentümer-Vergleich (Spec 2026-09-29 §5): Trefferfarbe nach Gruppe (Feature-State), Rot ohne Gruppe.
+const TREFFER_FARBE = ["match", ["coalesce", ["feature-state", "gruppe"], -1], ...FARBEN.gruppen.flatMap((f, i) => [i, f]), FARBEN.treffer];
+// Ring um Häuser in mehreren gewählten Gruppen. Der Zoom-Ausdruck muss außen bleiben (MapLibre), die
+// Fallunterscheidung sitzt deshalb in den Stützwerten.
+const MEHRFACH = ["boolean", ["feature-state", "mehrfach"], false];
+const RING_FARBE = ["case", MEHRFACH, FARBEN.auswahl, "#fff"];
+const RING_BREITE = ["interpolate", ["linear"], ["zoom"], 12, ["case", MEHRFACH, 2, 0], 14, ["case", MEHRFACH, 2, 1], 16, ["case", MEHRFACH, 2.4, 1.6]];
+// Trefferebene: dieselben Regeln, aber aus den Feldern der GeoJSON-Quelle statt aus dem Feature-State.
+const TREFFER_FELD_FARBE = ["match", ["get", "gruppe"], ...FARBEN.gruppen.flatMap((f, i) => [i, f]), FARBEN.treffer];
+const TREFFER_MEHRFACH = ["to-boolean", ["get", "mehrfach"]];
+const TREFFER_RING_FARBE = ["case", TREFFER_MEHRFACH, FARBEN.auswahl, "#fff"];
+const TREFFER_RING_BREITE = ["interpolate", ["linear"], ["zoom"], 12, ["case", TREFFER_MEHRFACH, 2, 0], 14, ["case", TREFFER_MEHRFACH, 2, 1], 16, ["case", TREFFER_MEHRFACH, 2.4, 1.6]];
+
+const ICONS = { "kreis-gestrichelt": ["bilder/kreis-gestrichelt.svg", true], zeche: ["bilder/zeche.svg", true] };
+const LEERER_STIL = { version: 8, sources: {}, layers: [] };
+
+export class Karte {
+  constructor(container, zustand, ereignisse) {
+    this.ereignisse = ereignisse;
+    this.zustand = zustand;
+    this.farbe = null;          // Themenfarbregel (Task 13) oder null
+    this.ansicht = null;        // normalisierte Ansicht (Spec §8) oder null
+    this.ansichtWerte = new Map();
+    this._ansichtGen = 0;
+    this.treffer = new Set();
+    this.gruppen = null;        // Eigentümer-Gruppen der Treffer (für Neuaufsetzen nach Stil-/Themenwechsel)
+    this.trefferGeo = null;     // Trefferpunkte aus dem Kurzindex (eigene Quelle, überlebt Stilwechsel)
+    this.auswahl = null;
+    this.themaId = null;        // aktives Thema mit eigener Kacheldatei (setzeThemaQuelle)
+    this._stilCache = new Map();
+    this._stilGen = 0;
+    this.protokoll = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", this.protokoll.tile);
+    // Die Karte startet mit einem leeren Stil; der eigentliche Stil kommt über setzeStil(), das die
+    // Grundkarte als JSON lädt und unsere Quellen und Ebenen hineinmischt. So sind unsere Ebenen von
+    // Anfang an Teil des Stils, und ein Stilwechsel kann sie nicht mehr wegräumen.
+    this.map = new maplibregl.Map({
+      container, style: LEERER_STIL, center: zustand.c || ESSEN_MITTE, zoom: zustand.z ?? 11,
+      minZoom: 9, maxZoom: 18,
+      // Impressum/Datenschutz müssen von jeder Seite erreichbar sein — auf der Kartenseite über die Attribution.
+      attributionControl: { compact: true, customAttribution: 'Adressbuch-Transkription: <a href="https://des.genealogy.net/essen1936/" rel="noopener">Verein für Computergenealogie</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" rel="noopener">CC BY-SA 4.0</a> · <a href="impressum.html">Impressum</a> · <a href="impressum.html#datenschutz">Datenschutz</a>' },
+    });
+    this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    this.map.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), "top-right");
+    this.map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+    this.popup = new maplibregl.Popup({ closeButton: true, maxWidth: "320px", offset: 10 });
+    // Icons gehen bei jedem Stilwechsel verloren; MapLibre meldet fehlende Bilder, wir laden sie nach.
+    this.map.on("styleimagemissing", (e) => { const d = ICONS[e.id]; if (d) ladeIcon(this.map, e.id, d[0], d[1]); });
+    this.map.on("moveend", () => {
+      const c = this.map.getCenter();
+      ereignisse.onBewegt(Math.round(this.map.getZoom() * 100) / 100, [+c.lng.toFixed(5), +c.lat.toFixed(5)]);
+    });
+    this._bereit = new Promise((ok) => this.map.once("load", ok)).then(() => this.setzeStil(zustand.karte));
+  }
+
+  bereit() { return this._bereit; }
+
+  _eigeneQuellen() {
+    const q = {
+      adressen: { type: "vector", url: `pmtiles://${new URL(DATEN + "adressen.pmtiles", location.href)}`, promoteId: "id" },
+      zechen: { type: "geojson", data: new URL(DATEN + "zechen.geojson" + MARKE, location.href).href },
+      // Flächen der Ansichten (Spec §8); promoteId hebt die Eigenschaft `id` zur Feature-ID,
+      // damit Farben per feature-state gesetzt werden können.
+      stadtteile: { type: "geojson", data: new URL(DATEN + "stadtteile.geojson" + MARKE, location.href).href, promoteId: "id" },
+    };
+    // Bei PLAN_FREIGEGEBEN false weder Quelle noch Ebene anlegen — kein einziger Request an den
+    // Dienst, auch nicht über ?plan=1 (C1). Freigabe der Stadt Essen vom 2026-10-07: live über export.
+    if (PLAN_FREIGEGEBEN) {
+      q["stadtplan-1935"] = {
+        type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
+        tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
+        attribution: "Stadtplan 1935: Stadt Essen (Geodatendienst der Stadt Essen)",
+      };
+    }
+    return q;
+  }
+
+  _eigeneEbenen() {
+    const sl = "adressen";
+    const e = [];
+    if (PLAN_FREIGEGEBEN) e.push({ id: "stadtplan-1935", type: "raster", source: "stadtplan-1935",
+                                  layout: { visibility: "none" }, paint: { "raster-opacity": 0 } });
+    // Ansichtsebenen liegen unter den Adresspunkten, damit die Punkte sichtbar bleiben; ohne
+    // Ansicht sind alle drei unsichtbar. Ohne feature-state bleibt eine Einheit grau.
+    e.push({ id: "stadtteile-flaeche", type: "fill", source: "stadtteile", layout: { visibility: "none" },
+             paint: { "fill-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE], "fill-opacity": 0.55, "fill-outline-color": "#fff" } });
+    e.push({ id: "strassen-linie", type: "line", source: "adressen", "source-layer": "strassen", layout: { visibility: "none" },
+             paint: { "line-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE],
+                      "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 15, 5] } });
+    e.push({ id: "hex-flaeche", type: "fill", source: "adressen", "source-layer": "hex", layout: { visibility: "none" },
+             paint: { "fill-color": ["coalesce", ["feature-state", "farbe"], GRAU_KARTE], "fill-opacity": 0.6 } });
+    e.push({ id: "adressen-haus", type: "circle", source: "adressen", "source-layer": sl,
+             filter: ["==", ["get", "stufe"], "haus"],
+             paint: { "circle-stroke-color": "#fff", "circle-stroke-width": HALO } });
+    e.push({ id: "adressen-ungenau", type: "symbol", source: "adressen", "source-layer": sl,
+             filter: ["!=", ["get", "stufe"], "haus"],
+             layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
+             paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } });
+    e.push({ id: "adressen-auswahl", type: "circle", source: "adressen", "source-layer": sl,
+             filter: ["==", ["get", "id"], ""],
+             paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } });
+    e.push({ id: "zechen", type: "symbol", source: "zechen", filter: ["==", ["get", "aktiv_1936"], true],
+             layout: { visibility: "none", "icon-image": "zeche", "icon-size": 0.7, "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
+                       "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top", "icon-allow-overlap": true },
+             paint: { "icon-color": "#111", "icon-halo-color": "#fff", "icon-halo-width": 1.5, "text-halo-color": "#fff", "text-halo-width": 1.5 } });
+    return e;
+  }
+
+  // Grundkarte als JSON laden (einmal je Stil) und unsere Quellen und Ebenen hineinmischen.
+  async _stilMitEbenen(name) {
+    if (!this._stilCache.has(name)) {
+      this._stilCache.set(name, fetch(STILE[name]).then((r) => { if (!r.ok) throw new Error(`Stil ${name}: ${r.status}`); return r.json(); }));
+    }
+    const basis = await this._stilCache.get(name);
+    return { ...basis, sources: { ...basis.sources, ...this._eigeneQuellen() }, layers: [...basis.layers, ...this._eigeneEbenen()] };
+  }
+
+  // Stil setzen; ein späterer Aufruf überholt einen noch laufenden (Generationszähler), und der
+  // überholte Aufruf löst trotzdem auf, damit niemand auf ihn hängen bleibt.
+  async setzeStil(name) {
+    const gen = ++this._stilGen;
+    let stil;
+    try { stil = await this._stilMitEbenen(name); }
+    catch (e) { console.error(e); return; }
+    if (gen !== this._stilGen) return;
+    // Nach setStyle(objekt) liegen Quellen und Ebenen sofort im neuen Stil; "styledata" bestätigt,
+    // dass MapLibre ihn übernommen hat, danach Filter/Zustand anlegen.
+    const uebernommen = new Promise((ok) => this.map.once("styledata", ok));
+    this.map.setStyle(stil, { diff: false });
+    await uebernommen;
+    if (gen !== this._stilGen) return;
+    this.ebenenAufsetzen();
+  }
+
+  _themaQuelle(id) {
+    return { type: "vector", url: `pmtiles://${new URL(DATEN + `themen/${id}.pmtiles`, location.href)}`, promoteId: "id" };
+  }
+
+  // Ebenenpaar der Themenquelle, gleich gebaut wie adressen-haus/adressen-ungenau (Spec Themenkacheln §3).
+  _themaEbenen() {
+    return [
+      { id: "thema-haus", type: "circle", source: "thema", "source-layer": "adressen", filter: ["==", ["get", "stufe"], "haus"],
+        paint: { "circle-stroke-color": "#fff", "circle-stroke-width": HALO } },
+      { id: "thema-ungenau", type: "symbol", source: "thema", "source-layer": "adressen", filter: ["!=", ["get", "stufe"], "haus"],
+        layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
+        paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } },
+      // Auswahlring auf der Themenquelle: die Hauptquelle ist ausgedünnt, dort fehlt der geklickte Punkt oft.
+      { id: "thema-auswahl", type: "circle", source: "thema", "source-layer": "adressen", filter: ["==", ["get", "id"], ""],
+        paint: { "circle-radius": 14, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": FARBEN.auswahl, "circle-stroke-width": 3 } },
+    ];
+  }
+
+  // Kacheldatei eines Themas als zweite Punktquelle: bei id anlegen (vorhandene ersetzen) und die Hauptpunkte
+  // ausblenden, bei null entfernen und die Hauptpunkte wieder zeigen. Vor dem ersten Stil nur merken.
+  setzeThemaQuelle(id) {
+    const vorher = this.themaId;
+    this.themaId = id || null;
+    const m = this.map;
+    if (!m.getLayer("adressen-haus")) return;
+    // Gleiche Quelle schon da (Legendenklick, Ebenenwechsel): nur Filter neu, kein Neuaufbau — sonst
+    // flackern die Punkte und alle Kacheln werden neu geholt.
+    if (this.themaId && this.themaId === vorher && m.getSource("thema") && m.getLayer("thema-haus")) { this.setzeFilter(this.zustand); return; }
+    for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.removeLayer(l);
+    if (m.getSource("thema")) m.removeSource("thema");
+    if (this.themaId) {
+      m.addSource("thema", this._themaQuelle(this.themaId));
+      // Vor adressen-auswahl einfügen, damit der Auswahlring über den Themenpunkten liegt.
+      for (const l of this._themaEbenen()) m.addLayer(l, this._vorTreffern());
+      if (!this._themaHandler) {
+        // Handler hängen an der Ebenen-ID und überleben remove/add der Ebene — einmal registrieren.
+        this._themaHandler = true;
+        for (const l of THEMA_EBENEN) {
+          m.on("click", l, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+          m.on("mouseenter", l, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+          m.on("mouseleave", l, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+        }
+      }
+    }
+    for (const l of ["adressen-haus", "adressen-ungenau"]) m.setLayoutProperty(l, "visibility", this.themaId ? "none" : "visible");
+    for (const l of THEMA_EBENEN) if (m.getLayer(l)) m.setLayoutProperty(l, "visibility", "visible");
+    if (m.getLayer("thema-auswahl")) m.setFilter("thema-auswahl", ["==", ["get", "id"], this.auswahl || ""]);
+    this.setzeFilter(this.zustand);
+    if (this.themaId && this.treffer.size) this.setzeTreffer([...this.treffer], this.gruppen, this.trefferGeo);   // Gruppenfarben und Ring auch auf der neuen Quelle
+  }
+
+  // Zustand (Filter, Plan, Zechen, Treffer, Auswahl) auf die im Stil vorhandenen Ebenen legen.
+  ebenenAufsetzen() {
+    const m = this.map;
+    // Klick-/Hover-Handler sind an die Karte gebunden, nicht an den Stil — nur einmal registrieren.
+    if (!this._handlerAngehaengt) {
+      this._handlerAngehaengt = true;
+      for (const id of ["adressen-haus", "adressen-ungenau"]) {
+        m.on("click", id, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+        m.on("mouseenter", id, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+        m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+      }
+      m.on("click", "zechen", (e) => {
+        const p = e.features[0].properties;
+        this.zeigePopup(e.lngLat, zechePopupHtml(p));
+      });
+    }
+    this.setzeFilter(this.zustand);
+    this.setzePlan(this.zustand.plan);
+    this.setzeZechen(this.zustand.zechen);
+    this.setzeTreffer(this.treffer.size ? [...this.treffer] : null, this.gruppen, this.trefferGeo);
+    this.setzeAuswahl(this.auswahl);
+    this.setzeThemaQuelle(this.themaId);   // Themenquelle ist nicht Teil des Stils — nach dem Wechsel neu anlegen
+    // Nach einem Stilwechsel sind Quellen und feature-state neu — Ansicht erneut auflegen.
+    this.setzeAnsicht(this.ansicht, this.ansichtWerte);
+  }
+
+  // Eine Ansicht (Spec §8) auf der Karte zeigen: passende Ebene sichtbar, Farben per feature-state,
+  // Adresspunkte gedimmt. `werte` ist eine Map id → { farbe, … } aus ansicht_farben.js.
+  setzeAnsicht(ansicht, werte) {
+    this.ansicht = ansicht || null;
+    this.ansichtWerte = werte || new Map();
+    const m = this.map;
+    this._ansichtGen = (this._ansichtGen || 0) + 1;   // hebt noch wartende Farbanwendungen auf
+    if (!m.getLayer("stadtteile-flaeche")) return;    // vor dem ersten Stil: kommt über ebenenAufsetzen()
+    const ebene = this.ansicht ? this.ansicht.ebene : null;
+    m.setLayoutProperty("stadtteile-flaeche", "visibility", ebene === "stadtteil" ? "visible" : "none");
+    m.setLayoutProperty("strassen-linie", "visibility", ebene === "strasse" ? "visible" : "none");
+    m.setLayoutProperty("hex-flaeche", "visibility", ebene === "hex" ? "visible" : "none");
+    if (ebene && ebene !== "adresse") {
+      const quelle = ebene === "stadtteil" ? { source: "stadtteile" }
+        : { source: "adressen", sourceLayer: ebene === "strasse" ? "strassen" : "hex" };
+      this._farbenAnwenden(quelle, this._ansichtGen);
+    }
+    this._deckkraftSetzen();
+  }
+
+  // feature-state lässt sich erst setzen, wenn die Quelle geladen ist; sonst bliebe alles grau.
+  // Deshalb bei Bedarf einmal auf "sourcedata" warten und dann anwenden.
+  _farbenAnwenden(quelle, gen) {
+    const m = this.map;
+    const anwenden = () => {
+      if (gen !== this._ansichtGen) return true;      // von einer neueren Ansicht überholt
+      try {
+        m.removeFeatureState(quelle);
+        for (const [id, w] of this.ansichtWerte) m.setFeatureState({ ...quelle, id }, { farbe: w.farbe });
+      } catch { return false; }
+      return true;
+    };
+    if (m.isSourceLoaded(quelle.source) && anwenden()) return;
+    const horch = (e) => {
+      if (gen !== this._ansichtGen) { m.off("sourcedata", horch); return; }
+      if (e.sourceId !== quelle.source || !e.isSourceLoaded) return;
+      if (anwenden()) m.off("sourcedata", horch);
+    };
+    m.on("sourcedata", horch);
+  }
+
+  // Farbe und Größe aus Zustand + Themenregel ableiten und auf beide Adressebenen legen.
+  setzeFilter(z) {
+    this.zustand = z;
+    const m = this.map;
+    if (!m.getLayer("adressen-haus")) return;   // vor dem ersten Stil: Zustand wird beim Aufsetzen angewendet
+    const n = summeAktiv(z.ebene);
+    // Präsenzfelder genügen statt der Ebenen-Summe: Pill „Eigentümer“ zeigt auch Häuser mit belegtem Besitz aus einer
+    // Sammelzeile des Adressbuchs (Teil II) (n_besitz, n_II = 0); ein Thema kann ein weiteres Feld nennen (filter.praesenz).
+    const praesenz = new Set([...(z.ebene.includes("II") ? ["n_besitz"] : []), ...(this.farbe && this.farbe.praesenz ? [this.farbe.praesenz] : [])]);
+    const vorhanden = praesenz.size ? ["any", [">", n, 0], ...[...praesenz].map((f) => [">", ["coalesce", ["get", f], 0], 0])] : [">", n, 0];
+    const bedingungen = [vorhanden, ["in", ["get", "stufe"], ["literal", z.praez]]];
+    if (z.stadtteil) bedingungen.push(["==", ["get", "stadtteil"], z.stadtteil]);
+    if (this.farbe && this.farbe.merkmal) bedingungen.push([">", ["coalesce", ["get", `m_${this.farbe.merkmal}`], 0], 0]);
+    if (this.farbe && this.farbe.filter) bedingungen.push(this.farbe.filter);   // Schalter eines Themas (Spec Bergbau §5)
+    const grund = this.farbe ? this.farbe.ausdruck : (z.ebene.length === 1 ? FARBEN[z.ebene[0]] : FARBEN.neutral);
+    const farbe = ["case", ["boolean", ["feature-state", "treffer"], false], TREFFER_FARBE, grund];
+    // Hauptebenen: Stadtansicht nicht zulaufen lassen. Themenebenen: keine Zoomgrenze — sie sollen von oben alles zeigen.
+    const haupt = [...bedingungen, ["any", [">=", ["zoom"], 12], [">=", n, 5]]];
+    const paare = [["adressen-haus", "adressen-ungenau", haupt, RADIUS, ["/", RADIUS, 16]], ["thema-haus", "thema-ungenau", bedingungen, RADIUS_THEMA, ICON_THEMA]];
+    for (const [hausId, ungenauId, bed, radiusRegel, iconRegel] of paare) {
+      if (!m.getLayer(hausId)) continue;
+      m.setFilter(hausId, ["all", ["==", ["get", "stufe"], "haus"], ...bed]);
+      m.setFilter(ungenauId, ["all", ["!=", ["get", "stufe"], "haus"], ...bed]);
+      m.setPaintProperty(hausId, "circle-color", farbe);
+      m.setPaintProperty(hausId, "circle-radius", ["let", "n", n, radiusRegel]);
+      m.setPaintProperty(hausId, "circle-stroke-color", RING_FARBE);
+      m.setPaintProperty(hausId, "circle-stroke-width", RING_BREITE);
+      m.setPaintProperty(ungenauId, "icon-halo-color", RING_FARBE);
+      m.setPaintProperty(ungenauId, "icon-halo-width", RING_BREITE);
+      m.setPaintProperty(ungenauId, "icon-color", farbe);
+      m.setLayoutProperty(ungenauId, "icon-size", ["let", "n", n, iconRegel]);
+    }
+    // Trefferebene: eigene Punkte aus dem Kurzindex — nur Präzision und Stadtteil filtern, keine Ebenen-Summe
+    // (Häuser aus Hausnummernspannen haben n_II = 0 und wären sonst unsichtbar). Farbe/Ring aus den Feldern.
+    if (m.getLayer("treffer-haus")) {
+      const tb = [["in", ["get", "stufe"], ["literal", z.praez]], ...(z.stadtteil ? [["==", ["get", "stadtteil"], z.stadtteil]] : [])];
+      const tn = ["coalesce", ["get", "n"], 1];
+      m.setFilter("treffer-haus", ["all", ["==", ["get", "stufe"], "haus"], ...tb]);
+      m.setFilter("treffer-ungenau", ["all", ["!=", ["get", "stufe"], "haus"], ...tb]);
+      m.setPaintProperty("treffer-haus", "circle-color", TREFFER_FELD_FARBE);
+      m.setPaintProperty("treffer-haus", "circle-radius", ["let", "n", tn, RADIUS_THEMA]);
+      m.setPaintProperty("treffer-haus", "circle-stroke-color", TREFFER_RING_FARBE);
+      m.setPaintProperty("treffer-haus", "circle-stroke-width", TREFFER_RING_BREITE);
+      m.setPaintProperty("treffer-ungenau", "icon-color", TREFFER_FELD_FARBE);
+      m.setPaintProperty("treffer-ungenau", "icon-halo-color", TREFFER_RING_FARBE);
+      m.setPaintProperty("treffer-ungenau", "icon-halo-width", TREFFER_RING_BREITE);
+      m.setLayoutProperty("treffer-ungenau", "icon-size", ["let", "n", tn, ICON_THEMA]);
+    }
+    this._deckkraftSetzen();
+  }
+
+  // Ohne Treffermenge sind alle Punkte voll sichtbar; mit Treffermenge nur die Treffer, der Rest
+  // gedimmt. Unter einer Flächenansicht treten die Punkte insgesamt zurück, damit die Fläche lesbar bleibt.
+  _deckkraftSetzen() {
+    if (!this.map.getLayer("adressen-haus")) return;
+    const basis = this.ansicht && this.ansicht.ebene !== "adresse" ? 0.15 : 0.9;
+    const d = this.treffer.size ? ["case", ["boolean", ["feature-state", "treffer"], false], basis, Math.min(basis, 0.25)] : basis;
+    this.map.setPaintProperty("adressen-haus", "circle-opacity", d);
+    this.map.setPaintProperty("adressen-haus", "circle-stroke-opacity", d);
+    this.map.setPaintProperty("adressen-ungenau", "icon-opacity", d);
+    if (this.map.getLayer("treffer-haus")) {
+      this.map.setPaintProperty("treffer-haus", "circle-opacity", basis);
+      this.map.setPaintProperty("treffer-haus", "circle-stroke-opacity", basis);
+      this.map.setPaintProperty("treffer-ungenau", "icon-opacity", basis);
+    }
+    if (this.map.getLayer("thema-haus")) {
+      this.map.setPaintProperty("thema-haus", "circle-opacity", d);
+      this.map.setPaintProperty("thema-haus", "circle-stroke-opacity", d);
+      this.map.setPaintProperty("thema-ungenau", "icon-opacity", d);
+    }
+  }
+
+  setzeFarbe(regel) { this.farbe = regel; this.setzeFilter(this.zustand); }
+
+  // Ebene, vor der Themenebenen eingefügt werden: unter den Treffern, sonst unter dem Auswahlring.
+  _vorTreffern() {
+    const m = this.map;
+    return m.getLayer("treffer-haus") ? "treffer-haus" : m.getLayer("adressen-auswahl") ? "adressen-auswahl" : undefined;
+  }
+
+  _trefferEbenen() {
+    return [
+      { id: "treffer-haus", type: "circle", source: "treffer", filter: ["==", ["get", "stufe"], "haus"],
+        paint: { "circle-stroke-color": "#fff", "circle-stroke-width": HALO } },
+      { id: "treffer-ungenau", type: "symbol", source: "treffer", filter: ["!=", ["get", "stufe"], "haus"],
+        layout: { "icon-image": "kreis-gestrichelt", "icon-allow-overlap": true, "icon-ignore-placement": true },
+        paint: { "icon-halo-color": "#fff", "icon-halo-width": HALO } },
+    ];
+  }
+
+  // Trefferquelle aus dem Kurzindex an- oder ablegen (Spec Eigentümer-Vergleich, Nachtrag 2026-09-29): alle Treffer
+  // sichtbar, auch wenn die Kachel ausgedünnt ist oder der Ebenenfilter das Haus ausblendet.
+  _trefferQuelleSetzen() {
+    const m = this.map;
+    if (!m.getLayer("adressen-haus")) return;
+    if (!this.trefferGeo) {
+      for (const l of TREFFER_EBENEN) if (m.getLayer(l)) m.removeLayer(l);
+      if (m.getSource("treffer")) m.removeSource("treffer");
+      return;
+    }
+    const q = m.getSource("treffer");
+    if (q && typeof q.setData === "function") q.setData(this.trefferGeo);
+    else {
+      if (q) { for (const l of TREFFER_EBENEN) if (m.getLayer(l)) m.removeLayer(l); m.removeSource("treffer"); }
+      m.addSource("treffer", { type: "geojson", data: this.trefferGeo });
+    }
+    if (!m.getLayer("treffer-haus")) for (const l of this._trefferEbenen()) m.addLayer(l, m.getLayer("adressen-auswahl") ? "adressen-auswahl" : undefined);
+    if (!this._trefferHandler) {
+      this._trefferHandler = true;
+      for (const l of TREFFER_EBENEN) {
+        m.on("click", l, (e) => this.ereignisse.onKlick(e.features[0].properties.id, e.lngLat));
+        m.on("mouseenter", l, (e) => { m.getCanvas().style.cursor = "pointer"; this.ereignisse.onHover(e.features[0].properties.id, e.lngLat); });
+        m.on("mouseleave", l, () => { m.getCanvas().style.cursor = ""; this.ereignisse.onHover(null, null); });
+      }
+    }
+    this.setzeFilter(this.zustand);
+  }
+
+  // Treffer per Feature-State: alle bisherigen zurücksetzen, neue setzen, Rest dimmen. Mit Gruppen
+  // (Eigentümer-Vergleich) trägt jede Adresse ihre erste Gruppe und ob sie in mehreren liegt.
+  setzeTreffer(adressIds, gruppen = null, geo = null) {
+    const m = this.map;
+    if (!m.getSource("adressen")) return;
+    this.trefferGeo = geo && geo.features && geo.features.length ? geo : null;
+    this._trefferQuelleSetzen();
+    const quellen = [["adressen", "adressen"], ...(m.getSource("thema") ? [["thema", "adressen"]] : [])];
+    for (const [source, sourceLayer] of quellen) m.removeFeatureState({ source, sourceLayer });
+    this.treffer = new Set(adressIds || []);
+    this.gruppen = gruppen;
+    const zuordnung = gruppen ? gruppenZuordnung(gruppen) : null;
+    for (const [source, sourceLayer] of quellen) for (const id of this.treffer) {
+      const z = zuordnung && zuordnung.get(id);
+      m.setFeatureState({ source, sourceLayer, id }, z ? { treffer: true, gruppe: z.gruppe, mehrfach: z.mehrfach } : { treffer: true });
+    }
+    this._deckkraftSetzen();
+  }
+
+  setzeAuswahl(adressId) {
+    this.auswahl = adressId;
+    for (const l of ["adressen-auswahl", "thema-auswahl"]) if (this.map.getLayer(l)) this.map.setFilter(l, ["==", ["get", "id"], adressId || ""]);
+  }
+
+  setzePlan(deckkraft) {
+    if (!PLAN_FREIGEGEBEN || !this.map.getLayer("stadtplan-1935")) return;
+    this.map.setLayoutProperty("stadtplan-1935", "visibility", deckkraft > 0 ? "visible" : "none");
+    this.map.setPaintProperty("stadtplan-1935", "raster-opacity", deckkraft);
+  }
+
+  setzeZechen(an) {
+    if (this.map.getLayer("zechen")) this.map.setLayoutProperty("zechen", "visibility", an ? "visible" : "none");
+  }
+
+  fliegeZu(lngLat, zoom = 16) { this.map.flyTo({ center: lngLat, zoom: Math.max(this.map.getZoom(), zoom), duration: 600 }); }
+
+  _rahmen() { return new maplibregl.LngLatBounds(); }
+
+  // Auf die Treffer einpassen. Mit Koordinaten (Kurzindex) ohne Kachelabfrage; sonst nur auf die
+  // geladenen Treffer — nicht geladene Kacheln kennen wir nicht → dann kein Zoom.
+  passeEin(adressIds, koordinaten = null) {
+    const b = this._rahmen();
+    let n = 0;
+    if (koordinaten) {
+      for (const id of adressIds) { const k = koordinaten.get(id); if (k) { b.extend(k); n++; } }
+    } else {
+      const ids = new Set(adressIds);
+      for (const x of this.map.querySourceFeatures("adressen", { sourceLayer: "adressen" })) if (ids.has(x.properties.id)) { b.extend(x.geometry.coordinates); n++; }
+    }
+    if (!n) return false;
+    this.map.fitBounds(b, { padding: 60, maxZoom: 16, duration: 600 });
+    return true;
+  }
+
+  // Koordinate eines Punktes aus den geladenen Kacheln (für die Liste → Karte-Kopplung).
+  position(adressId) {
+    const f = this.map.querySourceFeatures("adressen", { sourceLayer: "adressen", filter: ["==", ["get", "id"], adressId] });
+    return f.length ? f[0].geometry.coordinates : null;
+  }
+
+  zeigePopup(lngLat, html) { this.popup.setLngLat(lngLat).setHTML(html).addTo(this.map); }
+  schliessePopup() { this.popup.remove(); }
+}
