@@ -15,9 +15,8 @@ fi
 for f in site/daten/kennzahlen.json site/daten/adressen.pmtiles site/daten/zechen.geojson; do
   [ -f "$f" ] || { echo "$f fehlt – zuerst python3 pipeline/06_karte_export.py ausführen." >&2; exit 1; }
 done
-if ! grep -q '^export const PLAN_FREIGEGEBEN = false;' site/js/konfig.js; then
-  echo "PLAN_FREIGEGEBEN ist nicht false – Stadtplan-Rechte sind ungeklärt, Deploy abgebrochen." >&2; exit 1
-fi
+# Stadtplan 1935: Nutzung von der Stadt Essen am 2026-10-07 genehmigt (live über die Export-Schnittstelle);
+# PLAN_FREIGEGEBEN darf seither true sein, die frühere Deploy-Sperre entfällt.
 
 # 2. Baum aus site/ in einem temporären Index aufbauen (ohne Tests, Node-Paketdatei und das
 #    Roh-GeoJSON, das nur tippecanoe braucht). --force, weil site/daten/ in .gitignore steht.

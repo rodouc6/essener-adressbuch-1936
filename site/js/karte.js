@@ -111,13 +111,13 @@ export class Karte {
       // damit Farben per feature-state gesetzt werden können.
       stadtteile: { type: "geojson", data: new URL(DATEN + "stadtteile.geojson" + MARKE, location.href).href, promoteId: "id" },
     };
-    // Solange PLAN_FREIGEGEBEN false ist (Rechte am Dienst geo.essen.de ungeklärt), weder Quelle
-    // noch Ebene anlegen — kein einziger Request an den Dienst, auch nicht über ?plan=1 (C1).
+    // Bei PLAN_FREIGEGEBEN false weder Quelle noch Ebene anlegen — kein einziger Request an den
+    // Dienst, auch nicht über ?plan=1 (C1). Freigabe der Stadt Essen vom 2026-10-07: live über export.
     if (PLAN_FREIGEGEBEN) {
       q["stadtplan-1935"] = {
         type: "raster", tileSize: 256, minzoom: 10, maxzoom: 17,
         tiles: [`${STADTPLAN_EXPORT}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`],
-        attribution: "Stadtplan 1935: Stadt Essen / Historischer Verein",
+        attribution: "Stadtplan 1935: Stadt Essen (Geodatendienst der Stadt Essen)",
       };
     }
     return q;

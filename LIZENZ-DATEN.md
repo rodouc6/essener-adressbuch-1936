@@ -22,4 +22,6 @@ Christos Rodouniklis“.
   liegen bei den Herausgebern.
 - Zechen: Lage und Betriebsjahre nach Wikipedia (CC BY-SA 4.0), Status 1936 geprüft gegen die Chronik von
   Joachim Huske (Auszüge im Historischen Portal Essen); die Chronik selbst ist nicht Teil dieser Lizenz.
-- Der Stadtplan Essen 1935 ist nicht enthalten; seine Rechte sind ungeklärt.
+- Der Stadtplan Essen 1935 (Geodatendienst der Stadt Essen) wird live aus dem Dienst der Stadt geladen und ist
+  nicht Teil dieser Lizenz; Nutzung mit Genehmigung der Stadt Essen (Amt für Geoinformation, Vermessung und
+  Kataster) vom 7. Oktober 2026.

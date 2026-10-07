@@ -124,8 +124,9 @@ stehen in [`docs/datenquelle_lizenz.md`](docs/datenquelle_lizenz.md).
 - **Automatische Zuordnungen** sind überall als solche markiert. Die soziale
   Stellung lehnt sich an die Berufszählung von 1933 an, weicht aber bewusst
   ab ([`docs/stellung.md`](docs/stellung.md)).
-- **Der Stadtplan 1935** (Stadt Essen, Historischer Verein) wird erst als
-  Kartenebene angeboten, wenn die Rechte geklärt sind.
+- **Der Stadtplan 1935** (Geodatendienst der Stadt Essen) ist als zuschaltbare
+  Kartenebene eingebunden, live über die Export-Schnittstelle des Dienstes,
+  mit Genehmigung der Stadt Essen.
 
 ## Aufbau des Repositorys
 

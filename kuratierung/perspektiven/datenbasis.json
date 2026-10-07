@@ -9,7 +9,7 @@
     "Digitalisat: Digitale Bibliothek des Vereins für Computergenealogie, https://www.digibib.genealogy.net/viewer/image/857439804_1936/",
     "Transkription: DES-Projekt „Adressbuch Essen 1936“, Verein für Computergenealogie, abgeschlossen 2020; Datensatz „Historische Adressbücher aus dem Rheinland und Ruhrgebiet“ (Coding da Vinci Nieder.Rhein.Land 2021), CC BY-SA 4.0",
     "Straßennamen: Erwin Dickhoff (Begründer), Birgit Hartings, Norbert Kostanowicz: Essener Straßen. Hrsg. Stadt Essen und Historischer Verein für Stadt und Stift Essen e. V., Neuauflage, Klartext-Verlag, Essen 2015",
-    "Stadtplan von Groß-Essen 1935, Stadt Essen / Historischer Verein (ArcGIS-Dienst geo.essen.de)",
+    "Stadtplan Essen 1935, Stadt Essen (Geodatendienst der Stadt Essen, geo.essen.de)",
     "Berufe: Ontologie historischer, deutschsprachiger Amts- und Berufsbezeichnungen (OhdAB), Moeller/Uni Halle, FactGrid, CC BY 4.0"
   ],
   "grenzen": "In Teil I fehlen die Seiten 186 bis 258, also alle Nachnamen mit H, I und J, geschätzt 23.000 Personen; sie fehlen schon in der Vorlage der Transkription, nicht erst hier. Straßen, Häuser und Firmen mit diesen Anfangsbuchstaben sind vollständig. Der Erhebungsstand liegt im Lauf des Jahres 1936; die Umbenennungen von 1937 sind noch nicht enthalten. Die Transkription steht unter CC BY-SA 4.0 (Verein für Computergenealogie, Datensatz „Historische Adressbücher aus dem Rheinland und Ruhrgebiet“, Coding da Vinci Nieder.Rhein.Land 2021); Ableitungen daraus stehen unter derselben Lizenz. Stadtteilgrenzen sind die heutigen (OpenStreetMap, ODbL), Straßenlinien folgen der heutigen Führung. Von {eintraege} Zeilen sind {verortet} verortet ({stufe_offen} nicht), verteilt auf {adressen} Adressen. Stand {stand}.",

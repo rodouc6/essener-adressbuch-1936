@@ -1,7 +1,6 @@
 // Konstanten der Karte. PLAN_FREIGEGEBEN: Stadtplan 1935 (geo.essen.de) als Overlay anbieten.
-// Die Rechte sind noch nicht geklärt (Stand 2026-09-22): bleibt false, bis die Freigabe der Stadt
-// Essen / des Historischen Vereins vorliegt. Für lokale Prüfarbeit vorübergehend auf true setzen,
-// aber nicht committen; werkzeuge/deploy.sh verweigert den Deploy bei true.
+// Nutzung vom Amt für Geoinformation, Vermessung und Kataster der Stadt Essen am 2026-10-07
+// genehmigt: Einbindung live über die Export-Schnittstelle des Dienstes, Quellenvermerk im Impressum.
 export const STILE = {
   positron: "https://tiles.openfreemap.org/styles/positron",
   liberty: "https://tiles.openfreemap.org/styles/liberty",
@@ -16,7 +15,7 @@ export const PRAEZISION = {
   stadtplan: "Punkt vom Stadtplan 1935, Straße heute verschwunden",
   unbekannt: "Präzision unbekannt (Daten nicht geladen)",
 };
-export const PLAN_FREIGEGEBEN = false;
+export const PLAN_FREIGEGEBEN = true;
 export const STADTPLAN_EXPORT = "https://geo.essen.de/arcgis/rest/services/historischerverein/Stadtplan_1935/MapServer/export";
 export const ESSEN_MITTE = [7.0131, 51.4556];
 export const DES_PROJEKT = "https://des.genealogy.net/essen1936/";

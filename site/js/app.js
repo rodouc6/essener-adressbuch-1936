@@ -15,8 +15,8 @@ import { csvAusTreffern, herunterladen } from "./exportcsv.js";
 import { strasseAusText } from "./strassenwahl.js";
 
 const lader = new Lader();
-// PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart: ein manipulierter ?plan=1-Link darf die
-// Ebene nicht aktivieren, solange die Nutzungsrechte am Dienst geo.essen.de nicht geklärt sind (C1).
+// PLAN_FREIGEGEBEN sperrt die Stadtplan-1935-Ebene hart, auch gegen einen ?plan=1-Link (C1); seit der
+// Genehmigung der Stadt Essen (2026-10-07) steht sie auf true, der Schalter bleibt als Notbremse.
 function gateZustand(z) { return PLAN_FREIGEGEBEN ? z : { ...z, plan: 0 }; }
 
 // Grundkartenwahl in localStorage merken (Spec §4); localStorage kann in Privatmodus/mit
