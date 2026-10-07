@@ -78,7 +78,7 @@ stehen in [`docs/datenquelle_lizenz.md`](docs/datenquelle_lizenz.md).
         │
         ▼  01 einlesen, Zeilen bereinigen        ◄── kuratierung/zeilenkorrekturen.csv
         ▼  02 Adresse zerlegen (Straße, Nummer, Etage, Stand)
-        ▼  03 Straße von 1936 auf heute auflösen  ◄── Essener Straßenverzeichnis (Zenodo)
+        ▼  03 Straße von 1936 auf heute auflösen  ◄── Dickhoff, Essener Straßen (2015)
         ▼  04 geokodieren (Nominatim, eigene Instanz)
         ▼  05 Bericht und Stichproben
         ▼  06 Datenpaket der Karte               ◄── kuratierung/ (Eigentümer, Berufe, Gewerbe, Zechen, Themen, Kapitel)
@@ -91,9 +91,9 @@ stehen in [`docs/datenquelle_lizenz.md`](docs/datenquelle_lizenz.md).
    oder verlesen sind, werden nicht in der Quelle geändert, sondern in
    `zeilenkorrekturen.csv` mit altem Wert und Begründung festgehalten.
 2. **Auflösen.** Die Straßennamen von 1936, darunter viele Umbenennungen der
-   NS-Zeit, werden über den eigenen Datensatz
-   [Essener Straßenverzeichnis](https://doi.org/10.5281/zenodo.22757900) auf
-   die heutigen Namen abgebildet.
+   NS-Zeit, werden anhand von Erwin Dickhoff,
+   *Essener Straßen* (Neuauflage 2015, herausgegeben von der Stadt Essen und dem
+   Historischen Verein für Stadt und Stift Essen) auf die heutigen Namen abgebildet.
 3. **Verorten.** Heutige Adressen werden einmalig geokodiert. Jede Adresse
    trägt ihre Präzision: hausgenau, straßengenau oder Stadtplan 1935.
    Eine Stichprobe von 200 hausgenauen Adressen ergab 194 richtige und 6

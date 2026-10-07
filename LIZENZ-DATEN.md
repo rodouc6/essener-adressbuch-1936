@@ -16,8 +16,10 @@ Christos Rodouniklis“.
   [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
 - OhdAB (Ontologie historischer Amts- und Berufsbezeichnungen, Katrin Moeller, Uni Halle): CC BY 4.0;
   enthaltene Anteile der Klassifikation der Berufe 2010 (Bundesagentur für Arbeit) unter deren Bedingungen.
-- Straßennamen und Umbenennungen: Datensatz „Essener Straßenverzeichnis“ (Rodouniklis 2026,
-  DOI 10.5281/zenodo.22757900), CC BY 4.0.
+- Straßennamen und Umbenennungen: erschlossen aus Erwin Dickhoff (Begründer), Birgit Hartings, Norbert
+  Kostanowicz: *Essener Straßen* (Hrsg. Stadt Essen und Historischer Verein für Stadt und Stift Essen e. V.,
+  Neuauflage, Klartext-Verlag, Essen 2015); die Angaben sind nicht Teil dieser Lizenz, die Nutzungsrechte
+  liegen bei den Herausgebern.
 - Zechen: Lage und Betriebsjahre nach Wikipedia (CC BY-SA 4.0), Status 1936 geprüft gegen die Chronik von
   Joachim Huske (Auszüge im Historischen Portal Essen); die Chronik selbst ist nicht Teil dieser Lizenz.
 - Der Stadtplan Essen 1935 ist nicht enthalten; seine Rechte sind ungeklärt.
